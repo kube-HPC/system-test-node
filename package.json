@@ -1,0 +1,22 @@
+{
+  "name": "nodehkubetests",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "node_modules/mocha/bin/mocha test/**/*.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "chai": "^4.1.2",
+    "chai-http": "^4.0.0",
+    "crypto-random-string": "^1.0.0",
+    "delay": "^3.0.0",
+    "elasticsearch": "^15.0.0",
+    "uuid": "^3.2.1"
+  },
+  "devDependencies": {
+    "mocha": "^5.2.0"
+  }
+}
