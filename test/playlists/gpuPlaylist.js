@@ -1,0 +1,1 @@
+require ('../gpu_tests/runGpuTest')

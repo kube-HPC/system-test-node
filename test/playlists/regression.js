@@ -1,0 +1,1 @@
+require ('../tests/tid_10')
