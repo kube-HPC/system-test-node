@@ -2,6 +2,7 @@ const chai = require('chai');
 const expect = chai.expect;
 const delay = require('delay');
 const config = require('../config/config');
+
 const logger = require('./logger')
 
 const getResult = async (jobId, expectedStatus, timeout = 60 * 1000 * 10, interval = 5000) => {
@@ -44,9 +45,9 @@ const getStates = async (jobId) => {
 }
 
 const getPodsRunning = async (jobId) => {
-    const res = await chai.request(config.apiServerUrl)
+    const res = await chai.request(config.baseUrl)
         .get(`/hkube/monitor-server/pods/${jobId}`)
-        logger.info(`${res.status}, ${JSON.stringify(res.body)}`)
+    logger.info(`${res.status}, ${JSON.stringify(res.body)}`)
 
     return res
 }

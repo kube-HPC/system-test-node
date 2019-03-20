@@ -4,27 +4,36 @@ const should = chai.should();
 const chaiHttp = require('chai-http');
 const config = require('../../config/config');
 const { getResult } = require('../../utils/results');
-const testData1 = require ('../../pipelines/addmult')
-const testData2 = require ('../../pipelines/multadd')
+const testData1 = require('../../pipelines/addmult')
+const testData2 = require('../../pipelines/multadd')
+const logger = require('../../utils/logger')
 chai.use(chaiHttp);
 
 
 
-describe('pipeline runs in order', () => {
-    before('store pipeline addmult',async () => {
+describe('Part or all of the inputs of algorithm are taken from the pipeline\'s request', () => {
+    before('store pipeline addmult', async () => {
         const pipeline = testData1.descriptor;
         const res1 = await chai.request(config.apiServerUrl)
             .post('/store/pipelines')
             .send(pipeline);
+
+        logger.info(`executing addmult pipeline`)
+        logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
         res1.should.have.status(201);
     })
 
-    before('store pipeline multadd',async () => {
+    before('store pipeline multadd', async () => {
         const pipeline = testData2.descriptor;
         const res1 = await chai.request(config.apiServerUrl)
             .post('/store/pipelines')
             .send(pipeline);
+
+        logger.info(`executing multadd pipeline`)
+        logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
         res1.should.have.status(201);
+
+
     })
 
 
@@ -42,11 +51,15 @@ describe('pipeline runs in order', () => {
 
 
         const result = await getResult(jobId, 200);
-        if ('error' in result){
+        if ('error' in result) {
             process.stdout.write(result.error)
 
         }
-        expect (result.data).to.eql(testData1.data)
+
+        logger.info(`getting results from execution`)
+        logger.info(`${res.status} ${JSON.stringify(res.body)}`)
+
+        expect(result.data).to.eql(testData1.data)
         expect(result.status).to.eql('completed')
         expect(result).to.not.have.property('error')
 
@@ -67,26 +80,35 @@ describe('pipeline runs in order', () => {
 
 
         const result = await getResult(jobId, 200);
-        if ('error' in result){
+        if ('error' in result) {
             process.stdout.write(result.error)
 
         }
-        expect (result.data).to.eql(testData2.data)
+
+        logger.info(`getting results from execution`)
+        logger.info(`${res.status} ${JSON.stringify(res.body)}`)
+        expect(result.data).to.eql(testData2.data)
         expect(result.status).to.eql('completed')
 
 
     }).timeout(5000000);
 
-    after('delete stored pipeline addmult',async () => {
+    after('delete stored pipeline addmult', async () => {
         const name = testData1.descriptor.name;
         const res1 = await chai.request(config.apiServerUrl)
             .delete(`/store/pipelines/${name}`)
+
+        logger.info(`deleting pipeline addmult`)
+        logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
         res1.should.have.status(200);
     })
-    after('delete stored pipeline multadd',async () => {
+    after('delete stored pipeline multadd', async () => {
         const name = testData2.descriptor.name;
         const res1 = await chai.request(config.apiServerUrl)
             .delete(`/store/pipelines/${name}`)
+
+        logger.info(`deleting pipeline multadd`)
+        logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
         res1.should.have.status(200);
     })
 });

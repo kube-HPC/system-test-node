@@ -3,7 +3,7 @@ const descriptor = {
     nodes: [
       {
         nodeName: 'keras',
-        algorithmName: 'gpu-alg-1',
+        algorithmName: 'gpu-alg-2',
         input: [
           '#@flowInput.data'
         ]
