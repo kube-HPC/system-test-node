@@ -4,8 +4,8 @@ const should = chai.should();
 const chaiHttp = require('chai-http');
 const config = require('../../config/config');
 const { getResult } = require('../../utils/results');
-const testData1 = require('../../pipelines/addmult')
-const testData2 = require('../../pipelines/multadd')
+const {testData1,testData2} = require('../../config/index').tid_30
+
 const logger = require('../../utils/logger')
 chai.use(chaiHttp);
 
@@ -20,9 +20,9 @@ describe('pipelines will be executed using their name', () => {
             .post('/store/pipelines')
             .send(pipeline);
 
-        logger.info(`executing pipeline pipeline`)
-        logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
-        res1.should.have.status(201);
+        // logger.info(`executing pipeline pipeline`)
+        // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
+        // res1.should.have.status(201);
     })
 
     it('should return result 24', async () => {

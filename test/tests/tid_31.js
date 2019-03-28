@@ -4,7 +4,7 @@ const should = chai.should();
 const chaiHttp = require('chai-http');
 const config = require('../../config/config');
 const { getResult, getPodsRunning } = require('../../utils/results');
-const testData1 = require('../../pipelines/eval-dynamic')
+const { testData1 } = require('../../config/index').tid_31
 // const testData2 = require('../../pipelines/multadd')
 const logger = require('../../utils/logger')
 const delay = require('delay');
@@ -19,9 +19,9 @@ describe('Part or all of the inputs of algorithm are taken from the pipeline\'s 
             .post('/store/pipelines')
             .send(pipeline);
 
-        logger.info(`executing eval dynamic pipeline`)
-        logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
-        res1.should.have.status(201);
+        // logger.info(`executing eval dynamic pipeline`)
+        // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
+        // res1.should.have.status(201);
     })
 
     it('should run the pipeline twice', async () => {
@@ -72,8 +72,8 @@ describe('Part or all of the inputs of algorithm are taken from the pipeline\'s 
         const res1 = await chai.request(config.apiServerUrl)
             .delete(`/store/pipelines/${name}`)
 
-        logger.info(`deleting pipeline addmult`)
-        logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
+        // logger.info(`deleting pipeline addmult`)
+        // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
         res1.should.have.status(200);
     })
 

@@ -4,8 +4,7 @@ const should = chai.should();
 const chaiHttp = require('chai-http');
 const config = require('../../config/config');
 const { getResult } = require('../../utils/results');
-const testData1 = require('../../pipelines/addmult')
-const testData2 = require('../../pipelines/multadd')
+const { testData1, testData2 } = require('../../config/index').tid_10;
 const logger = require('../../utils/logger')
 chai.use(chaiHttp);
 
@@ -18,9 +17,9 @@ describe('Part or all of the inputs of algorithm are taken from the pipeline\'s 
             .post('/store/pipelines')
             .send(pipeline);
 
-        logger.info(`executing addmult pipeline`)
-        logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
-        res1.should.have.status(201);
+        // logger.info(`executing addmult pipeline`)
+        // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
+        // res1.should.have.status(201);
     })
 
     before('store pipeline multadd', async () => {
@@ -29,11 +28,9 @@ describe('Part or all of the inputs of algorithm are taken from the pipeline\'s 
             .post('/store/pipelines')
             .send(pipeline);
 
-        logger.info(`executing multadd pipeline`)
-        logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
-        res1.should.have.status(201);
-
-
+        // logger.info(`executing multadd pipeline`)
+        // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
+        // res1.should.have.status(201);
     })
 
 
@@ -98,8 +95,8 @@ describe('Part or all of the inputs of algorithm are taken from the pipeline\'s 
         const res1 = await chai.request(config.apiServerUrl)
             .delete(`/store/pipelines/${name}`)
 
-        logger.info(`deleting pipeline addmult`)
-        logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
+        // logger.info(`deleting pipeline addmult`)
+        // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
         res1.should.have.status(200);
     })
     after('delete stored pipeline multadd', async () => {
@@ -107,8 +104,8 @@ describe('Part or all of the inputs of algorithm are taken from the pipeline\'s 
         const res1 = await chai.request(config.apiServerUrl)
             .delete(`/store/pipelines/${name}`)
 
-        logger.info(`deleting pipeline multadd`)
-        logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
+        // logger.info(`deleting pipeline multadd`)
+        // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
         res1.should.have.status(200);
     })
 });

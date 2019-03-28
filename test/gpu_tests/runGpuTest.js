@@ -4,9 +4,11 @@ const should = chai.should();
 const chaiHttp = require('chai-http');
 const config = require('../../config/config');
 const { getResult, getPodsRunning } = require('../../utils/results');
-const testData1 = require('../../pipelines/gpuPipeline')
-const testData2 = require('../../pipelines/gpuPipeline-1')
+const {testData1,testData2} = require('../../config/index').gpu_tests
 const delay = require('delay');
+const assert = chai.assert;
+const logger = require('../../utils/logger')
+
 chai.use(chaiHttp);
 
 
@@ -53,16 +55,20 @@ describe('store the gpu algorithm', () => {
 
         res2.should.have.status(200);
         res2.body.should.have.property('jobId');
-        const jobid2 = res2.body.jobid2
+        const jobId2 = res2.body.jobId
 
         // expect (result.data).to.eql(testData1.data)
         expect(result.status).to.eql('completed')
         expect(result).to.not.have.property('error')
 
-        await delay(15000);
+        await delay(50000);
 
-        let runningPods = await getPodsRunning(jobid2)
-        expect(runningPods.body).to.not.be.empty
+        let runningPods = await getPodsRunning(jobId2)
+
+        logger.error(JSON.stringify(runningPods.body))
+        assert.isAtLeast(runningPods.body.length, 1, `the job ${jobId2} expected to have at least 1 running pods while got ${runningPods.body.length}`)
+
+        // expect(runningPods.body).to.not.be.empty
 
 
 

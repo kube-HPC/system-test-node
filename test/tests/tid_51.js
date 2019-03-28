@@ -5,8 +5,7 @@ const assert = chai.assert;
 const chaiHttp = require('chai-http');
 const config = require('../../config/config');
 const { getResult, getPodsRunning } = require('../../utils/results');
-const testData1 = require('../../pipelines/eval-dynamic')
-const testData2 = require('../../pipelines/primesPipeline')
+const { testData1, testData2 } = require('../../config/index').tid_51
 const logger = require('../../utils/logger')
 const delay = require('delay');
 
@@ -21,9 +20,9 @@ describe('run pipelines in a queue', () => {
             .post('/store/pipelines')
             .send(pipeline);
 
-        logger.info(`executing addmult pipeline`)
-        logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
-        res1.should.have.status(201);
+        // logger.info(`executing addmult pipeline`)
+        // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
+        // res1.should.have.status(201);
     })
 
     before('store pipeline primes', async () => {
@@ -32,9 +31,9 @@ describe('run pipelines in a queue', () => {
             .post('/store/pipelines')
             .send(pipeline);
 
-        logger.info(`executing addmult pipeline`)
-        logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
-        res1.should.have.status(201);
+        // logger.info(`executing addmult pipeline`)
+        // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
+        // res1.should.have.status(201);
     })
 
 
@@ -46,7 +45,7 @@ describe('run pipelines in a queue', () => {
                 range: 60,
                 time: 60000
             }
-        } 
+        }
         let body = inputData
         body.name = name
         const res = await chai.request(config.apiServerUrl)
@@ -94,9 +93,9 @@ describe('run pipelines in a queue', () => {
 
         let runningPods = await getPodsRunning(jobId)
         logger.info(`getting running pods on id ${jobId}`)
-        assert.isAtLeast(runningPods.body.length, 15,`the job ${jobId} expected to have at least 15 running pods while got ${runningPods.body.length}`)
+        assert.isAtLeast(runningPods.body.length, 15, `the job ${jobId} expected to have at least 15 running pods while got ${runningPods.body.length}`)
 
-        
+
         const result = await getResult(jobId, 200);
         if ('error' in result) {
             process.stdout.write(result.error)
@@ -114,8 +113,8 @@ describe('run pipelines in a queue', () => {
         const res1 = await chai.request(config.apiServerUrl)
             .delete(`/store/pipelines/${name}`)
 
-        logger.info(`deleting pipeline addmult`)
-        logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
+        // logger.info(`deleting pipeline addmult`)
+        // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
         res1.should.have.status(200);
     })
 
@@ -124,8 +123,8 @@ describe('run pipelines in a queue', () => {
         const res1 = await chai.request(config.apiServerUrl)
             .delete(`/store/pipelines/${name}`)
 
-        logger.info(`deleting pipeline addmult`)
-        logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
+        // logger.info(`deleting pipeline addmult`)
+        // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
         res1.should.have.status(200);
     })
 
