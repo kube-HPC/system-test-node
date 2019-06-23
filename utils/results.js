@@ -56,6 +56,22 @@ const toString = (fun) => {
     return "" + fun
 }
 
+const getStatusall = async (id, url, expectedCode, expectedStatus, timeout = 60 * 1000, interval = 1000) => {
+    const start = Date.now();
+    do {
+        process.stdout.write('.')
+        const res = await chai.request(config.apiServerUrl)
+            .get(`${url}/${id}`);
+
+        logger.info(`${res.status}, ${JSON.stringify(res.body)}`)
+        if (res.status == expectedCode && res.body.status == expectedStatus) {
+            return res.body;
+        }
+        await delay(interval);
+    } while (Date.now() - start < timeout);
+    expect.fail(`timeout exceeded trying to get ${expectedStatus} status for jobId ${id}`);
+};
+
 
 
 module.exports = {
@@ -63,6 +79,6 @@ module.exports = {
     getStatus,
     getStates,
     getPodsRunning,
-    toString
+    toString,
+    getStatusall
 }
-

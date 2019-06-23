@@ -3,8 +3,13 @@ const expect = chai.expect;
 const should = chai.should();
 const chaiHttp = require('chai-http');
 const config = require('../../config/config');
-const { getResult } = require('../../utils/results');
-const { testData1, testData2 } = require('../../config/index').tid_10;
+const {
+    getResult
+} = require('../../utils/results');
+const {
+    testData1,
+    testData2
+} = require('../../config/index').tid_10;
 const logger = require('../../utils/logger')
 chai.use(chaiHttp);
 

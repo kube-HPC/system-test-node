@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node_modules/mocha/bin/mocha test/playlists/regression.js"
+    "test": "node_modules/mocha/bin/mocha test/playlists/algorithmsPlaylist.js"
   },
   "author": "",
   "license": "ISC",
@@ -14,6 +14,7 @@
     "crypto-random-string": "^1.0.0",
     "delay": "^3.0.0",
     "elasticsearch": "^15.0.0",
+    "fs-extra": "^8.0.1",
     "kubernetes-client": "^6.11.1",
     "uuid": "^3.2.1",
     "winston": "^3.2.1",

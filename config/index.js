@@ -1,5 +1,3 @@
-
-
 const index = {
     tid_10: {
         testData1: require('../pipelines/addmult'),
@@ -25,6 +23,9 @@ const index = {
     gpu_tests: {
         testData1: require('../pipelines/gpuPipeline'),
         testData2: require('../pipelines/gpuPipeline-1')
+    },
+    buildAlgPipe: {
+        testData1: require('../pipelines/pythonPipeline')
     }
 }
 
