@@ -29,7 +29,22 @@ const deletePipeline = async (pipelineName) => {
 }
 
 
+const execPipeline = async (pipelineName, pipelineData) => {
+    const data = {
+        name: pipelineName,
+        ...pipelineData
+    }
+    const res = await chai.request(config.apiServerUrl)
+        .post('/exec/stored')
+        .send(data)
+
+    return res.body.jobId
+
+}
+
+
 module.exports = {
     storePipeline,
-    deletePipeline
+    deletePipeline,
+    execPipeline
 }

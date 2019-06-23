@@ -6,7 +6,8 @@ const chaiHttp = require('chai-http');
 const path = require('path');
 const config = require('../../config/config');
 const {
-    getStatusall
+    getStatusall,
+    getResult
 } = require('../../utils/results');
 const {
     testData1
@@ -14,7 +15,8 @@ const {
 
 const {
     storePipeline,
-    deletePipeline
+    deletePipeline,
+    execPipeline
 } = require('../../utils/storeDelete')
 
 
@@ -28,7 +30,7 @@ describe('Store algorithm', () => {
     const testalg = 'testalg'
 
 
-    before('should check if the algorith exist, if it does it should delete it', async () => {
+    it('should check if the algorith exist, if it does it should delete it', async () => {
         const res = await chai.request(config.apiServerUrl)
             .get(`/store/algorithms/${testalg}`)
 
@@ -36,7 +38,7 @@ describe('Store algorithm', () => {
             console.log(`algorithm ${testalg} found, deleting it`)
             const del = await chai.request(config.apiServerUrl)
                 .delete(`/store/algorithms/${testalg}`)
-            console.log(del.body)
+            // console.log(del.body)
         } else {
             console.log(`algorithm ${testalg} not found`)
         }
@@ -57,7 +59,7 @@ describe('Store algorithm', () => {
             cpu: 0.5,
             gpu: 0,
             mem: '512Mi',
-            entryPoint: 'main.py',
+            entryPoint: 'eyeMat.py',
             minHotWorkers: 0
         }
 
@@ -67,35 +69,41 @@ describe('Store algorithm', () => {
             .attach('file', fse.readFileSync(code), 'eyeMat')
 
         logger.info(JSON.stringify(res.body))
-        console.log(res.body)
+        // console.log(res.body)
 
         expect(res.statusCode).to.eql(200)
         const buildId = res.body.buildId
         const buildStatus = await getStatusall(buildId, `/builds/status/`, 200, "completed")
 
-        console.log(buildStatus)
+        // console.log(buildStatus)
 
     }).timeout(60 * 1000)
 
 
-    it.only('should create a pipeline with the algorith', async () => {
-        const pipeline = testData1.descriptor
-        const res = await storePipeline(pipeline)
-        console.log(res)
+    it('should create a pipeline with the algorithm and run it', async () => {
+        const pipelineData = testData1.descriptor
+        const res = await storePipeline(pipelineData)
+        // console.log(res)
+
         expect(res.statusCode).to.equal(201)
-        console.log(res.statusCode)
-    })
+
+        // console.log(res.body)
+        const pipeline = await execPipeline(testData1.descriptor.name, testData1.input)
+
+        const result = await getResult(pipeline, 200)
+
+
+    }).timeout(1000 * 60 * 2)
 
 
 
     after('delete the stored pipeline', async () => {
         const name = testData1.descriptor.name;
-        const res1 = await chai.request(config.apiServerUrl)
-            .delete(`/store/pipelines/${name}`)
+        const res = await deletePipeline(name)
 
         // logger.info(`deleting pipeline addmult`)
         // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
-        expect(res1.statusCode).to.equal(200)
+        expect(res.statusCode).to.equal(200)
     })
 
 
