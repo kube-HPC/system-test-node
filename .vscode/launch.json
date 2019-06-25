@@ -38,7 +38,7 @@
             ],
             "stopOnEntry": false,
             "args": [
-                "test/playlists/algorithmsPlaylist.js"
+                "test/playlists/regression.js"
             ],
             "env": {
                 "NODE_ENV": "test"

@@ -38,10 +38,37 @@ const input = {
 }
 
 const data = [{
-    nodeName: "evalmul",
-    algorithmName: "eval-alg",
-    result: 24
-}]
+        nodeName: 'pyEye',
+        batchIndex: 1,
+        algorithmName: 'testalg',
+        result: []
+    },
+    {
+        nodeName: 'pyEye',
+        batchIndex: 2,
+        algorithmName: 'testalg',
+        result: [
+            [
+                1
+            ]
+        ]
+    },
+    {
+        nodeName: 'pyEye',
+        batchIndex: 3,
+        algorithmName: 'testalg',
+        result: [
+            [
+                1,
+                0
+            ],
+            [
+                0,
+                1
+            ]
+        ]
+    }
+]
 
 
 module.exports = {

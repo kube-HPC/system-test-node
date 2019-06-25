@@ -91,6 +91,10 @@ describe('Store algorithm', () => {
         const pipeline = await execPipeline(testData1.descriptor.name, testData1.input)
 
         const result = await getResult(pipeline, 200)
+        expect(result.data).to.eql(testData1.data)
+        expect(result.status).to.eql('completed')
+        expect(result).to.not.have.property('error')
+
 
 
     }).timeout(1000 * 60 * 2)

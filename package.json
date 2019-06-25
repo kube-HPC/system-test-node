@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node_modules/mocha/bin/mocha test/playlists/algorithmsPlaylist.js"
+    "test": "node_modules/mocha/bin/mocha test/playlists/regression.js"
   },
   "author": "",
   "license": "ISC",
