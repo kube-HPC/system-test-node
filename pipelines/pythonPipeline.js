@@ -27,7 +27,15 @@ const descriptor = {
             input: [
                 "#@evalSplit",
             ]
+        },
+        {
+            nodeName: "multPy",
+            algorithmName: "testalg",
+            input: [
+                "#@pyEye",
+            ]
         }
+
     ]
 }
 

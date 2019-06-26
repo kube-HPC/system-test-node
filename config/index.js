@@ -26,6 +26,10 @@ const index = {
     },
     buildAlgPipe: {
         testData1: require('../pipelines/pythonPipeline')
+    },
+    subPipeline: {
+        testData1: require('../pipelines/mainPipeDist'),
+        testData2: require('../pipelines/subPipelineDist')
     }
 }
 
