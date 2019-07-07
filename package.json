@@ -4,12 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node_modules/mocha/bin/mocha test/playlists/regression.js"
+    "test": "node_modules/mocha/bin/mocha test/playlists/algorithmsPlaylist.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "chai": "^4.1.2",
+    "chai-arrays": "^2.0.0",
     "chai-http": "^4.0.0",
     "crypto-random-string": "^1.0.0",
     "delay": "^3.0.0",

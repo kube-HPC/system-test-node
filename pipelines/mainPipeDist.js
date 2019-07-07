@@ -2,18 +2,24 @@ const tos = require('../utils/results').toString
 
 const codeMainPipe = (input, self) => {
     const arr = [];
-
+    console.log(`the input for the pipeline is ${input}`)
     for (let i = 0; i < input.length; i++) {
         let current = input[i];
+        console.log(`in the loop ${current}`)
         arr.push(current);
     };
     const subpipe = {
-        name: "subForDist"
+        name: "subForDist",
+        flowInput: {
+            nums: input[0]
+        }
     };
 
-    self.startSubPipeline({
+    self.startSubPipeline(
         subpipe
-    });
+    );
+
+    return arr
 }
 
 
@@ -39,8 +45,32 @@ const input = {
     }
 }
 
+const data = [{
+    nodeName: 'node1',
+    algorithmName: 'eval-alg',
+    result: [
+        [{
+            nodeName: 'dist',
+            algorithmName: 'eval-alg',
+            result: [
+                4,
+                8,
+                12,
+                16,
+                20,
+                24,
+                28,
+                32,
+                36,
+                40
+            ]
+        }]
+    ]
+}]
+
 
 module.exports = {
     descriptor,
-    input
+    input,
+    data
 }

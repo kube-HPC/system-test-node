@@ -2,9 +2,10 @@ const tos = require('../utils/results').toString
 
 const codeSubPipe = (input) => {
     const arr = []
-    for (let i = 0; i < input.length; i++) {
-        let current = input[i]
-        arr.push(Math.sqrt(Math.pow(current + current * 3), 2))
+    console.log(`got input ${input}`)
+    for (let i = 0; i < input[0].length; i++) {
+        let current = input[0][i]
+        arr.push(Math.sqrt(Math.pow(current + (current * 3), 2)))
     }
     return arr
 }

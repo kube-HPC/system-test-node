@@ -30,23 +30,23 @@ chai.use(chaiHttp);
 
 describe('should run a pipeline and execute sub pipeline after it', () => {
 
-    it('store pipeline main pipeline', async () => {
+    before('store pipeline main pipeline', async () => {
         const pipeline = testData1.descriptor;
         const res = await storePipeline(pipeline)
 
         // logger.info(`executing addmult pipeline`)
         // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
-        res.should.have.status(201);
+        // res.should.have.status(201);
     })
 
 
-    it('store pipeline sub pipeline', async () => {
+    before('store pipeline sub pipeline', async () => {
         const pipeline = testData2.descriptor;
         const res = await storePipeline(pipeline)
 
         // logger.info(`executing addmult pipeline`)
         // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
-        res.should.have.status(201);
+        // res.should.have.status(201);
     })
 
     it('should run the main pipeline', async () => {
@@ -73,28 +73,31 @@ describe('should run a pipeline and execute sub pipeline after it', () => {
         // expect(result.data).to.eql(testData2.data)
         expect(result.status).to.eql('completed')
 
+        expect(result.data).to.eql(testData1.data)
+
+
 
     }).timeout(5000000);
 
 
-    // after('delete main pieline', async () => {
-    //     const name = testData1.descriptor.name;
-    //     const res1 = await chai.request(config.apiServerUrl)
-    //         .delete(`/store/pipelines/${name}`)
+    after('delete main pieline', async () => {
+        const name = testData1.descriptor.name;
+        const res1 = await chai.request(config.apiServerUrl)
+            .delete(`/store/pipelines/${name}`)
 
-    //     // logger.info(`deleting pipeline addmult`)
-    //     // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
-    //     res1.should.have.status(200);
-    // })
+        // logger.info(`deleting pipeline addmult`)
+        // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
+        res1.should.have.status(200);
+    })
 
-    // after('delete sub pieline', async () => {
-    //     const name = testData2.descriptor.name;
-    //     const res1 = await chai.request(config.apiServerUrl)
-    //         .delete(`/store/pipelines/${name}`)
+    after('delete sub pieline', async () => {
+        const name = testData2.descriptor.name;
+        const res1 = await chai.request(config.apiServerUrl)
+            .delete(`/store/pipelines/${name}`)
 
-    //     // logger.info(`deleting pipeline addmult`)
-    //     // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
-    //     res1.should.have.status(200);
-    // })
+        // logger.info(`deleting pipeline addmult`)
+        // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
+        res1.should.have.status(200);
+    })
 
 })
