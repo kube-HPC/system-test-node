@@ -9,7 +9,8 @@ const config = require(path.join(process.cwd(), 'config/config'));
 const delay = require('delay');
 
 const {
-    getResult
+    getResult,
+    runRaw
 } = require(path.join(process.cwd(), 'utils/results'))
 // const testData2 = require ('../../pipelines/multadd')
 chai.use(chaiHttp);
@@ -44,6 +45,10 @@ describe('all swagger calls test', () => {
         // console.log(res.body)
         res.should.have.status(200)
 
+        const jobId = res.body.jobId
+
+        const result = getResult(jobId, 200)
+
     })
 
 
@@ -63,6 +68,11 @@ describe('all swagger calls test', () => {
             .send(pipe)
 
         res.should.have.status(200)
+
+        const jobId = res.body.jobId
+
+        const result = getResult(jobId, 200)
+
     })
 
 
@@ -101,6 +111,11 @@ describe('all swagger calls test', () => {
         // console.log(res2.status)
         res2.should.have.status(200)
 
+        const jobId2 = res2.body.jobId
+
+        const result2 = getResult(jobId2, 200)
+
+
 
     }).timeout(1000 * 60 * 5)
 
@@ -126,6 +141,9 @@ describe('all swagger calls test', () => {
             jobId: jobId,
             reason: "from test"
         }
+
+        await delay(3 * 1000)
+
         const res2 = await chai.request(config.apiServerUrl)
             .post('/exec/stop')
             .send(data)
@@ -156,45 +174,53 @@ describe('all swagger calls test', () => {
         const res2 = await chai.request(config.apiServerUrl)
             .get(`/exec/pipelines/${jobId}`)
 
+
+
         res2.should.have.status(200)
+
+        const jobId2 = res2.body.jobId
+
+        const result2 = getResult(jobId2, 200)
+
     })
 
 
     it('test the exec/pipeline/list rest call', async () => {
-        const pipe = {
-            name: "simple",
-            flowInput: {
-                files: {
-                    link: "link1"
-                }
-            },
-            priority: 4
-        }
 
+
+        const ids = []
         for (let i = 0; i < 5; i++) {
-            let res = await chai.request(config.apiServerUrl)
-                .post('/exec/stored')
-                .send(pipe)
+            const jobId = await runRaw(30000)
 
+            ids.push(jobId)
+            await delay(1000 * 3)
         }
 
-        const res2 = await chai.request(config.apiServerUrl)
+
+
+        await delay(2 * 1000)
+        const res = await chai.request(config.apiServerUrl)
             .get(`/exec/pipeline/list`)
 
-        res2.should.have.status(200)
-        expect(res2.body).to.have.lengthOf.above(3)
+        res.should.have.status(200)
+        expect(res.body).to.have.lengthOf.above(4)
 
-    }).timeout(1000 * 60 * 2)
+        for (let i = 0; i < ids.length; i++) {
+            let result = await getResult(ids[i], 200);
+        }
+
+
+    }).timeout(1000 * 60 * 5)
 
 
 
-    it('test the exec/status/{jobId} rest call', async () => {
+    it('test the exec/status/{jobId} and exec/results/{jobId} rest call', async () => {
         const rawPipe = {
             name: "rawPipe",
             nodes: [{
                 nodeName: "node1",
                 algorithmName: "eval-alg",
-                input: [60000],
+                input: [15000],
                 extraData: {
                     code: [
                         "(input)=>{",
@@ -221,6 +247,90 @@ describe('all swagger calls test', () => {
 
 
     }).timeout(1000 * 60 * 5)
+
+
+    it(`test the /exec/tree/{jobId} rest call`, async () => {
+
+        const jobId = await runRaw()
+
+        await delay(1000 * 5)
+
+        const res = await chai.request(config.apiServerUrl)
+            .get(`/exec/tree/${jobId}`)
+
+        res.should.have.status(200)
+        const result = await getResult(jobId, 200);
+
+    }).timeout(1000 * 60 * 2)
+
+
+    it('test the /pipelines/results/raw/{name} rest call', async () => {
+        const name = 'rawPipe'
+
+        const res = await chai.request(config.apiServerUrl)
+            .get(`/pipelines/results/raw/${name}`)
+
+        res.should.have.status(200)
+
+        const res2 = await chai.request(config.apiServerUrl)
+            .get(`/pipelines/results/raw/${name}?limit=5`)
+
+        res2.should.have.status(200)
+        expect(res2.body).to.have.lengthOf(5)
+
+    }).timeout(1000 * 60)
+
+
+    it('test the /pipelines/results/stored/{name} rest call', async () => {
+        const name = 'simple'
+
+        const res = await chai.request(config.apiServerUrl)
+            .get(`/pipelines/results/stored/${name}`)
+
+        res.should.have.status(200)
+
+        const res2 = await chai.request(config.apiServerUrl)
+            .get(`/pipelines/results/stored/${name}?limit=5`)
+
+        res2.should.have.status(200)
+        expect(res2.body).to.have.lengthOf(5)
+
+    }).timeout(1000 * 60)
+
+
+
+    it('test the /pipelines/status/raw/{name} rest call', async () => {
+        const name = 'rawPipe'
+
+        const res = await chai.request(config.apiServerUrl)
+            .get(`/pipelines/status/raw/${name}`)
+
+        res.should.have.status(200)
+
+        const res2 = await chai.request(config.apiServerUrl)
+            .get(`/pipelines/status/raw/${name}?limit=5`)
+
+        res2.should.have.status(200)
+        expect(res2.body).to.have.lengthOf(5)
+
+    }).timeout(1000 * 60)
+
+
+    it('test the /pipelines/status/stored/{name} rest call', async () => {
+        const name = 'simple'
+
+        const res = await chai.request(config.apiServerUrl)
+            .get(`/pipelines/status/stored/${name}`)
+
+        res.should.have.status(200)
+
+        const res2 = await chai.request(config.apiServerUrl)
+            .get(`/pipelines/status/stored/${name}?limit=5`)
+
+        res2.should.have.status(200)
+        expect(res2.body).to.have.lengthOf(5)
+
+    }).timeout(1000 * 60)
 
 
 })

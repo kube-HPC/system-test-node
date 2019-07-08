@@ -5,6 +5,9 @@ const config = require('../config/config');
 
 const logger = require('./logger')
 
+// chai.use(chaiHttp);
+
+
 const getResult = async (jobId, expectedStatus, timeout = 60 * 1000 * 10, interval = 5000) => {
     const start = Date.now();
     do {
@@ -72,6 +75,32 @@ const getStatusall = async (id, url, expectedCode, expectedStatus, timeout = 60 
     expect.fail(`timeout exceeded trying to get ${expectedStatus} status for jobId ${id}`);
 };
 
+const runRaw = async (time = 15000) => {
+    const rawPipe = {
+        name: "rawPipe",
+        nodes: [{
+            nodeName: "node1",
+            algorithmName: "eval-alg",
+            input: [time],
+            extraData: {
+                code: [
+                    "(input)=>{",
+                    "return new Promise((resolve,reject)=>{setTimeout(()=>resolve(4),input[0])});}"
+                ]
+            }
+        }]
+    }
+
+    const res = await chai.request(config.apiServerUrl)
+        .post('/exec/raw')
+        .send(rawPipe)
+
+
+    const jobId = res.body.jobId
+
+    return jobId
+}
+
 
 
 module.exports = {
@@ -80,5 +109,6 @@ module.exports = {
     getStates,
     getPodsRunning,
     toString,
-    getStatusall
+    getStatusall,
+    runRaw
 }
