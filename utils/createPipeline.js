@@ -4,40 +4,60 @@ const tos = require(path.join(process.cwd(), 'utils/results')).toString
 
 const func = {
     add: (input) => {
-        const a = input[0]
-        const b = input[1]
-        return a + b
+        let total = 0
+
+        for (let item of input) {
+            total += item
+        }
+        return total
+
     },
 
     sub: (input) => {
-        const a = input[0]
-        const b = input[1]
-        return a - b
+        let total = 0
+
+        for (let item of input) {
+            total -= item
+        }
+        return total
     },
 
     div: (input) => {
-        const a = input[0]
-        const b = input[1]
-        return a / b
+        let total = 1
+
+        for (let item of input) {
+            total /= item
+        }
+        return total
     },
 
     mult: (input) => {
-        const a = input[0]
-        const b = input[1]
-        return a * b
+        let total = 1
+
+        for (let item of input) {
+            total *= item
+        }
+        return total
     },
 
-    power: (input) => {
-        const a = input[0]
-        const b = input[1]
-        return Math.pow(a, b)
-    },
+    // power: (input) => {
+    //     let total = 1
 
-    rem: (input) => {
-        const a = input[0]
-        const b = input[1]
-        return a % b
-    }
+    //     for (let item in input) {
+    //         total += Math.pow(item, 2)
+    //     }
+    //     return total
+    // },
+
+    // batch: (input) => {
+    //     const arr = []
+    //     const min = Math.floor(Math.random() * input[0])
+    //     const max = Math.floor(Math.random() * input[0]) + min
+    //     for (let i = min; i < max; i++) {
+    //         arr.push(i)
+    //     }
+    //     return arr
+    // }
 }
 
 let desciptor = {
@@ -86,8 +106,10 @@ const randomize = (nodesNum) => {
         if (i === 0) {
             node.input = createInput([3, 5])
         } else {
-            if (batch < 0.5) {
-                node.input = createInput([3, `@${item}`])
+            if (batch < 0.2) {
+                const ranarr = randomArr()
+                const randString = JSON.stringify(ranarr)
+                node.input = createInput([`#${randString}`, `@${item}`])
             } else {
                 node.input = createInput([3, `@${item}`])
             }
@@ -101,8 +123,20 @@ const randomize = (nodesNum) => {
 }
 
 
+const randomArr = () => {
+    const r1 = Math.floor(Math.random() * 200) + 1
+    const arr = []
+    for (let i = 0; i < r1; i++) {
+        const r2 = Math.floor(Math.random() * 200) + 1
+        arr.push(r2)
+    }
 
-// desciptor = randomize(2)
+    return arr
+}
+
+
+
+// desciptor = randomize(10)
 // console.log(JSON.stringify(desciptor))
 // console.log(desciptor)
 

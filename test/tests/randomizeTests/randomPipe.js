@@ -27,13 +27,15 @@ describe('randomize tests', () => {
             .post('/exec/raw')
             .send(randPipe)
 
-        console.log(JSON.stringify(randPipe, null, 4))
+        // console.log(JSON.stringify(randPipe, null, 4))
 
         res.should.have.status(200)
         const jobId = res.body.jobId
         const result = await getResult(jobId, 200)
 
-        console.log(result)
+        console.log(jobId)
+
+        // console.log(JOSN.stringify (result))
 
 
     }).timeout(1000 * 60 * 2)
