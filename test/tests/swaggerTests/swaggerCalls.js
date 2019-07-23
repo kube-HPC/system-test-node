@@ -2,10 +2,10 @@ const chai = require('chai');
 const expect = chai.expect;
 const should = chai.should();
 const path = require('path');
+const config = require(path.join(process.cwd(), 'config/config'));
 const chaiHttp = require('chai-http');
 const assertArrays = require('chai-arrays');
 // const config = require('../../../config/config');
-const config = require(path.join(process.cwd(), 'config/config'));
 const delay = require('delay');
 
 const {
@@ -51,9 +51,9 @@ describe('all swagger calls test', () => {
 
             const jobId = res.body.jobId
 
-            const result = getResult(jobId, 200)
+            const result = await getResult(jobId, 200)
 
-        })
+        }).timeout(1000 * 60 * 2)
 
 
 
@@ -76,9 +76,9 @@ describe('all swagger calls test', () => {
 
             const jobId = res.body.jobId
 
-            const result = getResult(jobId, 200)
+            const result = await getResult(jobId, 200)
 
-        })
+        }).timeout(1000 * 60 * 2)
 
 
         it('test the POST exec/chaching rest call', async () => {
@@ -118,7 +118,7 @@ describe('all swagger calls test', () => {
 
             const jobId2 = res2.body.jobId
 
-            const result2 = getResult(jobId2, 200)
+            const result2 = await getResult(jobId2, 200)
 
 
 
@@ -174,9 +174,9 @@ describe('all swagger calls test', () => {
 
             const jobId2 = res2.body.jobId
 
-            const result2 = getResult(jobId2, 200)
+            const result2 = await getResult(jobId2, 200)
 
-        })
+        }).timeout(1000 * 60 * 2)
 
 
         it('test the GET exec/pipeline/list rest call', async () => {

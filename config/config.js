@@ -1,4 +1,4 @@
-const baseUrl = process.env.BASE_URL || 'https://10.32.10.11';
+const baseUrl = process.env.BASE_URL || 'https://10.32.10.6';
 const config = {
     apiServerUrl: process.env.API_URL || `${baseUrl}/hkube/api-server/api/v1`,
     elasticsearchUrl: process.env.ELASTICSEARCH_URL || `${baseUrl}/system/elasticsearch`,
