@@ -49,15 +49,30 @@ const func = {
     //     return total
     // },
 
-    // batch: (input) => {
-    //     const arr = []
-    //     const min = Math.floor(Math.random() * input[0])
-    //     const max = Math.floor(Math.random() * input[0]) + min
-    //     for (let i = min; i < max; i++) {
-    //         arr.push(i)
-    //     }
-    //     return arr
-    // }
+    batch: (input) => {
+        const arr = []
+        const min = Math.floor(Math.random() * input[0])
+        const max = Math.floor(Math.random() * input[0]) + min
+        for (let i = min; i < max; i++) {
+            arr.push(i)
+        }
+        return arr
+    },
+
+    fail: (input) => {
+        const num = Math.random()
+        let a = input[0]
+        // let a = 1
+        if (Math.abs(a) > 1) {
+            a = Math.abs(1 / a)
+        }
+        if (num < a) {
+            throw new Error (`${num} is lower than ${a}`)
+        }
+
+        return 8
+
+    }
 }
 
 let desciptor = {
@@ -67,8 +82,6 @@ let desciptor = {
 
 const createInput = (additional) => {
     return additional
-
-
 }
 
 const createNode = (name, alg) => {
@@ -111,7 +124,13 @@ const randomize = (nodesNum) => {
                 const randString = JSON.stringify(ranarr)
                 node.input = createInput([`#${randString}`, `@${item}`])
             } else {
-                node.input = createInput([3, `@${item}`])
+                const numInputs = Math.floor(Math.random() * preNodes.length)
+                const inputs = [3]
+                for (let j = 0; j < numInputs; j++) {
+                    const index = Math.floor(Math.random() * numInputs)
+                    inputs.push(`@${preNodes[index]}`)
+                }
+                node.input = createInput(inputs)
             }
         }
         preNodes.push(nodeName)

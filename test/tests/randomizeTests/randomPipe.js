@@ -22,7 +22,7 @@ chai.use(chaiHttp);
 describe('randomize tests', () => {
     it('randomize a pipeline and get its result', async () => {
 
-        const randPipe = randomize(10)
+        const randPipe = randomize(15)
         const res = await chai.request(config.apiServerUrl)
             .post('/exec/raw')
             .send(randPipe)
