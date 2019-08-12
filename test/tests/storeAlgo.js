@@ -7,7 +7,8 @@ const path = require('path');
 const config = require('../../config/config');
 const {
     getStatusall,
-    getResult
+    getResult,
+    idGen
 } = require('../../utils/results');
 const {
     testData1
@@ -29,8 +30,8 @@ chai.use(chaiHttp);
 
 
 describe('Store algorithm', () => {
-    const testalg1 = 'pyeyemat'
-    const testalg2 = "pymultmat"
+    const testalg1 = 'pyeyemat3'
+    const testalg2 = "pymultmat3"
 
     it(`should store the algorithms and run pipeline with them`, async () => {
 
@@ -38,18 +39,19 @@ describe('Store algorithm', () => {
         const pipeName = testData1.descriptor.name;
         const delPipe = await deletePipeline(pipeName)
 
-        await storeAlg(testalg1)
-        await storeAlg(testalg2)
+        await deleteAlgo(testalg1)
+        await deleteAlgo(testalg2)
 
         //apply the first alg
         const code1 = path.join(process.cwd(), 'additionalFiles/eyeMat.tar.gz');
         await applyAlg(code1, testalg1, 'eyeMat.py')
 
         //apply the second alg
+
         const code2 = path.join(process.cwd(), 'additionalFiles/multMat.tar.gz');
         await applyAlg(code2, testalg2, 'multMat.py')
 
-        //run the pipeline
+        // run the pipeline
 
         const pipelineData = testData1.descriptor
         pipelineData.nodes[1].algorithmName = testalg1
@@ -67,7 +69,12 @@ describe('Store algorithm', () => {
         console.log(result.data)
         expect(result.status).to.eql('completed')
         expect(result).to.not.have.property('error')
-    }).timeout(1000 * 60 * 10)
+
+
+        //delete the pipeline
+        const name = testData1.descriptor.name;
+        const res3 = await deletePipeline(name)
+    }).timeout(1000 * 60 * 20)
 
 
 
@@ -85,7 +92,7 @@ describe('Store algorithm', () => {
 
 
 
-async function storeAlg(algName) {
+async function deleteAlgo(algName) {
     const res = await chai.request(config.apiServerUrl)
         .get(`/store/algorithms/${algName}`)
 
@@ -109,7 +116,8 @@ async function applyAlg(code, algName, entry) {
         gpu: 0,
         mem: '512Mi',
         entryPoint: entry,
-        minHotWorkers: 0
+        minHotWorkers: 0,
+        version: idGen()
     }
 
     const res = await chai.request(config.apiServerUrl)

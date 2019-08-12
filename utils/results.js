@@ -101,6 +101,20 @@ const runRaw = async (time = 15000) => {
     return jobId
 }
 
+const idGen = (MaxLen = 5) => {
+    const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    // const len = Math.floor(Math.random()*MaxLen)
+    const len = 8
+    const arr = []
+
+    for (let i = 0; i < len; i++) {
+        const current = Math.floor(Math.random() * nums.length)
+        arr.push(nums[current])
+    }
+
+    return arr.join('.')
+}
+
 
 
 module.exports = {
@@ -110,5 +124,6 @@ module.exports = {
     getPodsRunning,
     toString,
     getStatusall,
-    runRaw
+    runRaw,
+    idGen
 }

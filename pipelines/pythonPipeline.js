@@ -32,7 +32,7 @@ const descriptor = {
             nodeName: "multPy",
             algorithmName: "testalg",
             input: [
-                "#@pyEye",
+                "@flowInput.quantity", "@pyEye"
             ]
         }
 

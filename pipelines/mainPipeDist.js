@@ -4,7 +4,7 @@ const codeMainPipe = (input, self) => {
     const arr = [];
     console.log(`the input for the pipeline is ${input}`)
     for (let i = 0; i < input.length; i++) {
-        let current = input[i];
+        let current = input[0][i];
         console.log(`in the loop ${current}`)
         arr.push(current);
     };

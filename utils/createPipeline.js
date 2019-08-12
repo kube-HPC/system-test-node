@@ -59,20 +59,20 @@ const func = {
         return arr
     },
 
-    fail: (input) => {
-        const num = Math.random()
-        let a = input[0]
-        // let a = 1
-        if (Math.abs(a) > 1) {
-            a = Math.abs(1 / a)
-        }
-        if (num < a) {
-            throw new Error (`${num} is lower than ${a}`)
-        }
+    // fail: (input) => {
+    //     const num = Math.random()
+    //     let a = input[0]
+    //     // let a = 1
+    //     if (Math.abs(a) > 1) {
+    //         a = Math.abs(1 / a)
+    //     }
+    //     if (num < a) {
+    //         throw new Error(`${num} is lower than ${a}`)
+    //     }
 
-        return 8
+    //     return 8
 
-    }
+    // }
 }
 
 let desciptor = {
@@ -85,9 +85,11 @@ const createInput = (additional) => {
 }
 
 const createNode = (name, alg) => {
+    const algos = ['eval-alg', 'eval-alg2', 'eval-alg3', 'eval-alg4', 'eval-alg5']
+    var item = algos[Math.floor(Math.random() * algos.length)];
     const node = {
         nodeName: name,
-        algorithmName: "eval-alg",
+        algorithmName: item,
         // input: [
         //     [3, 5]
         // ],
@@ -138,15 +140,17 @@ const randomize = (nodesNum) => {
         nodes.push(node)
     }
     desciptor.nodes = nodes
+    const priority = Math.floor(Math.random() * 5) + 1
+    desciptor.priority = priority
     return desciptor
 }
 
 
 const randomArr = () => {
-    const r1 = Math.floor(Math.random() * 200) + 1
+    const r1 = Math.floor(Math.random() * 2000) + 1
     const arr = []
     for (let i = 0; i < r1; i++) {
-        const r2 = Math.floor(Math.random() * 200) + 1
+        const r2 = Math.floor(Math.random() * 2000) + 1
         arr.push(r2)
     }
 
