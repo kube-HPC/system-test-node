@@ -15,15 +15,38 @@ const delay = require('delay')
 
 chai.use(chaiHttp);
 
-
+const pipeline = {
+    name: "evalwait",
+    nodes: [{
+        nodeName: "evalsleep",
+        algorithmName: "eval-alg",
+        input: [
+            "#@flowInput.inputs"
+        ],
+        extraData: {
+            code: [
+                "(input,require)=> {",
+                "return new Promise((resolve,reject)=>{setTimeout(()=>resolve(input[0][1]),input[0][0])});}"
+            ]
+        }
+    }]
+}
 describe('long runing test', () => {
     it('run one pipeline', async () => {
+
+        const store = await storePipeline (pipeline)
+        
+
+        const max = 15000
+        const min = 5000
+        const rand1 = Math.floor(Math.random() * (max - min) + min)
+        const rand2 = Math.floor(Math.random() * (max - min) + min)
         let body = {
             name: "evalwait",
             flowInput: {
                 inputs: [
-                    [5000, 1],
-                    [5000, 2]
+                    [rand1, 1],
+                    [rand2, 2]
                 ]
             }
         }
@@ -54,3 +77,12 @@ describe('long runing test', () => {
         expect(result).to.not.have.property('error')
     }).timeout(1000 * 60 * 10)
 })
+
+
+const storePipeline = async (desciptor)=>{
+    const res = await chai.request(config.apiServerUrl)
+    .post('/store/pipelines')
+    .send(desciptor)
+
+    return res
+}

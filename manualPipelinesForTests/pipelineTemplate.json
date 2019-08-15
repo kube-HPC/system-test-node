@@ -1,0 +1,32 @@
+{
+    "name": "string",
+    "description": "string",
+    "nodes": [{
+        "nodeName": "string",
+        "algorithmName": "string",
+        "input": [
+            null
+        ]
+    }],
+    "flowInput": {},
+    "webhooks": {
+        "progress": "http://my-url-to-progress",
+        "result": "http://my-url-to-result"
+    },
+    "options": {
+        "ttl": 3600,
+        "batchTolerance": 80,
+        "concurrentPipelines": 1,
+        "progressVerbosityLevel": "info"
+    },
+    "priority": 3,
+    "triggers": {
+        "pipelines": [
+            "string"
+        ],
+        "cron": {
+            "pattern": "string",
+            "enabled": false
+        }
+    }
+}

@@ -20,6 +20,25 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "kubeTry",
+            "program": "${workspaceFolder}/utils/kubtry.js"
+        },
+
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "uploadAlgos",
+            "program": "${workspaceFolder}/scripts/uploadPythonFiles.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "debug the test runner",
+            "program": "${workspaceFolder}/runTestTime.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "Launch Program 2",
             "program": "${workspaceFolder}/test/playlists/algorithmsPlaylist.js"
         },

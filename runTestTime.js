@@ -5,7 +5,6 @@ const Mocha = require('mocha'),
 
 
 
-
 const runTestOnce = () => {
     // Instantiate a Mocha instance.
     var mocha = new Mocha({
@@ -28,6 +27,8 @@ const runTestOnce = () => {
     // Run the tests.
     mocha.run(function (failures) {
         process.exitCode = failures ? 1 : 0; // exit with non-zero status if there were failures
+        // process.send('hello')
+
     });
 
     // mocha.run()

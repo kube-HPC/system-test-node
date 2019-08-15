@@ -57,16 +57,16 @@ describe('Part or all of the inputs of algorithm are taken from the pipeline\'s 
             process.stdout.write(result.error)
 
         }
-
-        logger.info(`getting results from execution`)
-        logger.info(`${res.status} ${JSON.stringify(res.body)}`)
+        logger.result('test 10')
+        // logger.info(`getting results from execution`)
+        // logger.info(`${res.status} ${JSON.stringify(res.body)}`)
 
         expect(result.data).to.eql(testData1.data)
         expect(result.status).to.eql('completed')
         expect(result).to.not.have.property('error')
 
 
-    }).timeout(5000000);
+    }).timeout(1000 * 60 * 5);
 
     it('should return result 18', async () => {
         const name = testData2.descriptor.name

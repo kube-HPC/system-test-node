@@ -30,6 +30,7 @@ chai.use(chaiHttp);
 
 
 describe('Store algorithm', () => {
+    // timeout(1000 * 60 * 5)
     const testalg1 = 'pyeyemat3'
     const testalg2 = "pymultmat3"
 
