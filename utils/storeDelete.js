@@ -5,9 +5,9 @@ const chaiHttp = require('chai-http');
 const {
     idGen,
     getStatusall
-} = require(path.join(process.cwd(), 'results'))
+} = require(path.join(process.cwd(), 'utils/results'))
 const fse = require('fs-extra')
-const logger = require(path.join(process.cwd(), 'logger'))
+const logger = require(path.join(process.cwd(), 'utils/logger'))
 
 chai.use(chaiHttp);
 

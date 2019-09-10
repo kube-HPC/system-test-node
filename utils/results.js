@@ -4,7 +4,7 @@ const delay = require('delay');
 const path = require('path')
 const config = require(path.join(process.cwd(), 'config/config'))
 
-const logger = require(path.join(process.cwd(), 'logger'))
+const logger = require(path.join(process.cwd(), 'utils/logger'))
 
 // chai.use(chaiHttp);
 
