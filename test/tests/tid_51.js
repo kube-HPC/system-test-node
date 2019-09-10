@@ -1,12 +1,17 @@
 const chai = require('chai');
-const expect = chai.expect;
-const should = chai.should();
+const path = require('path')
 const assert = chai.assert;
 const chaiHttp = require('chai-http');
-const config = require('../../config/config');
-const { getResult, getPodsRunning } = require('../../utils/results');
-const { testData1, testData2 } = require('../../config/index').tid_51
-const logger = require('../../utils/logger')
+const config = require(path.join(process.cwd(), 'config/config'))
+const {
+    getResult,
+    getPodsRunning
+} = require(path.join(process.cwd(), 'utils/results'))
+const {
+    testData1,
+    testData2
+} = require(path.join(process.cwd(), 'config/index')).tid_51
+const logger = require(path.join(process.cwd(), 'utils/logger'))
 const delay = require('delay');
 
 chai.use(chaiHttp);

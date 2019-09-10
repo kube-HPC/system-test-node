@@ -40,15 +40,6 @@ const func = {
         return total
     },
 
-    // power: (input) => {
-    //     let total = 1
-
-    //     for (let item in input) {
-    //         total += Math.pow(item, 2)
-    //     }
-    //     return total
-    // },
-
     batch: (input) => {
         const arr = []
         const min = Math.floor(Math.random() * input[0])
@@ -57,22 +48,7 @@ const func = {
             arr.push(i)
         }
         return arr
-    },
-
-    // fail: (input) => {
-    //     const num = Math.random()
-    //     let a = input[0]
-    //     // let a = 1
-    //     if (Math.abs(a) > 1) {
-    //         a = Math.abs(1 / a)
-    //     }
-    //     if (num < a) {
-    //         throw new Error(`${num} is lower than ${a}`)
-    //     }
-
-    //     return 8
-
-    // }
+    }
 }
 
 let desciptor = {
@@ -90,9 +66,6 @@ const createNode = (name, alg) => {
     const node = {
         nodeName: name,
         algorithmName: item,
-        // input: [
-        //     [3, 5]
-        // ],
         extraData: {
             code: [
                 tos(alg)
@@ -117,7 +90,6 @@ const randomize = (nodesNum) => {
 
         const item = preNodes[Math.floor(Math.random() * preNodes.length)];
         const batch = Math.random()
-        // nodes.push(createNode(`${k}${i}`, tos(selected)))
         if (i === 0) {
             node.input = createInput([3, 5])
         } else {

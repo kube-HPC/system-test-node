@@ -2,25 +2,32 @@ const chai = require('chai');
 const expect = chai.expect;
 const should = chai.should();
 const chaiHttp = require('chai-http');
-const config = require('../../config/config');
-const { getResult, getPodsRunning } = require('../../utils/results');
-const { testData1, testData2 } = require('../../config/index').gpu_tests
+const path = require('path')
+const config = require(path.join(process.cwd(), 'config/config'));
+const {
+    getResult,
+    getPodsRunning
+} = require(path.join(process.cwd(), 'utils/results'));
+const {
+    testData1,
+    testData2
+} = require(path.join(process.cwd(), 'config/index')).gpu_tests
 const delay = require('delay');
 const assert = chai.assert;
-const logger = require('../../utils/logger')
+const logger = require(path.join(process.cwd(), 'utils/logger'));
 
 chai.use(chaiHttp);
 
 
 describe('store the gpu algorithm', () => {
-    before('store pipeline gpu-demo', async() => {
+    before('store pipeline gpu-demo', async () => {
         const pipeline = testData1.descriptor;
         const res1 = await chai.request(config.apiServerUrl)
             .post('/store/pipelines')
             .send(pipeline);
         res1.should.have.status(201);
     })
-    before('store pipeline gpu-demo-1', async() => {
+    before('store pipeline gpu-demo-1', async () => {
         const pipeline2 = testData2.descriptor;
         const res1 = await chai.request(config.apiServerUrl)
             .post('/store/pipelines')
@@ -28,14 +35,14 @@ describe('store the gpu algorithm', () => {
         res1.should.have.status(201);
     })
 
-    it('should run the pipeline gpu-demo and after 2 seconds run the gpuDemo-1 pipeline', async() => {
+    it('should run the pipeline gpu-demo and after 2 seconds run the gpuDemo-1 pipeline', async () => {
         const name = testData1.descriptor.name
         let body = testData1.input
         body.name = name
         const res = await chai.request(config.apiServerUrl)
             .post('/exec/stored')
             .send(body)
-            // console.log (res)
+        // console.log (res)
         res.should.have.status(200);
         res.body.should.have.property('jobId');
         const jobId = res.body.jobId;
@@ -75,13 +82,13 @@ describe('store the gpu algorithm', () => {
 
     }).timeout(5000000);
 
-    after('delete stored pipeline gpu-test', async() => {
+    after('delete stored pipeline gpu-test', async () => {
         const name = testData1.descriptor.name;
         const res1 = await chai.request(config.apiServerUrl)
             .delete(`/store/pipelines/${name}`)
         res1.should.have.status(200);
     })
-    after('delete stored pipeline gpu-test-1', async() => {
+    after('delete stored pipeline gpu-test-1', async () => {
         const name1 = testData2.descriptor.name;
         const res11 = await chai.request(config.apiServerUrl)
             .delete(`/store/pipelines/${name1}`)

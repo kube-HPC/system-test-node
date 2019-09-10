@@ -2,9 +2,12 @@ const chai = require('chai');
 const expect = chai.expect;
 const should = chai.should();
 const chaiHttp = require('chai-http');
-const config = require('../../config/config');
-const { getResult } = require('../../utils/results');
-const testData1 = require('../../pipelines/eval-dynamic')
+const path = require('path')
+const config = require(path.join(process.cwd(), 'config/config'));
+const {
+    getResult
+} = require(path.join(process.cwd(), 'utils/results'))
+const testData1 = require(path.join(process.cwd(), 'pipelines/eval-dynamic'))
 // const testData2 = require ('../../pipelines/multadd')
 chai.use(chaiHttp);
 

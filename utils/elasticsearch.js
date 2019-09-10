@@ -1,8 +1,9 @@
 const elasticsearch = require('elasticsearch');
 const chai = require('chai');
 const delay = require('delay');
+const path = require('path')
 const expect = chai.expect;
-const config = require('../config/config');
+const config = require(path.join(process.cwd(), 'config/config'))
 let _client = null;
 const getClient = () => {
     if (!_client) {
@@ -13,12 +14,18 @@ const getClient = () => {
     return _client;
 }
 
-const waitForLog = async (message, tags = {}, timeout = 5*60*1000, interval=1000) => {
+const waitForLog = async (message, tags = {}, timeout = 5 * 60 * 1000, interval = 1000) => {
     const client = getClient();
 
-    const terms = Object.entries(tags).map(([k, v]) => ({ term: { [k]: v } }));
+    const terms = Object.entries(tags).map(([k, v]) => ({
+        term: {
+            [k]: v
+        }
+    }));
     terms.push({
-        term: { 'message.keyword': message }
+        term: {
+            'message.keyword': message
+        }
     });
 
     const query = {

@@ -2,15 +2,16 @@ const chai = require('chai');
 const expect = chai.expect;
 const should = chai.should();
 const chaiHttp = require('chai-http');
-const config = require('../../config/config');
+const path = require('path')
+require(path.join(process.cwd(), 'config/config'));
 const {
     getResult
-} = require('../../utils/results');
+} = require(path.join(process.cwd(), 'utils/results'));
 const {
     testData1,
     testData2
-} = require('../../config/index').tid_10;
-const logger = require('../../utils/logger')
+} = require(path.join(process.cwd(), 'config/index')).tid_10;
+const logger = require(path.join(process.cwd(), 'utils/logger'));
 const delay = require('delay')
 
 chai.use(chaiHttp);
@@ -34,8 +35,8 @@ const pipeline = {
 describe('long runing test', () => {
     it('run one pipeline', async () => {
 
-        const store = await storePipeline (pipeline)
-        
+        const store = await storePipeline(pipeline)
+
 
         const max = 15000
         const min = 5000
@@ -79,10 +80,10 @@ describe('long runing test', () => {
 })
 
 
-const storePipeline = async (desciptor)=>{
+const storePipeline = async (desciptor) => {
     const res = await chai.request(config.apiServerUrl)
-    .post('/store/pipelines')
-    .send(desciptor)
+        .post('/store/pipelines')
+        .send(desciptor)
 
     return res
 }

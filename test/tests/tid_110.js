@@ -1,11 +1,15 @@
 const chai = require('chai');
 const expect = chai.expect;
-const should = chai.should();
 const chaiHttp = require('chai-http');
-const config = require('../../config/config');
-const { getResult } = require('../../utils/results');
-const { testData1 } = require('../../config/index').tid_110
-const logger = require('../../utils/logger')
+const path = require('path')
+const config = require(path.join(process.cwd(), 'config/config'));
+const {
+  getResult
+} = require(path.join(process.cwd(), 'utils/results'))
+const {
+  testData1
+} = require(path.join(process.cwd(), 'config/index')).tid_110
+const logger = require(path.join(process.cwd(), 'utils/logger'))
 const delay = require('delay');
 
 chai.use(chaiHttp);

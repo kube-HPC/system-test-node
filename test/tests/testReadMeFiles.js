@@ -4,25 +4,25 @@ const should = chai.should();
 
 const chaiHttp = require('chai-http');
 const path = require('path');
-const config = require('../../config/config');
+const config = require(path.join(process.cwd(), 'config/config'))
 const {
     getStatusall,
     getResult
-} = require('../../utils/results');
+} = require(path.join(process.cwd(), 'utils/results'))
 const {
     testData1
-} = require('../../config/index').buildAlgPipe;
+} = require(path.join(process.cwd(), 'config/index')).buildAlgPipe
 
 const {
     storePipeline,
     deletePipeline,
     execPipeline
-} = require('../../utils/storeDelete')
+} = require(path.join(process.cwd(), 'utils/storeDelete'))
 
 
 const fse = require('fs-extra')
 
-const logger = require('../../utils/logger')
+const logger = require(path.join(process.cwd(), 'utils/logger'))
 chai.use(chaiHttp);
 
 
