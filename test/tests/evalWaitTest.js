@@ -14,6 +14,9 @@ const {
 const logger = require(path.join(process.cwd(), 'utils/logger'));
 const delay = require('delay')
 
+const config = require(path.join(process.cwd(), 'config/config'))
+
+
 chai.use(chaiHttp);
 
 const pipeline = {

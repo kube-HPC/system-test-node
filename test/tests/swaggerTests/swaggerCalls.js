@@ -200,7 +200,7 @@ describe('all swagger calls test', () => {
             expect(res.body).to.have.lengthOf.above(4)
 
             for (let i = 0; i < ids.length; i++) {
-                let result = await getResult(ids[i], 200);
+                await getResult(ids[i], 200);
             }
 
 

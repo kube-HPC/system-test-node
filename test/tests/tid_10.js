@@ -2,7 +2,7 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiHttp = require('chai-http');
 const path = require('path')
-const config = require(path.join(process.cwd(), 'config/config'))
+
 const {
     getResult
 } = require(path.join(process.cwd(), 'utils/results'))
@@ -10,107 +10,48 @@ const {
     testData1,
     testData2
 } = require(path.join(process.cwd(), 'config/index')).tid_10
-const logger = require('../../utils/logger')
+const logger = require(path.join(process.cwd(), 'utils/logger'))
+
+const {
+    storePipeline,
+    runStored,
+    deletePipeline,
+    deconstructTestData,
+    checkResults
+} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 chai.use(chaiHttp);
 
 
 
 describe('Part or all of the inputs of algorithm are taken from the pipeline\'s request', () => {
-    before('store pipeline addmult', async () => {
-        const pipeline = testData1.descriptor;
-        const res1 = await chai.request(config.apiServerUrl)
-            .post('/store/pipelines')
-            .send(pipeline);
-
-        // logger.info(`executing addmult pipeline`)
-        // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
-        // res1.should.have.status(201);
-    })
-
-    before('store pipeline multadd', async () => {
-        const pipeline = testData2.descriptor;
-        const res1 = await chai.request(config.apiServerUrl)
-            .post('/store/pipelines')
-            .send(pipeline);
-
-        // logger.info(`executing multadd pipeline`)
-        // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
-        // res1.should.have.status(201);
-    })
-
-
     it('should return result 24', async () => {
-        const name = testData1.descriptor.name
-        let body = testData1.input
-        body.name = name
-        const res = await chai.request(config.apiServerUrl)
-            .post('/exec/stored')
-            .send(body)
-        // console.log (res)
-        res.should.have.status(200);
-        res.body.should.have.property('jobId');
-        const jobId = res.body.jobId;
 
+        //set test data to testData1
+        const d = deconstructTestData(testData1)
 
-        const result = await getResult(jobId, 200);
-        if ('error' in result) {
-            process.stdout.write(result.error)
+        //store pipeline
+        await storePipeline(d.pipeline)
 
-        }
-        logger.result('test 10')
-        // logger.info(`getting results from execution`)
-        // logger.info(`${res.status} ${JSON.stringify(res.body)}`)
+        //run the pipeline
+        const res = await runStored(d.inputData)
 
-        expect(result.data).to.eql(testData1.data)
-        expect(result.status).to.eql('completed')
-        expect(result).to.not.have.property('error')
-
+        await checkResults(res, 200, 'completed', d, true)
 
     }).timeout(1000 * 60 * 5);
 
     it('should return result 18', async () => {
-        const name = testData2.descriptor.name
-        let body = testData2.input
-        body.name = name
-        const res = await chai.request(config.apiServerUrl)
-            .post('/exec/stored')
-            .send(body)
-        // console.log (res)
-        res.should.have.status(200);
-        res.body.should.have.property('jobId');
-        const jobId = res.body.jobId;
 
+        //set test data to testData2
+        const d = deconstructTestData(testData2)
 
-        const result = await getResult(jobId, 200);
-        if ('error' in result) {
-            process.stdout.write(result.error)
+        //store pipeline
+        await storePipeline(d.pipeline)
 
-        }
+        //run the pipeline
+        const res = await runStored(d.inputData)
 
-        logger.info(`getting results from execution`)
-        logger.info(`${res.status} ${JSON.stringify(res.body)}`)
-        expect(result.data).to.eql(testData2.data)
-        expect(result.status).to.eql('completed')
-
+        checkResults(res, 200, 'completed', d, true)
 
     }).timeout(5000000);
 
-    after('delete stored pipeline addmult', async () => {
-        const name = testData1.descriptor.name;
-        const res1 = await chai.request(config.apiServerUrl)
-            .delete(`/store/pipelines/${name}`)
-
-        // logger.info(`deleting pipeline addmult`)
-        // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
-        res1.should.have.status(200);
-    })
-    after('delete stored pipeline multadd', async () => {
-        const name = testData2.descriptor.name;
-        const res1 = await chai.request(config.apiServerUrl)
-            .delete(`/store/pipelines/${name}`)
-
-        // logger.info(`deleting pipeline multadd`)
-        // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
-        res1.should.have.status(200);
-    })
 });
