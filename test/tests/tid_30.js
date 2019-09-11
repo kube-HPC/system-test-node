@@ -14,7 +14,8 @@ const {
     storePipeline,
     runStored,
     deletePipeline,
-    deconstructTestData
+    deconstructTestData,
+    checkResults
 } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 
 const logger = require(path.join(process.cwd(), 'utils/logger'))
@@ -36,66 +37,43 @@ describe('pipelines will be executed using their name', () => {
 
         //run the pipeline
         const res = await runStored(d.inputData)
-        expect(res.status).to.eql(200)
-        expect(res.body).to.have.property('jobId')
-        const jobId = res.body.jobId;
-
-        const result = await getResult(jobId, 200);
-        if ('error' in result) {
-            process.stdout.write(result.error)
-
-        }
-
-        logger.info(`getting results from execution`)
-        logger.info(`${res.status} ${JSON.stringify(res.body)}`)
-
-        expect(result.data).to.eql(d.data)
-        expect(result.status).to.eql('completed')
-        expect(result).to.not.have.property('error')
+        await checkResults(res, 200, 'completed', d, false)
 
 
     }).timeout(5000000);
 
     it('should not run', async () => {
-        const name = "pipeline"
-        let body = testData2.input
-        body.name = name
-        const res = await chai.request(config.apiServerUrl)
-            .post('/exec/stored')
-            .send(body)
-        // console.log (res)
+        const name = "pipelineName"
 
-        logger.info(`getting results from execution`)
-        logger.info(`${res.status} ${JSON.stringify(res.body)}`)
-        res.should.have.status(404);
-        res.body.error.should.have.property('message')
-        res.body.error.message.should.include('Not Found')
+        testData1.descriptor.name = name
+
+        const d = deconstructTestData(testData1)
+
+        //run the pipeline
+        const res = await runStored(d.inputData)
+
+
+        //assertions
+        expect(res.status).to.eql(404)
+        expect(res.body.error).to.have.property('message')
+        expect(res.body.error.message).to.include('Not Found')
+
     }).timeout(5000000);
-
-    it('delete stored pipeline pipeline', async () => {
-        const name = testData1.descriptor.name;
-        const res1 = await chai.request(config.apiServerUrl)
-            .delete(`/store/pipelines/${name}`)
-
-        logger.info(`deleting pipeline addmult`)
-        logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
-        res1.should.have.status(200);
-    })
 
     it('should not run after deleting the pipeline', async () => {
         const name = "pipelineName"
-        let body = testData2.input
-        body.name = name
-        const res = await chai.request(config.apiServerUrl)
-            .post('/exec/stored')
-            .send(body)
-        // console.log (res)
 
-        logger.info(`getting results from execution`)
-        logger.info(`${res.status} ${JSON.stringify(res.body)}`)
-        res.should.have.status(404);
-        res.body.error.should.have.property('message')
-        res.body.error.message.should.include('Not Found')
+        await deletePipeline(name)
+
+        testData2.descriptor.name = name
+
+        const d = deconstructTestData(testData2)
+        const res = await runStored(d.inputData)
+
+        //assertions
+        expect(res.status).to.eql(404)
+        expect(res.body.error).to.have.property('message')
+        expect(res.body.error.message).to.include('Not Found')
     }).timeout(5000000);
 
 

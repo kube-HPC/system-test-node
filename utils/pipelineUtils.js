@@ -62,7 +62,9 @@ const checkResults = async (res, expectedStatusCode, expectedStatus, testData, s
     // logger.result('test 10')
 
     expect(result.data).to.eql(testData.data)
-    expect(result.status).to.eql(expectedStatus)
+    if (expectedStatus) {
+        expect(result.status).to.eql(expectedStatus)
+    }
     expect(result).to.not.have.property('error')
 
 
