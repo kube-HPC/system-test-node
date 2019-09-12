@@ -15,7 +15,6 @@ const logger = require(path.join(process.cwd(), 'utils/logger'))
 const {
     storePipeline,
     runStored,
-    deletePipeline,
     deconstructTestData,
     checkResults
 } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
@@ -52,6 +51,33 @@ describe('Part or all of the inputs of algorithm are taken from the pipeline\'s 
 
         checkResults(res, 200, 'completed', d, true)
 
-    }).timeout(5000000);
+    }).timeout(1000 * 60 * 5);
+
+
+    it('should run the pipeline twice', async () => {
+
+        const d = deconstructTestData(testData1)
+
+        await storePipeline(d.pipeline)
+
+
+        const resA = await runStored(d.inputData)
+        await checkResults(resA, 200, 'completed', d, false)
+
+
+
+        const resB = await runStored(d.inputData)
+        const jobId = resB.body.jobId
+        await delay(30 * 1000)
+
+        let runningPods = await getPodsRunning(jobId)
+        logger.info(`getting running pods on id ${jobId}`)
+        expect(runningPods.body).to.not.be.empty
+
+
+        await checkResults(resB, 200, 'completed', d, true)
+
+
+    }).timeout(1000 * 60 * 5);
 
 });

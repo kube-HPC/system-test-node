@@ -9,6 +9,15 @@ const {
 const {
     testData1
 } = require(path.join(process.cwd(), 'config/index')).tid_50
+
+const {
+    storePipeline,
+    runStored,
+    deconstructTestData,
+    deletePipeline,
+    checkResults
+} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+
 const logger = require(path.join(process.cwd(), 'utils/logger'))
 const delay = require('delay');
 
@@ -29,26 +38,19 @@ describe('stop pipeline while its runing', () => {
     })
 
     it('should stop the pipeline while running', async () => {
-        const name = testData1.descriptor.name
-        let inputData = {
-            flowInput: {
-                range: 1,
-                time: 60000
-            }
+        const d = deconstructTestData(testData1)
+
+        d.inputData.flowInput = {
+            range: 1,
+            time: 60000
         }
-        let body = inputData
-        body.name = name
-        const res = await chai.request(config.apiServerUrl)
-            .post('/exec/stored')
-            .send(body)
-        // console.log (res)
-        res.should.have.status(200);
-        res.body.should.have.property('jobId');
-        const jobId = res.body.jobId;
+
+        await storePipeline(d.pipeline)
+        const res = await runStored(d.inputData)
+
+        const jobId = res.body.jobId
 
         await delay(10000)
-
-
         const stopInfo = {
             jobId: jobId,
             reason: "stop now"
@@ -60,13 +62,13 @@ describe('stop pipeline while its runing', () => {
 
         logger.info(JSON.stringify(stop))
 
-        stop.should.have.status(200)
+        expect(stop.status).to.eql(200)
 
         const stop2 = await chai.request(config.apiServerUrl)
             .post('/exec/stop')
             .send(stopInfo)
 
-        stop2.should.have.status(400)
+        expect(stop2.status).to.eql(400)
         expect(stop2.body).to.have.property('error')
         logger.error(`stop2: ${stop2.body.error}`)
         expect(stop2.body.error.message).to.include('stopped')
@@ -86,17 +88,11 @@ describe('stop pipeline while its runing', () => {
         expect(result).to.not.have.property('error')
 
 
+        await deletePipeline(d.name)
+
     }).timeout(5000000);
 
 
-    after('delete stored pipeline eval dynamic', async () => {
-        const name = testData1.descriptor.name;
-        const res1 = await chai.request(config.apiServerUrl)
-            .delete(`/store/pipelines/${name}`)
 
-        // logger.info(`deleting pipeline addmult`)
-        // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
-        res1.should.have.status(200);
-    })
 
 });
