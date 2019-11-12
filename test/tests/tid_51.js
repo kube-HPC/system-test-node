@@ -2,7 +2,6 @@ const chai = require('chai');
 const path = require('path')
 const assert = chai.assert;
 const chaiHttp = require('chai-http');
-const config = require(path.join(process.cwd(), 'config/config'))
 const {
     getResult,
     getPodsRunning
@@ -11,6 +10,13 @@ const {
     testData1,
     testData2
 } = require(path.join(process.cwd(), 'config/index')).tid_51
+
+const {
+    storePipeline,
+    runStored,
+    deconstructTestData,
+    deletePipeline
+} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 const logger = require(path.join(process.cwd(), 'utils/logger'))
 const delay = require('delay');
 
@@ -19,46 +25,22 @@ chai.use(chaiHttp);
 
 
 describe('run pipelines in a queue', () => {
-    before('store pipeline eval dynamic', async () => {
-        const pipeline = testData1.descriptor;
-        const res1 = await chai.request(config.apiServerUrl)
-            .post('/store/pipelines')
-            .send(pipeline);
-
-        // logger.info(`executing addmult pipeline`)
-        // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
-        // res1.should.have.status(201);
-    })
-
-    before('store pipeline primes', async () => {
-        const pipeline = testData2.descriptor;
-        const res1 = await chai.request(config.apiServerUrl)
-            .post('/store/pipelines')
-            .send(pipeline);
-
-        // logger.info(`executing addmult pipeline`)
-        // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
-        // res1.should.have.status(201);
-    })
-
-
-
     it('should run the eval batch pipeline', async () => {
-        const name = testData1.descriptor.name
         let inputData = {
             flowInput: {
                 range: 60,
                 time: 60000
             }
         }
-        let body = inputData
-        body.name = name
-        const res = await chai.request(config.apiServerUrl)
-            .post('/exec/stored')
-            .send(body)
-        // console.log (res)
-        res.should.have.status(200);
-        res.body.should.have.property('jobId');
+
+        testData1.inputData = inputData
+
+        const d = deconstructTestData(testData1)
+
+        await storePipeline(d.pipeline)
+
+        const res = await runStored(d.inputData)
+
         const jobId = res.body.jobId;
 
         await delay(25000)
@@ -70,8 +52,12 @@ describe('run pipelines in a queue', () => {
         const result = await getResult(jobId, 200);
         if ('error' in result) {
             process.stdout.write(result.error)
-
         }
+
+        await deletePipeline(d.name)
+
+
+
 
         logger.info(`getting results from execution`)
         logger.info(`${res.status} ${JSON.stringify(res.body)}`)
@@ -79,18 +65,14 @@ describe('run pipelines in a queue', () => {
     }).timeout(5000000);
 
 
-
-
     it('should run the primes pipeline', async () => {
-        const name = testData2.descriptor.name
-        let body = testData2.input
-        body.name = name
-        const res = await chai.request(config.apiServerUrl)
-            .post('/exec/stored')
-            .send(body)
-        // console.log (res)
-        res.should.have.status(200);
-        res.body.should.have.property('jobId');
+        const d = deconstructTestData(testData2)
+
+
+        await storePipeline(d.pipeline)
+
+        const res = await runStored(d.inputData)
+
         const jobId = res.body.jobId;
 
 
@@ -107,30 +89,11 @@ describe('run pipelines in a queue', () => {
 
         }
 
+        await deletePipeline(d.name)
+
         logger.info(`getting results from execution`)
         logger.info(`${res.status} ${JSON.stringify(res.body)}`)
 
     }).timeout(5000000);
-
-
-    after('delete stored pipeline eval dynamic', async () => {
-        const name = testData1.descriptor.name;
-        const res1 = await chai.request(config.apiServerUrl)
-            .delete(`/store/pipelines/${name}`)
-
-        // logger.info(`deleting pipeline addmult`)
-        // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
-        res1.should.have.status(200);
-    })
-
-    after('delete stored pipeline primes', async () => {
-        const name = testData2.descriptor.name;
-        const res1 = await chai.request(config.apiServerUrl)
-            .delete(`/store/pipelines/${name}`)
-
-        // logger.info(`deleting pipeline addmult`)
-        // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
-        res1.should.have.status(200);
-    })
 
 });

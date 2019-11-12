@@ -6,13 +6,13 @@ const add = (input) => {
 }
 
 const mult = (input) => {
+
     return input[0] * input[1][0]
 }
 
 const descriptor = {
     name: "addmult",
-    nodes: [
-        {
+    nodes: [{
             nodeName: "evaladd",
             algorithmName: "eval-alg",
             input: [
@@ -47,13 +47,15 @@ const input = {
     }
 }
 
-const data = [
-    {
-        nodeName: "evalmul",
-        algorithmName: "eval-alg",
-        result: 24
-    }
-]
+const data = [{
+    nodeName: "evalmul",
+    algorithmName: "eval-alg",
+    result: 24
+}]
 
 
-module.exports = { input, descriptor, data }
+module.exports = {
+    input,
+    descriptor,
+    data
+}

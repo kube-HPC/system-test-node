@@ -119,10 +119,10 @@ const randomize = (nodesNum) => {
 
 
 const randomArr = () => {
-    const r1 = Math.floor(Math.random() * 2000) + 1
+    const r1 = Math.floor(Math.random() * 500) + 1
     const arr = []
     for (let i = 0; i < r1; i++) {
-        const r2 = Math.floor(Math.random() * 2000) + 1
+        const r2 = Math.floor(Math.random() * 1000) + 1
         arr.push(r2)
     }
 

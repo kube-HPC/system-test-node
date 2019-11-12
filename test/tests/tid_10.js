@@ -4,9 +4,6 @@ const chaiHttp = require('chai-http');
 const path = require('path')
 
 const {
-    getResult
-} = require(path.join(process.cwd(), 'utils/results'))
-const {
     testData1,
     testData2
 } = require(path.join(process.cwd(), 'config/index')).tid_10

@@ -22,7 +22,10 @@ chai.use(chaiHttp);
 describe('randomize tests', () => {
     it('randomize a pipeline and get its result', async () => {
 
-        const randPipe = randomize(15)
+        const randPipe = randomize(10)
+        // randPipe.options = {
+        //     ttl: 50
+        // }
         const res = await chai.request(config.apiServerUrl)
             .post('/exec/raw')
             .send(randPipe)
@@ -44,7 +47,7 @@ describe('randomize tests', () => {
     it('Run multiple random pipelines', async () => {
 
         for (let i = 0; i < 5; i++) {
-            const randPipe = randomize(15)
+            const randPipe = randomize(10)
             const res = await chai.request(config.apiServerUrl)
                 .post('/exec/raw')
                 .send(randPipe)
@@ -63,7 +66,7 @@ describe('randomize tests', () => {
     }).timeout(1000 * 60 * 5)
 
 
-    it('randomize pipelien without eval', async () => {
+    it('randomize pipeline without eval', async () => {
         const algos = ['multpy', 'subpy', 'addpy']
         const descriptor = {
             name: "randomPipe",
