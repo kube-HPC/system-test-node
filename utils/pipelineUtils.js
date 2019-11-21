@@ -34,6 +34,14 @@ const runStored = async (body) => {
     return res
 }
 
+const runStoredAndWaitForResults = async(pipe)=>{
+    const res = await runStored(pipe)
+    const jobId = res.body.jobId
+    console.log(jobId)    
+    const result = await getResult(jobId,200)
+    return jobId
+}
+
 const deconstructTestData = (testData) => {
     return {
         pipeline: testData.descriptor,
@@ -83,5 +91,6 @@ module.exports = {
     deletePipeline,
     runStored,
     deconstructTestData,
-    checkResults
+    checkResults,
+    runStoredAndWaitForResults
 }
