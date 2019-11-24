@@ -26,7 +26,7 @@ const fse = require('fs-extra')
 const logger = require(path.join(process.cwd(), 'utils/logger'))
 chai.use(chaiHttp);
 
-
+//TODO: refactor this code
 
 describe('sub pipeline', () => {
 
@@ -36,10 +36,6 @@ describe('sub pipeline', () => {
 
         const pipeline2 = testData2.descriptor;
         const res2 = await storePipeline(pipeline2)
-
-        // logger.info(`executing addmult pipeline`)
-        // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
-        // res.should.have.status(201);
     })
 
     it('should run the main pipeline', async () => {

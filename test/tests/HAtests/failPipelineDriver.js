@@ -1,11 +1,8 @@
 const chai = require('chai');
-const expect = chai.expect;
-const should = chai.should();
+
 const path = require('path');
 const config = require(path.join(process.cwd(), 'config/config'));
 const chaiHttp = require('chai-http');
-const assertArrays = require('chai-arrays');
-// const config = require('../../../config/config');
 const delay = require('delay');
 const {
     getDriverIdByJobId
@@ -16,15 +13,11 @@ const {
 } = require(path.join(process.cwd(), 'utils/kubtry'))
 
 const {
-    getResult,
-    runRaw
+    getResult
 } = require(path.join(process.cwd(), 'utils/results'))
 
 const tos = require(path.join(process.cwd(), 'utils/results'.toString()))
-// const testData2 = require ('../../pipelines/multadd')
 chai.use(chaiHttp);
-
-chai.use(assertArrays);
 
 describe('HA tests', () => {
 

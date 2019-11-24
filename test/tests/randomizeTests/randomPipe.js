@@ -1,14 +1,8 @@
 const chai = require('chai')
-const expect = chai.expect;
-const should = chai.should();
-
 const path = require('path')
-const config = require(path.join(process.cwd(), 'config/config'));
 const chaiHttp = require('chai-http')
-const delay = require('delay')
 const {
     getResult,
-    runRaw
 } = require(path.join(process.cwd(), 'utils/results'))
 
 const {
@@ -16,31 +10,19 @@ const {
 } = require(path.join(process.cwd(), 'utils/createPipeline'))
 
 chai.use(chaiHttp);
-
-// chai.use(assertArrays);
+const {
+    runRaw
+} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 
 describe('randomize tests', () => {
     it('randomize a pipeline and get its result', async () => {
 
         const randPipe = randomize(10)
-        // randPipe.options = {
-        //     ttl: 50
-        // }
-        const res = await chai.request(config.apiServerUrl)
-            .post('/exec/raw')
-            .send(randPipe)
-
-        // console.log(JSON.stringify(randPipe, null, 4))
-
+        const res = runRaw(randPipe)
         res.should.have.status(200)
         const jobId = res.body.jobId
         const result = await getResult(jobId, 200)
-
         console.log(jobId)
-
-        // console.log(JOSN.stringify (result))
-
-
     }).timeout(1000 * 60 * 5)
 
 
@@ -48,19 +30,9 @@ describe('randomize tests', () => {
 
         for (let i = 0; i < 5; i++) {
             const randPipe = randomize(10)
-            const res = await chai.request(config.apiServerUrl)
-                .post('/exec/raw')
-                .send(randPipe)
-
-            // console.log(JSON.stringify(randPipe, null, 4))
-
+            const res = runRaw(randPipe)
             res.should.have.status(200)
             const jobId = res.body.jobId
-            // const result = await getResult(jobId, 200)
-
-            // console.log(jobId)
-
-            // console.log(JOSN.stringify (result))
         }
 
     }).timeout(1000 * 60 * 5)
@@ -83,13 +55,8 @@ describe('randomize tests', () => {
             descriptor.nodes.push(newNode)
         }
 
-        const res = await chai.request(config.apiServerUrl)
-            .post('/exec/raw')
-            .send(descriptor)
+        const res = runRaw(descriptor)
 
-        // console.log(JSON.stringify(descriptor))
-
-        // console.log(JSON.stringify(res.body))
         res.should.have.status(200)
         const jobId = res.body.jobId
         const result = await getResult(jobId, 200)
@@ -120,6 +87,5 @@ const addNode = (name, algName, preNodes) => {
         input: input
 
     }
-
     return node
 }

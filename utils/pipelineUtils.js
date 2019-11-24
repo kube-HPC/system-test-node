@@ -34,11 +34,19 @@ const runStored = async (body) => {
     return res
 }
 
-const runStoredAndWaitForResults = async(pipe)=>{
+const runRaw = async (body) => {
+    const res = await chai.request(config.apiServerUrl)
+        .post('/exec/raw')
+        .send(body)
+
+    return res
+}
+
+const runStoredAndWaitForResults = async (pipe) => {
     const res = await runStored(pipe)
     const jobId = res.body.jobId
-    console.log(jobId)    
-    const result = await getResult(jobId,200)
+    console.log(jobId)
+    const result = await getResult(jobId, 200)
     return jobId
 }
 
@@ -64,9 +72,10 @@ const checkResults = async (res, expectedStatusCode, expectedStatus, testData, s
 
     const result = await getResult(jobId, expectedStatusCode);
     if ('error' in result) {
-        process.stdout.write(result.error)
-
+        process.stdout.writedeletePipeline(result.error)
+        deletePipeline
     }
+    deletePipeline
     // logger.result('test 10')
 
     if (testData.data) {
@@ -92,5 +101,6 @@ module.exports = {
     runStored,
     deconstructTestData,
     checkResults,
-    runStoredAndWaitForResults
+    runStoredAndWaitForResults,
+    runRaw
 }

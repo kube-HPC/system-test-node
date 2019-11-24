@@ -14,7 +14,7 @@ const delay = require('delay');
 
 chai.use(chaiHttp);
 
-
+//TODO: refactor this code
 
 describe('severity levels test', () => {
   before('store pipeline eval error', async () => {

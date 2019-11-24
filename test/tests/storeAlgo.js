@@ -1,14 +1,9 @@
 const chai = require('chai');
 const expect = chai.expect;
-const should = chai.should();
-
 const chaiHttp = require('chai-http');
 const path = require('path');
-const config = require(path.join(process.cwd(), 'config/config'));
 const {
-    getStatusall,
-    getResult,
-    idGen
+    getResult
 } = require(path.join(process.cwd(), 'utils/results'))
 const {
     testData1
@@ -21,9 +16,6 @@ const {
     deleteAlgorithm,
     applyAlgorithm
 } = require(path.join(process.cwd(), 'utils/storeDelete'))
-
-
-
 const logger = require(path.join(process.cwd(), 'utils/logger'))
 chai.use(chaiHttp);
 
@@ -31,7 +23,6 @@ chai.use(chaiHttp);
 
 
 describe('Store algorithm', () => {
-    // timeout(1000 * 60 * 5)
     const testalg1 = 'pyeyemat'
     const testalg2 = "pymultmat"
 
@@ -59,11 +50,9 @@ describe('Store algorithm', () => {
         pipelineData.nodes[1].algorithmName = testalg1
         pipelineData.nodes[2].algorithmName = testalg2
         const res = await storePipeline(pipelineData)
-        // console.log(res)
 
         expect(res.statusCode).to.equal(201)
 
-        // console.log(res.body)
         const pipeline = await execPipeline(testData1.descriptor.name, testData1.input)
 
         const result = await getResult(pipeline, 200)
@@ -78,14 +67,4 @@ describe('Store algorithm', () => {
         const res3 = await deletePipeline(name)
     }).timeout(1000 * 60 * 20)
 
-
-
-    // after('delete the stored pipeline', async () => {
-    //     const name = testData1.descriptor.name;
-    //     const res = await deletePipeline(name)
-
-    //     // logger.info(`deleting pipeline addmult`)
-    //     // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
-    //     // expect(res.statusCode).to.equal(200)
-    // })
 })

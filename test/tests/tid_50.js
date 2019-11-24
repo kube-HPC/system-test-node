@@ -24,7 +24,7 @@ const delay = require('delay');
 chai.use(chaiHttp);
 
 
-
+//TODO: refactor this code
 describe('stop pipeline while its runing', () => {
     before('store pipeline eval dynamic', async () => {
         const pipeline = testData1.descriptor;
