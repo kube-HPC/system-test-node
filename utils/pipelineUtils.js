@@ -10,14 +10,51 @@ const {
     getResult
 } = require(path.join(process.cwd(), 'utils/results'))
 
+const {
+    getAlgorithim,
+    storeAlgorithm,
+    storeNewAlgorithm
+} = require(path.join(process.cwd(), 'utils/algorithimsUtils'))
 
 
+const getPipeline = async (name) => {
+    const res = await chai.request(config.apiServerUrl)
+        .get(`/pipelines/status/stored/${name}`)
+
+    return res
+}
 const storePipeline = async (descriptor) => {
     const pipeline = descriptor;
     const res = await chai.request(config.apiServerUrl)
         .post('/store/pipelines')
         .send(pipeline);
+    return res
 }
+
+const storeNewPipeLine = async (name) => {
+
+    const Pipline = await getPipeline(name)
+    if (Pipline.status === 404) {
+        console.log("pipe was not found")
+        const {
+            pipe
+        } = require(path.join(process.cwd(), `additionalFiles/defaults/pipelines/${name}`.toString()))
+
+        const array = pipe.nodes.map(async (element) => {
+            const algName = element.algorithmName
+            storeNewAlgorithm(algName)
+        })
+        await Promise.all(array);
+        const res1 = await chai.request(config.apiServerUrl)
+            .post('/store/pipelines')
+            .send(pipe);
+
+    }
+    const NewPipline = await getPipeline(name)
+
+}
+
+
 
 const deletePipeline = async (pipelineName) => {
     const res = await chai.request(config.apiServerUrl)
@@ -101,5 +138,6 @@ module.exports = {
     deconstructTestData,
     checkResults,
     runStoredAndWaitForResults,
-    runRaw
+    getPipeline,
+    storeNewPipeLine
 }
