@@ -11,10 +11,12 @@ const {
 } = require(path.join(process.cwd(), 'utils/results'))
 
 const {
-    getAlgorithim,
-    storeAlgorithm,
     storeNewAlgorithm
 } = require(path.join(process.cwd(), 'utils/algorithimsUtils'))
+
+
+
+//TODO: add logs to all functions
 
 
 const getPipeline = async (name) => {
@@ -23,6 +25,8 @@ const getPipeline = async (name) => {
 
     return res
 }
+
+//FIXME: storePipeline and storeNewPipeLine should not be both only one should be
 const storePipeline = async (descriptor) => {
     const pipeline = descriptor;
     const res = await chai.request(config.apiServerUrl)
@@ -33,8 +37,8 @@ const storePipeline = async (descriptor) => {
 
 const storeNewPipeLine = async (name) => {
 
-    const Pipline = await getPipeline(name)
-    if (Pipline.status === 404) {
+    const pipline = await getPipeline(name)
+    if (pipline.status === 404) {
         console.log("pipe was not found")
         const {
             pipe
@@ -50,7 +54,7 @@ const storeNewPipeLine = async (name) => {
             .send(pipe);
 
     }
-    const NewPipline = await getPipeline(name)
+    // const newPipline = await getPipeline(name)
 
 }
 

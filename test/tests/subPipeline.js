@@ -16,9 +16,9 @@ const {
 
 const {
     storePipeline,
-    deletePipeline,
-    execPipeline
-} = require(path.join(process.cwd(), 'utils/storeDelete'))
+    deletePipeline
+
+} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 
 
 const fse = require('fs-extra')
@@ -70,15 +70,6 @@ describe('sub pipeline', () => {
     }).timeout(5000000);
 
 
-    const deletePipeline = async (pipeName) => {
-        const name = pipeName
-        const res1 = await chai.request(config.apiServerUrl)
-            .delete(`/store/pipelines/${name}`)
-
-        // logger.info(`deleting pipeline addmult`)
-        // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
-        res1.should.have.status(200);
-    }
 
     // after('delete main pieline', async () => {
     //     const name = testData1.descriptor.name;

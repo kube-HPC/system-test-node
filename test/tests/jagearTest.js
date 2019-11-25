@@ -7,7 +7,7 @@ const {
 } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 const {
     getSpansByJodid
-} = require(path.join(process.cwd(), 'utils/jagear'))
+} = require(path.join(process.cwd(), 'utils/jaeger'))
 chai.use(chaiHttp);
 chai.use(assertArrays);
 
