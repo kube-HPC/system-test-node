@@ -24,18 +24,7 @@ const delay = require('delay');
 chai.use(chaiHttp);
 
 
-//TODO: refactor this code
 describe('stop pipeline while its runing', () => {
-    before('store pipeline eval dynamic', async () => {
-        const pipeline = testData1.descriptor;
-        const res1 = await chai.request(config.apiServerUrl)
-            .post('/store/pipelines')
-            .send(pipeline);
-
-        // logger.info(`executing addmult pipeline`)
-        // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
-        // res1.should.have.status(201);
-    })
 
     it('should stop the pipeline while running', async () => {
         const d = deconstructTestData(testData1)

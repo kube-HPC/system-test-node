@@ -1,11 +1,10 @@
 const chai = require('chai');
 const expect = chai.expect;
-const should = chai.should();
 const path = require('path');
 const config = require(path.join(process.cwd(), 'config/config'));
 const chaiHttp = require('chai-http');
 const assertArrays = require('chai-arrays');
-const fs  = require('fs');
+const fs = require('fs');
 
 const delay = require('delay');
 
@@ -341,232 +340,236 @@ describe('all swagger calls test', () => {
 
         it('TBD')
     })
-    describe('ReadMe file ',() =>{
-      
-        const readMeFile = { FilePath: path.join(process.cwd(),"additionalFiles/attachments/README.md".toString()),
-                                startWith : "This"}
-        const readMeSecondFile = { FilePath: path.join(process.cwd(),"additionalFiles/attachments/1/README.md".toString()),
-                                    startWith : "put-Readme"}
+    describe('ReadMe file ', () => {
+
+        const readMeFile = {
+            FilePath: path.join(process.cwd(), "additionalFiles/attachments/README.md".toString()),
+            startWith: "This"
+        }
+        const readMeSecondFile = {
+            FilePath: path.join(process.cwd(), "additionalFiles/attachments/1/README.md".toString()),
+            startWith: "put-Readme"
+        }
         describe('Pipeline ReadMe', () => {
             const pipelineName = 'simple'
-            
-            it('test the POST /readme/pipline',async ()=>{
-              
-                
+
+            it('test the POST /readme/pipline', async () => {
+
+
                 const res = await chai.request(config.apiServerUrl)
-                .post(`/readme/pipelines/${pipelineName}`)
-                .attach("README.md",fs.readFileSync(readMeFile.FilePath),"README.md");
-            
+                    .post(`/readme/pipelines/${pipelineName}`)
+                    .attach("README.md", fs.readFileSync(readMeFile.FilePath), "README.md");
+
                 res.should.have.status(201)
-                           
+
                 const readme = await chai.request(config.apiServerUrl)
-                .get(`/readme/pipelines/${pipelineName}`)
-                
+                    .get(`/readme/pipelines/${pipelineName}`)
+
                 readme.body.readme.startsWith(readMeFile.startWith).should.be.true;
-                
-                
+
+
                 await chai.request(config.apiServerUrl)
-                .delete(`/readme/pipelines/${pipelineName}`)
-    
+                    .delete(`/readme/pipelines/${pipelineName}`)
+
             }).timeout(1000 * 60)
-    
-            it('test the Get /readme/pipline',async ()=>{
-                
-                
+
+            it('test the Get /readme/pipline', async () => {
+
+
                 const post = await chai.request(config.apiServerUrl)
-                .post(`/readme/pipelines/${pipelineName}`)
-                .attach("README.md",fs.readFileSync(readMeFile.FilePath),"README.md");
-    
+                    .post(`/readme/pipelines/${pipelineName}`)
+                    .attach("README.md", fs.readFileSync(readMeFile.FilePath), "README.md");
+
                 const res = await chai.request(config.apiServerUrl)
-                .get(`/readme/pipelines/${pipelineName}`)
+                    .get(`/readme/pipelines/${pipelineName}`)
                 res.should.have.status(200)
-                
+
                 res.body.readme.startsWith(readMeFile.startWith).should.be.true;
-    
+
                 await chai.request(config.apiServerUrl)
-                .delete(`/readme/pipelines/${pipelineName}`)
-    
+                    .delete(`/readme/pipelines/${pipelineName}`)
+
             }).timeout(1000 * 60)
-    
-    
-    
-            it('test the PUT /readme/pipline',async ()=>{
-             
-                
-                const post =  await chai.request(config.apiServerUrl)
-                .post(`/readme/pipelines/${pipelineName}`)
-                .attach("README.md",fs.readFileSync(readMeFile.FilePath),"README.md");
-    
-    
+
+
+
+            it('test the PUT /readme/pipline', async () => {
+
+
+                const post = await chai.request(config.apiServerUrl)
+                    .post(`/readme/pipelines/${pipelineName}`)
+                    .attach("README.md", fs.readFileSync(readMeFile.FilePath), "README.md");
+
+
                 const res = await chai.request(config.apiServerUrl)
-                .put(`/readme/pipelines/${pipelineName}`)
-                .attach("README.md",fs.readFileSync(readMeSecondFile.FilePath),"README.md");
-    
-                
+                    .put(`/readme/pipelines/${pipelineName}`)
+                    .attach("README.md", fs.readFileSync(readMeSecondFile.FilePath), "README.md");
+
+
                 res.should.have.status(200)
-               
+
                 const readme = await chai.request(config.apiServerUrl)
-                .get(`/readme/pipelines/${pipelineName}`)
-                
+                    .get(`/readme/pipelines/${pipelineName}`)
+
                 readme.body.readme.startsWith(readMeSecondFile.startWith).should.be.true;
-                
-                
+
+
                 await chai.request(config.apiServerUrl)
-                .delete(`/readme/pipelines/${pipelineName}`)
-    
+                    .delete(`/readme/pipelines/${pipelineName}`)
+
             }).timeout(1000 * 60)
-    
-    
-    
-            it('test the Delete /readme/pipline',async ()=>{
-                
+
+
+
+            it('test the Delete /readme/pipline', async () => {
+
                 await chai.request(config.apiServerUrl)
-                .post(`/readme/pipelines/${pipelineName}`)
-                .attach("README.md",fs.readFileSync(readMeFile.FilePath),"README.md");
-    
-    
+                    .post(`/readme/pipelines/${pipelineName}`)
+                    .attach("README.md", fs.readFileSync(readMeFile.FilePath), "README.md");
+
+
                 const res = await chai.request(config.apiServerUrl)
-                .delete(`/readme/pipelines/${pipelineName}`)
+                    .delete(`/readme/pipelines/${pipelineName}`)
                 res.should.have.status(200)
-    
+
                 const readme = await chai.request(config.apiServerUrl)
-                .get(`/readme/pipelines/${pipelineName}`)
-                
+                    .get(`/readme/pipelines/${pipelineName}`)
+
                 readme.should.have.status(404)
-            
-    
+
+
             }).timeout(1000 * 60)
-    
+
         })
 
         describe('Algorithim ReadMe', () => {
             const algName = 'yellow-alg'
-            it('test the POST /readme/algorithms',async ()=>{
-                
-                
+            it('test the POST /readme/algorithms', async () => {
+
+
                 const res = await chai.request(config.apiServerUrl)
-                .post(`/readme/algorithms/${algName}`)
-                .attach("README.md",fs.readFileSync(readMeFile.FilePath),"README.md");
-                
+                    .post(`/readme/algorithms/${algName}`)
+                    .attach("README.md", fs.readFileSync(readMeFile.FilePath), "README.md");
+
                 res.should.have.status(201)
-    
+
                 const readme = await chai.request(config.apiServerUrl)
-                .get(`/readme/algorithms/${algName}`)
-    
+                    .get(`/readme/algorithms/${algName}`)
+
                 readme.body.readme.startsWith(readMeFile.startWith).should.be.true;
-    
+
                 const del = await chai.request(config.apiServerUrl)
-                .delete(`/readme/algorithms/${algName}`)
-               
-    
+                    .delete(`/readme/algorithms/${algName}`)
+
+
             }).timeout(1000 * 60)
-    
-            it('test the Get /readme/algorithms',async ()=>{
-              
-                const post  = await chai.request(config.apiServerUrl)
-                .post(`/readme/algorithms/${algName}`)
-                .attach("README.md",fs.readFileSync(readMeFile.FilePath),"README.md");
-    
+
+            it('test the Get /readme/algorithms', async () => {
+
+                const post = await chai.request(config.apiServerUrl)
+                    .post(`/readme/algorithms/${algName}`)
+                    .attach("README.md", fs.readFileSync(readMeFile.FilePath), "README.md");
+
                 const res = await chai.request(config.apiServerUrl)
-                .get(`/readme/algorithms/${algName}`)
+                    .get(`/readme/algorithms/${algName}`)
                 res.should.have.status(200)
-                
+
                 res.body.readme.startsWith(readMeFile.startWith).should.be.true;
-    
+
                 const del = await chai.request(config.apiServerUrl)
-                .delete(`/readme/algorithms/${algName}`)
-    
+                    .delete(`/readme/algorithms/${algName}`)
+
             }).timeout(1000 * 60)
-    
-    
-    
-            it('test the PUT /readme/algorithms',async ()=>{
-               
-                const post  = await chai.request(config.apiServerUrl)
-                .post(`/readme/algorithms/${algName}`)
-                .attach("README.md",fs.readFileSync(readMeFile.FilePath),"README.md");
-    
+
+
+
+            it('test the PUT /readme/algorithms', async () => {
+
+                const post = await chai.request(config.apiServerUrl)
+                    .post(`/readme/algorithms/${algName}`)
+                    .attach("README.md", fs.readFileSync(readMeFile.FilePath), "README.md");
+
                 const res = await chai.request(config.apiServerUrl)
-                .put(`/readme/algorithms/${algName}`)
-                .attach("README.md",fs.readFileSync(readMeSecondFile.FilePath),"README.md");
-    
-                console.log("res result ="+ res.status)
+                    .put(`/readme/algorithms/${algName}`)
+                    .attach("README.md", fs.readFileSync(readMeSecondFile.FilePath), "README.md");
+
+                console.log("res result =" + res.status)
                 res.should.have.status(201)
-               
+
                 const readme = await chai.request(config.apiServerUrl)
-                .get(`/readme/algorithms/${algName}`)
-    
+                    .get(`/readme/algorithms/${algName}`)
+
                 readme.body.readme.startsWith(readMeSecondFile.startWith).should.be.true;
-    
+
                 const del = await chai.request(config.apiServerUrl)
-                .delete(`/readme/algorithms/${algName}`)
-               
-    
+                    .delete(`/readme/algorithms/${algName}`)
+
+
             }).timeout(1000 * 60)
-    
-    
-    
-            it('test the Delete /readme/algorithms',async ()=>{
-                
-                const post  = await chai.request(config.apiServerUrl)
-                .post(`/readme/algorithms/${algName}`)
-                .attach("README.md",fs.readFileSync(readMeFile.FilePath),"README.md");
-    
+
+
+
+            it('test the Delete /readme/algorithms', async () => {
+
+                const post = await chai.request(config.apiServerUrl)
+                    .post(`/readme/algorithms/${algName}`)
+                    .attach("README.md", fs.readFileSync(readMeFile.FilePath), "README.md");
+
                 const res = await chai.request(config.apiServerUrl)
-                .delete(`/readme/algorithms/${algName}`)
+                    .delete(`/readme/algorithms/${algName}`)
                 res.should.have.status(200)
-    
+
                 const readme = await chai.request(config.apiServerUrl)
-                .get(`/readme/algorithms/${algName}`)
-    
+                    .get(`/readme/algorithms/${algName}`)
+
                 readme.should.have.status(404)
-    
-            
-    
+
+
+
             }).timeout(1000 * 60)
-    
+
         })
     })
-    
-    describe('Webhooks',()=>{
-       const simplePipLine = require(path.join(process.cwd(), 'config/index')).swaggerCalls
-       const pipe = simplePipLine.testData1.body
-    
-      
-      
-        it('test the Get webhooks/status/{jobId}',async ()=>{
+
+    describe('Webhooks', () => {
+        const simplePipLine = require(path.join(process.cwd(), 'config/index')).swaggerCalls
+        const pipe = simplePipLine.testData1.body
+
+
+
+        it('test the Get webhooks/status/{jobId}', async () => {
 
             const jobId = await runStoredAndWaitForResults(pipe)
-                         
-            const res = await chai.request(config.apiServerUrl)
-             .get(`/webhooks/status/${jobId}`)
-            res.should.have.status(200)
-        
-        }).timeout(1000 * 60)
 
-        it('test the Get webhooks/results/{jobId}',async ()=>{
-            
-            const jobId = await runStoredAndWaitForResults(pipe)
-           
-            const timeout = await delay(1000*5);
             const res = await chai.request(config.apiServerUrl)
-            .get(`/webhooks/results/${jobId}`)
-            
+                .get(`/webhooks/status/${jobId}`)
             res.should.have.status(200)
-        
 
         }).timeout(1000 * 60)
 
-        it('test the Get webhooks/{jobId}',async ()=>{
+        it('test the Get webhooks/results/{jobId}', async () => {
+
+            const jobId = await runStoredAndWaitForResults(pipe)
+
+            const timeout = await delay(1000 * 5);
+            const res = await chai.request(config.apiServerUrl)
+                .get(`/webhooks/results/${jobId}`)
+
+            res.should.have.status(200)
+
+
+        }).timeout(1000 * 60)
+
+        it('test the Get webhooks/{jobId}', async () => {
             const jobId = await runStoredAndWaitForResults(pipe)
             const res = await chai.request(config.apiServerUrl)
-            .get(`/webhooks/${jobId}`)
+                .get(`/webhooks/${jobId}`)
             res.should.have.status(200)
-        
+
 
         }).timeout(1000 * 60)
     })
-   
+
     describe('Store Pipelines', () => {
 
         before('check if the pipeline addmultForTest is stored', async () => {

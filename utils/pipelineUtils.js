@@ -72,10 +72,9 @@ const checkResults = async (res, expectedStatusCode, expectedStatus, testData, s
 
     const result = await getResult(jobId, expectedStatusCode);
     if ('error' in result) {
-        process.stdout.writedeletePipeline(result.error)
-        deletePipeline
+        process.stdout.write(result.error)
     }
-    deletePipeline
+
     // logger.result('test 10')
 
     if (testData.data) {

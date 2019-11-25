@@ -11,26 +11,21 @@ const {
 } = require(path.join(process.cwd(), 'config/index')).tid_110
 const logger = require(path.join(process.cwd(), 'utils/logger'))
 const delay = require('delay');
-
+const {
+  storePipeline,
+  runStored,
+  deconstructTestData,
+  checkResults
+} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 chai.use(chaiHttp);
 
 //TODO: refactor this code
 
 describe('severity levels test', () => {
-  before('store pipeline eval error', async () => {
-    const pipeline = testData1.descriptor;
-    const res1 = await chai.request(config.apiServerUrl)
-      .post('/store/pipelines')
-      .send(pipeline);
-
-    // logger.info(`executing addmult pipeline`)
-    // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
-    // res1.should.have.status(201);
-  })
 
   it('should complete the pipeline, 100 percent tolerance with one fail', async () => {
-    const name = testData1.descriptor.name
-    let body = {
+
+    const body = {
       flowInput: {
         nums: [
           1,
@@ -46,28 +41,20 @@ describe('severity levels test', () => {
       }
     }
 
-    body.name = name
-    const res = await chai.request(config.apiServerUrl)
-      .post('/exec/stored')
-      .send(body)
-    // console.log (res)
-    res.should.have.status(200);
-    res.body.should.have.property('jobId');
-    const jobId = res.body.jobId;
+    testData1.input = body
 
-    await delay(10000)
+    //set test data to testData1
+    const d = deconstructTestData(testData1)
 
-    const result = await getResult(jobId, 200);
-    if ('error' in result) {
-      process.stdout.write(result.error)
+    //store pipeline
+    await storePipeline(d.pipeline)
 
-    }
 
-    logger.info(`getting results from execution`)
-    logger.info(`${res.status} ${JSON.stringify(res.body)}`)
+    const res = await runStored(d.inputData)
 
-    expect(result.status).to.eql('completed')
-    expect(result).to.not.have.property('error')
+
+    await checkResults(res, 200, 'completed', d, true)
+
   }).timeout(5000000);
 
 
@@ -310,17 +297,5 @@ describe('severity levels test', () => {
     res.body.should.have.property('error');
     expect(res.body.error.message).to.include('batchTolerance should be integer')
   }).timeout(5000000);
-
-
-
-  after('delete stored pipeline eval error', async () => {
-    const name = testData1.descriptor.name;
-    const res1 = await chai.request(config.apiServerUrl)
-      .delete(`/store/pipelines/${name}`)
-
-    // logger.info(`deleting pipeline addmult`)
-    // logger.info(`${res1.status} ${JSON.stringify(res1.body)}`)
-    res1.should.have.status(200);
-  })
 
 });

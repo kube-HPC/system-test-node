@@ -11,25 +11,23 @@ const eval_error = (input) => {
 
 const descriptor = {
     name: 'evalerror',
-    nodes: [
-        {
-            nodeName: 'nodeerror',
-            algorithmName: 'eval-alg',
-            input: [
-                '#@flowInput.nums'
-            ],
-            extraData: {
-                code: [
-                    tos(eval_error)
-                ]
-            }
+    nodes: [{
+        nodeName: 'nodeerror',
+        algorithmName: 'eval-alg',
+        input: [
+            '#@flowInput.nums'
+        ],
+        extraData: {
+            code: [
+                tos(eval_error)
+            ]
         }
-    ]
+    }]
 }
 
 const x = 5
 
 
-module.exports = { descriptor }
-
-
+module.exports = {
+    descriptor
+}
