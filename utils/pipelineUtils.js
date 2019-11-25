@@ -13,6 +13,7 @@ const {
 const {
     getAlgorithim,
     storeAlgorithm,
+    storeNewAlgorithm
 } = require(path.join(process.cwd(), 'utils/algorithimsUtils'))
 
 
@@ -39,12 +40,7 @@ const storeNewPipeLine = async (name) => {
         
         const array = pipe.nodes.map(async (element) => {
             const algName = element.algorithmName
-            const res = await getAlgorithim(algName)
-            console.log(res.status + " " + algName)
-            if (res.status === 404) {
-                const { alg } = require(path.join(process.cwd(), `additionalFiles/defaults/algorithms/${algName}`.toString()))
-                const store = await storeAlgorithm(alg)
-            }
+            storeNewAlgorithm(algName)
         })
         await Promise.all(array);
         const res1 = await chai.request(config.apiServerUrl)

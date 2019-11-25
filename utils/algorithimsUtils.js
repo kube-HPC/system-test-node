@@ -32,12 +32,21 @@ const deleteAlgorithm = async (name) => {
     return res
 }
 
+const storeNewAlgorithm = async (algName)=>{
+    const res = await getAlgorithim(algName)
+        console.log(res.status + " " + algName)
+        if (res.status === 404) {
+            const { alg } = require(path.join(process.cwd(), `additionalFiles/defaults/algorithms/${algName}`.toString()))
+            const store = await storeAlgorithm(alg)
+        }
+}
 
 
 
 module.exports = {
     getAlgorithim,
     storeAlgorithm,
-    deleteAlgorithm
+    deleteAlgorithm,
+    storeNewAlgorithm
 
 }
