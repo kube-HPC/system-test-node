@@ -12,7 +12,7 @@ const {
 
 const {
     storeNewAlgorithm
-} = require(path.join(process.cwd(), 'utils/algorithimsUtils'))
+} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 
 
 
@@ -26,19 +26,32 @@ const getPipeline = async (name) => {
     return res
 }
 
-//FIXME: storePipeline and storeNewPipeLine should not be both only one should be
-const storePipeline = async (descriptor) => {
-    const pipeline = descriptor;
+const storePipeline = async (pipeObj) => {
+
+    let pipeline = pipeObj
+    if ("pipeline" in pipeObj) {
+        pipeline = pipeObj.pipeline;
+    }
+
+    if ('nodes' in pipeline) {
+        res = await storePipelineWithDescriptor(pipeline)
+    } else {
+        res = await storeNewPipeLine(pipeline)
+    }
+
+    return res
+}
+
+const storePipelineWithDescriptor = async (descriptor) => {
     const res = await chai.request(config.apiServerUrl)
         .post('/store/pipelines')
-        .send(pipeline);
+        .send(descriptor);
     return res
 }
 
 const storeNewPipeLine = async (name) => {
-
-    const pipline = await getPipeline(name)
-    if (pipline.status === 404) {
+    const pipeline = await getPipeline(name)
+    if (pipeline.status === 404) {
         console.log("pipe was not found")
         const {
             pipe
@@ -54,20 +67,32 @@ const storeNewPipeLine = async (name) => {
             .send(pipe);
 
     }
-    // const newPipline = await getPipeline(name)
 
 }
 
 
-
 const deletePipeline = async (pipelineName) => {
+
+    let name = pipelineName
+    if (typeof name != 'string') {
+
+        if ('name' in pipelineName) {
+            name = pipelineName.name
+        }
+    }
+
     const res = await chai.request(config.apiServerUrl)
-        .delete(`/store/pipelines/${pipelineName}`)
+        .delete(`/store/pipelines/${name}`)
 
     return res
 }
 
-const runStored = async (body) => {
+const runStored = async (descriptor) => {
+
+    let body = descriptor
+    if ("inputData" in descriptor) {
+        body = descriptor.inputData
+    }
     const res = await chai.request(config.apiServerUrl)
         .post('/exec/stored')
         .send(body)
@@ -129,8 +154,7 @@ const checkResults = async (res, expectedStatusCode, expectedStatus, testData, s
 
     if (shouldDeletePipeline === true) {
         //delete the pipeline 
-        const res1 = await deletePipeline(testData.name)
-        expect(res1.status).to.eql(expectedStatusCode)
+        await deletePipeline(testData.name)
     }
 }
 
@@ -142,6 +166,5 @@ module.exports = {
     deconstructTestData,
     checkResults,
     runStoredAndWaitForResults,
-    getPipeline,
-    storeNewPipeLine
+    runRaw
 }

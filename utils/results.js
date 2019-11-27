@@ -10,6 +10,11 @@ const logger = require(path.join(process.cwd(), 'utils/logger'))
 
 
 const getResult = async (jobId, expectedStatus, timeout = 60 * 1000 * 10, interval = 5000) => {
+
+    if (typeof jobId != 'string') {
+        jobId = jobId.body.jobId
+    }
+
     const start = Date.now();
     do {
         process.stdout.write('.')

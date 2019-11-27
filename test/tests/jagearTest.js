@@ -30,7 +30,7 @@ describe('jagear', () => {
         const data = await getSpansByJodid(jobId)
         let found = false
         data.forEach(element => {
-            console.log(element.operationName)
+            // console.log(element.operationName)
             if (element.operationName.startsWith(algName)) {
                 found = true
             }

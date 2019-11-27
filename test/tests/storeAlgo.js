@@ -10,18 +10,19 @@ const {
 } = require(path.join(process.cwd(), 'config/index')).buildAlgPipe
 
 const {
+    deconstructTestData,
+    runStored,
     storePipeline,
     deletePipeline
 } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 
 const {
-    buildAlgorithm
+    buildAlgorithm,
+    deleteAlgorithm
 } = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 const logger = require(path.join(process.cwd(), 'utils/logger'))
 chai.use(chaiHttp);
 
-
-//TODO: refactor the code
 
 describe('Store algorithm', () => {
     const testalg1 = 'pyeyemat'
@@ -30,13 +31,13 @@ describe('Store algorithm', () => {
     it(`should store the algorithms and run pipeline with them`, async () => {
 
         //check if pyeyemat algo exist if it is, delete it
-        const pipeName = testData1.descriptor.name;
-        const delPipe = await deletePipeline(pipeName)
+        const d = deconstructTestData(testData1)
+        await deletePipeline(d)
 
         await deleteAlgorithm(testalg1)
         await deleteAlgorithm(testalg2)
 
-        //apply the first alg
+        // apply the first alg
         const code1 = path.join(process.cwd(), 'additionalFiles/eyeMat.tar.gz');
         await buildAlgorithm(code1, testalg1, 'eyeMat.py')
 
@@ -53,8 +54,8 @@ describe('Store algorithm', () => {
         const res = await storePipeline(pipelineData)
 
         expect(res.statusCode).to.equal(201)
-        //TODO: rerwite this with the runstored methood in pipelineUtils
-        const pipeline = await execPipeline(testData1.descriptor.name, testData1.input)
+        const pipeline = await runStored(d)
+
 
         const result = await getResult(pipeline, 200)
         // expect(result.data).to.eql(testData1.data)

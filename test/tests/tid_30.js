@@ -2,10 +2,7 @@ const chai = require('chai');
 const expect = chai.expect;
 const chaiHttp = require('chai-http');
 const path = require('path')
-const config = require(path.join(process.cwd(), 'config/config'));
-const {
-    getResult
-} = require(path.join(process.cwd(), 'utils/results'));
+const delay = require('delay')
 const {
     testData1,
     testData2
@@ -51,7 +48,7 @@ describe('pipelines will be executed using their name', () => {
 
         //run the pipeline
         const res = await runStored(d.inputData)
-
+        await delay(5 * 1000)
 
         //assertions
         expect(res.status).to.eql(404)

@@ -76,11 +76,12 @@ describe('run pipelines in a queue', () => {
         const jobId = res.body.jobId;
 
 
-        await delay(35000)
+        // await delay(10 * 1000)
 
         let runningPods = await getPodsRunning(jobId)
         logger.info(`getting running pods on id ${jobId}`)
-        assert.isAtLeast(runningPods.body.length, 15, `the job ${jobId} expected to have at least 15 running pods while got ${runningPods.body.length}`)
+        const expectedPods = 5
+        assert.isAtLeast(runningPods.body.length, expectedPods, `the job ${jobId} expected to have at least ${expectedPods} running pods while got ${runningPods.body.length}`)
 
 
         const result = await getResult(jobId, 200);

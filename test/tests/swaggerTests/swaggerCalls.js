@@ -247,7 +247,8 @@ describe('all swagger calls test', () => {
         }).timeout(1000 * 60 * 5)
 
 
-        it(`test the GET /exec/tree/{jobId} rest call`, async () => {
+        it.skip(`test the GET /exec/tree/{jobId} rest call`, async () => {
+            //FIXME: create 2 pipelines with triggers and run the test
 
             const jobId = await runRaw()
 
@@ -255,6 +256,7 @@ describe('all swagger calls test', () => {
 
             const res = await chai.request(config.apiServerUrl)
                 .get(`/exec/tree/${jobId}`)
+
 
             res.should.have.status(200)
             const result = await getResult(jobId, 200);

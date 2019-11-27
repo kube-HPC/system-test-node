@@ -22,7 +22,7 @@ const {
 chai.use(chaiHttp);
 
 
-describe('store the gpu algorithm', () => {
+describe.skip('store the gpu algorithm', () => {
 
     it('should run the pipeline gpu-demo and after 2 seconds run the gpuDemo-1 pipeline', async () => {
 
