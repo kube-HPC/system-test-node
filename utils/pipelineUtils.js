@@ -29,11 +29,11 @@ const getPipeline = async (name) => {
 const storePipeline = async (pipeObj) => {
 
     let pipeline = pipeObj
-    if ("pipeline" in pipeObj) {
-        pipeline = pipeObj.pipeline;
-    }
-
-    if ('nodes' in pipeline) {
+    let res
+    if (typeof pipeline != 'string') {
+        if ('pipeline' in pipeline) {
+            pipeline = pipeline.pipeline
+        }
         res = await storePipelineWithDescriptor(pipeline)
     } else {
         res = await storeNewPipeLine(pipeline)
@@ -55,7 +55,7 @@ const storeNewPipeLine = async (name) => {
         console.log("pipe was not found")
         const {
             pipe
-        } = require(path.join(process.cwd(), `additionalFiles/defaults/pipelines/${name}`.toString()))
+        } = require(path.join(process.cwd(), `additionalFiles/defaults/pipelines/${name}`))
 
         const array = pipe.nodes.map(async (element) => {
             const algName = element.algorithmName
@@ -65,7 +65,6 @@ const storeNewPipeLine = async (name) => {
         const res1 = await chai.request(config.apiServerUrl)
             .post('/store/pipelines')
             .send(pipe);
-
     }
 
 }
@@ -90,8 +89,16 @@ const deletePipeline = async (pipelineName) => {
 const runStored = async (descriptor) => {
 
     let body = descriptor
-    if ("inputData" in descriptor) {
-        body = descriptor.inputData
+
+    if (typeof body != 'string') {
+        if ("inputData" in descriptor) {
+            body = descriptor.inputData
+        }
+    } else {
+        const name = body
+        body = {
+            name
+        }
     }
     const res = await chai.request(config.apiServerUrl)
         .post('/exec/stored')

@@ -22,15 +22,23 @@ const getAlgorithim = async (name) => {
     return res
 }
 
-//FIXME: storeAlgorithm and storeNewAlgorithm should not be both only one should be
 
 const storeAlgorithm = async (descriptor) => {
 
-    const res = await chai.request(config.apiServerUrl)
-        .post('/store/algorithms/apply')
-        .field('payload', JSON.stringify(descriptor))
-    return res
+    const res = await getAlgorithim(algName)
+    console.log(res.status + " " + algName)
+    if (res.status === 404) {
+        const {
+            alg
+        } = require(path.join(process.cwd(), `additionalFiles/defaults/algorithms/${algName}`))
+
+        const res1 = await chai.request(config.apiServerUrl)
+            .post('/store/algorithms/apply')
+            .field('payload', JSON.stringify(descriptor))
+        return res1
+    }
 }
+
 
 const buildAlgorithm = async (code, algName, entry) => {
     const data = {
@@ -60,16 +68,7 @@ const buildAlgorithm = async (code, algName, entry) => {
 }
 
 
-const storeNewAlgorithm = async (algName) => {
-    const res = await getAlgorithim(algName)
-    console.log(res.status + " " + algName)
-    if (res.status === 404) {
-        const {
-            alg
-        } = require(path.join(process.cwd(), `additionalFiles/defaults/algorithms/${algName}`.toString()))
-        const store = await storeAlgorithm(alg)
-    }
-}
+
 
 const deleteAlgorithm = async (name) => {
     const res = await chai.request(config.apiServerUrl)
@@ -86,7 +85,6 @@ module.exports = {
     getAlgorithim,
     storeAlgorithm,
     deleteAlgorithm,
-    storeNewAlgorithm,
     buildAlgorithm
 
 }

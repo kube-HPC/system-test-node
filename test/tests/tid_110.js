@@ -15,7 +15,8 @@ const {
   storePipeline,
   runStored,
   deconstructTestData,
-  checkResults
+  checkResults,
+  deletePipeline
 } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 chai.use(chaiHttp);
 
@@ -53,15 +54,14 @@ describe('severity levels test', () => {
     const res = await runStored(d.inputData)
 
 
-    await checkResults(res, 200, 'completed', d, true)
+    await checkResults(res, 200, 'completed', d, false)
 
   }).timeout(5000000);
 
 
 
   it('should fail the pipeline, 20 percent tolerance with one fail', async () => {
-    const name = testData1.descriptor.name
-    let body = {
+    const body = {
       flowInput: {
         nums: [
           1,
@@ -77,13 +77,16 @@ describe('severity levels test', () => {
       }
     }
 
-    body.name = name
-    const res = await chai.request(config.apiServerUrl)
-      .post('/exec/stored')
-      .send(body)
-    // console.log (res)
-    res.should.have.status(200);
-    res.body.should.have.property('jobId');
+    testData1.input = body
+
+    //set test data to testData1
+    const d = deconstructTestData(testData1)
+
+    await storePipeline(d.pipeline)
+    const res = await runStored(d)
+    // // console.log (res)
+    // res.should.have.status(200);
+    // res.body.should.have.property('jobId');
     const jobId = res.body.jobId;
 
     await delay(10000)
@@ -95,6 +98,8 @@ describe('severity levels test', () => {
 
     expect(result.status).to.eql('failed')
     expect(result).to.have.property('error')
+
+    await deletePipeline(d)
   }).timeout(5000000);
 
 

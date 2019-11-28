@@ -1,7 +1,6 @@
 const path = require('path')
-
-// const tos = require('../utils/results').toString
 const tos = require(path.join(process.cwd(), 'utils/results')).toString
+
 
 
 const add = (input) => {
@@ -13,8 +12,8 @@ const mult = (input) => {
     return input[0] * input[1][0]
 }
 
-const descriptor = {
-    name: "addmult",
+const pipe = {
+    name: "pipe2",
     nodes: [{
             nodeName: "evaladd",
             algorithmName: "eval-alg",
@@ -40,25 +39,21 @@ const descriptor = {
                 ]
             }
         }
-    ]
-}
-
-const input = {
+    ],
     flowInput: {
         addInput: [5, 3],
         multInput: [3]
+    },
+    triggers: {
+        pipelines: ['pipe1']
     }
 }
 
-const data = [{
-    nodeName: "evalmul",
-    algorithmName: "eval-alg",
-    result: 24
-}]
+
+
+
 
 
 module.exports = {
-    input,
-    descriptor,
-    data
+    pipe
 }

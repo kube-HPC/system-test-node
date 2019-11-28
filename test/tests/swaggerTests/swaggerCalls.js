@@ -6,15 +6,21 @@ const chaiHttp = require('chai-http');
 const assertArrays = require('chai-arrays');
 const fs = require('fs');
 
+
+
 const delay = require('delay');
 
 
 const {
     getResult,
     runRaw
+
 } = require(path.join(process.cwd(), 'utils/results'))
 const {
-    runStoredAndWaitForResults
+    runStoredAndWaitForResults,
+    storePipeline,
+    runStored,
+    deletePipeline
 } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 
 const tos = require(path.join(process.cwd(), 'utils/results'.toString()))
@@ -28,8 +34,6 @@ chai.use(assertArrays);
 describe('all swagger calls test', () => {
 
     describe('Execution', () => {
-
-        //TODO: add negative tests
         it('test the POST exec/raw rest call', async () => {
             const rawPipe = {
                 name: "rawPipe",
@@ -247,19 +251,23 @@ describe('all swagger calls test', () => {
         }).timeout(1000 * 60 * 5)
 
 
-        it.skip(`test the GET /exec/tree/{jobId} rest call`, async () => {
-            //FIXME: create 2 pipelines with triggers and run the test
+        it(`test the GET /exec/tree/{jobId} rest call`, async () => {
 
-            const jobId = await runRaw()
+            await storePipeline('origPipeline')
+            await storePipeline('sonPipeline')
 
-            await delay(1000 * 5)
+            const run = await runStored('pipe1')
+            const jobId = run.body.jobId
+
+            const result = await getResult(jobId, 200);
 
             const res = await chai.request(config.apiServerUrl)
                 .get(`/exec/tree/${jobId}`)
 
-
             res.should.have.status(200)
-            const result = await getResult(jobId, 200);
+
+            await deletePipeline('pipe1')
+            await deletePipeline('pipe2')
 
         }).timeout(1000 * 60 * 2)
 
