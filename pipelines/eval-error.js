@@ -25,7 +25,7 @@ const descriptor = {
     }]
 }
 
-const x = 5
+
 
 
 module.exports = {
