@@ -11,9 +11,7 @@ const {
     getStatusall
 } = require(path.join(process.cwd(), 'utils/results'))
 
- const {
-     logResult
- } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+
 const fse = require('fs')
 
  const logResult =  (result,text='')=> {
