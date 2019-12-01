@@ -154,6 +154,8 @@ describe('severity levels test', () => {
     expect(res.body).to.have.property('error')
     expect(res.body.error.message).to.include('batchTolerance should be >= 0')
 
+    await deletePipeline(d)
+
   }).timeout(5000000);
 
 
@@ -184,6 +186,10 @@ describe('severity levels test', () => {
     expect(res.status).to.eql(400)
     expect(res.body).to.have.property('error')
     expect(res.body.error.message).to.include('batchTolerance should be <= 100')
+
+
+    await deletePipeline(d)
+
   }).timeout(5000000);
 
 
@@ -215,6 +221,10 @@ describe('severity levels test', () => {
 
     expect(res.body).to.have.property('error')
     expect(res.body.error.message).to.include('batchTolerance should be integer')
+
+
+    await deletePipeline(d)
+
   }).timeout(5000000);
 
 
@@ -245,6 +255,9 @@ describe('severity levels test', () => {
     expect(res.status).to.eql(400)
     expect(res.body).to.have.property('error')
     expect(res.body.error.message).to.include('batchTolerance should be integer')
+
+    await deletePipeline(d)
+
   }).timeout(5000000);
 
 });
