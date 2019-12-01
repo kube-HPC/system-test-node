@@ -6,12 +6,14 @@ chai.use(chaiHttp);
 const path = require('path')
 const config = require(path.join(process.cwd(), 'config/config'))
 const logger = require(path.join(process.cwd(), 'utils/logger'))
+
 const {
     getResult
 } = require(path.join(process.cwd(), 'utils/results'))
 
 const {
-    storeNewAlgorithm
+    storeNewAlgorithm,
+    logResult
 } = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 
 
@@ -20,9 +22,10 @@ const {
 
 
 const getPipeline = async (name) => {
+    
     const res = await chai.request(config.apiServerUrl)
         .get(`/pipelines/status/stored/${name}`)
-
+    logResult(res,'PipelineUtils getPipeline')
     return res
 }
 
@@ -38,7 +41,7 @@ const storePipeline = async (pipeObj) => {
     } else {
         res = await storeNewPipeLine(pipeline)
     }
-
+    logResult(res,'PipelineUtils storePipeline')
     return res
 }
 
@@ -46,6 +49,7 @@ const storePipelineWithDescriptor = async (descriptor) => {
     const res = await chai.request(config.apiServerUrl)
         .post('/store/pipelines')
         .send(descriptor);
+    logResult(res,'PipelineUtils storePipelineWithDescriptor')
     return res
 }
 
@@ -65,6 +69,7 @@ const storeNewPipeLine = async (name) => {
         const res1 = await chai.request(config.apiServerUrl)
             .post('/store/pipelines')
             .send(pipe);
+        logResult(res1,'storeNewPipeLine')
     }
 
 }
@@ -82,7 +87,7 @@ const deletePipeline = async (pipelineName) => {
 
     const res = await chai.request(config.apiServerUrl)
         .delete(`/store/pipelines/${name}`)
-
+    logResult(res,'PipelineUtils deletePipeline')
     return res
 }
 
@@ -103,7 +108,7 @@ const runStored = async (descriptor) => {
     const res = await chai.request(config.apiServerUrl)
         .post('/exec/stored')
         .send(body)
-
+    logResult(res,'PipelineUtils runStored')
     return res
 }
 
@@ -111,7 +116,7 @@ const runRaw = async (body) => {
     const res = await chai.request(config.apiServerUrl)
         .post('/exec/raw')
         .send(body)
-
+    logResult(res,'PipelineUtils runRaw')
     return res
 }
 
