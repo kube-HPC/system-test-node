@@ -24,7 +24,6 @@ const logResult = (result, text = '') => {
 }
 
 
-//TODO: add logs to all functions
 
 const getAlgorithim = async (name) => {
     const res = await chai.request(config.apiServerUrl)
