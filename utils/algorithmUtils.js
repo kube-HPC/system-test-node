@@ -14,13 +14,14 @@ const {
 
 const fse = require('fs')
 
- const logResult =  (result,text='')=> {
-    
-     if (result.status > 201) {
-         logger.error(result.body)              
-     }
-     else{logger.info(`${text} -${result.status}`)}
-   }
+const logResult = (result, text = '') => {
+
+    if (result.status > 201) {
+        logger.error(result.body)
+    } else {
+        logger.info(`${text} -${result.status}`)
+    }
+}
 
 
 //TODO: add logs to all functions
@@ -28,7 +29,7 @@ const fse = require('fs')
 const getAlgorithim = async (name) => {
     const res = await chai.request(config.apiServerUrl)
         .get(`/store/algorithms/${name}`)
-    logResult(res,"algutithmUtiles getAlgurithm")
+    logResult(res, "algorithmUtils getAlgorithm")
     return res
 }
 
@@ -46,7 +47,7 @@ const storeAlgorithm = async (descriptor) => {
             .post('/store/algorithms/apply')
             .field('payload', JSON.stringify(descriptor))
         return res1
-        logResult(res1,"algutithmUtiles storeAlgorithm")
+        logResult(res1, "algorithmUtils storeAlgorithm")
     }
 }
 
@@ -84,7 +85,7 @@ const buildAlgorithm = async (code, algName, entry) => {
 const deleteAlgorithm = async (name) => {
     const res = await chai.request(config.apiServerUrl)
         .delete(`/store/algorithms/${name}`)
-    logResult(res,"algutithmUtiles deleteAlgorithm")
+    logResult(res, "algorithmUtils deleteAlgorithm")
     return res
 }
 
