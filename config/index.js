@@ -17,8 +17,15 @@ const index = {
         testData1: require('../pipelines/eval-dynamic'),
         testData2: require('../pipelines/primesPipeline')
     },
+    tid_70: {
+        testData1: require('../pipelines/evalfail'),
+        testData2: require('../pipelines/evalwait')
+    },
     tid_110: {
         testData1: require('../pipelines/eval-error')
+    },
+    tid_140: {
+        testData1: require('../pipelines/waitcom')
     },
     gpu_tests: {
         testData1: require('../pipelines/gpuPipeline'),

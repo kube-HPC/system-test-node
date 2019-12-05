@@ -16,7 +16,12 @@ const {
     logResult
 } = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 
-
+const getPiplineNodes  =  async (id)=>{
+    const res = await chai.request(config.podsApiUrl)
+    .get(`/${id}`)
+    logResult(res, 'PipelineUtils getPipeline')
+    return res
+}
 
 const getPipeline = async (name) => {
 
@@ -26,6 +31,12 @@ const getPipeline = async (name) => {
     return res
 }
 
+const getPipelineStatus = async (id)=>{
+    const res = await chai.request(config.apiServerUrl)
+    .get(`/exec/status/${id}`)
+logResult(res, 'PipelineUtils getPipelineStatus')
+return res
+}
 const storePipeline = async (pipeObj) => {
 
     let pipeline = pipeObj
@@ -138,6 +149,7 @@ const deconstructTestData = (testData) => {
     }
 }
 
+
 const checkResults = async (res, expectedStatusCode, expectedStatus, testData, shouldDeletePipeline = true) => {
 
     expect(res.status).to.eql(expectedStatusCode)
@@ -169,6 +181,9 @@ const checkResults = async (res, expectedStatusCode, expectedStatus, testData, s
 
 
 module.exports = {
+    getPiplineNodes,
+    getPipeline,
+    getPipelineStatus,
     storePipeline,
     deletePipeline,
     runStored,
