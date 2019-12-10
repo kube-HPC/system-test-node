@@ -53,26 +53,26 @@ describe('TID-114- not existing jobId', () => {
 
     }).timeout(1000 * 60 * 5);
 
-    it('something TID 120',async ()=>{
-        const d = deconstructTestData(testData2)
+    // it('something TID 120',async ()=>{
+    //     const d = deconstructTestData(testData2)
        
-        //store pipeline Prime
-        await storePipeline(d)
+    //     //store pipeline Prime
+    //     await storePipeline(d)
        
-        //run the pipeline Prime
-        const res = await runStored(d)
+    //     //run the pipeline Prime
+    //     const res = await runStored(d)
 
-        const nodes = await getPiplineNodes(res.body.jobId)
+    //     const nodes = await getPiplineNodes(res.body.jobId)
 
-        const KubernetesClient = require('@hkube/kubernetes-client').Client;
-        const config = {
-            isLocal: false,
-            namespace: 'default',
-        };
-        const client = new KubernetesClient(config);
-       const del = await client.pods.delete(nodes.body[2]);
+    //     const KubernetesClient = require('@hkube/kubernetes-client').Client;
+    //     const config = {
+    //         isLocal: false,
+    //         namespace: 'default',
+    //     };
+    //     const client = new KubernetesClient(config);
+    //    const del = await client.pods.delete(nodes.body[2]);
 
-    }).timeout(1000 * 60 * 5);
+    // }).timeout(1000 * 60 * 5);
 
 
 });

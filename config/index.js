@@ -10,6 +10,9 @@ const index = {
     tid_31: {
         testData1: require('../pipelines/eval-dynamic')
     },
+    tid_300: {
+        testData1: require('../pipelines/addmuldiv')
+    },
     tid_50: {
         testData1: require('../pipelines/eval-dynamic')
     },
@@ -26,6 +29,9 @@ const index = {
     },
     tid_140: {
         testData1: require('../pipelines/waitcom')
+    },
+    tid_160: {
+        testData1: require('../pipelines/evalwait60')
     },
     gpu_tests: {
         testData1: require('../pipelines/gpuPipeline'),
