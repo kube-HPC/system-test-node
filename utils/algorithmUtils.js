@@ -33,7 +33,7 @@ const getAlgorithim = async (name) => {
 }
 
 
-const storeAlgorithm = async (descriptor) => {
+const storeAlgorithm = async (algName) => {
 
     const res = await getAlgorithim(algName)
     console.log(res.status + " " + algName)
@@ -44,9 +44,10 @@ const storeAlgorithm = async (descriptor) => {
 
         const res1 = await chai.request(config.apiServerUrl)
             .post('/store/algorithms/apply')
-            .field('payload', JSON.stringify(descriptor))
-        return res1
+            .field('payload', JSON.stringify(alg))
+
         logResult(res1, "algorithmUtils storeAlgorithm")
+        return res1
     }
 }
 
