@@ -44,7 +44,7 @@ const index = {
         testData1: require('../pipelines/mainPipeDist'),
         testData2: require('../pipelines/subPipelineDist')
     },
-    swaggerCalls:{
+    swaggerCalls: {
         testData1: require('../pipelines/swaggerPipeLine')
     }
 }

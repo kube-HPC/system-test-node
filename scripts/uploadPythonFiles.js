@@ -3,6 +3,9 @@ const request = require('request');
 const fse = require('fs')
 const config = require('../config/config')
 const path = require('path');
+const {
+    write_log
+} = require(path.join(process.cwd(), 'utils/misc_utils'))
 
 const {
     idGen
@@ -36,9 +39,9 @@ const uploadFile = (code, algName, entry) => {
 
     request(options, (err, res, body) => {
         if (err) {
-            console.log(err)
+            write_log(err)
         }
-        console.log(body)
+        write_log(body)
     })
 
 }
@@ -51,7 +54,7 @@ const deleteAlg = (algo) => {
 
     request(options, (err, res, body) => {
         if (err) {
-            console.error(err)
+            write_log(err, 'error')
         } else {
             uploadFile(algo.path, algo.name, algo.entry)
 
@@ -81,7 +84,7 @@ const main = () => {
 
     for (let alg of algos) {
         deleteAlg(alg)
-        // console.log(res.body)
+        // write_log(res.body)
     }
 
     // for (let alg of algos) {

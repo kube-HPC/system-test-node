@@ -5,6 +5,9 @@ const config = require(path.join(process.cwd(), 'config/config'));
 const chaiHttp = require('chai-http');
 const assertArrays = require('chai-arrays');
 const fs = require('fs');
+const {
+    write_log
+} = require(path.join(process.cwd(), 'utils/misc_utils'))
 
 
 
@@ -54,7 +57,7 @@ describe('all swagger calls test', () => {
                 .post('/exec/raw')
                 .send(rawPipe)
 
-            // console.log(res.body)
+            // write_log(res.body)
             res.should.have.status(200)
 
             const jobId = res.body.jobId
@@ -120,8 +123,8 @@ describe('all swagger calls test', () => {
                 .post('/exec/caching')
                 .send(data)
 
-            // console.log(res2)
-            // console.log(res2.status)
+            // write_log(res2)
+            // write_log(res2.status)
             res2.should.have.status(200)
 
             const jobId2 = res2.body.jobId
@@ -503,7 +506,7 @@ describe('all swagger calls test', () => {
                     .put(`/readme/algorithms/${algName}`)
                     .attach("README.md", fs.readFileSync(readMeSecondFile.FilePath), "README.md");
 
-                console.log("res result =" + res.status)
+                write_log("res result =" + res.status)
                 res.should.have.status(201)
 
                 const readme = await chai.request(config.apiServerUrl)

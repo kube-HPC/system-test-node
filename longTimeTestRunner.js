@@ -1,7 +1,11 @@
 const {
     spawn
 } = require('child_process');
-const logger = require('./utils/logger')
+
+const path = require('path');
+const {
+    write_log
+} = require(path.join(process.cwd(), 'utils/misc_utils'))
 
 
 const req = async () => {
@@ -9,16 +13,16 @@ const req = async () => {
         const ls = spawn('node', ['runTestTime.js'])
 
         ls.stdout.on('data', (data) => {
-            logger.result(data.toString())
-            console.log(data.toString())
+            write_log(data.toString(), 'result')
+
         })
 
-        ls.on('messgae',(st)=>{
-            console.log (st)
+        ls.on('messgae', (st) => {
+            write_log(st)
         })
 
         ls.on('error', err => {
-            console.log(err)
+            write_log(err)
         })
 
         ls.on('close', () => {
@@ -30,7 +34,7 @@ const req = async () => {
 
 const queue = []
 let end
-const delay=mili=>new Promise(r=>setTimeout(r,mili))
+const delay = mili => new Promise(r => setTimeout(r, mili))
 const main = async () => {
     const start = Date.now()
     const hours = 12

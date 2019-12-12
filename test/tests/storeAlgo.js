@@ -22,6 +22,9 @@ const {
 } = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 const logger = require(path.join(process.cwd(), 'utils/logger'))
 chai.use(chaiHttp);
+const {
+    write_log
+} = require(path.join(process.cwd(), 'utils/misc_utils'))
 
 
 describe('Store algorithm', () => {
@@ -59,7 +62,7 @@ describe('Store algorithm', () => {
 
         const result = await getResult(pipeline, 200)
         // expect(result.data).to.eql(testData1.data)
-        console.log(result.data)
+        write_log(result.data)
         expect(result.status).to.eql('completed')
         expect(result).to.not.have.property('error')
 

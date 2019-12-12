@@ -5,7 +5,9 @@ const expect = chai.expect;
 chai.use(chaiHttp);
 const path = require('path')
 const config = require(path.join(process.cwd(), 'config/config'))
-const logger = require(path.join(process.cwd(), 'utils/logger'))
+const {
+    write_log
+} = require(path.join(process.cwd(), 'utils/misc_utils'))
 
 const {
     getResult
@@ -16,9 +18,9 @@ const {
     logResult
 } = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 
-const getPiplineNodes  =  async (id)=>{
+const getPiplineNodes = async (id) => {
     const res = await chai.request(config.podsApiUrl)
-    .get(`/${id}`)
+        .get(`/${id}`)
     logResult(res, 'PipelineUtils getPipeline')
     return res
 }
@@ -31,11 +33,11 @@ const getPipeline = async (name) => {
     return res
 }
 
-const getPipelineStatus = async (id)=>{
+const getPipelineStatus = async (id) => {
     const res = await chai.request(config.apiServerUrl)
-    .get(`/exec/status/${id}`)
-logResult(res, 'PipelineUtils getPipelineStatus')
-return res
+        .get(`/exec/status/${id}`)
+    logResult(res, 'PipelineUtils getPipelineStatus')
+    return res
 }
 const storePipeline = async (pipeObj) => {
 
@@ -64,7 +66,7 @@ const storePipelineWithDescriptor = async (descriptor) => {
 const storeNewPipeLine = async (name) => {
     const pipeline = await getPipeline(name)
     if (pipeline.status === 404) {
-        console.log("pipe was not found")
+        write_log("pipe was not found")
         const {
             pipe
         } = require(path.join(process.cwd(), `additionalFiles/defaults/pipelines/${name}`))
@@ -131,7 +133,7 @@ const runRaw = async (body) => {
 const runStoredAndWaitForResults = async (pipe) => {
     const res = await runStored(pipe)
     const jobId = res.body.jobId
-    console.log(jobId)
+    write_log(jobId)
     const result = await getResult(jobId, 200)
     return jobId
 }
