@@ -4,20 +4,21 @@ const chaiHttp = require('chai-http');
 const path = require('path')
 const delay = require('delay')
 
-const {
-    getPodsRunning
-} = require(path.join(process.cwd(), 'utils/results'))
+
 const {
     testData1
-} = require(path.join(process.cwd(), 'config/index')).tid_160
-const logger = require(path.join(process.cwd(), 'utils/logger'))
+} = require(path.join(process.cwd(), 'config/index')).tid_161
+
 const {
     getDriverIdByJobId
 } = require(path.join(process.cwd(), 'utils/socketGet'))
 
 const {
-    client
-} = require(path.join(process.cwd(), 'utils/kubtry'))
+    body,    
+    deletePod,
+    filterPodsByName,
+    getPodNode
+} = require(path.join(process.cwd(), 'utils/kubeCtl'))
 
 const {
     getResult
@@ -36,39 +37,7 @@ const {
 } = require(path.join(process.cwd(), 'utils/misc_utils'))
 chai.use(chaiHttp);
 
-const {
-    getLogByJobId,
-    waitForLog
-} = require(path.join(process.cwd(), 'utils/elasticsearch'))
 
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-const deletePod = async (podName, namespace) => {
-    let deletedPod = ''
-    if (typeof podName !== "undefined") {
-        write_log("start delete")
-        deletedPod = await client.api.v1.namespaces(namespace).pods(podName).delete()
-    } else {
-        write_log("Not delete")
-    }
-    return deletedPod
-}
-
-const filterPodsByName = async (name) => {
-    const pod = await client.api.v1.namespaces('default').pods().get()
-
-    const pods = pod.body.items.filter(obj => obj.metadata.name.includes(name))
-
-    return pods
-}
-
-const getPodNode = async (podName) => {
-    const pod = await client.api.v1.namespaces('default').pods(podName).get()
-    const node = pod.body.spec.nodeName
-    return node
-}
 
 const FailSingelPod = async (podName, namespace = 'default') => {
     //set test data to testData1
@@ -80,18 +49,18 @@ const FailSingelPod = async (podName, namespace = 'default') => {
     //run the pipeline evalwait
     const res = await runStored(d)
     const jobId = res.body.jobId
-
-    const ServewrPod = await filterPodsByName(podName)
+    await delay(5000)
+    const ServewrPod = await filterPodsByName(podName,namespace)
     write_log(ServewrPod[0].metadata.name)
     const deleted = await deletePod(ServewrPod[0].metadata.name, namespace)
-    await delay(60000)
+    await delay(15000)
 
     const result = await getResult(jobId, 200)
 
     expect(result.status).to.be.equal('completed');
 
-    const newServer = await filterPodsByName(podName)
-    write_log(newApiServer[0].metadata.name)
+    const newServer = await filterPodsByName(podName,namespace)
+    write_log(newServer[0].metadata.name)
     expect(ServewrPod[0].metadata.name).to.be.not.equal(newServer[0].metadata.name)
 
 
@@ -125,10 +94,14 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
     }).timeout(1000 * 60 * 5);
 
 
-    it('Fail algorithm driver  ', async () => {
-        //TODO : add the ability to remove more then one algorithm
-        // const pod = await client.api.v1.namespaces('default').pods(podName).delete();
-
+    it('Fail algorithm pod  ', async () => {
+        const numberToDelete =15
+        const pipe = {   
+            name: "eval-dynamic-160",
+            flowInput: {
+                range: 50,
+                inputs:50000}
+        }
         //set test data to testData1
         const d = deconstructTestData(testData1)
 
@@ -136,17 +109,18 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
         await storePipeline(d)
 
         //run the pipeline evalwait
-        const res = await runStored(d)
+        const res = await runStored(pipe)
+        
         const jobId = res.body.jobId
-        await delay(5000)
+      
+        await delay(30000)
         const nodes = await getPiplineNodes(jobId)
-        const podName = nodes.body[0]
-        write_log('podName-' + podName)
-        await delay(2000)
+        const partNodes =nodes.body.slice(0,numberToDelete)
+        
+        const allAlg = partNodes.map(async (element) => {deletePod(element,'default')})
+        await Promise.all(allAlg);  
+       
 
-        const pod = await deletePod(podName)
-        await delay(2000)
-        //get result
         const result = await getResult(jobId, 200)
         write_log(result.status)
         write_log(result.error, 'error')
@@ -157,7 +131,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
         const d = deconstructTestData(testData1)
 
         //store pipeline evalwait
-        await storePipeline(d)
+        const a= await storePipeline(d)
 
         //run the pipeline evalwait
         const res = await runStored(d)
@@ -175,7 +149,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
 
         const deleted = await deletePod(jaegrPod[0].metadata.name)
 
-        await delay(60000)
+        await delay(20000)
 
         const result = await getResult(jobId, 200)
 
@@ -220,14 +194,21 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
     }).timeout(1000 * 60 * 5);
 
     it('Fail trigger-service  ', async () => {
-
+  
         await FailSingelPod("trigger-service")
 
     }).timeout(1000 * 60 * 5);
 
     it('Fail prometheus  ', async () => {
 
-        await FailSingelPod("prometheus", "monitoring")
+        await FailSingelPod("prometheus-node", "monitoring")
+
+    }).timeout(1000 * 60 * 5);
+
+
+    it('Fail monitoring-grafana  ', async () => {
+
+        await FailSingelPod("monitoring-grafana", "monitoring")
 
     }).timeout(1000 * 60 * 5);
 

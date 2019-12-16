@@ -30,8 +30,8 @@ const index = {
     tid_140: {
         testData1: require('../pipelines/waitcom')
     },
-    tid_160: {
-        testData1: require('../pipelines/evalwait60')
+    tid_161: {
+        testData1: require('../pipelines/evalwait161')
     },
     gpu_tests: {
         testData1: require('../pipelines/gpuPipeline'),

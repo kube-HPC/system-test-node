@@ -17,7 +17,7 @@ const {
 
 const {
     client
-} = require(path.join(process.cwd(), 'utils/kubtry'))
+} = require(path.join(process.cwd(), 'utils/kubeCtl'))
 
 const {
     getResult

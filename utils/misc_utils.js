@@ -4,9 +4,12 @@ const logger = require(path.join(process.cwd(), 'utils/logger'))
 
 
 
-const write_log = (st, sevirity = info) => {
+const write_log = (st, sv = 'info') => {
     console.log(st)
-    logger.sevirity(st)
+    logger.level = sv
+    logger[logger.level](st)
+    logger.level = 'info'
+   
 }
 
 

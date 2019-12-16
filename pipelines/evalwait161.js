@@ -4,13 +4,13 @@ const tos = require('../utils/results').toString
 
 
 const descriptor = {
-    name: "eval-dynamic",
+    name: "eval-dynamic-160",
     nodes: [
         {
             nodeName: "eval1",
             algorithmName: "eval-alg",
             input: [
-                "#@flowInput.range"
+                "@flowInput.range"
             ],
             extraData: {
                 code: [
@@ -39,8 +39,8 @@ const descriptor = {
 
 const input = {   
     flowInput: {
-        range: 5,
-        inputs:20000}
+        range: 7,
+        inputs:50000}
 }
 
 
