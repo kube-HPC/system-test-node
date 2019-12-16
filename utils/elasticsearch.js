@@ -90,8 +90,45 @@ const getLogByJobId= async (jobId)=>{
 }
 
 
+
+const getLogByPodName= async (podName)=>{
+    const client = getClient();
+    
+   
+    const query = {       
+        bool: {  
+            must:[{
+                match_phrase :{
+                    'kubernetes.pod_name' :{
+                        query:podName
+                    }
+                }                             
+            }]        
+                      
+        }
+    }
+    const res = await client.search({
+        body: {
+            size: 100,
+            query,
+            _source: [
+                "message",
+                "meta.type",
+                "@timestamp",
+                "kubernetes"
+                ]
+        },
+        index: 'logstash-*',
+    });
+
+    return res
+}
+
+
 module.exports = {
+
     getClient,
     waitForLog,
-    getLogByJobId
+    getLogByJobId,
+    getLogByPodName
 }

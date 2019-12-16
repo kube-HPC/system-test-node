@@ -37,7 +37,10 @@ const {
 } = require(path.join(process.cwd(), 'utils/misc_utils'))
 chai.use(chaiHttp);
 
-
+const {
+    getLogByJobId,
+    getLogByPodName
+} = require(path.join(process.cwd(), 'utils/elasticsearch'))
 
 const FailSingelPod = async (podName, namespace = 'default') => {
     //set test data to testData1
@@ -66,6 +69,8 @@ const FailSingelPod = async (podName, namespace = 'default') => {
 
 }
 describe('TID-161- High Availability for HKube infrastructure services', () => {
+
+    
     it('Fail pipeline driver  ', async () => {
         // const pod = await client.api.v1.namespaces('default').pods(podName).delete();
 
@@ -99,7 +104,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
         const pipe = {   
             name: "eval-dynamic-160",
             flowInput: {
-                range: 50,
+                range: 30,
                 inputs:50000}
         }
         //set test data to testData1
@@ -118,15 +123,19 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
         const partNodes =nodes.body.slice(0,numberToDelete)
         
         const allAlg = partNodes.map(async (element) => {deletePod(element,'default')})
-        await Promise.all(allAlg);  
-       
-
-        const result = await getResult(jobId, 200)
+        await Promise.all(allAlg); 
+        await delay(5000) 
+        const log = await getLogByPodName(partNodes[0])
+        let a = log.hits.hits.filter(obj => obj._source.message.includes("exit code 1")) //or find "SIGTERM"
+        expect(a).to.have.lengthOf.greaterThan(0)
         write_log(result.status)
         write_log(result.error, 'error')
         expect(result.status).to.be.equal('completed');
+
+        
     }).timeout(1000 * 60 * 5);
 
+    
     it('Fail jaeger   ', async () => {
         const d = deconstructTestData(testData1)
 
@@ -154,7 +163,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
         const result = await getResult(jobId, 200)
 
         expect(result.status).to.be.equal('completed');
-
+       
     }).timeout(1000 * 60 * 5);
 
     it('Fail API server  ', async () => {
