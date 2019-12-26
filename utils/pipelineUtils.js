@@ -14,7 +14,7 @@ const {
 } = require(path.join(process.cwd(), 'utils/results'))
 
 const {
-    storeNewAlgorithm,
+    storeAlgorithm,
     logResult
 } = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 
@@ -39,6 +39,7 @@ const getPipelineStatus = async (id) => {
     logResult(res, 'PipelineUtils getPipelineStatus')
     return res
 }
+
 const storePipeline = async (pipeObj) => {
 
     let pipeline = pipeObj
@@ -73,13 +74,14 @@ const storeNewPipeLine = async (name) => {
 
         const array = pipe.nodes.map(async (element) => {
             const algName = element.algorithmName
-            storeNewAlgorithm(algName)
+            storeAlgorithm(algName)
         })
         await Promise.all(array);
         const res1 = await chai.request(config.apiServerUrl)
             .post('/store/pipelines')
             .send(pipe);
         logResult(res1, 'storeNewPipeLine')
+        return res1
     }
 
 }

@@ -9,8 +9,8 @@ const body= {
         }
     },
     webhooks: {
-        "progress": "http://my-url-to-progress",
-        "result": "http://my-url-to-result"
+        "progress": "http://localhost:3003/webhook/progress",
+        "result": "http://localhost:3003/webhook/result"
       },
     priority: 1
 }
