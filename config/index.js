@@ -46,7 +46,11 @@ const index = {
     },
     swaggerCalls: {
         testData1: require('../pipelines/swaggerPipeLine')
+    },
+    cacheTest: {
+        testData1: require('../pipelines/cacheTest')
     }
+    
 }
 
 

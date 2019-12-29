@@ -40,37 +40,4 @@ describe('jagear', () => {
         found.should.be.true
     }).timeout(1000 * 60)
 
-    const fs = require ('fs')
-
-    it('jnk-jager', async () => {
-
-       
-
-        const jobId ="cache:ea45e3a2-dbaf-43cb-be53-989ba53abbd9"
-        const data = await getSpansByJodid(jobId)
-       
-        let i=0;
-        const a =[]
-        data.forEach(element => {
-            if (element.operationName.startsWith("storage-get")) {
-                // console.log(element.operationName + "," + element.startTime)
-                a.push(element )
-                i++
-            }
-
-        });
-
-        const sorted = a.sort ((obj1,obj2)=>{
-            (obj1.startTime<obj2.startTime)?1:-1
-        })
-
-        const dd =[]
-        sorted.forEach (ele=>{
-            dd.push(ele.duration)
-        })
-
-        fs.writeFileSync ('lala.csv',dd)
-
-       
-    }).timeout(1000 * 60)
 })

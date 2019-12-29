@@ -1,7 +1,7 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const expect = chai.expect;
-
+const delay = require('delay');
 chai.use(chaiHttp);
 const path = require('path')
 const config = require(path.join(process.cwd(), 'config/config'))
@@ -49,6 +49,7 @@ const storeAlgorithm = async (algName) => {
             .post('/store/algorithms/apply')
             .field('payload', JSON.stringify(alg))
         logResult(res1, "algorithmUtils storeAlgorithm")
+        const timeout = await delay(1000 * 3);
         return res1
     }
 }

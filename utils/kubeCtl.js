@@ -37,7 +37,7 @@ const deletePod = async (podName, namespace='default') => {
 const filterPodsByName = async (name,namespace='default') => {
     const pod = await client.api.v1.namespaces(namespace).pods().get()
 
-    const pods = pod.body.items.filter(obj => obj.metadata.name.includes(name))
+    const pods = pod.body.items.filter(obj => obj.metadata.name.startsWith(name))
 
     return pods
 }
