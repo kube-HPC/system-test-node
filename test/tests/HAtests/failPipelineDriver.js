@@ -10,11 +10,14 @@ const {
 
 const {
     client
-} = require(path.join(process.cwd(), 'utils/kubtry'))
+} = require(path.join(process.cwd(), 'utils/kubeCtl'))
 
 const {
     getResult
 } = require(path.join(process.cwd(), 'utils/results'))
+const {
+    write_log
+} = require(path.join(process.cwd(), 'utils/misc_utils'))
 
 const tos = require(path.join(process.cwd(), 'utils/results'.toString()))
 chai.use(chaiHttp);
@@ -54,7 +57,7 @@ describe('HA tests', () => {
 
 
 
-        // console.log(pod.body)
+        // write_log(pod.body)
 
 
     }).timeout(1000 * 60 * 5)

@@ -1,7 +1,7 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const expect = chai.expect;
-
+const delay = require('delay');
 chai.use(chaiHttp);
 const path = require('path')
 const config = require(path.join(process.cwd(), 'config/config'))
@@ -10,6 +10,9 @@ const {
     idGen,
     getStatusall
 } = require(path.join(process.cwd(), 'utils/results'))
+const {
+    write_log
+} = require(path.join(process.cwd(), 'utils/misc_utils'))
 
 
 const fse = require('fs')
@@ -17,9 +20,9 @@ const fse = require('fs')
 const logResult = (result, text = '') => {
 
     if (result.status > 201) {
-        logger.error(result.body)
+        write_log(result.body, 'error')
     } else {
-        logger.info(`${text} -${result.status}`)
+        write_log(`${text} -${result.status}`)
     }
 }
 
@@ -36,7 +39,7 @@ const getAlgorithim = async (name) => {
 const storeAlgorithm = async (algName) => {
 
     const res = await getAlgorithim(algName)
-    console.log(res.status + " " + algName)
+    write_log(res.status + " " + algName)
     if (res.status === 404) {
         const {
             alg
@@ -45,8 +48,8 @@ const storeAlgorithm = async (algName) => {
         const res1 = await chai.request(config.apiServerUrl)
             .post('/store/algorithms/apply')
             .field('payload', JSON.stringify(alg))
-
         logResult(res1, "algorithmUtils storeAlgorithm")
+        const timeout = await delay(1000 * 3);
         return res1
     }
 }

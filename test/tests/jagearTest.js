@@ -39,4 +39,5 @@ describe('jagear', () => {
 
         found.should.be.true
     }).timeout(1000 * 60)
+
 })

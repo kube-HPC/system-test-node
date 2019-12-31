@@ -13,6 +13,9 @@ chai.use(chaiHttp);
 const {
     runRaw
 } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+const {
+    write_log
+} = require(path.join(process.cwd(), 'utils/misc_utils'))
 
 describe('randomize tests', () => {
     it('randomize a pipeline and get its result', async () => {
@@ -22,7 +25,7 @@ describe('randomize tests', () => {
         res.should.have.status(200)
         const jobId = res.body.jobId
         const result = await getResult(jobId, 200)
-        console.log(jobId)
+        write_log(jobId)
     }).timeout(1000 * 60 * 5)
 
 
@@ -61,7 +64,7 @@ describe('randomize tests', () => {
         const jobId = res.body.jobId
         const result = await getResult(jobId, 200)
 
-        console.log(jobId)
+        write_log(jobId)
 
     }).timeout(1000 * 60 * 5)
 })

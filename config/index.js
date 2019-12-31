@@ -10,6 +10,9 @@ const index = {
     tid_31: {
         testData1: require('../pipelines/eval-dynamic')
     },
+    tid_300: {
+        testData1: require('../pipelines/addmuldiv')
+    },
     tid_50: {
         testData1: require('../pipelines/eval-dynamic')
     },
@@ -17,8 +20,18 @@ const index = {
         testData1: require('../pipelines/eval-dynamic'),
         testData2: require('../pipelines/primesPipeline')
     },
+    tid_70: {
+        testData1: require('../pipelines/evalfail'),
+        testData2: require('../pipelines/evalwait')
+    },
     tid_110: {
         testData1: require('../pipelines/eval-error')
+    },
+    tid_140: {
+        testData1: require('../pipelines/waitcom')
+    },
+    tid_161: {
+        testData1: require('../pipelines/evalwait161')
     },
     gpu_tests: {
         testData1: require('../pipelines/gpuPipeline'),
@@ -31,9 +44,13 @@ const index = {
         testData1: require('../pipelines/mainPipeDist'),
         testData2: require('../pipelines/subPipelineDist')
     },
-    swaggerCalls:{
+    swaggerCalls: {
         testData1: require('../pipelines/swaggerPipeLine')
+    },
+    cacheTest: {
+        testData1: require('../pipelines/cacheTest')
     }
+    
 }
 
 
