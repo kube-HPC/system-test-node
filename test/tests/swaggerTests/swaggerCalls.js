@@ -277,6 +277,138 @@ describe('all swagger calls test', () => {
 
     })
 
+    describe('storage', () => {
+
+
+        it(' GET /storage/infol', async () => {
+            
+
+            const res = await chai.request(config.apiServerUrl)
+                .get(`/storage/info`)
+
+            expect(res).to.have.status(200)
+
+        }).timeout(1000 * 60)
+
+        it(' GET /storage/prefix/types', async () => {
+            
+
+            const res = await chai.request(config.apiServerUrl)
+                .get(`/storage/prefix/types`)
+
+            expect(res).to.have.status(200)
+
+        }).timeout(1000 * 60)
+
+
+        it(' GET keys by path /storage/prefixes/{path}', async () => {
+           
+
+            const res = await chai.request(config.apiServerUrl)
+                .get(`/storage/prefix/types`)
+
+            const path = res.body[0]
+
+            const res1 = await chai.request(config.apiServerUrl)
+                .get(`/storage/prefixes/${path}`)
+
+            expect(res1).to.have.status(200)
+
+
+
+        }).timeout(1000 * 60)
+
+
+
+        it(' GET keys by path /storage/keys/{path}', async () => {
+           
+
+            const res = await chai.request(config.apiServerUrl)
+                .get(`/storage/prefix/types`)
+
+            const path = res.body[0]
+
+            const res1 = await chai.request(config.apiServerUrl)
+                .get(`/storage/keys/${path}`)
+
+            expect(res1).to.have.status(200)
+
+
+
+        }).timeout(1000 * 60)
+
+
+        it(' GET storage data /storage/values/{path}', async () => {
+            
+
+            const res = await chai.request(config.apiServerUrl)
+                .get(`/storage/prefix/types`)
+
+            const path = res.body[0]
+
+            const res1 = await chai.request(config.apiServerUrl)
+                .get(`/storage/keys/${path}`)
+
+            const storagePath = res1.body.keys[0].path
+
+            const res2 = await chai.request(config.apiServerUrl)
+                .get(`/storage/values/${storagePath}`)
+            
+            expect(res2).to.have.status(200)
+
+
+
+        }).timeout(1000 * 60)
+
+
+        it(' GET stream data /storage/stream/{path}', async () => {
+            
+
+            const res = await chai.request(config.apiServerUrl)
+                .get(`/storage/prefix/types`)
+
+            const path = res.body[0]
+
+            const res1 = await chai.request(config.apiServerUrl)
+                .get(`/storage/keys/${path}`)
+
+            const storagePath = res1.body.keys[0].path
+
+            const res2 = await chai.request(config.apiServerUrl)
+                .get(`/storage/stream/${storagePath}`)
+            
+            expect(res2).to.have.status(200)
+
+
+
+        }).timeout(1000 * 60)
+
+
+
+        it(' GET stream data to file /storage/download/{path}', async () => {
+           
+
+            const res = await chai.request(config.apiServerUrl)
+                .get(`/storage/prefix/types`)
+
+            const path = res.body[0]
+
+            const res1 = await chai.request(config.apiServerUrl)
+                .get(`/storage/keys/${path}`)
+
+            const storagePath = res1.body.keys[0].path
+
+            const res2 = await chai.request(config.apiServerUrl)
+                .get(`/storage/download/${storagePath}`)
+            
+            expect(res2).to.have.status(200)
+
+
+
+        }).timeout(1000 * 60)
+        
+
+    })
     describe('Pipelines', () => {
 
 
@@ -564,7 +696,7 @@ describe('all swagger calls test', () => {
         it('test the Get webhooks/status/{jobId}', async () => {
 
             const jobId = await runStoredAndWaitForResults(pipe)
-            const timeout = await delay(1000 * 2);
+            const timeout = await delay(1000 * 10);
             const res = await chai.request(config.apiServerUrl)
                 .get(`/webhooks/status/${jobId}`)
             expect(res).to.have.status(200)
@@ -575,7 +707,7 @@ describe('all swagger calls test', () => {
 
             const jobId = await runStoredAndWaitForResults(pipe)
 
-            const timeout = await delay(1000 * 5);
+            const timeout = await delay(1000 * 10);
             const res = await chai.request(config.apiServerUrl)
                 .get(`/webhooks/results/${jobId}`)
 
@@ -586,7 +718,7 @@ describe('all swagger calls test', () => {
 
         it('test the Get webhooks/{jobId}', async () => {
             const jobId = await runStoredAndWaitForResults(pipe)
-            const timeout = await delay(1000 * 2);
+            const timeout = await delay(1000 * 10);
             const res = await chai.request(config.apiServerUrl)
                 .get(`/webhooks/${jobId}`)
             expect(res).to.have.status(200)
