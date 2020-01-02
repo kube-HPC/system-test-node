@@ -45,15 +45,27 @@ const storeAlgorithm = async (algName) => {
             alg
         } = require(path.join(process.cwd(), `additionalFiles/defaults/algorithms/${algName}`))
 
-        const res1 = await chai.request(config.apiServerUrl)
-            .post('/store/algorithms/apply')
-            .field('payload', JSON.stringify(alg))
+        const res1 = buildAlgoFromImage(alg)
         logResult(res1, "algorithmUtils storeAlgorithm")
         const timeout = await delay(1000 * 3);
         return res1
     }
 }
 
+const updateAlgorithm = async (algfile)=>{
+    const{alg}=require(path.join(process.cwd(), `additionalFiles/defaults/algorithms/${algfile}`))
+    const res = buildAlgoFromImage(alg)
+    logResult(res, "algorithmUtils updateAlgorithm")
+    const timeout = await delay(1000 * 3);
+    return res
+}
+
+const buildAlgoFromImage = async (alg)=>{
+    const res = await chai.request(config.apiServerUrl)
+            .post('/store/algorithms/apply')
+            .field('payload', JSON.stringify(alg))
+    return res
+}
 
 const buildAlgorithm = async (code, algName, entry) => {
     const data = {
@@ -84,23 +96,54 @@ const buildAlgorithm = async (code, algName, entry) => {
 
 
 
-
-const deleteAlgorithm = async (name) => {
+const getAlgorithimVersion = async (name)=>{
     const res = await chai.request(config.apiServerUrl)
-        .delete(`/store/algorithms/${name}`)
+        .get(`/versions/algorithms/${name}`)
+    logResult(res, "algorithmUtils getAlgorithimVersion")
+    return res;
+
+}
+
+
+const deleteAlgorithm = async (name,force = "true") => {
+    const res = await chai.request(config.apiServerUrl)
+        .delete(`/store/algorithms/${name}?force=${force}`)
     logResult(res, "algorithmUtils deleteAlgorithm")
     return res
 }
 
+const deleteAlgorithmVersion = async (name,image) => {
+    const res = await chai.request(config.apiServerUrl)
+        .delete(`/versions/algorithms/${name}?image=${image}`)
+    logResult(res, "algorithmUtils deleteAlgorithm")
+    return res
+}
 
+const updateAlgorithmVersion = async (Algname , imageName, Force = "true")=>{
+    let value = {
+        name: Algname,
+        image: imageName,
+        force: Force
+    }
+    const res = await chai.request(config.apiServerUrl)
+    .post(`/versions/algorithms/apply`)
+    .send(value)
+
+    return res
+}
 
 
 
 module.exports = {
     getAlgorithim,
     storeAlgorithm,
+    updateAlgorithm,
     deleteAlgorithm,
     buildAlgorithm,
+    getAlgorithimVersion,
+    updateAlgorithmVersion,
+    buildAlgoFromImage,
+    deleteAlgorithmVersion,
     logResult
 
 }

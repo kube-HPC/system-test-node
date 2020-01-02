@@ -16,8 +16,9 @@ const delay = require('delay');
 
 const {
     getResult,
-    runRaw
-
+    runRaw,
+    getRawGraph,
+    getParsedGraph
 } = require(path.join(process.cwd(), 'utils/results'))
 const {
     runStoredAndWaitForResults,
@@ -25,7 +26,12 @@ const {
     runStored,
     deletePipeline
 } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
-
+const { deleteAlgorithm,    
+    getAlgorithimVersion,
+    updateAlgorithmVersion,
+    buildAlgoFromImage,
+    deleteAlgorithmVersion,
+    getAlgorithim} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 const tos = require(path.join(process.cwd(), 'utils/results'.toString()))
 // const testData2 = require ('../../pipelines/multadd')
 chai.use(chaiHttp);
@@ -277,6 +283,49 @@ describe('all swagger calls test', () => {
 
     })
 
+    describe('graph api',()=>{
+        const pipe = {
+                name: "simple",
+                flowInput: {
+                    files: {
+                        link: "link1"
+                    }
+                },
+                priority: 4
+            }
+
+        it('Get /graph/raw/{jobId} and rest call', async () => {
+            
+            const res = await chai.request(config.apiServerUrl)
+                .post('/exec/stored')
+                .send(pipe)
+
+            const jobId = res.body.jobId
+            await getResult(jobId, 200);
+            //await delay(1000);
+            const rawGraph = await getRawGraph(jobId)
+            expect(rawGraph.body.edges.length).to.be.equal(2)
+            
+        
+        }).timeout(1000 * 60 * 2)
+
+         it('Get /graph/parsed/{jobId} and rest call', async () => {
+            
+            const res = await chai.request(config.apiServerUrl)
+                .post('/exec/stored')
+                .send(pipe)
+
+            const jobId = res.body.jobId
+           
+            const ParsedGraph = await getParsedGraph(jobId)
+            expect(ParsedGraph.body.nodes.length).to.be.equal(3)
+        }).timeout(1000 * 60 * 2)
+           
+
+
+
+    })
+
     describe('storage', () => {
 
 
@@ -486,6 +535,78 @@ describe('all swagger calls test', () => {
 
         it('TBD')
     })
+
+    describe(' Algorithms version' , () => {
+        const algorithmName = "swagrer-algorithm"
+        const algorithmImageV1 = "tamir321/algoversion:v1"
+        const algorithmImageV2 = "tamir321/algoversion:v2"
+        const algJson = (algName,imageName) =>{ 
+        let alg = {
+            name: algName,
+            cpu: 1,
+            gpu: 0,
+            mem: "256Mi",
+            minHotWorkers: 0,
+            algorithmImage: imageName,
+            type: "Image",
+            options: {
+                debug: false,
+                pending: false
+                }       
+            }
+            return alg
+        }   
+        
+    const algorithmV1 = algJson(algorithmName,algorithmImageV1)
+    const algorithmV2 = algJson(algorithmName,algorithmImageV2)  
+    it('Get   /versions/algorithms/{name}', async () => {
+        await  deleteAlgorithm(algorithmName,"true")
+         await buildAlgoFromImage(algorithmV1);
+         const algVersion = await getAlgorithimVersion(algorithmName);
+         expect(algVersion.body.length).to.be.equal(1)
+         await buildAlgoFromImage(algorithmV2);
+        //validate there are two images
+        const algVersion2 = await getAlgorithimVersion(algorithmName);
+        
+        expect(algVersion2.body.length).to.be.equal(2)
+        await  deleteAlgorithm(algorithmName,"true")
+       
+    }).timeout(1000 * 60 * 5);
+
+    it('Delete /versions/algorithms/{name}', async () => {
+        await  deleteAlgorithm(algorithmName,"true")
+         await buildAlgoFromImage(algorithmV1);         
+         await buildAlgoFromImage(algorithmV2);
+        //validate there are two images
+        
+        let algVersion = await getAlgorithimVersion(algorithmName);
+        expect(algVersion.body.length).to.be.equal(2)
+        const del = await deleteAlgorithmVersion(algorithmName,algorithmImageV2)
+        await delay(2000)
+        algVersion = await getAlgorithimVersion(algorithmName);
+        expect(algVersion.body.length).to.be.equal(1)
+        await  deleteAlgorithm(algorithmName,"true")
+       
+    }).timeout(1000 * 60 * 5);
+
+
+    it('Post Apply algorithm version', async () => {
+        await  deleteAlgorithm(algorithmName,"true")
+         await buildAlgoFromImage(algorithmV1);         
+         await buildAlgoFromImage(algorithmV2);
+         let alg= await getAlgorithim(algorithmName)
+         expect(alg.body.algorithmImage).to.be.equal("tamir321/algoversion:v1")
+        
+        await updateAlgorithmVersion(algorithmName,algorithmImageV2,"true")
+        alg= await getAlgorithim(algorithmName)
+        
+        expect(alg.body.algorithmImage).to.be.equal("tamir321/algoversion:v2")
+        await  deleteAlgorithm(algorithmName,"true")
+    }).timeout(1000 * 60 * 5);
+   
+    })
+
+    
     describe('ReadMe file ', () => {
 
         const readMeFile = {

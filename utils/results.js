@@ -7,7 +7,12 @@ const config = require(path.join(process.cwd(), 'config/config'))
 const logger = require(path.join(process.cwd(), 'utils/logger'))
 
 // chai.use(chaiHttp);
-
+const getJobResult = async (jobId)=>{
+    const res = await chai.request(config.apiServerUrl)
+            .get(`/exec/results/${jobId}`);
+    logger.info(`${res.status}, ${JSON.stringify(res.body)}`)
+    return res
+}
 
 const getResult = async (jobId, expectedStatus, timeout = 60 * 1000 * 10, interval = 5000) => {
 
@@ -18,9 +23,7 @@ const getResult = async (jobId, expectedStatus, timeout = 60 * 1000 * 10, interv
     const start = Date.now();
     do {
         process.stdout.write('.')
-        const res = await chai.request(config.apiServerUrl)
-            .get(`/exec/results/${jobId}`);
-        logger.info(`${res.status}, ${JSON.stringify(res.body)}`)
+        const res = await getJobResult(jobId)
         if (res.status == expectedStatus) {
             return res.body;
         }
@@ -121,7 +124,21 @@ const idGen = (MaxLen = 5) => {
     return arr.join('.')
 }
 
+const  getRawGraph = async (jobId)=>{
+    const res = await chai.request(config.apiServerUrl)
+        .get(`/graph/raw/${jobId}`)
+    logger.info(`${res.status}, ${JSON.stringify(res.body)}`)
 
+    return res
+}
+
+const  getParsedGraph = async (jobId)=>{
+    const res = await chai.request(config.apiServerUrl)
+        .get(`/graph/parsed/${jobId}`)
+    logger.info(`${res.status}, ${JSON.stringify(res.body)}`)
+
+    return res
+}
 
 module.exports = {
     getResult,
@@ -131,5 +148,8 @@ module.exports = {
     toString,
     getStatusall,
     runRaw,
-    idGen
+    idGen,
+    getJobResult,
+    getRawGraph,
+    getParsedGraph
 }
