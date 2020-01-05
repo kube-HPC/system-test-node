@@ -51,7 +51,8 @@ const index = {
         testData1: require('../pipelines/cacheTest')
     },
     algorithmTest: {
-        testData1: require('../pipelines/AlgorithmTest')
+        testData1: require('../pipelines/AlgorithmTest'),
+        testData2: require('../pipelines/AlgorithmTest2')
     }
     
 }

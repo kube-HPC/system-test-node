@@ -28,7 +28,7 @@ const logResult = (result, text = '') => {
 
 
 
-const getAlgorithim = async (name) => {
+const getAlgorithm = async (name) => {
     const res = await chai.request(config.apiServerUrl)
         .get(`/store/algorithms/${name}`)
     logResult(res, "algorithmUtils getAlgorithm")
@@ -96,7 +96,7 @@ const buildAlgorithm = async (code, algName, entry) => {
 
 
 
-const getAlgorithimVersion = async (name)=>{
+const getAlgorithmVersion = async (name)=>{
     const res = await chai.request(config.apiServerUrl)
         .get(`/versions/algorithms/${name}`)
     logResult(res, "algorithmUtils getAlgorithimVersion")
@@ -105,7 +105,7 @@ const getAlgorithimVersion = async (name)=>{
 }
 
 
-const deleteAlgorithm = async (name,force = "true") => {
+const deleteAlgorithm = async (name,force = true) => {
     const res = await chai.request(config.apiServerUrl)
         .delete(`/store/algorithms/${name}?force=${force}`)
     logResult(res, "algorithmUtils deleteAlgorithm")
@@ -119,7 +119,7 @@ const deleteAlgorithmVersion = async (name,image) => {
     return res
 }
 
-const updateAlgorithmVersion = async (Algname , imageName, Force = "true")=>{
+const updateAlgorithmVersion = async (Algname , imageName, Force = true)=>{
     let value = {
         name: Algname,
         image: imageName,
@@ -135,12 +135,12 @@ const updateAlgorithmVersion = async (Algname , imageName, Force = "true")=>{
 
 
 module.exports = {
-    getAlgorithim,
+    getAlgorithm,
     storeAlgorithm,
     updateAlgorithm,
     deleteAlgorithm,
     buildAlgorithm,
-    getAlgorithimVersion,
+    getAlgorithmVersion,
     updateAlgorithmVersion,
     buildAlgoFromImage,
     deleteAlgorithmVersion,

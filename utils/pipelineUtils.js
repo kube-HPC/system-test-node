@@ -135,6 +135,30 @@ const runRaw = async (body) => {
     return res
 }
 
+const resumePipeline = async (jobid) => {
+    let body = {
+        jobId: jobid
+    }
+
+    const res = await chai.request(config.apiServerUrl)
+        .post('/exec/resume')
+        .send(body)
+    logResult(res, 'PipelineUtils resumePipeline')
+    return res
+}
+
+const pausePipeline = async (jobid) => {
+    let body = {
+        jobId: jobid
+    }
+
+    const res = await chai.request(config.apiServerUrl)
+        .post('/exec/pause')
+        .send(body)
+    logResult(res, 'PipelineUtils pausePipeline')
+    return res
+}
+
 const runStoredAndWaitForResults = async (pipe) => {
     const res = await runStored(pipe)
     const jobId = res.body.jobId
@@ -186,6 +210,20 @@ const checkResults = async (res, expectedStatusCode, expectedStatus, testData, s
     }
 }
 
+const stopPipeline = async (jobid) => {
+    const data = {
+        jobId: jobid,
+        reason: "from test"
+    }
+
+    const res = await chai.request(config.apiServerUrl)
+        .post('/exec/stop')
+        .send(data)
+
+    logResult(res, 'PipelineUtils pausePipeline')
+    return res
+}
+
 
 module.exports = {
     getPiplineNodes,
@@ -197,5 +235,9 @@ module.exports = {
     deconstructTestData,
     checkResults,
     runStoredAndWaitForResults,
-    runRaw
+    runRaw,
+    resumePipeline,
+    pausePipeline,
+    stopPipeline
+
 }

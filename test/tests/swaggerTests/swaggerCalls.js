@@ -24,7 +24,10 @@ const {
     runStoredAndWaitForResults,
     storePipeline,
     runStored,
-    deletePipeline
+    deletePipeline,
+    resumePipeline,
+    pausePipeline,
+    getPipelineStatus
 } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 const { deleteAlgorithm,    
     getAlgorithimVersion,
@@ -261,6 +264,36 @@ describe('all swagger calls test', () => {
         }).timeout(1000 * 60 * 5)
 
 
+        it('test the POST exec/pause/{jobId} and exec/resume/{jobId} rest call', async () => {
+            const rawPipe = {
+                name: "rawPipe",
+                nodes: [{
+                    nodeName: "node1",
+                    algorithmName: "eval-alg",
+                    input: [10000],
+                    extraData: {
+                        code: [
+                            "(input)=>{",
+                            "return new Promise((resolve,reject)=>{setTimeout(()=>resolve(4),input[0])});}"
+                        ]
+                    }
+                }]
+            }
+
+            const res = await runRaw(rawPipe)
+            const jobId = res.body.jobId
+
+            await delay(1000 * 3)
+            const pause = await pausePipeline(jobId);
+            await delay(2000)
+            let pipelineStatus = await getPipelineStatus(jobId)
+            expect(pipelineStatus.body.status).to.be.equal("paused")
+            const resume = await resumePipeline(jobId);
+            expect(resume.status).to.be.equal(200)
+            const result = await getResult(jobId,200)
+
+
+        }).timeout(1000 * 60 * 5)
         it(`test the GET /exec/tree/{jobId} rest call`, async () => {
 
             await storePipeline('origPipeline')
@@ -560,7 +593,7 @@ describe('all swagger calls test', () => {
     const algorithmV1 = algJson(algorithmName,algorithmImageV1)
     const algorithmV2 = algJson(algorithmName,algorithmImageV2)  
     it('Get   /versions/algorithms/{name}', async () => {
-        await  deleteAlgorithm(algorithmName,"true")
+        await  deleteAlgorithm(algorithmName,true)
          await buildAlgoFromImage(algorithmV1);
          const algVersion = await getAlgorithimVersion(algorithmName);
          expect(algVersion.body.length).to.be.equal(1)
@@ -569,12 +602,12 @@ describe('all swagger calls test', () => {
         const algVersion2 = await getAlgorithimVersion(algorithmName);
         
         expect(algVersion2.body.length).to.be.equal(2)
-        await  deleteAlgorithm(algorithmName,"true")
+        await  deleteAlgorithm(algorithmName,true)
        
     }).timeout(1000 * 60 * 5);
 
     it('Delete /versions/algorithms/{name}', async () => {
-        await  deleteAlgorithm(algorithmName,"true")
+        await  deleteAlgorithm(algorithmName,true)
          await buildAlgoFromImage(algorithmV1);         
          await buildAlgoFromImage(algorithmV2);
         //validate there are two images
@@ -585,23 +618,23 @@ describe('all swagger calls test', () => {
         await delay(2000)
         algVersion = await getAlgorithimVersion(algorithmName);
         expect(algVersion.body.length).to.be.equal(1)
-        await  deleteAlgorithm(algorithmName,"true")
+        await  deleteAlgorithm(algorithmName,true)
        
     }).timeout(1000 * 60 * 5);
 
 
     it('Post Apply algorithm version', async () => {
-        await  deleteAlgorithm(algorithmName,"true")
+        await  deleteAlgorithm(algorithmName,true)
          await buildAlgoFromImage(algorithmV1);         
          await buildAlgoFromImage(algorithmV2);
          let alg= await getAlgorithim(algorithmName)
          expect(alg.body.algorithmImage).to.be.equal("tamir321/algoversion:v1")
         
-        await updateAlgorithmVersion(algorithmName,algorithmImageV2,"true")
+        await updateAlgorithmVersion(algorithmName,algorithmImageV2,true)
         alg= await getAlgorithim(algorithmName)
         
         expect(alg.body.algorithmImage).to.be.equal("tamir321/algoversion:v2")
-        await  deleteAlgorithm(algorithmName,"true")
+        await  deleteAlgorithm(algorithmName,true)
     }).timeout(1000 * 60 * 5);
    
     })
