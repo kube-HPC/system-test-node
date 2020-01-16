@@ -15,6 +15,7 @@ const {
 const logger = require(path.join(process.cwd(), 'utils/logger'))
 
 const {
+    deletePipeline,
     getPiplineNodes,
     getPipelineStatus,
     storePipeline,

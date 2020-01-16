@@ -9,8 +9,8 @@ const { deleteAlgorithm,
         getAlgorithmVersion,
         updateAlgorithmVersion,
         buildAlgoFromImage,
-        deleteAlgorithmVersion,
-        getAlgorithim} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
+        deleteAlgorithmVersion
+    } = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 
 
 const {
@@ -97,16 +97,16 @@ describe('Alrogithm Tests', () => {
         
             //store pipeline algorithm-version-test
             await storePipeline(d)
-            const jobId = await runStoredAndWaitForResults(d)        
+           // const jobId = await runStoredAndWaitForResults(d)        
             await buildAlgoFromImage(algorithmV2);       
-            const update = await updateAlgorithmVersion(algorithmName,algorithmImageV2,true);
+            //const update = await updateAlgorithmVersion(algorithmName,algorithmImageV2,true);
             await delay(2000)
-            const jobId2 = await runStoredAndWaitForResults(d)       
+            //const jobId2 = await runStoredAndWaitForResults(d)       
             const alg = await deleteAlgorithm(algorithmName,true)
             await delay(2000)
             const pipeline = await getPipeline(d.name)
             expect(pipeline.body.error.message).to.include("Not Found")  
-            const getAlg = await getAlgorithim(algorithmName)
+            const getAlg = await getAlgorithm(algorithmName)
             expect(getAlg.body.error.message).to.include("Not Found")     
 
         }).timeout(1000 * 60 * 5);
@@ -122,7 +122,7 @@ describe('Alrogithm Tests', () => {
             await  deleteAlgorithm(algorithmName,true)
             await buildAlgoFromImage(algorithmV1);  
             const algVersion1 = await getAlgorithmVersion(algorithmName);
-            expect(algVersion1.body.length).to.be.equal(2)
+            expect(algVersion1.body.length).to.be.equal(1)
             await  deleteAlgorithm(algorithmName,true)
             
         }).timeout(1000 * 60 * 5);
@@ -144,7 +144,7 @@ describe('Alrogithm Tests', () => {
             await delay(10000)
             const update = await updateAlgorithmVersion(algorithmName,algorithmImageV2,true);
             expect(update.status).to.be.equal(201);
-            await delay(3000);
+            await delay(5000);
             const status = await getPipelineStatus(jobId)
             expect(status.body.status).to.be.equal("failed")
             const alg = await getAlgorithm(algorithmName)
@@ -207,7 +207,7 @@ describe('Alrogithm Tests', () => {
             await delay(10000)
             const update = await updateAlgorithmVersion(algorithmName,algorithmImageV2,true);
            
-            await delay(3000)
+            await delay(5000)
             const status = await getPipelineStatus(jobId)
             expect(status.body.status).to.be.equal("failed")
             await deleteAlgorithm(algorithmName,true)

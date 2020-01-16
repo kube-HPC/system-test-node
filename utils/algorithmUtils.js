@@ -38,7 +38,7 @@ const getAlgorithm = async (name) => {
 
 const storeAlgorithm = async (algName) => {
 
-    const res = await getAlgorithim(algName)
+    const res = await getAlgorithm(algName)
     write_log(res.status + " " + algName)
     if (res.status === 404) {
         const {

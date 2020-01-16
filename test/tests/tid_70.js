@@ -14,6 +14,7 @@ const {
 const logger = require(path.join(process.cwd(), 'utils/logger'))
 
 const {
+    deletePipeline,
     getPipeline,
     getPipelineStatus,
     storePipeline,
@@ -58,8 +59,6 @@ describe('TID-70- pipeline state management', () => {
         //store pipeline evalfail
         await storePipeline(d)
       
-
-        console.log(status)
         //run the pipeline evalfail
         const res = await runStored(d)
 

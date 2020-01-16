@@ -146,6 +146,12 @@ const resumePipeline = async (jobid) => {
     logResult(res, 'PipelineUtils resumePipeline')
     return res
 }
+const getExecPipeline = async (jobId)=>{
+    const res = await chai.request(config.apiServerUrl)
+    .get(`/exec/pipelines/${jobId}`)
+    logResult(res, 'PipelineUtils getExecPipeline')
+return res
+}
 
 const pausePipeline = async (jobid) => {
     let body = {
@@ -224,8 +230,22 @@ const stopPipeline = async (jobid) => {
     return res
 }
 
+const exceCachPipeline = async (jobId,nodeName)=>{
+    const data = {
+        jobId: jobId,
+        nodeName: nodeName
+    }
+
+    const res = await chai.request(config.apiServerUrl)
+        .post('/exec/caching')
+        .send(data)
+    logResult(res, 'PipelineUtils exceCachPipeline')
+    return res
+}
+
 
 module.exports = {
+    getExecPipeline,
     getPiplineNodes,
     getPipeline,
     getPipelineStatus,
@@ -238,6 +258,7 @@ module.exports = {
     runRaw,
     resumePipeline,
     pausePipeline,
-    stopPipeline
+    stopPipeline,
+    exceCachPipeline
 
 }

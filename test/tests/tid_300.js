@@ -71,15 +71,23 @@ describe('TID-300', () => {
         const res = await chai.request(config.apiServerUrl)
             .post('/exec/stored')
             .send(inputData)
-        const jobId = res.abody.jobId
+        const jobId = res.body.jobId
         await delay(5000);
         const result = await getResult(jobId, 200)
-        let diff = []
+        // let diff = []
         result.data.forEach(element => {
-
+           
             if (isFinite(element.result)) {
-                diff.push(expected[element.batchIndex - 1] - element.result)
-                expect(diff).to.be.equal(0)
+
+                const dif= expected[element.batchIndex - 1] - element.result
+                if (isFinite(dif)) {
+                    
+                    expect(dif).to.be.equal(0)
+                }
+                
+                
+              ///  diff.push(expected[element.batchIndex - 1] - element.result)
+              //  expect(diff).to.be.equal(0)
             }
 
         });

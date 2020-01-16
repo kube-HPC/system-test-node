@@ -6,7 +6,7 @@ const {
 
 const codeSubPipe = (input) => {
     const arr = []
-    write_log(`got input ${input}`)
+    // write_log(`got input ${input}`)
     for (let i = 0; i < input[0].length; i++) {
         let current = input[0][i]
         arr.push(Math.sqrt(Math.pow(current + (current * 3), 2)))

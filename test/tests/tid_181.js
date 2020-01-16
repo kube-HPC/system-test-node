@@ -73,7 +73,7 @@ const executeJob = async (batch ,time,threads)=>{
 }
 
 
-describe('TID-181- ', () => {
+describe('TID-181- increasing batch sizes and parallel requests', () => {
     it('100 batch 1 thread 15 seconds', async () => {
        
         await executeJob(100,15000,1)

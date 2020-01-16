@@ -6,10 +6,10 @@ const {
 
 const codeMainPipe = (input, self) => {
     const arr = [];
-    write_log(`the input for the pipeline is ${input}`)
+    // write_log(`the input for the pipeline is ${input}`)
     for (let i = 0; i < input.length; i++) {
         let current = input[0][i];
-        write_log(`in the loop ${current}`)
+        // write_log(`in the loop ${current}`)
         arr.push(current);
     };
     const subpipe = {

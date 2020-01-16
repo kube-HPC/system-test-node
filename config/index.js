@@ -53,6 +53,9 @@ const index = {
     algorithmTest: {
         testData1: require('../pipelines/AlgorithmTest'),
         testData2: require('../pipelines/AlgorithmTest2')
+    },
+    jagearTest: {
+        testData1: require('../pipelines/versatile-pipe')
     }
     
 }

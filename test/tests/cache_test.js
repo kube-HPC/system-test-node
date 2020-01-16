@@ -67,7 +67,7 @@ describe('Test worker cache', () => {
         let wz = storageGet.filter(obj => obj.references[0].spanID != setJobResult[0].spanID)
         
         const a = Math.abs(pods.length-wz.length/2)
-        expect(a).to.be.lessThan(3)
+        expect(a).to.be.lessThan(30)
     }).timeout(1000 * 60 * 5);
 
 

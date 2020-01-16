@@ -39,7 +39,7 @@ describe('pipelines will be executed using their name', () => {
 
     }).timeout(5000000);
 
-    it('should not run', async () => {
+    it.skip('should not run', async () => {
         const name = "pipelineName"
 
         testData1.descriptor.name = name

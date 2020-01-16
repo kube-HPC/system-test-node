@@ -1,4 +1,5 @@
 const chai = require('chai')
+const expect = chai.expect;
 const path = require('path')
 const chaiHttp = require('chai-http')
 const {
@@ -18,11 +19,12 @@ const {
 } = require(path.join(process.cwd(), 'utils/misc_utils'))
 
 describe('randomize tests', () => {
+    //TODO: need to create eval-alg algrorithms
     it('randomize a pipeline and get its result', async () => {
 
         const randPipe = randomize(10)
-        const res = runRaw(randPipe)
-        res.should.have.status(200)
+        const res = await runRaw(randPipe)
+        expect(res).to.have.status(200)
         const jobId = res.body.jobId
         const result = await getResult(jobId, 200)
         write_log(jobId)
@@ -34,13 +36,13 @@ describe('randomize tests', () => {
         for (let i = 0; i < 5; i++) {
             const randPipe = randomize(10)
             const res = runRaw(randPipe)
-            res.should.have.status(200)
+            expect(res).to.have.status(200)
             const jobId = res.body.jobId
         }
 
     }).timeout(1000 * 60 * 5)
 
-
+    //TODO: add algorithms 'multpy', 'subpy', 'addpy'
     it('randomize pipeline without eval', async () => {
         const algos = ['multpy', 'subpy', 'addpy']
         const descriptor = {
@@ -58,9 +60,9 @@ describe('randomize tests', () => {
             descriptor.nodes.push(newNode)
         }
 
-        const res = runRaw(descriptor)
+        const res = await runRaw(descriptor)
 
-        res.should.have.status(200)
+        expect(res).to.have.status(200)
         const jobId = res.body.jobId
         const result = await getResult(jobId, 200)
 

@@ -64,7 +64,7 @@ const getLogByJobId= async (jobId)=>{
     }));
     terms.push({
         term: {
-            'meta.internal.jobId.keyword': jobId
+            'meta.internal.jobId': jobId
         }
     });
 
