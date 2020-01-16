@@ -420,7 +420,7 @@ describe('all swagger calls test', () => {
         }).timeout(1000 * 60)
 
 
-        it(' GET storage data /storage/values/{path}', async () => {
+        xit(' GET storage data /storage/values/{path}', async () => {
             
 
             const res = await chai.request(config.apiServerUrl)
