@@ -270,20 +270,20 @@ describe('all swagger calls test', () => {
                 nodes: [{
                     nodeName: "node1",
                     algorithmName: "eval-alg",
-                    input: [10000],
+                    input: [30000,1],
                     extraData: {
                         code: [
                             "(input)=>{",
-                            "return new Promise((resolve,reject)=>{setTimeout(()=>resolve(4),input[0])});}"
+                            "return new Promise((resolve,reject)=>{setTimeout(()=>resolve(input[0][1]),input[0][0])});}"
                         ]
                     }
                 }]
             }
 
-            const res = await runRaw(rawPipe)
-            const jobId = res.body.jobId
+            const jobId = await runRaw(rawPipe)
+            //const jobId = res.body.jobId
 
-            await delay(1000 * 3)
+           // await delay(1000 * 3)
             const pause = await pausePipeline(jobId);
             await delay(2000)
             let pipelineStatus = await getPipelineStatus(jobId)
