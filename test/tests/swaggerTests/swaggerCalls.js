@@ -29,8 +29,10 @@ const {
     pausePipeline,
     getPipelineStatus
 } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
-const { deleteAlgorithm,    
-    getAlgorithimVersion,
+const {
+    getAlgorithm,
+     deleteAlgorithm,    
+    getAlgorithmVersion,
     updateAlgorithmVersion,
     buildAlgoFromImage,
     deleteAlgorithmVersion,
@@ -265,25 +267,35 @@ describe('all swagger calls test', () => {
 
 
         it('test the POST exec/pause/{jobId} and exec/resume/{jobId} rest call', async () => {
-            const rawPipe = {
-                name: "rawPipe",
-                nodes: [{
-                    nodeName: "node1",
-                    algorithmName: "eval-alg",
-                    input: [30000,1],
-                    extraData: {
-                        code: [
-                            "(input)=>{",
-                            "return new Promise((resolve,reject)=>{setTimeout(()=>resolve(input[0][1]),input[0][0])});}"
-                        ]
+            const pausePipe = {
+                name: "pausePipe",
+                nodes: [
+                    {
+                        nodeName: "evalsleep",
+                        algorithmName: "eval-alg",
+                        input: [
+                            "#@flowInput.inputs"
+                        ],
+                        extraData: {
+                            code: [
+                                "(input,require)=> {",
+                                    "return new Promise((resolve,reject)=>{setTimeout(()=>resolve(input[0][1]),input[0][0])});}"
+                            ]
+                        }
                     }
-                }]
+                ],
+                flowInput: {
+                    inputs:[
+                        [15000,1]
+                    ]}
             }
+            const tt = await storePipeline(pausePipe)
 
-            const jobId = await runRaw(rawPipe)
-            //const jobId = res.body.jobId
+            const res =await runStored("pausePipe")
+            const jobId = res.body.jobId
 
-           // await delay(1000 * 3)
+            await delay(1000 * 3)
+           
             const pause = await pausePipeline(jobId);
             await delay(2000)
             let pipelineStatus = await getPipelineStatus(jobId)
@@ -296,8 +308,8 @@ describe('all swagger calls test', () => {
         }).timeout(1000 * 60 * 5)
         it(`test the GET /exec/tree/{jobId} rest call`, async () => {
 
-            await storePipeline('origPipeline')
-            await storePipeline('sonPipeline')
+            const a= await storePipeline('origPipeline')
+            const ab= await storePipeline('sonPipeline')
 
             const run = await runStored('pipe1')
             const jobId = run.body.jobId
@@ -310,7 +322,7 @@ describe('all swagger calls test', () => {
             expect(res).to.have.status(200)
 
             await deletePipeline('pipe1')
-            await deletePipeline('sonPipeline')
+            await deletePipeline('pipe2')
 
         }).timeout(1000 * 60 * 2)
 
@@ -349,7 +361,7 @@ describe('all swagger calls test', () => {
                 .send(pipe)
 
             const jobId = res.body.jobId
-           
+            await getResult(jobId, 200);
             const ParsedGraph = await getParsedGraph(jobId)
             expect(ParsedGraph.body.nodes.length).to.be.equal(3)
         }).timeout(1000 * 60 * 2)
@@ -595,11 +607,11 @@ describe('all swagger calls test', () => {
     it('Get   /versions/algorithms/{name}', async () => {
         await  deleteAlgorithm(algorithmName,true)
          await buildAlgoFromImage(algorithmV1);
-         const algVersion = await getAlgorithimVersion(algorithmName);
+         const algVersion = await getAlgorithmVersion(algorithmName);
          expect(algVersion.body.length).to.be.equal(1)
          await buildAlgoFromImage(algorithmV2);
         //validate there are two images
-        const algVersion2 = await getAlgorithimVersion(algorithmName);
+        const algVersion2 = await getAlgorithmVersion(algorithmName);
         
         expect(algVersion2.body.length).to.be.equal(2)
         await  deleteAlgorithm(algorithmName,true)
@@ -612,11 +624,11 @@ describe('all swagger calls test', () => {
          await buildAlgoFromImage(algorithmV2);
         //validate there are two images
         
-        let algVersion = await getAlgorithimVersion(algorithmName);
+        let algVersion = await getAlgorithmVersion(algorithmName);
         expect(algVersion.body.length).to.be.equal(2)
         const del = await deleteAlgorithmVersion(algorithmName,algorithmImageV2)
         await delay(2000)
-        algVersion = await getAlgorithimVersion(algorithmName);
+        algVersion = await getAlgorithmVersion(algorithmName);
         expect(algVersion.body.length).to.be.equal(1)
         await  deleteAlgorithm(algorithmName,true)
        
@@ -627,11 +639,11 @@ describe('all swagger calls test', () => {
         await  deleteAlgorithm(algorithmName,true)
          await buildAlgoFromImage(algorithmV1);         
          await buildAlgoFromImage(algorithmV2);
-         let alg= await getAlgorithim(algorithmName)
+         let alg= await getAlgorithm(algorithmName)
          expect(alg.body.algorithmImage).to.be.equal("tamir321/algoversion:v1")
         
         await updateAlgorithmVersion(algorithmName,algorithmImageV2,true)
-        alg= await getAlgorithim(algorithmName)
+        alg= await getAlgorithm(algorithmName)
         
         expect(alg.body.algorithmImage).to.be.equal("tamir321/algoversion:v2")
         await  deleteAlgorithm(algorithmName,true)
