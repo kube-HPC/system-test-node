@@ -43,7 +43,7 @@ describe('randomize tests', () => {
     }).timeout(1000 * 60 * 5)
 
     //TODO: add algorithms 'multpy', 'subpy', 'addpy'
-    it('randomize pipeline without eval', async () => {
+    it.skip('randomize pipeline without eval', async () => {
         const algos = ['multpy', 'subpy', 'addpy']
         const descriptor = {
             name: "randomPipe",
@@ -62,7 +62,7 @@ describe('randomize tests', () => {
 
         const res = await runRaw(descriptor)
 
-        expect(res).to.have.status(200)
+        expect(res.status).to.be(200)
         const jobId = res.body.jobId
         const result = await getResult(jobId, 200)
 

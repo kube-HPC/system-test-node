@@ -13,6 +13,11 @@ const index = {
     tid_300: {
         testData1: require('../pipelines/addmuldiv')
     },
+    tid_310: {
+        testData1: require('../pipelines/addmult'),
+        testData2: require('../pipelines/waitany'),
+        testData3: require('../pipelines/indexedPipeline')
+    },
     tid_50: {
         testData1: require('../pipelines/eval-dynamic')
     },

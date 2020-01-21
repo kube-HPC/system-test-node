@@ -33,6 +33,14 @@ const getPipeline = async (name) => {
     return res
 }
 
+const getAllPipeline = async () => {
+
+    const res = await chai.request(config.apiServerUrl)
+        .get(`/store/pipelines/`)
+    logResult(res, 'PipelineUtils getPipeline')
+    return res
+}
+
 const getPipelineStatus = async (id) => {
     const res = await chai.request(config.apiServerUrl)
         .get(`/exec/status/${id}`)
@@ -53,6 +61,13 @@ const storePipeline = async (pipeObj) => {
         res = await storeNewPipeLine(pipeline)
     }
     logResult(res, 'PipelineUtils storePipeline')
+    return res
+}
+const putStorePipelineWithDescriptor = async (descriptor) => {
+    const res = await chai.request(config.apiServerUrl)
+        .put('/store/pipelines')
+        .send(descriptor);
+    logResult(res, 'PipelineUtils putStorePipelineWithDescriptor')
     return res
 }
 
@@ -245,9 +260,11 @@ const exceCachPipeline = async (jobId,nodeName)=>{
 
 
 module.exports = {
+    putStorePipelineWithDescriptor,
     getExecPipeline,
     getPiplineNodes,
     getPipeline,
+    getAllPipeline,
     getPipelineStatus,
     storePipeline,
     deletePipeline,
