@@ -4,7 +4,8 @@ const chaiHttp = require('chai-http');
 const path = require('path')
 const delay = require('delay')
 
-const { deleteAlgorithm,
+const { runAlgorithm,
+        deleteAlgorithm,
         getAlgorithm,    
         getAlgorithmVersion,
         updateAlgorithmVersion,
@@ -92,7 +93,7 @@ describe('pipeline Tests', () => {
              expect(status.body.types).includes("caching");
 
         }).timeout(1000 * 60 * 2)
-    })
+    
 
     it('type= stored', async () => {
         const pipe = {
@@ -117,8 +118,18 @@ describe('pipeline Tests', () => {
         expect(status.body.types[0]).to.be.equal("stored");
     }).timeout(1000 * 60 * 2)
 
+    it('type = algorithm ',async ()=>{
+        const alg = {name: 'green-alg',
+                        input:[1]}
+        const res = await runAlgorithm(alg)
+        const jobId = res.body.jobId
+        await  getResult(jobId,200)
+        const status = await  getExecPipeline(jobId)
+        expect(status.body.types[0]).to.be.equal("algorithm");
+    }).timeout(1000 * 60 * 2)
 
 
+})
     describe('pause_resume_pipelineas',()=>{   
         const algorithmName = "algorithm-version-test"
         const algorithmImageV1 = "tamir321/algoversion:v1"

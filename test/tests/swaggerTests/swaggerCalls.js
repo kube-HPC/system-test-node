@@ -30,6 +30,7 @@ const {
     getPipelineStatus
 } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 const {
+    runAlgorithm,
     getAlgorithm,
      deleteAlgorithm,    
     getAlgorithmVersion,
@@ -48,6 +49,17 @@ chai.use(assertArrays);
 describe('all swagger calls test', () => {
 
     describe('Execution', () => {
+
+
+        it('test the /exec/algorithm ',async ()=>{
+            const alg = {name: 'green-alg',
+                            input:[1]}
+            const res = await runAlgorithm(alg)
+            const jobId = res.body.jobId
+            const result = await  getResult(jobId,200)
+             expect(result.data[0].result).to.be.equal(42)
+        }).timeout(1000 * 60 * 2)
+
         it('test the POST exec/raw rest call', async () => {
             const rawPipe = {
                 name: "rawPipe",
@@ -325,6 +337,10 @@ describe('all swagger calls test', () => {
             await deletePipeline('pipe2')
 
         }).timeout(1000 * 60 * 2)
+
+
+
+
 
     })
 
@@ -882,11 +898,11 @@ describe('all swagger calls test', () => {
 
         }).timeout(1000 * 60)
 
-        it('test the Get webhooks/{jobId}', async () => {
+        it('test the Get webhooks/list/{jobId}', async () => {
             const jobId = await runStoredAndWaitForResults(pipe)
             const timeout = await delay(1000 * 10);
             const res = await chai.request(config.apiServerUrl)
-                .get(`/webhooks/${jobId}`)
+                .get(`/webhooks/list/${jobId}`)
             expect(res).to.have.status(200)
 
 

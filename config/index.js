@@ -61,6 +61,9 @@ const index = {
     },
     jagearTest: {
         testData1: require('../pipelines/versatile-pipe')
+    },
+    batchOnBatch: {
+        testData1: require('../pipelines/batchOnBatch')
     }
     
 }

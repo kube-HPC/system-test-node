@@ -3,21 +3,9 @@ const expect = chai.expect;
 const chaiHttp = require('chai-http');
 const path = require('path')
 const delay = require('delay')
-
-const { deleteAlgorithm,
-        getAlgorithm,    
-        getAlgorithmVersion,
-        updateAlgorithmVersion,
-        buildAlgoFromImage,
-        deleteAlgorithmVersion,
-        getAlgorithim} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
-
-
 const {
     testData1,
-    testData2
-} = require(path.join(process.cwd(), 'config/index')).algorithmTest
-
+} = require(path.join(process.cwd(), 'config/index')).batchOnBatch
 
 const {
     getResult,
@@ -306,6 +294,15 @@ describe('algorithm retry Tests', () => {
             expect(result.status).to.be.equal("completed")
         
         }).timeout(1000 * 60 * 2)
+
+
+
+        it('batch on batch', async ()=>{
+            const d = deconstructTestData(testData1)
+            await storePipeline(d)
+            await runStored(d)
+
+        })
     })
     } )
     

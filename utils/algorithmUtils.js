@@ -94,6 +94,13 @@ const buildAlgorithm = async (code, algName, entry) => {
     return buildStatusAlg
 }
 
+const runAlgorithm = async (body)=>{
+    const res = await chai.request(config.apiServerUrl)
+        .post('/exec/algorithm')
+        .send( body)
+    logResult(res, 'algorithmUtils runAlgorithm')
+    return res
+}
 
 
 const getAlgorithmVersion = async (name)=>{
@@ -135,6 +142,7 @@ const updateAlgorithmVersion = async (Algname , imageName, Force = true)=>{
 
 
 module.exports = {
+    runAlgorithm,
     getAlgorithm,
     storeAlgorithm,
     updateAlgorithm,
