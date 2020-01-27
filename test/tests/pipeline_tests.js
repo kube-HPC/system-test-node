@@ -14,10 +14,10 @@ const { runAlgorithm,
         getAlgorithim} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 
 
-const {
+const {   
     testData1,
     testData2
-} = require(path.join(process.cwd(), 'config/index')).algorithmTest
+} = require(path.join(process.cwd(), 'config/index')).pipelineTest
 
 
 const {
@@ -28,6 +28,7 @@ const {
 const {
     getExecPipeline,
     runRaw,
+    deletePipeline,
     getPipeline,
     getPipelineStatus,
     storePipeline,
@@ -43,8 +44,37 @@ const {
 chai.use(chaiHttp);
 
 describe('pipeline Tests', () => {
+    
+    describe('pipeline includeInResults', () => {
+        it('yellow node includeInResults = true', async () => {
 
-    describe('pipeline Types', () => {
+            const d = deconstructTestData(testData2)
+            await deletePipeline(d)
+            await storePipeline(d)
+            const jobId = await runStoredAndWaitForResults(d)
+            const result = await getResult(jobId,200)
+            const yellow = result.data.filter(obj => obj.nodeName=="yellow")
+            expect(yellow.length).to.be.equal(7)
+            const black = result.data.filter(obj => obj.nodeName=="black")
+            expect(black.length).to.be.equal(1)
+        }).timeout(1000 * 60 * 2)
+
+
+        it('yellow node includeInResults = false', async () => {
+
+            const d = deconstructTestData(testData2)
+            await deletePipeline(d)
+            d.pipeline.nodes[1].includeInResults=false
+            await storePipeline(d)
+            const jobId = await runStoredAndWaitForResults(d)
+            const result = await getResult(jobId,200)
+            const yellow = result.data.filter(obj => obj.nodeName=="yellow")
+            expect(yellow.length).to.be.equal(0)
+            const black = result.data.filter(obj => obj.nodeName=="black")
+            expect(black.length).to.be.equal(1)
+        }).timeout(1000 * 60 * 2)
+    })
+       describe('pipeline Types', () => {
 
         const rawPipe = {
             name: "rawPipe",
@@ -153,7 +183,7 @@ describe('pipeline Tests', () => {
         
         const algorithmV1 = algJson(algorithmName,algorithmImageV1)
 
-        const d = deconstructTestData(testData2)
+        const d = deconstructTestData(testData1)
        
 
         it('pause resume pipeline', async () => {

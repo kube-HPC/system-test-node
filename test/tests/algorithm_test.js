@@ -15,16 +15,20 @@ const { deleteAlgorithm,
 
 const {
     testData1,
-    testData2
+    testData2,
+    testData3
 } = require(path.join(process.cwd(), 'config/index')).algorithmTest
 
 
 const {
-    getResult
+    getResult,
+    getRawGraph,
+    getParsedGraph
   } = require(path.join(process.cwd(), 'utils/results'))
 
 // const KubernetesClient = require('@hkube/kubernetes-client').Client;
 const {
+    deletePipeline,
     getPipeline,
     getPipelineStatus,
     storePipeline,
@@ -36,6 +40,34 @@ const {
 chai.use(chaiHttp);
 
 describe('Alrogithm Tests', () => {
+
+    describe('Test Algorithm ttl',()=>{ 
+        it('ttl = 3 one of the inputs = 5 secondes ',async ()=>{ 
+            const d = deconstructTestData(testData3)
+            await deletePipeline(d)
+            await storePipeline(d)
+            const jobId = await runStoredAndWaitForResults(d)
+            const graph = await getRawGraph(jobId)
+            const nodesStatus = graph.body.nodes[0].batch
+            const nodesError = nodesStatus.filter(obj => obj.error=="Algorithm TTL expired")
+            expect(nodesError.length).to.be.equal(1)
+           
+        }).timeout(1000 * 60 * 5);
+
+        it('ttl =0 one of the inputs = 5 secondes',async ()=>{ 
+            const d = deconstructTestData(testData3)
+            await deletePipeline(d)
+            d.pipeline.nodes[0].ttl=0
+            await storePipeline(d)
+            const jobId = await runStoredAndWaitForResults(d)
+            const graph = await getRawGraph(jobId)
+            const nodesStatus = graph.body.nodes[0].batch
+            const nodesError = nodesStatus.filter(obj => obj.error=="Algorithm TTL expired")
+            expect(nodesError.length).to.be.equal(0)
+        }).timeout(1000 * 60 * 5);
+        
+     })
+
     describe('Test Algorithm Version',()=>{   
         const algorithmName = "algorithm-version-test"
         const algorithmImageV1 = "tamir321/algoversion:v1"

@@ -57,7 +57,12 @@ const index = {
     },
     algorithmTest: {
         testData1: require('../pipelines/AlgorithmTest'),
-        testData2: require('../pipelines/AlgorithmTest2')
+        testData2: require('../pipelines/AlgorithmTest2'),
+        testData3: require('../pipelines/AlgorithmTtl')
+    },
+    pipelineTest: {       
+        testData1: require('../pipelines/AlgorithmTest2'),
+        testData2: require('../pipelines/pipelineSimple2')
     },
     jagearTest: {
         testData1: require('../pipelines/versatile-pipe')
