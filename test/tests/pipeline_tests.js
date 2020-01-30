@@ -16,12 +16,14 @@ const { runAlgorithm,
 
 const {   
     testData1,
-    testData2
+    testData2,
+    testData3
 } = require(path.join(process.cwd(), 'config/index')).pipelineTest
 
 
 const {
-    getResult
+    getResult,
+    getCronResult
   } = require(path.join(process.cwd(), 'utils/results'))
 
 // const KubernetesClient = require('@hkube/kubernetes-client').Client;
@@ -29,7 +31,7 @@ const {
     getExecPipeline,
     runRaw,
     deletePipeline,
-    getPipeline,
+    pipelineRandomName,
     getPipelineStatus,
     storePipeline,
     runStored,
@@ -43,6 +45,22 @@ const {
 
 chai.use(chaiHttp);
 
+const algJson = (algName,imageName) =>{ 
+    let alg = {
+        name: algName,
+        cpu: 1,
+        gpu: 0,
+        mem: "256Mi",
+        minHotWorkers: 0,
+        algorithmImage: imageName,
+        type: "Image",
+        options: {
+            debug: false,
+            pending: false
+            }       
+        }
+    return alg
+}
 describe('pipeline Tests', () => {
     
     describe('pipeline includeInResults', () => {
@@ -74,7 +92,7 @@ describe('pipeline Tests', () => {
             expect(black.length).to.be.equal(1)
         }).timeout(1000 * 60 * 2)
     })
-       describe('pipeline Types', () => {
+    describe('pipeline Types', () => {
 
         const rawPipe = {
             name: "rawPipe",
@@ -158,6 +176,58 @@ describe('pipeline Tests', () => {
         expect(status.body.types[0]).to.be.equal("algorithm");
     }).timeout(1000 * 60 * 2)
 
+
+    it('type = raw tensor',async ()=>{
+        const algorithmName = "tensor1"
+        const python27 = "docker.io/hkubedev/tensor1:v1.0.1"
+        const algpython27 = algJson(algorithmName,python27)                  
+        await buildAlgoFromImage(algpython27);
+        const tensorRawPipe = {
+            name: "tesorPipe",
+            nodes: [{
+                    nodeName: "node1",
+                    algorithmName: "tensor1",
+                    input: [],
+                    metrics:{
+                        tensorboard:true
+                    }
+                }
+            ]
+        }
+        
+        const res = await runRaw(tensorRawPipe)
+
+        // write_log(res.body)
+        expect(res).to.have.status(200)
+
+        const jobId = res.body.jobId
+        await delay(3 * 1000)
+         await getResult(jobId, 200)
+        //result.status.should.equal('completed')
+        const status = await  getExecPipeline(jobId)
+        expect(status.body.types[1]).to.be.equal("tensorboard");
+        expect(status.body.types[0]).to.be.equal("raw");
+    }).timeout(1000 * 60 * 2)
+
+
+    it(" cron  internal ", async () => {
+   
+        testData3.descriptor.name= pipelineRandomName(8)
+        const d = deconstructTestData(testData3)
+        await storePipeline(d)
+        await delay(1000*90)
+        
+        const result =  await getCronResult(d.name,5)
+        const jobId = result.body[0].jobId
+        const status = await  getExecPipeline(jobId)
+        await deletePipeline(d)
+
+        const types = status.body.types
+        const expected = ["cron","internal","stored"]
+        const a = expected.filter(v=> types.includes(v) )
+        expect(a.length).to.be.equal(3)
+
+    }).timeout(1000 * 60 * 7);
 
 })
     describe('pause_resume_pipelineas',()=>{   

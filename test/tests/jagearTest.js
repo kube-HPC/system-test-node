@@ -70,7 +70,7 @@ describe('jagear', () => {
 
         });
 
-        found.should.be.true
+        expected(found).to.be.true
     }).timeout(1000 * 60)
 
 })

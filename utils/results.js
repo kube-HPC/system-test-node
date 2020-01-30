@@ -140,6 +140,13 @@ const  getParsedGraph = async (jobId)=>{
     return res
 }
 
+const getCronResult = async(jobId,limit) =>{
+    const res = await chai.request(config.apiServerUrl)
+    .get(`/cron/results/?name=${jobId}&limit=${limit}`)
+logger.info(`${res.status}, ${JSON.stringify(res.body)}`)
+
+return res
+}
 module.exports = {
     getResult,
     getStatus,
@@ -151,5 +158,6 @@ module.exports = {
     idGen,
     getJobResult,
     getRawGraph,
-    getParsedGraph
+    getParsedGraph,
+    getCronResult
 }

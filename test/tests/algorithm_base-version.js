@@ -5,25 +5,14 @@ const path = require('path')
 const delay = require('delay')
 
 const { deleteAlgorithm,
-    runAlgorithm,
-        getAlgorithm,    
-        getAlgorithmVersion,
-        updateAlgorithmVersion,
-        buildAlgoFromImage,
-        deleteAlgorithmVersion
+        runAlgorithm,       
+        buildAlgoFromImage,      
     } = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 
-
-
-
-
 const {
-    getResult,
-    getRawGraph,
-    getParsedGraph
+    getResult,  
   } = require(path.join(process.cwd(), 'utils/results'))
 
-// const KubernetesClient = require('@hkube/kubernetes-client').Client;
 
 
 chai.use(chaiHttp);
@@ -33,11 +22,7 @@ describe('baseline  version Tests', () => {
     
 
     describe('python baseline tests',()=>{   
-        
-        // const python35 = "tamir321/py35"
-        // const python36 = "tamir321/py36"
-        // const python37 = "tamir321/py37"
-        // const python37Slim = "tamir321/py37-slim"
+      
         const algJson = (algName,imageName) =>{ 
             let alg = {
                 name: algName,
@@ -119,6 +104,22 @@ describe('baseline  version Tests', () => {
             const result = await  getResult(jobId,200)
              expect(result.data[0].result).to.be.equal(42)
         }).timeout(1000 * 60 * 5);
+
+        it('python 3.7 -slim', async () => {
+            const algorithmName = "python37slim"
+            const python37 = "tamir321/py37-slim:02"
+            const algpython37 = algJson(algorithmName,python37)
+           
+            await  deleteAlgorithm(algorithmName,true)
+            await buildAlgoFromImage(algpython37);
+            const alg = {name: algorithmName,
+                            input:[1]}
+            const res = await runAlgorithm(alg)
+            const jobId = res.body.jobId
+            const result = await  getResult(jobId,200)
+             expect(result.data[0].result).to.be.equal(42)
+        }).timeout(1000 * 60 * 5);
+
 
     } )
     

@@ -13,6 +13,14 @@ const index = {
     tid_300: {
         testData1: require('../pipelines/addmuldiv')
     },
+    tid_400: {
+        testData1: require('../pipelines/bytes'),
+        testData2: require('../pipelines/addmult'),
+        testData3: require('../pipelines/bool'),
+        testData4: require('../pipelines/evalwait161'),
+        testData5: require('../pipelines/stringReplace'),
+        testData6: require('../pipelines/evalcron1minutes')
+    },
     tid_310: {
         testData1: require('../pipelines/addmult'),
         testData2: require('../pipelines/waitany'),
@@ -62,7 +70,8 @@ const index = {
     },
     pipelineTest: {       
         testData1: require('../pipelines/AlgorithmTest2'),
-        testData2: require('../pipelines/pipelineSimple2')
+        testData2: require('../pipelines/pipelineSimple2'),
+        testData3: require('../pipelines/evalcron1minutes')
     },
     jagearTest: {
         testData1: require('../pipelines/versatile-pipe')
