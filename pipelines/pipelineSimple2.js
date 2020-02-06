@@ -43,6 +43,9 @@ const descriptor = {
         batchTolerance: 80,
         progressVerbosityLevel: "info"
     },
+    triggers:{
+        pipelines:[]
+    }
 
 }
 

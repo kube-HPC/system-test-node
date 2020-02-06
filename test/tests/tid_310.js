@@ -9,7 +9,8 @@ const config = require(path.join(process.cwd(), 'config/config'))
 const {
     testData1,
     testData2,
-    testData3
+    testData3,
+    testData4
 } = require(path.join(process.cwd(), 'config/index')).tid_310
 const logger = require(path.join(process.cwd(), 'utils/logger'))
 
@@ -113,18 +114,18 @@ describe('TID-310 raw vs stored', () => {
 describe('pipeline actions', () => {
 
     it(" TID-320 add the same pipeline twice", async () => {
-        
-        //set test data to testData1
-        const d = deconstructTestData(testData1)
-        await deletePipeline(d.name)
 
+        const d = deconstructTestData(testData4)
+        const del320 = await deletePipeline(d.name)
+        await delay(2000)
         const t =await storePipeline(d)
         const newNodeName  = d.pipeline.nodes[1].nodeName+"test1234"
-        d.pipeline.nodes[1].nodeName =   newNodeName
-        await putStorePipelineWithDescriptor(d.pipeline)
-        const pipe = await getPipeline(d.name)
-       expect(pipe.body.nodes[1].nodeName).to.equal(newNodeName)
-       await deletePipeline(d.name)
+        d.pipeline.nodes[1].nodeName = newNodeName
+        const store = await putStorePipelineWithDescriptor(d.pipeline)
+        await delay(2000)
+        const pipeLine = await getPipeline(d.name)
+       expect(pipeLine.body.nodes[1].nodeName).to.equal(newNodeName)
+       await deletePipeline(d)
 
        const res = await putStorePipelineWithDescriptor(d.pipeline)
 
@@ -136,22 +137,22 @@ describe('pipeline actions', () => {
     it(" TID-330- delete pipeline", async () => {
         
         //set test data to testData1
-        const d = deconstructTestData(testData1)
-        await deletePipeline(d.name)
+        const d = deconstructTestData(testData4)
+        await deletePipeline(d)
 
         const t =await storePipeline(d)
-        
-        const del = await deletePipeline(d.name)
-        expect(del.status).to.equal(200)
-        const del1 = await deletePipeline(d.name)
+        await delay(2000)
+        const del = await deletePipeline(d)
+        //expect(del.status).to.equal(200)
+        const del1 = await deletePipeline(d)
         expect(del1.text).to.contain("pipeline addmult Not Found")
     }).timeout(1000 * 60 * 5);
 
     it(" TID-340- get all pipeline", async () => {
         
         //set test data to testData1
-        const d = deconstructTestData(testData1)
-        await deletePipeline(d.name)
+        const d = deconstructTestData(testData4)
+        const del = await deletePipeline(d)
         const allPipeline = await getAllPipeline();
         const a = allPipeline.body.filter(obj => obj.name == d.name)
         await storePipeline(d)
@@ -165,7 +166,7 @@ describe('pipeline actions', () => {
         
         //set test data to testData1
         const d = deconstructTestData(testData2)
-     
+        await deletePipeline(d)
         await storePipeline(d)
         
         const res = await runStoredAndWaitForResults(d)
@@ -180,7 +181,7 @@ describe('pipeline actions', () => {
         
         //set test data to testData1
         const d = deconstructTestData(testData3)
-     
+        await deletePipeline(d)
         await storePipeline(d)
         
         const res = await runStoredAndWaitForResults(d)

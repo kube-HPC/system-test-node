@@ -11,6 +11,7 @@ const {
     testData2,
     testData3,
     testData4,
+    testData4a,
     testData5,
     testData6
 } = require(path.join(process.cwd(), 'config/index')).tid_400
@@ -267,19 +268,23 @@ describe("TID-440",()=>{
 
 
     it('Different priority Pipelines with Different algorithm', async () => {
-        const d = deconstructTestData(testData4)
+        const testDataA = testData4a
+        const d = deconstructTestData(testData4a)
+        await deletePipeline(d)
+        await storePipeline(d)
         const pipe = {   
             name: d.name,
             flowInput: {
                 range:150,
                 inputs:1000               
             },            
-            priority: 2
+            priority: 3
         }
-        testData4.descriptor.name= testData4.descriptor.name+"2"
-        const d2 = deconstructTestData(testData4)
+        testData4a.descriptor.name= testData4a.descriptor.name+"2"
+        const d2 = deconstructTestData(testDataA)
         d2.pipeline.nodes[0].algorithmName=d2.pipeline.nodes[1].algorithmName="eval-alg2"
-        await storePipeline(d)
+        await deletePipeline(d2)
+        await storePipeline(d2)
         const res2 = await runStored(pipe)
         await delay(2000)
         pipe.name= d2.name

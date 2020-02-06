@@ -17,7 +17,8 @@ const { runAlgorithm,
 const {   
     testData1,
     testData2,
-    testData3
+    testData3,
+    testData4
 } = require(path.join(process.cwd(), 'config/index')).pipelineTest
 
 
@@ -40,7 +41,8 @@ const {
     resumePipeline,
     pausePipeline,
     stopPipeline,
-    exceCachPipeline
+    exceCachPipeline,
+    getPipelinestatusByName
 } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 
 chai.use(chaiHttp);
@@ -138,10 +140,52 @@ describe('pipeline Tests', () => {
              await getResult(jobId2, 200)
              const status = await  getExecPipeline(jobId2)
              expect(status.body.types).includes("raw");
-             expect(status.body.types).includes("caching");
+             expect(status.body.types).includes("node");
 
         }).timeout(1000 * 60 * 2)
     
+        it.skip("type= Triger", async () => {
+            const simpleName =testData2.descriptor.name
+            const simple = deconstructTestData(testData2)
+            await storePipeline(simple)
+            testData2.descriptor.name= pipelineRandomName(8)
+            testData2.descriptor.triggers.pipelines = [simpleName]
+            const d = deconstructTestData(testData2)
+            await storePipeline(d)
+            await runStoredAndWaitForResults(simple)
+            expect(status.body.types).includes("raw");
+           
+           //await deletePipeline(d)
+        }).timeout(1000 * 60 * 7);
+
+        it("type= Sub-pipeline", async () => {
+            const pipelineName = pipelineRandomName(8)
+           
+            const pipe = {
+                "name": "versatile-pipe",
+                "flowInput": {
+                    "inp": [{
+                        "type": "storedPipeline",
+                        "name": `${pipelineName}`,
+                        "input":["a"]
+                    }]
+                }
+            }
+            
+            testData2.descriptor.name= pipelineName         
+            const d = deconstructTestData(testData2)
+            await storePipeline(d)
+            // testData4 = versatile-pipe
+            const e = deconstructTestData(testData4)
+            await storePipeline(e)
+            await runStoredAndWaitForResults(pipe)
+            const res = await getPipelinestatusByName(pipelineName)
+            const status = await  getExecPipeline(res.body[0].jobId)
+            expect(status.body.types).includes("stored");
+            expect(status.body.types).includes("sub-pipeline");
+            expect(status.body.types).includes("internal");
+            await deletePipeline(d)
+        }).timeout(1000 * 60 * 7);
 
     it('type= stored', async () => {
         const pipe = {
@@ -234,27 +278,9 @@ describe('pipeline Tests', () => {
         const algorithmName = "algorithm-version-test"
         const algorithmImageV1 = "tamir321/algoversion:v1"
 
-        const algJson = (algName,imageName) =>{ 
-            let alg = {
-                name: algName,
-                cpu: 1,
-                gpu: 0,
-                mem: "256Mi",
-                minHotWorkers: 0,
-                algorithmImage: imageName,
-                type: "Image",
-                options: {
-                    debug: false,
-                    pending: false
-                    }       
-                }
-            return alg
-        }
-        
         const algorithmV1 = algJson(algorithmName,algorithmImageV1)
 
         const d = deconstructTestData(testData1)
-       
 
         it('pause resume pipeline', async () => {
             const pipe = {   

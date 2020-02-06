@@ -96,7 +96,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
         write_log(result.status)
         write_log(result.error, 'error')
         expect(result.status).to.be.equal('completed');
-    }).timeout(1000 * 60 * 5);
+    }).timeout(1000 * 60 * 60);
 
 
     it('Fail algorithm pod  ', async () => {
@@ -133,7 +133,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
         expect(result.status).to.be.equal('completed');
 
         
-    }).timeout(1000 * 60 * 5);
+    }).timeout(1000 * 60 * 60);
 
     
     it('Fail jaeger   ', async () => {
@@ -164,62 +164,62 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
 
         expect(result.status).to.be.equal('completed');
        
-    }).timeout(1000 * 60 * 5);
+    }).timeout(1000 * 60 * 60);
 
     it('Fail API server  ', async () => {
 
         await FailSingelPod("api-server")
 
-    }).timeout(1000 * 60 * 5);
+    }).timeout(1000 * 60 * 60);
 
     it('Fail monitor-server  ', async () => {
 
         await FailSingelPod("monitor-server")
 
-    }).timeout(1000 * 60 * 5);
+    }).timeout(1000 * 60 * 60);
 
     it('Fail simulator  ', async () => {
 
         await FailSingelPod("simulator")
 
-    }).timeout(1000 * 60 * 5);
+    }).timeout(1000 * 60 * 60);
 
     it('Fail task-executor  ', async () => {
 
         await FailSingelPod("task-executor")
 
-    }).timeout(1000 * 60 * 5);
+    }).timeout(1000 * 60 * 60);
 
     it('Fail resource-manager  ', async () => {
 
         await FailSingelPod("resource-manager")
 
-    }).timeout(1000 * 60 * 5);
+    }).timeout(1000 * 60 * 60);
 
     it('Fail algorithm-operator  ', async () => {
 
         await FailSingelPod("algorithm-operator")
 
-    }).timeout(1000 * 60 * 5);
+    }).timeout(1000 * 60 * 60);
 
     it('Fail trigger-service  ', async () => {
   
         await FailSingelPod("trigger-service")
 
-    }).timeout(1000 * 60 * 5);
+    }).timeout(1000 * 60 * 60);
 
     it('Fail prometheus  ', async () => {
 
         await FailSingelPod("prometheus-node", "monitoring")
 
-    }).timeout(1000 * 60 * 5);
+    }).timeout(1000 * 60 * 60);
 
 
     it('Fail monitoring-grafana  ', async () => {
 
         await FailSingelPod("monitoring-grafana", "monitoring")
 
-    }).timeout(1000 * 60 * 5);
+    }).timeout(1000 * 60 * 60);
 
 
 

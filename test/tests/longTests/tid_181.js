@@ -78,20 +78,20 @@ describe('TID-181- increasing batch sizes and parallel requests', () => {
        
         await executeJob(100,15000,1)
         
-    }).timeout(1000 * 60 * 5);
+    }).timeout(1000 * 60 * 60);
 
     it('500 batch 1 thread 15 seconds', async () => {
        
         await executeJob(500,15000,1)
         
-    }).timeout(1000 * 60 * 5);
+    }).timeout(1000 * 60 * 60);
 
 
     it('1000 batch 1 thread 15 seconds', async () => {
        
         await executeJob(1000,15000,1)
         
-    }).timeout(1000 * 60 * 5);
+    }).timeout(1000 * 60 * 60);
 
 
 
@@ -99,20 +99,20 @@ describe('TID-181- increasing batch sizes and parallel requests', () => {
        
         await executeJob(100,15000,4)
         
-    }).timeout(1000 * 60 * 5);
+    }).timeout(1000 * 60 * 60);
 
     it('500 batch 4 thread 15 seconds', async () => {
        
         await executeJob(500,15000,4)
         
-    }).timeout(1000 * 60 * 5);
+    }).timeout(1000 * 60 * 60);
 
 
     it('1000 batch 4 thread 15 seconds', async () => {
        
         await executeJob(1000,15000,4)
         
-    }).timeout(1000 * 60 * 5);
+    }).timeout(1000 * 60 * 60);
 
    
 

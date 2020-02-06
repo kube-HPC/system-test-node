@@ -37,7 +37,7 @@ let end
 const delay = mili => new Promise(r => setTimeout(r, mili))
 const main = async () => {
     const start = Date.now()
-    const hours = 12
+    const hours = 48
     end = new Date(start + (1000 * 60 * 60 * hours)).getTime()
 
     for (let i = 0; i < 3; i++) {

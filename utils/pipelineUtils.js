@@ -258,6 +258,23 @@ const exceCachPipeline = async (jobId,nodeName)=>{
     return res
 }
 
+const getPipelineResultsByName = async (name,limit=5)=>{
+
+    const res = await chai.request(config.apiServerUrl)
+    .get(`/pipelines/results?name=${name}&limit=${limit}`)
+
+    return res
+
+}
+
+const getPipelinestatusByName = async (name,limit=5)=>{
+
+    const res = await chai.request(config.apiServerUrl)
+    .get(`/pipelines/status?name=${name}&limit=${limit}`)
+
+    return res
+
+}
 const pipelineRandomName = (length)=>{
     
         
@@ -290,6 +307,8 @@ module.exports = {
     resumePipeline,
     pausePipeline,
     stopPipeline,
-    exceCachPipeline
+    exceCachPipeline,
+    getPipelineResultsByName,
+    getPipelinestatusByName 
 
 }
