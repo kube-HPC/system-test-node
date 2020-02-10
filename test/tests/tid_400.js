@@ -13,16 +13,20 @@ const {
     testData4,
     testData4a,
     testData5,
-    testData6
+    testData6,
+    testData7,
+    testData8
 } = require(path.join(process.cwd(), 'config/index')).tid_400
 
 
 const {
+    getJobResult,
     getResult,
     getCronResult
 } = require(path.join(process.cwd(), 'utils/results'))
 
 const {
+    runStoredAndWaitForResults,
     pipelineRandomName,
     deletePipeline,
     storePipeline,
@@ -67,6 +71,7 @@ describe('TID-400 ', () => {
         it(" integers", async () => {
             //set test data to testData1
             const d = deconstructTestData(testData2)
+            await deletePipeline(d)
             const pipe = {   
                 name: d.name,
                 flowInput: {
@@ -89,6 +94,7 @@ describe('TID-400 ', () => {
         it(" float", async () => {
             //set test data to testData1
             const d = deconstructTestData(testData2)
+            await deletePipeline(d)
             const pipe = {   
                 name: d.name,
                 flowInput: {
@@ -111,6 +117,7 @@ describe('TID-400 ', () => {
         it(" string", async () => {
             //set test data to testData1
             const d = deconstructTestData(testData5)
+            await deletePipeline(d)
             const pipe = {   
                 name: d.name,
                 flowInput: {
@@ -133,6 +140,7 @@ describe('TID-400 ', () => {
         it(" bool true", async () => {
             //set test data to testData1
             const d = deconstructTestData(testData3)
+            await deletePipeline(d)
             const pipe = {   
                 name: d.name,
                 flowInput: {
@@ -154,6 +162,7 @@ describe('TID-400 ', () => {
         it(" bool false", async () => {
             //set test data to testData1
             const d = deconstructTestData(testData3)
+            await deletePipeline(d)
             const pipe = {   
                 name: d.name,
                 flowInput: {
@@ -175,6 +184,7 @@ describe('TID-400 ', () => {
         it(" bool null", async () => {
             //set test data to testData1
             const d = deconstructTestData(testData3)
+            await deletePipeline(d)
             const pipe = {   
                 name: d.name,
                 flowInput: {
@@ -197,6 +207,7 @@ describe('TID-400 ', () => {
         it(" bool object type", async () => {
             //set test data to testData1
             const d = deconstructTestData(testData3)
+            await deletePipeline(d)
             const pipe = {   
                 name: d.name,
                 flowInput: {
@@ -325,6 +336,53 @@ describe("TID-440",()=>{
         expect(result1.timeTook).to.be.lessThan(result2.timeTook)
     }).timeout(1000 * 60 * 2)
 })
+
+it.skip("TID-450- pipeline triggers", async () => {
+    const simpleName =testData2.descriptor.name
+    const simple = deconstructTestData(testData7)
+    await deletePipeline(simple)
+    await storePipeline(simple)
+    testData2.descriptor.name= pipelineRandomName(8)
+    testData2.descriptor.triggers.pipelines = [simpleName]
+    const d = deconstructTestData(testData7)
+    await deletePipeline(d)
+    await storePipeline(d)
+    await runStoredAndWaitForResults(simple)
+    //expect(status.body.types).includes("raw");
+    // bug was open cant get pipeline result by name
+   //await deletePipeline(d)
+}).timeout(1000 * 60 * 7);
+
+
+it("TID-460 - algorithm statuses", async () => {
+
+    const d = deconstructTestData(testData8)
+    await deletePipeline(d)
+    await storePipeline(d)
+    const jobId = await runStoredAndWaitForResults(d)
+    const res = await getJobResult(jobId)
+    expect(res.body.data[1].error).includes("Error: failed to eval code");
+
+}).timeout(1000 * 60 * 7);
+
+
+it.skip("TID-470- dismiss resources after completion of an algorithm", async () => {
+
+   
+
+}).timeout(1000 * 60 * 7);
+
+it.skip("TID-480- ttl test", async () => {
+
+   
+
+}).timeout(1000 * 60 * 7);
+
+it.skip("TID-490 pipeline options", async () => {
+
+   
+
+}).timeout(1000 * 60 * 7);
 
 
 });

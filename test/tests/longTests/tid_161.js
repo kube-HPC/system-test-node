@@ -26,6 +26,7 @@ const {
 
 // const KubernetesClient = require('@hkube/kubernetes-client').Client;
 const {
+    deletePipeline,
     getPiplineNodes,
     storePipeline,
     runStored,
@@ -47,7 +48,8 @@ const FailSingelPod = async (podName, namespace = 'default') => {
     const d = deconstructTestData(testData1)
 
     //store pipeline evalwait
-    const a = await storePipeline(d)
+    await deletePipeline(d)
+     await storePipeline(d)
 
     //run the pipeline evalwait
     const res = await runStored(d)
@@ -76,10 +78,9 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
 
         //set test data to testData1
         const d = deconstructTestData(testData1)
-
+        await deletePipeline(d)
         //store pipeline evalwait
         await storePipeline(d)
-
         //run the pipeline evalwait
         const res = await runStored(d)
         const jobId = res.body.jobId
@@ -109,7 +110,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
         }
         //set test data to testData1
         const d = deconstructTestData(testData1)
-
+        await deletePipeline(d)
         //store pipeline evalwait
         await storePipeline(d)
 
@@ -124,7 +125,8 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
         
         const allAlg = partNodes.map(async (element) => {deletePod(element,'default')})
         await Promise.all(allAlg); 
-        await delay(5000) 
+    
+        await delay(15000) 
         const log = await getLogByPodName(partNodes[0])
         let a = log.hits.hits.filter(obj => obj._source.message.includes("exit code 1")) //or find "SIGTERM"
         expect(a).to.have.lengthOf.greaterThan(0)
@@ -133,13 +135,14 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
         expect(result.status).to.be.equal('completed');
 
         
-    }).timeout(1000 * 60 * 60);
+    }).timeout(1000 * 60 * 10);
 
     
     it('Fail jaeger   ', async () => {
         const d = deconstructTestData(testData1)
 
         //store pipeline evalwait
+        await deletePipeline(d)
         const a= await storePipeline(d)
 
         //run the pipeline evalwait
@@ -149,12 +152,12 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
 
         const pilelineDriverPod = driver[0].podName
 
-        const currentNode = getPodNode(pilelineDriverPod)
+        const currentNode = await getPodNode(pilelineDriverPod)
 
         const jaegerPods = await filterPodsByName("jaeger") //[0].metadata.name
 
         // find the jaeger that run on the same node as the pipeline driver. 
-        const jaegrPod = jaegerPods.filter(obj => obj.spec.nodeName.equal(currentNode))
+        const jaegrPod = jaegerPods.filter(obj => obj.spec.nodeName==currentNode)
 
         const deleted = await deletePod(jaegrPod[0].metadata.name)
 

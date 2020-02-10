@@ -20,7 +20,9 @@ const index = {
         testData4: require('../pipelines/evalwait161'),
         testData4a: require('../pipelines/evalwait400'),
         testData5: require('../pipelines/stringReplace'),
-        testData6: require('../pipelines/evalcron1minutes')
+        testData6: require('../pipelines/evalcron1minutes'),
+        testData7: require('../pipelines/pipelineSimple2'),
+        testData8: require('../pipelines/evalerror')
     },
     tid_310: {
         testData1: require('../pipelines/addmult'),

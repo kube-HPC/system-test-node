@@ -9,13 +9,13 @@ const getDriverIdByJobId = async (jobId) => {
         var socket = require('socket.io-client')(url, {
             transports: ['websocket'],
             // secure: true,
-            path: '/hkube/monitor-server/socket.io',
+            path: '/hkube/monitor-server/socket.io',  
             reconnect: true,
             rejectUnauthorized: false
         })
 
         socket.on('connect', function () {
-            // console.log('connected')
+            socket.emit('experiment-register', { name: 'experiment:main', lastRoom: null });
         });
         socket.on('PROGRESS', async function (data) {
             // fs.writeFileSync('data.json', JSON.stringify(data))

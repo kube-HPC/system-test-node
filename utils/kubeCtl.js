@@ -26,7 +26,7 @@ kubeconfig.setCurrentContext(process.env.K8S_CONTEXT)
 const deletePod = async (podName, namespace='default') => {
     let deletedPod = ''
     if (typeof podName !== "undefined") {
-         write_log("start delete")
+         write_log("start delete - " +podName)
         deletedPod = await client.api.v1.namespaces(namespace).pods(podName).delete()
     } else {
          write_log("Not delete")

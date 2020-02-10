@@ -140,7 +140,7 @@ describe('algorithm retry Tests', () => {
             const war = graph.body.nodes[0].warnings.filter(obj => obj.includes("attempts:"))
             expect(war.length).to.be.equal(4)
             expect(graph.body.nodes[0].retries).to.be.equal(4)
-        }).timeout(1000 * 60 * 7)
+        }).timeout(1000 * 60 * 10)
 
         it('rawPipeCrash OnCrash retry 3 time', async () => {
             const rawPipe = rawPipeCrash("OnCrash",3)
@@ -152,7 +152,7 @@ describe('algorithm retry Tests', () => {
             const war = graph.body.nodes[0].warnings.filter(obj => obj.includes("attempts:"))
             expect(war.length).to.be.equal(3)
             expect(graph.body.nodes[0].retries).to.be.equal(3)
-        }).timeout(1000 * 60 * 7)
+        }).timeout(1000 * 60 * 10)
 
 
         it('rawPipeCrash OnError will not  retry 3 time', async () => {
@@ -163,7 +163,7 @@ describe('algorithm retry Tests', () => {
             //error: algorithm eval-alg has disconnected while in working state, reason: CLOSE_ABNORMAL. status: terminated,exitCode: 1,reason: Error
             const graph = await getRawGraph(jobId)
             expect(graph.body.nodes[0].retries).to.be.equal(undefined)
-        }).timeout(1000 * 60 * 7)
+        }).timeout(1000 * 60 * 10)
 
     })
 
@@ -178,7 +178,7 @@ describe('algorithm retry Tests', () => {
             expect(result.status).to.be.equal("failed")
             const graph = await getRawGraph(jobId)
             expect(graph.body.nodes[0].retries).to.be.equal(undefined)
-        }).timeout(1000 * 60 * 2)
+        }).timeout(1000 * 60 * 10)
 
         it('rawPipeError Always retry 4 time', async () => {
             const rawPipe = rawPipeError("Always",4)
