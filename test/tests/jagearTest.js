@@ -1,6 +1,8 @@
 const chai = require('chai');
 const path = require('path');
 const chaiHttp = require('chai-http');
+
+const expect = chai.expect;
 const assertArrays = require('chai-arrays');
 const {
     getPiplineNodes,
@@ -70,7 +72,8 @@ describe('jagear', () => {
 
         });
 
-        expected(found).to.be.true
+        expect(found).to.be.true
+        
     }).timeout(1000 * 60)
 
 })

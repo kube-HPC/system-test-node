@@ -253,7 +253,7 @@ describe('pipeline Tests', () => {
         const status = await  getExecPipeline(jobId)
         expect(status.body.types[1]).to.be.equal("tensorboard");
         expect(status.body.types[0]).to.be.equal("raw");
-    }).timeout(1000 * 60 * 2)
+    }).timeout(1000 * 60 * 10)
 
 
     it("type = cron  internal ", async () => {
