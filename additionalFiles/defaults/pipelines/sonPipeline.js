@@ -18,7 +18,7 @@ const pipe = {
             nodeName: "evaladd",
             algorithmName: "eval-alg",
             input: [
-                "@flowInput.addInput"
+                "@flowInput"
             ],
             extraData: {
                 code: [
@@ -31,7 +31,7 @@ const pipe = {
             algorithmName: "eval-alg",
             input: [
                 "@evaladd",
-                "@flowInput.multInput"
+                "@flowInput"
             ],
             extraData: {
                 code: [
