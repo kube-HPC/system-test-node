@@ -6,6 +6,7 @@ const delay = require('delay')
 
 const { runAlgorithm,
         deleteAlgorithm,
+        storeAlgorithm,
         getAlgorithm,    
         getAlgorithmVersion,
         updateAlgorithmVersion,
@@ -13,12 +14,19 @@ const { runAlgorithm,
         deleteAlgorithmVersion,
         getAlgorithim} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 
+const { 
+    getWebSocketJobs,
+    getWebSocketlogs,
+    getDriverIdByJobId
+        } = require(path.join(process.cwd(), 'utils/socketGet'))
 
 const {   
     testData1,
     testData2,
     testData3,
-    testData4
+    testData4,
+    testData5,
+    testData6
 } = require(path.join(process.cwd(), 'config/index')).pipelineTest
 
 
@@ -64,7 +72,7 @@ const algJson = (algName,imageName) =>{
     return alg
 }
 describe('pipeline Tests', () => {
-    
+   
     describe('pipeline includeInResults', () => {
         it('yellow node includeInResults = true', async () => {
 
@@ -144,20 +152,27 @@ describe('pipeline Tests', () => {
 
         }).timeout(1000 * 60 * 2)
     
-        it.skip("type= Triger", async () => {
+        it("type= Triger", async () => {
             const simpleName =testData2.descriptor.name
             const simple = deconstructTestData(testData2)
             await deletePipeline(simple)
             await storePipeline(simple)
-            testData2.descriptor.name= pipelineRandomName(8)
+            const triggeredPipe  = pipelineRandomName(8)
+            testData2.descriptor.name = triggeredPipe
             testData2.descriptor.triggers.pipelines = [simpleName]
+            testData2.descriptor.nodes[0].input[0]="flowInput.inp"
             const d = deconstructTestData(testData2)
             await deletePipeline(d)
             await storePipeline(d)
             await runStoredAndWaitForResults(simple)
-            //expect(status.body.types).includes("raw");
-            // bug was open cant get pipeline result by name
-           //await deletePipeline(d)
+            await delay(3 * 1000);
+            jobs = await getWebSocketJobs();
+            jobId = jobs.filter(obj => obj.key.endsWith(triggeredPipe))[0].key
+            const status = await  getExecPipeline(jobId)
+            expect(status.body.types).includes("trigger");
+            expect(status.body.types).includes("stored");
+            expect(status.body.types).includes("internal");
+            await deletePipeline(d)
         }).timeout(1000 * 60 * 7);
 
         it("type= Sub-pipeline", async () => {
@@ -173,9 +188,9 @@ describe('pipeline Tests', () => {
                     }]
                 }
             }
-            
-            testData2.descriptor.name= pipelineName         
-            const d = deconstructTestData(testData2)
+            await storeAlgorithm("versatile")
+            testData6.descriptor.name= pipelineName         
+            const d = deconstructTestData(testData6)
             await storePipeline(d)
             // testData4 = versatile-pipe
             const e = deconstructTestData(testData4)
@@ -225,9 +240,10 @@ describe('pipeline Tests', () => {
 
     it('type = raw tensor',async ()=>{
         const algorithmName = "tensor1"
-        const python27 = "docker.io/hkubedev/tensor1:v1.0.1"
-        const algpython27 = algJson(algorithmName,python27)                  
-        await buildAlgoFromImage(algpython27);
+        const tensorAlgPath = "docker.io/hkubedev/tensor1:v1.0.1"
+        const tensorAlg = algJson(algorithmName,tensorAlgPath)
+        tensorAlg.mem = "5Gi"                  
+        await buildAlgoFromImage(tensorAlg);
         const tensorRawPipe = {
             name: "tesorPipe",
             nodes: [{
@@ -276,6 +292,133 @@ describe('pipeline Tests', () => {
     }).timeout(1000 * 60 * 7);
 
 })
+
+    describe('validate flowInput exist',()=>{
+
+        it(" stored does not have flowInput", async () => {
+            const simpleName =testData2.descriptor.name
+            const pipe = {
+                "name": simpleName,
+                "flowInput": {
+                    "inp1": [3]
+                }
+            }
+            const simple = deconstructTestData(testData2)
+            await deletePipeline(simple)
+            await storePipeline(simple)
+            const res = await runStored(pipe)
+            //"unable to find flowInput.inp"
+            expect(res.text).to.include("unable to find flowInput.inp")
+
+        }).timeout(1000 * 60 * 2);
+
+        it(" raw does not have flowInput", async () => {
+            const pipe =  {
+                name: "jnk",
+               
+                nodes: [
+                    {
+                        "nodeName": "one",
+                        "algorithmName": "eval-alg",
+                        "input": [ "@flowInput.inp"]
+                    },
+                    {
+                        "nodeName": "two",
+                        "algorithmName": "eval-alg",
+                        "input": [ "@flowInput.two"]
+                    }
+                ],
+                flowInput: {inp:0},
+              
+                options: {
+                    batchTolerance: 100,
+                    concurrentPipelines: 10,
+                    progressVerbosityLevel: "info",
+                    ttl: 3600
+                },
+                priority: 3
+            }
+            const res = await runRaw(pipe)
+            //"unable to find flowInput.inp"
+            expect(res.text).to.include("unable to find flowInput.two")
+
+        }).timeout(1000 * 60 * 2);
+       
+
+
+        it(" cron  does not have flowInput ", async () => {
+            const pipelineName = pipelineRandomName(8)
+            testData3.descriptor.name =pipelineName
+            testData3.descriptor.nodes[0].input[0]="@flowInput.inputs"
+            const d = deconstructTestData(testData3)
+            await storePipeline(d)
+            await delay(1000*120)
+            
+            const me = `pipeline ${pipelineName} failed sending to api server, error: unable to find flowInput.inputs`
+            const log = await getWebSocketlogs()
+            const error = log.filter(obj => obj.message == me)
+            await deletePipeline(d)
+            expect(error.length).to.be.greaterThan(0)
+           
+            
+        }).timeout(1000 * 60 * 7);
+
+        it(" Trigger does not have flowInput", async () => {
+            const simpleName =testData2.descriptor.name
+            const simple = deconstructTestData(testData2)
+            await deletePipeline(simple)
+            await storePipeline(simple)
+            const triggerdName = pipelineRandomName(8)
+            testData2.descriptor.name =triggerdName
+            testData2.descriptor.triggers.pipelines = [simpleName]           
+            const d = deconstructTestData(testData2)
+            await deletePipeline(d)
+            await storePipeline(d)
+            await runStoredAndWaitForResults(simple)
+            const log = await getWebSocketlogs()
+            const me = `pipeline ${triggerdName} failed sending to api server, error: unable to find flowInput.inp`
+            const error = log.filter(obj => obj.message == me)
+            await deletePipeline(d)
+            expect(error.length).to.be.greaterThan(0)
+        }).timeout(1000 * 60 * 7);
+
+        it(" Sub-pipeline does not have flowInput", async () => {
+            // testData2 pipeline Simple2 with flowInput
+             // testData4 = versatile-pipe
+             const logBefore = await getWebSocketlogs()
+             const before = logBefore.filter(obj=>obj.message.includes("SubPipeline job error: unable to find flowInput.inp, alg subPipelineId")).length
+           //
+            const pipelineName = pipelineRandomName(8)
+           
+            const pipe = {
+                "name": "versatile-pipe",
+                "flowInput": {
+                    "inp": [{
+                        "type": "storedPipeline",
+                        "name": `${pipelineName}`,
+                        "input":["a"]
+                    }]
+                }
+            }
+            await storeAlgorithm("versatile")
+            testData2.descriptor.name= pipelineName         
+            const d = deconstructTestData(testData2)
+            await storePipeline(d)
+           
+            const e = deconstructTestData(testData4)
+            await storePipeline(e)
+            const res = await runStored(pipe)
+            await delay(1000*20)
+            const dr  =await getDriverIdByJobId(res.body.jobId)
+            const log = await getWebSocketlogs()
+            const after = log.filter(obj=>obj.message.includes("SubPipeline job error: unable to find flowInput.inp, alg subPipelineId")).length
+            await deletePipeline(d)
+            expect(after).to.be.greaterThan(before)
+            
+        }).timeout(1000 * 60 * 7);
+
+
+    })
     describe('pause_resume_pipelineas',()=>{   
         const algorithmName = "algorithm-version-test"
         const algorithmImageV1 = "tamir321/algoversion:v1"
@@ -284,7 +427,7 @@ describe('pipeline Tests', () => {
 
         const d = deconstructTestData(testData1)
 
-        it('pause resume pipeline', async () => {
+        it('pause resume pipeline singe batch', async () => {
             const pipe = {   
                 name: d.name,
                 flowInput: {
@@ -310,7 +453,22 @@ describe('pipeline Tests', () => {
             
         }).timeout(1000 * 60 * 5);
 
-
+        it('pause resume pipeline multiple batch', async () => {
+            const e = deconstructTestData(testData5)
+            await deletePipeline(e)
+            await storePipeline(e)
+           
+            const res = await runStored(e)        
+            const jobId = res.body.jobId
+            await delay(2000)
+           
+            const pause = await pausePipeline(jobId);
+            await delay(120000)
+            let pipelineStatus = await getPipelineStatus(jobId)
+            expect(pipelineStatus.body.status).to.be.equal("paused")
+            const resume = await resumePipeline(jobId);
+            const result = await getResult(jobId,200)                        
+        }).timeout(1000 * 60 * 5);
         it('pause stop pipeline', async () => {
             const pipe = {   
                 name: d.name,

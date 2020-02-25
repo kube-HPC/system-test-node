@@ -262,7 +262,7 @@ describe("TID-440",()=>{
             },            
             priority: 2
         }
-        
+        await deletePipeline(d)
         await storePipeline(d)
         const res2 = await runStored(pipe)
         await delay(2000)
@@ -286,8 +286,8 @@ describe("TID-440",()=>{
         const pipe = {   
             name: d.name,
             flowInput: {
-                range:150,
-                inputs:1000               
+                range:300,
+                inputs:4000               
             },            
             priority: 3
         }
@@ -297,7 +297,7 @@ describe("TID-440",()=>{
         await deletePipeline(d2)
         await storePipeline(d2)
         const res2 = await runStored(pipe)
-        await delay(2000)
+        await delay(5000)
         pipe.name= d2.name
         pipe.priority = 1
         const res1 = await runStored(pipe)
@@ -308,7 +308,7 @@ describe("TID-440",()=>{
         const result1 =  await getResult(jobId1, 200)
         const result2 = await  getResult(jobId2, 200)
         expect(result1.timeTook).to.be.lessThan(result2.timeTook)
-    }).timeout(1000 * 60 * 2)
+    }).timeout(1000 * 60 * 4)
 
 
     it('Same priority pipelines different batch sizes ', async () => {
@@ -321,10 +321,10 @@ describe("TID-440",()=>{
             },            
             priority: 3
         }
-        
+        await deletePipeline(d)
         await storePipeline(d)
         const res2 = await runStored(pipe)
-        await delay(2000)
+        await delay(1000)
         pipe.flowInput.range = 100
         const res1 = await runStored(pipe)
         // write_log(res.body)
@@ -334,7 +334,7 @@ describe("TID-440",()=>{
         const result1 =  await getResult(jobId1, 200)
         const result2 = await  getResult(jobId2, 200)
         expect(result1.timeTook).to.be.lessThan(result2.timeTook)
-    }).timeout(1000 * 60 * 2)
+    }).timeout(1000 * 60 * 7)
 })
 
 it.skip("TID-450- pipeline triggers", async () => {

@@ -491,7 +491,7 @@ describe('all swagger calls test', () => {
 
 
 
-        }).timeout(1000 * 60)
+        }).timeout(1000 * 180)
 
 
 

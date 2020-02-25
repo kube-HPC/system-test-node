@@ -19,11 +19,35 @@ const {
     deletePipeline
 } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 
+
+const {
+    buildAlgoFromImage 
+} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 chai.use(chaiHttp);
 
 
-describe.skip('store the gpu algorithm', () => {
 
+const gpuAlg = {
+    "name": "gpu-alg1",
+    "cpu": 1,
+    "gpu": 1,
+    "mem": "5Gi",
+    "minHotWorkers": 0,
+    "algorithmImage": "yehiyam/gpu-alg",
+    "type": "Image",
+    "options": {
+        "debug": false,
+        "pending": false
+    }
+}
+describe('test gpu algs', () => {
+
+    it('soter gpu algorithm',async ()=>{
+        await buildAlgoFromImage(gpuAlg);
+        gpuAlg.name = "gpu-alg2"
+        await buildAlgoFromImage(gpuAlg);
+    })
+    
     it('should run the pipeline gpu-demo and after 2 seconds run the gpuDemo-1 pipeline', async () => {
 
         const d1 = deconstructTestData(testData1)

@@ -42,7 +42,87 @@ const getDriverIdByJobId = async (jobId) => {
 }
 
 
+const getWebSocketlogs = async () => {
 
+    return (new Promise((resolve, reject) => {
+        const url = process.env.BASE_URL
+
+        var socket = require('socket.io-client')(url, {
+            transports: ['websocket'],
+            // secure: true,
+            path: '/hkube/monitor-server/socket.io',  
+            reconnect: true,
+            rejectUnauthorized: false
+        })
+
+        socket.on('connect', function () {
+            socket.emit('experiment-register', { name: 'experiment:main', lastRoom: null });
+        });
+        socket.on('PROGRESS', async function (data) {
+            // fs.writeFileSync('data.json', JSON.stringify(data))
+            const d = (JSON.stringify(data))
+
+            const logs = data.logs
+            
+            socket.disconnect()
+
+            resolve(logs)
+        });
+
+
+
+        socket.on('reconnect', function () {
+            console.log('disconnected')
+        });
+
+        socket.on('connect_error', (err) => {
+            console.log(err)
+        })
+
+    }))
+}
+
+const getWebSocketJobs = async () => {
+
+    return (new Promise((resolve, reject) => {
+        const url = process.env.BASE_URL
+
+        var socket = require('socket.io-client')(url, {
+            transports: ['websocket'],
+            // secure: true,
+            path: '/hkube/monitor-server/socket.io',  
+            reconnect: true,
+            rejectUnauthorized: false
+        })
+
+        socket.on('connect', function () {
+            socket.emit('experiment-register', { name: 'experiment:main', lastRoom: null });
+        });
+        socket.on('PROGRESS', async function (data) {
+            // fs.writeFileSync('data.json', JSON.stringify(data))
+            const d = (JSON.stringify(data))
+
+            const jobs = data.jobs
+            
+            socket.disconnect()
+
+            resolve(jobs)
+        });
+
+
+
+        socket.on('reconnect', function () {
+            console.log('disconnected')
+        });
+
+        socket.on('connect_error', (err) => {
+            console.log(err)
+        })
+
+    }))
+}
 module.exports = {
+    getWebSocketJobs,
+    getWebSocketlogs,
     getDriverIdByJobId
 }

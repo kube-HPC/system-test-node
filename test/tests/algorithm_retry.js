@@ -302,7 +302,7 @@ describe('algorithm retry Tests', () => {
             await storePipeline(d)
             await runStored(d)
 
-        })
+        }).timeout(1000 * 60 * 2)
     })
     } )
     

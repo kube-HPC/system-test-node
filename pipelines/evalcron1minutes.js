@@ -8,12 +8,12 @@ const descriptor = {
             nodeName: "evalsleep",
             algorithmName: "eval-alg",
             input: [
-            	"@flowInput.inputs"
+            	"flowInput.inputs"
             ],
             extraData: {
                 code: [
                     "(input,require)=> {",
-                    "return new Promise((resolve,reject)=>{setTimeout(()=>resolve(4),input[0])});}"
+                    "return new Promise((resolve,reject)=>{setTimeout(()=>resolve(4),input[1000])});}"
                 ]
             }
         }
