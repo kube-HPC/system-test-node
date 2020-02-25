@@ -14,6 +14,7 @@ const {
 const logger = require(path.join(process.cwd(), 'utils/logger'))
 
 const {
+    deletePipeline,
     storePipeline,
     runStored,
     deconstructTestData,
@@ -28,7 +29,7 @@ describe('Part or all of the inputs of algorithm are taken from the pipeline\'s 
 
         //set test data to testData1
         const d = deconstructTestData(testData1)
-
+        await deletePipeline(d)
         //store pipeline
         await storePipeline(d)
 
@@ -43,6 +44,7 @@ describe('Part or all of the inputs of algorithm are taken from the pipeline\'s 
 
         //set test data to testData2
         const d = deconstructTestData(testData2)
+        await deletePipeline(d)
 
         //store pipeline
         await storePipeline(d)
@@ -58,6 +60,7 @@ describe('Part or all of the inputs of algorithm are taken from the pipeline\'s 
     it('should run the pipeline twice', async () => {
 
         const d = deconstructTestData(testData1)
+        await deletePipeline(d)
 
         await storePipeline(d)
 

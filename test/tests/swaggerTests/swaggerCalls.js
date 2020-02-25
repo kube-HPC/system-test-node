@@ -491,7 +491,7 @@ describe('all swagger calls test', () => {
 
 
 
-        }).timeout(1000 * 60)
+        }).timeout(1000 * 180)
 
 
 
@@ -522,16 +522,16 @@ describe('all swagger calls test', () => {
     describe('Pipelines', () => {
 
 
-        it.skip('test the GET /pipelines/results/raw/{name} rest call', async () => {
+        it('test the GET /pipelines/results?{name} rest call', async () => {
             const name = 'rawPipe'
 
             const res = await chai.request(config.apiServerUrl)
-                .get(`/pipelines/results/raw/${name}`)
+                .get(`/pipelines/results?name=${name}`)
 
             expect(res).to.have.status(200)
 
             const res2 = await chai.request(config.apiServerUrl)
-                .get(`/pipelines/results/raw/${name}?limit=5`)
+                .get(`/pipelines/results?name=${name}&limit=5`)
 
             expect(res2).to.have.status(200)
             expect(res2.body).to.have.lengthOf(5)
@@ -539,16 +539,16 @@ describe('all swagger calls test', () => {
         }).timeout(1000 * 60)
 
 
-        it.skip('test the GET /pipelines/results/stored/{name} rest call', async () => {
+        it('test the GET /pipelines/status/{name} rest call', async () => {
             const name = 'simple'
 
             const res = await chai.request(config.apiServerUrl)
-                .get(`/pipelines/results/stored/${name}`)
+                .get(`/pipelines/status?name=${name}`)
 
             expect(res).to.have.status(200)
 
             const res2 = await chai.request(config.apiServerUrl)
-                .get(`/pipelines/results/stored/${name}?limit=5`)
+                .get(`/pipelines/status?name=${name}&limit=5`)
 
             expect(res2).to.have.status(200)
             expect(res2.body).to.have.lengthOf(5)
