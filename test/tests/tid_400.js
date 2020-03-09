@@ -308,7 +308,7 @@ describe("TID-440",()=>{
         const result1 =  await getResult(jobId1, 200)
         const result2 = await  getResult(jobId2, 200)
         expect(result1.timeTook).to.be.lessThan(result2.timeTook)
-    }).timeout(1000 * 60 * 4)
+    }).timeout(1000 * 60 * 15)
 
 
     it('Same priority pipelines different batch sizes ', async () => {

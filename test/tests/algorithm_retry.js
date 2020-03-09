@@ -39,7 +39,7 @@ describe('algorithm retry Tests', () => {
         const rawPipeCrash = (reson,retries)=> {
             return {
                 name: "rawPipeCrash",
-
+                experimentName: "main",
                 nodes: [
                     {
                         nodeName: "one",
@@ -65,7 +65,10 @@ describe('algorithm retry Tests', () => {
                 flowInput: {},
                 options: {
                     "batchTolerance": 100,
-                    "concurrentPipelines": 10,
+                    "concurrentPipelines": {
+                        "amount": 10,
+                        "rejectOnFailure": true
+                      },
                     "progressVerbosityLevel": "info",
                     "ttl": 3600
                 },
@@ -77,7 +80,7 @@ describe('algorithm retry Tests', () => {
         const rawPipeError = (reson,retries)=> {
             return {
                 name: "rawPipeError",
-
+                experimentName: "main",
                 nodes: [
                     {
                         nodeName: "one",
@@ -107,7 +110,10 @@ describe('algorithm retry Tests', () => {
                 flowInput: {},
                 options: {
                     "batchTolerance": 100,
-                    "concurrentPipelines": 10,
+                    "concurrentPipelines": {
+                        "amount": 10,
+                        "rejectOnFailure": true
+                      },
                     "progressVerbosityLevel": "info",
                     "ttl": 3600
                 },
@@ -121,6 +127,7 @@ describe('algorithm retry Tests', () => {
        
         it('rawPipeCrash no retry', async () => {
             const rawPipe = rawPipeCrash("Never",3)
+            rawPipe.name = "rawPipeCrashNoRetry"
             const res = await runRaw(rawPipe)
             const jobId = res.body.jobId
             const result = await  getResult(jobId,200)
@@ -130,6 +137,7 @@ describe('algorithm retry Tests', () => {
 
         it('rawPipeCrash Always retry 4 time', async () => {
             const rawPipe = rawPipeCrash("Always",4)
+            rawPipe.name = "rawPipeCrashAlwaysRetry4"
             const res = await runRaw(rawPipe)
             const jobId = res.body.jobId
             const result = await  getResult(jobId,200)
@@ -142,10 +150,13 @@ describe('algorithm retry Tests', () => {
             expect(graph.body.nodes[0].retries).to.be.equal(4)
         }).timeout(1000 * 60 * 10)
 
+
         it('rawPipeCrash OnCrash retry 3 time', async () => {
             const rawPipe = rawPipeCrash("OnCrash",3)
+            rawPipe.name = "rawPipeCrashOnCrashRetry3"
             const res = await runRaw(rawPipe)
             const jobId = res.body.jobId
+            console.log("jobid--"+jobId)
             const result = await  getResult(jobId,200)
             //error:"node one is in CrashLoopBackOff, attempts: 3/3"
             const graph = await getRawGraph(jobId)
@@ -157,6 +168,7 @@ describe('algorithm retry Tests', () => {
 
         it('rawPipeCrash OnError will not  retry 3 time', async () => {
             const rawPipe = rawPipeCrash("OnError",3)
+            rawPipe.name = "rawPipeCrashErrorRetry3"
             const res = await runRaw(rawPipe)
             const jobId = res.body.jobId
             const result = await  getResult(jobId,200)
@@ -172,6 +184,7 @@ describe('algorithm retry Tests', () => {
        
         it('rawPipeError no retry', async () => {
             const rawPipe = rawPipeError("Never",3)
+            rawPipe.name = "rawPipeErrorNoRetry"
             const res = await runRaw(rawPipe)
             const jobId = res.body.jobId
             const result = await  getResult(jobId,200)
@@ -182,6 +195,7 @@ describe('algorithm retry Tests', () => {
 
         it('rawPipeError Always retry 4 time', async () => {
             const rawPipe = rawPipeError("Always",4)
+            rawPipe.name = "rawPipeErrorAlwaysRetry4"
             const res = await runRaw(rawPipe)
             const jobId = res.body.jobId
             const result = await  getResult(jobId,200)
@@ -194,6 +208,7 @@ describe('algorithm retry Tests', () => {
 
         it('rawPipeError OnError retry 3 time', async () => {
             const rawPipe = rawPipeError("OnError",3)
+            rawPipe.name = "rawPipeErrorRetry3"
             const res = await runRaw(rawPipe)
             const jobId = res.body.jobId
             const result = await  getResult(jobId,200)
@@ -207,6 +222,7 @@ describe('algorithm retry Tests', () => {
 
         it('rawPipeError OnCrash will not  retry 3 time', async () => {
             const rawPipe = rawPipeError("OnCrash",3)
+            rawPipe.name = "rawPipeErrorCrashRetry3"
             const res = await runRaw(rawPipe)
             const jobId = res.body.jobId
             const result = await  getResult(jobId,200)
@@ -220,6 +236,7 @@ describe('algorithm retry Tests', () => {
         
         it('rawPipeError one retry batchTolerance =80', async () => {
             const rawPipe = rawPipeError("OnError",1)
+            rawPipe.name = "rawPipeBatchTolerance"
             rawPipe.nodes[0].input=["#@flowInput.inp"]
             rawPipe.nodes[0].extraData.code = [
                 "function throwErr(input) {",
@@ -241,6 +258,7 @@ describe('algorithm retry Tests', () => {
 
         it('rawPipeError no retry batchTolerance =80', async () => {
             const rawPipe = rawPipeError("Never",1)
+            rawPipe.name = "rawPipeBatchToleranceNoRetry"
             rawPipe.nodes[0].input=["#@flowInput.inp"]
             rawPipe.nodes[0].extraData.code = [
                 "function throwErr(input) {",
@@ -262,6 +280,7 @@ describe('algorithm retry Tests', () => {
 
         it('rawPipeCrash one retry batchTolerance =80', async () => {
             const rawPipe = rawPipeCrash("OnCrash",1)
+            rawPipe.name = "rawPipeBatchErrorToleranceNoRetry"
             rawPipe.nodes[0].input=["#@flowInput.inp"]
             rawPipe.nodes[0].extraData.code = [
                 "function exit(input) {",
@@ -280,6 +299,7 @@ describe('algorithm retry Tests', () => {
 
         it('rawPipeCrash no retry batchTolerance =80', async () => {
             const rawPipe = rawPipeCrash("Never",1)
+            rawPipe.name = "rawPipeBatchNeverTolerance"
             rawPipe.nodes[0].input=["#@flowInput.inp"]
             rawPipe.nodes[0].extraData.code = [
                 "function exit(input) {",
@@ -299,6 +319,7 @@ describe('algorithm retry Tests', () => {
 
         it('batch on batch', async ()=>{
             const d = deconstructTestData(testData1)
+            
             await storePipeline(d)
             await runStored(d)
 

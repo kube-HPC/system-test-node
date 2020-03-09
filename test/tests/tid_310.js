@@ -176,7 +176,7 @@ describe('pipeline actions', () => {
         expect(a.length).to.be.equal(0)
     }).timeout(1000 * 60 * 5);
 
-
+   
     it(" TID-360- indexed condition", async () => {
         
         //set test data to testData1
@@ -190,6 +190,19 @@ describe('pipeline actions', () => {
         const a = result.data.filter(obj => !expected.includes(obj.result) )
         expect(a.length).to.be.equal(0)
     }).timeout(1000 * 60 * 5);
+
+    it(" mix condition", async () => {
+        
+        //set test data to testData1
+        const d = deconstructTestData(testData5)
+        await deletePipeline(d)
+        await storePipeline(d)
+        
+        const res = await runStoredAndWaitForResults(d)
+        const result = await  getResult(res,200)
+       
+    }).timeout(1000 * 60 * 5);
+
 
 });
 

@@ -40,7 +40,10 @@ const descriptor = {
     ],
     options: {
         batchTolerance: 80,
-        concurrentPipelines: 10,
+        concurrentPipelines: {
+            "amount": 10,
+            "rejectOnFailure": true
+          },
         progressVerbosityLevel: "info",
         ttl: 3600
     },

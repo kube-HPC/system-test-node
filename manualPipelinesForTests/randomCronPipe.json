@@ -219,7 +219,10 @@
         }
     ],
     "options": {
-        "concurrentPipelines": 1
+        "concurrentPipelines": {
+            "amount": 1,
+            "rejectOnFailure": true
+          }
     },
     "priority": 3,
     "triggers": {

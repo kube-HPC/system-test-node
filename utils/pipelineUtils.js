@@ -146,7 +146,7 @@ const runRaw = async (body) => {
     const res = await chai.request(config.apiServerUrl)
         .post('/exec/raw')
         .send(body)
-    logResult(res, 'PipelineUtils runRaw')
+    logResult(res, 'PipelineUtils runRaw')   
     return res
 }
 

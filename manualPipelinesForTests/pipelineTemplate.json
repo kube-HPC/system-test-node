@@ -16,7 +16,10 @@
     "options": {
         "ttl": 3600,
         "batchTolerance": 80,
-        "concurrentPipelines": 1,
+        "concurrentPipelines": {
+            "amount": 1,
+            "rejectOnFailure": true
+          },
         "progressVerbosityLevel": "info"
     },
     "priority": 3,

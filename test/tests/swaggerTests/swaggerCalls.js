@@ -998,6 +998,53 @@ describe('all swagger calls test', () => {
 
     })
 
+    describe('Experiment', () => {
+        const experiment ={
+            name: "new Experiment",
+            description: "string description"
+        }
+
+        it('test  GET /experiment/{name}', async () => {
+            const name = "main"
+            const res = await chai.request(config.apiServerUrl)
+                .get(`/experiment/${name}`)
+
+            expect(res).to.have.status(200)
+            expect(res.body.name).to.be.equal(name)
+          
+        })
+
+        it('test  POST Delete /experiment', async () => {
+           
+          
+            const res = await chai.request(config.apiServerUrl)
+                .post(`/experiment`)
+                .send(experiment)
+
+            expect(res).to.have.status(200)
+            const ResDelete = await chai.request(config.apiServerUrl)
+            .delete(`/experiment/${experiment.name}`)
+            expect(ResDelete).to.have.status(200)
+            const resGet = await chai.request(config.apiServerUrl)
+                .get(`/experiment/${experiment.name}`)
+            
+            expect(resGet).to.have.status(404)
+
+          
+        })
+
+
+
+        it('test /experiment​/list​/all', async () => {
+          
+            const res = await chai.request(config.apiServerUrl)
+                .get(`​/experiment​/list​/all`)
+
+            expect(res).to.have.status(200)         
+          
+        })
+
+    })
 
 
 

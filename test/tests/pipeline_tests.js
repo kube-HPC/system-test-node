@@ -75,8 +75,8 @@ describe('pipeline Tests', () => {
    
     describe('pipeline includeInResults', () => {
         it('yellow node includeInResults = true', async () => {
-
-            const d = deconstructTestData(testData2)
+            const testData = testData2
+            const d = deconstructTestData(testData)
             await deletePipeline(d)
             await storePipeline(d)
             const jobId = await runStoredAndWaitForResults(d)
@@ -90,7 +90,8 @@ describe('pipeline Tests', () => {
 
         it('yellow node includeInResults = false', async () => {
 
-            const d = deconstructTestData(testData2)
+            const testData = testData2
+            const d = deconstructTestData(testData)
             await deletePipeline(d)
             d.pipeline.nodes[1].includeInResults=false
             await storePipeline(d)
@@ -153,15 +154,17 @@ describe('pipeline Tests', () => {
         }).timeout(1000 * 60 * 2)
     
         it("type= Triger", async () => {
-            const simpleName =testData2.descriptor.name
-            const simple = deconstructTestData(testData2)
+            const testData = testData2
+            
+            const simpleName =testData.descriptor.name
+            const simple = deconstructTestData(testData)
             await deletePipeline(simple)
             await storePipeline(simple)
             const triggeredPipe  = pipelineRandomName(8)
-            testData2.descriptor.name = triggeredPipe
-            testData2.descriptor.triggers.pipelines = [simpleName]
-            testData2.descriptor.nodes[0].input[0]="flowInput.inp"
-            const d = deconstructTestData(testData2)
+            testData.descriptor.name = triggeredPipe
+            testData.descriptor.triggers.pipelines = [simpleName]
+            testData.descriptor.nodes[0].input[0]="flowInput.inp"
+            const d = deconstructTestData(testData)
             await deletePipeline(d)
             await storePipeline(d)
             await runStoredAndWaitForResults(simple)
@@ -177,7 +180,8 @@ describe('pipeline Tests', () => {
 
         it("type= Sub-pipeline", async () => {
             const pipelineName = pipelineRandomName(8)
-           
+            const testData = testData6
+            const versatilePipe=testData4
             const pipe = {
                 "name": "versatile-pipe",
                 "flowInput": {
@@ -189,11 +193,11 @@ describe('pipeline Tests', () => {
                 }
             }
             await storeAlgorithm("versatile")
-            testData6.descriptor.name= pipelineName         
-            const d = deconstructTestData(testData6)
+            testData.descriptor.name= pipelineName         
+            const d = deconstructTestData(testData)
             await storePipeline(d)
             // testData4 = versatile-pipe
-            const e = deconstructTestData(testData4)
+            const e = deconstructTestData(versatilePipe)
             await storePipeline(e)
             await runStoredAndWaitForResults(pipe)
             const res = await getPipelinestatusByName(pipelineName)
@@ -273,9 +277,9 @@ describe('pipeline Tests', () => {
 
 
     it("type = cron  internal ", async () => {
-   
-        testData3.descriptor.name= pipelineRandomName(8)
-        const d = deconstructTestData(testData3)
+        const testData = testData3
+        testData.descriptor.name= pipelineRandomName(8)
+        const d = deconstructTestData(testData)
         await storePipeline(d)
         await delay(1000*90)
         
@@ -296,16 +300,20 @@ describe('pipeline Tests', () => {
     describe('validate flowInput exist',()=>{
 
         it(" stored does not have flowInput", async () => {
-            const simpleName =testData2.descriptor.name
+            const simpletestData = testData2
+            const storedsimpleName = pipelineRandomName(8)
+            console.log("stored does not have flowInput ="+ storedsimpleName )
+            simpletestData.descriptor.name =storedsimpleName
+            simpletestData.descriptor.nodes[0].input[0] ="#@flowInput.inp"
             const pipe = {
-                "name": simpleName,
+                "name": storedsimpleName,
                 "flowInput": {
                     "inp1": [3]
                 }
             }
-            const simple = deconstructTestData(testData2)
-            await deletePipeline(simple)
-            await storePipeline(simple)
+            const simpleStored = deconstructTestData(simpletestData)
+           // await deletePipeline(simpleStored)
+            await storePipeline(simpleStored)
             const res = await runStored(pipe)
             //"unable to find flowInput.inp"
             expect(res.text).to.include("unable to find flowInput.inp")
@@ -332,14 +340,17 @@ describe('pipeline Tests', () => {
               
                 options: {
                     batchTolerance: 100,
-                    concurrentPipelines: 10,
+                    concurrentPipelines: {
+                        "amount": 10,
+                        "rejectOnFailure": true
+                      },
                     progressVerbosityLevel: "info",
                     ttl: 3600
                 },
                 priority: 3
             }
             const res = await runRaw(pipe)
-            //"unable to find flowInput.inp"
+            
             expect(res.text).to.include("unable to find flowInput.two")
 
         }).timeout(1000 * 60 * 2);
@@ -347,10 +358,11 @@ describe('pipeline Tests', () => {
 
 
         it(" cron  does not have flowInput ", async () => {
+            const testData = testData3
             const pipelineName = pipelineRandomName(8)
-            testData3.descriptor.name =pipelineName
-            testData3.descriptor.nodes[0].input[0]="@flowInput.inputs"
-            const d = deconstructTestData(testData3)
+            testData.descriptor.name =pipelineName
+            testData.descriptor.nodes[0].input[0]="@flowInput.inputs"
+            const d = deconstructTestData(testData)
             await storePipeline(d)
             await delay(1000*120)
             
@@ -364,17 +376,20 @@ describe('pipeline Tests', () => {
         }).timeout(1000 * 60 * 7);
 
         it(" Trigger does not have flowInput", async () => {
-            const simpleName =testData2.descriptor.name
-            const simple = deconstructTestData(testData2)
+            const simpleTestdata= testData2
+            const triggerTestData= testData2
+            const simpleName =simpleTestdata.descriptor.name
+            const simple = deconstructTestData(simpleTestdata)
             await deletePipeline(simple)
             await storePipeline(simple)
             const triggerdName = pipelineRandomName(8)
-            testData2.descriptor.name =triggerdName
-            testData2.descriptor.triggers.pipelines = [simpleName]           
-            const d = deconstructTestData(testData2)
+            triggerTestData.descriptor.name =triggerdName
+            triggerTestData.descriptor.triggers.pipelines = [simpleName]           
+            const d = deconstructTestData(triggerTestData)
             await deletePipeline(d)
             await storePipeline(d)
             await runStoredAndWaitForResults(simple)
+            await delay(1000*20)
             const log = await getWebSocketlogs()
             const me = `pipeline ${triggerdName} failed sending to api server, error: unable to find flowInput.inp`
             const error = log.filter(obj => obj.message == me)
@@ -385,6 +400,8 @@ describe('pipeline Tests', () => {
         it(" Sub-pipeline does not have flowInput", async () => {
             // testData2 pipeline Simple2 with flowInput
              // testData4 = versatile-pipe
+             const simple2TestData = testData2
+             const versatileTestData = testData4
              const logBefore = await getWebSocketlogs()
              const before = logBefore.filter(obj=>obj.message.includes("SubPipeline job error: unable to find flowInput.inp, alg subPipelineId")).length
            //
@@ -401,11 +418,11 @@ describe('pipeline Tests', () => {
                 }
             }
             await storeAlgorithm("versatile")
-            testData2.descriptor.name= pipelineName         
-            const d = deconstructTestData(testData2)
+            simple2TestData.descriptor.name= pipelineName         
+            const d = deconstructTestData(simple2TestData)
             await storePipeline(d)
            
-            const e = deconstructTestData(testData4)
+            const e = deconstructTestData(versatileTestData)
             await storePipeline(e)
             const res = await runStored(pipe)
             await delay(1000*20)
@@ -468,7 +485,7 @@ describe('pipeline Tests', () => {
             expect(pipelineStatus.body.status).to.be.equal("paused")
             const resume = await resumePipeline(jobId);
             const result = await getResult(jobId,200)                        
-        }).timeout(1000 * 60 * 5);
+        }).timeout(1000 * 60 * 10);
         it('pause stop pipeline', async () => {
             const pipe = {   
                 name: d.name,
