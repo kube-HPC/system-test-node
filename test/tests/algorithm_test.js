@@ -118,7 +118,7 @@ describe('Alrogithm Tests', () => {
             expect(result2.data[0].result.vaerion).to.be.equal("v2")
 
             await  deleteAlgorithm(algorithmName,true)
-        }).timeout(1000 * 60 * 5);
+        }).timeout(1000 * 60 * 10);
 
 
 

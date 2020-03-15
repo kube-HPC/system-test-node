@@ -140,9 +140,9 @@ const  getParsedGraph = async (jobId)=>{
     return res
 }
 
-const getCronResult = async(jobId,limit) =>{
+const getCronResult = async(jobId,limit,experimentName="main") =>{
     const res = await chai.request(config.apiServerUrl)
-    .get(`/cron/results/?name=${jobId}&limit=${limit}`)
+    .get(`/cron/results/?name=${jobId}&experimentName=${experimentName}&limit=${limit}`)
 logger.info(`${res.status}, ${JSON.stringify(res.body)}`)
 
 return res

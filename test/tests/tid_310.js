@@ -10,7 +10,8 @@ const {
     testData1,
     testData2,
     testData3,
-    testData4
+    testData4,
+    testData5
 } = require(path.join(process.cwd(), 'config/index')).tid_310
 const logger = require(path.join(process.cwd(), 'utils/logger'))
 

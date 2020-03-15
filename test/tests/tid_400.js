@@ -260,7 +260,7 @@ describe("TID-440",()=>{
                 range:150,
                 inputs:1000               
             },            
-            priority: 2
+            priority: 3
         }
         await deletePipeline(d)
         await storePipeline(d)

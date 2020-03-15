@@ -29,7 +29,7 @@ const index = {
         testData2: require('../pipelines/waitany'),
         testData3: require('../pipelines/indexedPipeline'),
         testData4: require('../pipelines/addmult2'),
-        testData4: require('../pipelines/mixConditions')
+        testData5: require('../pipelines/mixConditions')
     },
     tid_50: {
         testData1: require('../pipelines/eval-dynamic')
@@ -79,7 +79,11 @@ const index = {
         testData3: require('../pipelines/evalcron1minutes'),
         testData4: require('../pipelines/versatile-pipe'),
         testData5: require('../pipelines/pasueResumePipe'),
-        testData6: require('../pipelines/pipelineSimpleNoInput')
+        testData6: require('../pipelines/pipelineSimpleNoInput'),
+        testData7: require('../pipelines/pipelineDefaultsTest'),
+        testData8: require('../pipelines/trigger'),
+        testData9: require('../pipelines/triggered')
+
     },
     jagearTest: {
         testData1: require('../pipelines/versatile-pipe')

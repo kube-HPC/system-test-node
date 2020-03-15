@@ -1,7 +1,7 @@
 require('dotenv').config()
 
 
-const getDriverIdByJobId = async (jobId) => {
+const getDriverIdByJobId = async (jobId,experimentName = 'main') => {
 
     return (new Promise((resolve, reject) => {
         const url = process.env.BASE_URL
@@ -15,7 +15,7 @@ const getDriverIdByJobId = async (jobId) => {
         })
 
         socket.on('connect', function () {
-            socket.emit('experiment-register', { name: 'experiment:main', lastRoom: null });
+            socket.emit('experiment-register', { name: `experiment:${experimentName}`, lastRoom: null });
         });
         socket.on('PROGRESS', async function (data) {
             // fs.writeFileSync('data.json', JSON.stringify(data))
@@ -42,7 +42,7 @@ const getDriverIdByJobId = async (jobId) => {
 }
 
 
-const getWebSocketlogs = async () => {
+const getWebSocketlogs = async (experimentName = 'main') => {
 
     return (new Promise((resolve, reject) => {
         const url = process.env.BASE_URL
@@ -56,7 +56,7 @@ const getWebSocketlogs = async () => {
         })
 
         socket.on('connect', function () {
-            socket.emit('experiment-register', { name: 'experiment:main', lastRoom: null });
+            socket.emit('experiment-register', { name: `experiment:${experimentName}`, lastRoom: null });
         });
         socket.on('PROGRESS', async function (data) {
             // fs.writeFileSync('data.json', JSON.stringify(data))
@@ -82,7 +82,7 @@ const getWebSocketlogs = async () => {
     }))
 }
 
-const getWebSocketJobs = async () => {
+const getWebSocketJobs = async (experimentName = 'main') => {
 
     return (new Promise((resolve, reject) => {
         const url = process.env.BASE_URL
@@ -96,7 +96,7 @@ const getWebSocketJobs = async () => {
         })
 
         socket.on('connect', function () {
-            socket.emit('experiment-register', { name: 'experiment:main', lastRoom: null });
+            socket.emit('experiment-register', { name: `experiment:${experimentName}`, lastRoom: null });
         });
         socket.on('PROGRESS', async function (data) {
             // fs.writeFileSync('data.json', JSON.stringify(data))

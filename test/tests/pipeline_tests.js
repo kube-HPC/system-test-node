@@ -3,6 +3,7 @@ const expect = chai.expect;
 const chaiHttp = require('chai-http');
 const path = require('path')
 const delay = require('delay')
+var diff = require('deep-diff').diff
 
 const { runAlgorithm,
         deleteAlgorithm,
@@ -26,7 +27,10 @@ const {
     testData3,
     testData4,
     testData5,
-    testData6
+    testData6,
+    testData7,
+    testData8,
+    testData9
 } = require(path.join(process.cwd(), 'config/index')).pipelineTest
 
 
@@ -71,6 +75,7 @@ const algJson = (algName,imageName) =>{
         }
     return alg
 }
+
 describe('pipeline Tests', () => {
    
     describe('pipeline includeInResults', () => {
@@ -297,6 +302,105 @@ describe('pipeline Tests', () => {
 
 })
 
+describe('pipeline Defaults', () => {
+
+    const validateDefault = (orgPipeline, pipelineData)=>{
+        let compare = ["options","priority"]
+        let out = []
+        for (x in compare){
+           const a = diff(orgPipeline[compare[x]],pipelineData[compare[x]])
+            if(a != undefined){
+                out.push(orgPipeline[compare[x]])
+            }
+        }
+         return out
+    }
+    
+    it.skip('type= caching', async () => {
+       
+
+    }).timeout(1000 * 60 * 2)
+
+    it("type = Triger", async () => {
+        const testData = testData2
+        const triggerd = testData7        
+        const simpleName =testData.descriptor.name
+        const simple = deconstructTestData(testData)
+        await deletePipeline(simple)
+        await storePipeline(simple)
+        const triggeredPipe  = pipelineRandomName(8)
+        triggerd.descriptor.name = triggeredPipe
+        triggerd.descriptor.triggers.pipelines = [simpleName]
+        
+        const d = deconstructTestData(triggerd)
+        await deletePipeline(d)
+        await storePipeline(d)
+        await runStoredAndWaitForResults(simple)
+        await delay(3 * 1000);
+        jobs = await getWebSocketJobs();
+        jobId = jobs.filter(obj => obj.key.endsWith(triggeredPipe))[0].key
+        const pipelineData = await getExecPipeline(jobId);
+        await deletePipeline(d)
+        const rr = validateDefault(triggerd.descriptor,pipelineData.body)
+        console.log("there are diffrance in :"+rr);
+        expect(rr.length).to.be.equal(0)
+       
+    }).timeout(1000 * 60 * 7);
+
+    it("type Sub-pipeline", async () => {
+        const pipelineName = pipelineRandomName(8)
+        const testData = testData7
+        const versatilePipe=testData4
+        const pipe = {
+            "name": "versatile-pipe",
+            "flowInput": {
+                "inp": [{
+                    "type": "storedPipeline",
+                    "name": `${pipelineName}`,
+                    "input":["a"]
+                }]
+            }
+        }
+        await storeAlgorithm("versatile")
+        testData.descriptor.name= pipelineName         
+        const d = deconstructTestData(testData)
+        await storePipeline(d)
+        // testData4 = versatile-pipe
+        const e = deconstructTestData(versatilePipe)
+        await storePipeline(e)
+        await runStoredAndWaitForResults(pipe) 
+        const res = await getPipelinestatusByName(pipelineName)
+        const pipelineData = await  getExecPipeline(res.body[0].jobId)
+       
+        await deletePipeline(d)
+        const rr = validateDefault(testData.descriptor,pipelineData.body)
+        console.log("there are diffrance in :"+rr);
+        expect(rr.length).to.be.equal(0)
+    }).timeout(1000 * 60 * 7);
+
+
+
+
+        it("type = cron ", async () => {
+            const testData = testData7
+            testData.descriptor.name= pipelineRandomName(8)
+            testData.descriptor.triggers.cron.enabled = true
+            const d = deconstructTestData(testData)
+            await storePipeline(d)
+            await delay(1000*90)
+            
+            const result =  await getCronResult(d.name,5,"new")
+            const jobId = result.body[0].jobId
+            const pipelineData = await  getExecPipeline(jobId)
+            await deletePipeline(d)
+            const rr = validateDefault(testData.descriptor,pipelineData.body)
+            console.log("there are diffrance in :"+rr);
+            expect(rr.length).to.be.equal(0)
+         
+
+        }).timeout(1000 * 60 * 7);
+
+    })
     describe('validate flowInput exist',()=>{
 
         it(" stored does not have flowInput", async () => {
@@ -395,6 +499,28 @@ describe('pipeline Tests', () => {
             const error = log.filter(obj => obj.message == me)
             await deletePipeline(d)
             expect(error.length).to.be.greaterThan(0)
+        }).timeout(1000 * 60 * 7);
+
+        it(" Trigger get input from parent ", async () => {
+            const triggerTestData= testData9
+            const triggerdName = pipelineRandomName(8)
+            triggerTestData.descriptor.name =triggerdName           
+            const triggered= deconstructTestData(triggerTestData)            
+            const trigger = deconstructTestData(testData8)
+            await deletePipeline(trigger)
+            await storePipeline(trigger)
+            await deletePipeline(triggered)
+            await storePipeline(triggered)
+            await runStoredAndWaitForResults(trigger)
+            await delay(1000*20)
+            jobs = await getWebSocketJobs();
+            jobId = jobs.filter(obj => obj.key.endsWith(triggerdName))[0].key
+            const result = await getResult(jobId,200)
+            await deletePipeline(triggered)
+            expect(result.data.length).to.be.equal(10)
+            const expected = [46,47,48,49,50,51,52,53,54,45]
+            const a = result.data.filter(obj => !expected.includes(obj.result) )
+            expect(a.length).to.be.equal(0)
         }).timeout(1000 * 60 * 7);
 
         it(" Sub-pipeline does not have flowInput", async () => {
