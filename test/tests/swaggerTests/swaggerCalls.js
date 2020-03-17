@@ -1061,7 +1061,7 @@ describe('all swagger calls test ', () => {
             const algName= pipelineRandomName(8).toLowerCase()                        
             const code1 = path.join(process.cwd(), 'additionalFiles/eyeMat.tar.gz');
             const buildStatusAlg = await buildAlgorithm(code1, algName,testalg )
-            expect(buildStatusAlg.status).to.be("completed") 
+            expect(buildStatusAlg.status).to.be.equal("completed") 
             await deleteAlgorithm(algName,true)    
         }).timeout(1000 * 60 * 20)
     
