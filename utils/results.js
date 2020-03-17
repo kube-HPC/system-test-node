@@ -79,6 +79,9 @@ const getStatusall = async (id, url, expectedCode, expectedStatus, timeout = 60 
         if (res.status == expectedCode && res.body.status == expectedStatus) {
             return res.body;
         }
+        if (res.body.status == "failed") {
+            return res.body;
+        }
         await delay(interval);
     } while (Date.now() - start < timeout);
     expect.fail(`timeout exceeded trying to get ${expectedStatus} status for jobId ${id}`);

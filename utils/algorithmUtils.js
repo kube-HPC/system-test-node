@@ -67,7 +67,7 @@ const buildAlgoFromImage = async (alg)=>{
     return res
 }
 
-const buildAlgorithm = async (code, algName, entry) => {
+const buildAlgorithm = async (code, algName, entry,baseVersion='python:3.7') => {
     const data = {
         name: algName,
         env: 'python',
@@ -76,7 +76,8 @@ const buildAlgorithm = async (code, algName, entry) => {
         mem: '512Mi',
         entryPoint: entry,
         minHotWorkers: 0,
-        version: idGen()
+        version: idGen(),
+        baseImage:baseVersion
     }
 
     const res = await chai.request(config.apiServerUrl)

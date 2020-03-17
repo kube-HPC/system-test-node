@@ -1014,7 +1014,8 @@ describe('all swagger calls test ', () => {
             expect(res).to.have.status(200)
             expect(res.body.name).to.be.equal(name)
           
-        })
+        }).timeout(1000 * 60 * 2)
+
 
         it('test  POST Delete /experiment', async () => {
            
@@ -1033,18 +1034,19 @@ describe('all swagger calls test ', () => {
             expect(resGet).to.have.status(404)
 
           
-        })
+        }).timeout(1000 * 60 * 2)
+
 
 
 
         it('test /experiment​/list​/all', async () => {
           
             const res = await chai.request(config.apiServerUrl)
-                .get(`​/experiment​/list​/all`)
+            .get(`/experiment/list/all`)
 
             expect(res).to.have.status(200)         
           
-        })
+        }).timeout(1000 * 60 * 2)
 
 
 
@@ -1061,7 +1063,7 @@ describe('all swagger calls test ', () => {
             const algName= pipelineRandomName(8).toLowerCase()                        
             const code1 = path.join(process.cwd(), 'additionalFiles/eyeMat.tar.gz');
             const buildStatusAlg = await buildAlgorithm(code1, algName,testalg )
-            expect(buildStatusAlg.body.status).to.be("completed") 
+            expect(buildStatusAlg.status).to.be.equal("completed") 
             await deleteAlgorithm(algName,true)    
         }).timeout(1000 * 60 * 20)
     
