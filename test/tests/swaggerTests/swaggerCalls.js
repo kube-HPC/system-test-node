@@ -21,6 +21,7 @@ const {
     getParsedGraph
 } = require(path.join(process.cwd(), 'utils/results'))
 const {
+    pipelineRandomName,
     runStoredAndWaitForResults,
     storePipeline,
     runStored,
@@ -32,11 +33,12 @@ const {
 const {
     runAlgorithm,
     getAlgorithm,
-     deleteAlgorithm,    
+    deleteAlgorithm,    
     getAlgorithmVersion,
     updateAlgorithmVersion,
     buildAlgoFromImage,
     deleteAlgorithmVersion,
+    buildAlgorithm,    
     getAlgorithim} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 const tos = require(path.join(process.cwd(), 'utils/results'.toString()))
 // const testData2 = require ('../../pipelines/multadd')
@@ -46,10 +48,10 @@ chai.use(assertArrays);
 
 
 
-describe('all swagger calls test', () => {
+describe('all swagger calls test ', () => {
 
-    describe('Execution', () => {
-
+    describe('Execution 647', () => {
+        //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/647
 
         it('test the /exec/algorithm ',async ()=>{
             const alg = {name: 'green-alg',
@@ -1044,8 +1046,25 @@ describe('all swagger calls test', () => {
           
         })
 
+
+
+
     })
 
 
+    describe('Build algorithm', () => {
+       
+        
+    
+        it(`build python algorithm from tra.gz`, async () => {
+            const testalg = 'pyeyemat'
+            const algName= pipelineRandomName(8).toLowerCase()                        
+            const code1 = path.join(process.cwd(), 'additionalFiles/eyeMat.tar.gz');
+            const buildStatusAlg = await buildAlgorithm(code1, algName,testalg )
+            expect(buildStatusAlg.body.status).to.be("completed") 
+            await deleteAlgorithm(algName,true)    
+        }).timeout(1000 * 60 * 20)
+    
+    })
 
 })

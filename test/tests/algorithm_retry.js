@@ -32,8 +32,8 @@ const {
 
 chai.use(chaiHttp);
 
-describe('algorithm retry Tests', () => {
-
+describe('algorithm retry Tests 602', () => {
+//https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/602
     describe('pipeline Types', () => {
 
         const rawPipeCrash = (reson,retries)=> {

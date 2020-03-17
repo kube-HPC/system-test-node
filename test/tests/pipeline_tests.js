@@ -76,9 +76,10 @@ const algJson = (algName,imageName) =>{
     return alg
 }
 
-describe('pipeline Tests', () => {
+describe('pipeline Tests 673', () => {
    
-    describe('pipeline includeInResults', () => {
+    describe('pipeline includeInResults 673' , () => {
+        //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/673
         it('yellow node includeInResults = true', async () => {
             const testData = testData2
             const d = deconstructTestData(testData)
@@ -302,8 +303,8 @@ describe('pipeline Tests', () => {
 
 })
 
-describe('pipeline Defaults', () => {
-
+describe('pipeline Defaults 754', () => {
+//https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/754
     const validateDefault = (orgPipeline, pipelineData)=>{
         let compare = ["options","priority"]
         let out = []
@@ -316,10 +317,7 @@ describe('pipeline Defaults', () => {
          return out
     }
     
-    it.skip('type= caching', async () => {
-       
-
-    }).timeout(1000 * 60 * 2)
+   
 
     it("type = Triger", async () => {
         const testData = testData2
@@ -401,7 +399,9 @@ describe('pipeline Defaults', () => {
         }).timeout(1000 * 60 * 7);
 
     })
-    describe('validate flowInput exist',()=>{
+    describe('validate flowInput exist 725 756',()=>{
+        //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/725
+        //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/756
 
         it(" stored does not have flowInput", async () => {
             const simpletestData = testData2
@@ -416,10 +416,10 @@ describe('pipeline Defaults', () => {
                 }
             }
             const simpleStored = deconstructTestData(simpletestData)
-           // await deletePipeline(simpleStored)
+          
             await storePipeline(simpleStored)
             const res = await runStored(pipe)
-            //"unable to find flowInput.inp"
+            
             expect(res.text).to.include("unable to find flowInput.inp")
 
         }).timeout(1000 * 60 * 2);
@@ -530,7 +530,7 @@ describe('pipeline Defaults', () => {
              const versatileTestData = testData4
              const logBefore = await getWebSocketlogs()
              const before = logBefore.filter(obj=>obj.message.includes("SubPipeline job error: unable to find flowInput.inp, alg subPipelineId")).length
-           //
+           
             const pipelineName = pipelineRandomName(8)
            
             const pipe = {
@@ -562,7 +562,8 @@ describe('pipeline Defaults', () => {
 
 
     })
-    describe('pause_resume_pipelineas',()=>{   
+    describe('pause_resume_pipelineas 529',()=>{   
+        //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/529
         const algorithmName = "algorithm-version-test"
         const algorithmImageV1 = "tamir321/algoversion:v1"
 
@@ -603,7 +604,7 @@ describe('pipeline Defaults', () => {
            
             const res = await runStored(e)        
             const jobId = res.body.jobId
-            await delay(2000)
+            await delay(8000)
            
             const pause = await pausePipeline(jobId);
             await delay(120000)

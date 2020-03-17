@@ -42,7 +42,7 @@ chai.use(chaiHttp);
 describe('Alrogithm Tests', () => {
 
     describe('Test Algorithm ttl',()=>{ 
-        it('ttl = 3 one of the inputs = 5 secondes ',async ()=>{ 
+        it('ttl = 3 one of the inputs = 5 seconds ',async ()=>{ 
             const d = deconstructTestData(testData3)
             await deletePipeline(d)
             await storePipeline(d)
@@ -54,7 +54,7 @@ describe('Alrogithm Tests', () => {
            
         }).timeout(1000 * 60 * 5);
 
-        it('ttl =0 one of the inputs = 5 secondes',async ()=>{ 
+        it('ttl =0 one of the inputs = 5 seconds',async ()=>{ 
             const d = deconstructTestData(testData3)
             await deletePipeline(d)
             d.pipeline.nodes[0].ttl=0
@@ -68,7 +68,8 @@ describe('Alrogithm Tests', () => {
         
      })
 
-    describe('Test Algorithm Version',()=>{   
+    describe('Test Algorithm Version 560',()=>{   
+        //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/560
         const algorithmName = "algorithm-version-test"
         const algorithmImageV1 = "tamir321/algoversion:v1"
         const algorithmImageV2 = "tamir321/algoversion:v2"
@@ -159,7 +160,7 @@ describe('Alrogithm Tests', () => {
             
         }).timeout(1000 * 60 * 5);
 
-        it('Update algorithim version while excuting force = true', async () => {
+        it('Update algorithm version while executing force = true', async () => {
             const pipe = {   
                 name: d.name,
                 flowInput: {
@@ -187,7 +188,7 @@ describe('Alrogithm Tests', () => {
             
         }).timeout(1000 * 60 * 5);
 
-        it('Try Update algorithim version while excuting force = false', async () => {
+        it('Try Update algorithm version while executing force = false', async () => {
         
             const pipe = {   
                 name: d.name,
@@ -217,70 +218,70 @@ describe('Alrogithm Tests', () => {
             
         }).timeout(1000 * 60 * 5);
 
-        it('Try Update algorithim version while excuting pipeline force = true', async () => {
+        // it('Try Update algorithm version while excuting pipeline force = true', async () => {
             
-            const e = deconstructTestData(testData2)
+        //     const e = deconstructTestData(testData2)
 
-            const pipe = {   
-                name: e.name,
-                flowInput: {
-                    inp: 30000
+        //     const pipe = {   
+        //         name: e.name,
+        //         flowInput: {
+        //             inp: 30000
 
-                }
-            }
+        //         }
+        //     }
 
-            await deleteAlgorithm(algorithmName,true)
-            await buildAlgoFromImage(algorithmV1);         
-            await buildAlgoFromImage(algorithmV2);              
-            await delay(2000)
-            await storePipeline(e)
-            const res = await runStored(pipe)        
-            const jobId = res.body.jobId
-            await delay(10000)
-            const update = await updateAlgorithmVersion(algorithmName,algorithmImageV2,true);
+        //     await deleteAlgorithm(algorithmName,true)
+        //     await buildAlgoFromImage(algorithmV1);         
+        //     await buildAlgoFromImage(algorithmV2);              
+        //     await delay(2000)
+        //     await storePipeline(e)
+        //     const res = await runStored(pipe)        
+        //     const jobId = res.body.jobId
+        //     await delay(10000)
+        //     const update = await updateAlgorithmVersion(algorithmName,algorithmImageV2,true);
            
-            await delay(5000)
-            const status = await getPipelineStatus(jobId)
-            expect(status.body.status).to.be.equal("failed")
-            await deleteAlgorithm(algorithmName,true)
+        //     await delay(5000)
+        //     const status = await getPipelineStatus(jobId)
+        //     expect(status.body.status).to.be.equal("failed")
+        //     await deleteAlgorithm(algorithmName,true)
             
             
             
-        }).timeout(1000 * 60 * 5);
+        // }).timeout(1000 * 60 * 5);
 
-        it('Try Update algorithim version while excuting pipeline force = false', async () => {
+        // it('Try Update algorithm version while excuting pipeline force = false', async () => {
             
-            const e = deconstructTestData(testData2)
+        //     const e = deconstructTestData(testData2)
 
-            const pipe = {   
-                name: e.name,
-                flowInput: {
-                    inp: 30000
+        //     const pipe = {   
+        //         name: e.name,
+        //         flowInput: {
+        //             inp: 30000
 
-                }
-            }
+        //         }
+        //     }
 
-            await deleteAlgorithm(algorithmName,true)
-            await buildAlgoFromImage(algorithmV1);         
-            await buildAlgoFromImage(algorithmV2);              
-            await delay(2000)
-            await storePipeline(e)
-            const res = await runStored(pipe)        
-            const jobId = res.body.jobId
-            await delay(10000)
-            const update = await updateAlgorithmVersion(algorithmName,algorithmImageV2,false);
-            expect(update.status).to.be.equal(400);
-            const result = await getResult(jobId,200)
-            expect(result.data[0].result.vaerion).to.be.equal("v1")               
-            const alg = await getAlgorithm(algorithmName)
-            expect(alg.body.algorithmImage).to.be.equal(algorithmImageV1)
-            await deleteAlgorithm(algorithmName,true)
+        //     await deleteAlgorithm(algorithmName,true)
+        //     await buildAlgoFromImage(algorithmV1);         
+        //     await buildAlgoFromImage(algorithmV2);              
+        //     await delay(2000)
+        //     await storePipeline(e)
+        //     const res = await runStored(pipe)        
+        //     const jobId = res.body.jobId
+        //     await delay(10000)
+        //     const update = await updateAlgorithmVersion(algorithmName,algorithmImageV2,false);
+        //     expect(update.status).to.be.equal(400);
+        //     const result = await getResult(jobId,200)
+        //     expect(result.data[0].result.vaerion).to.be.equal("v1")               
+        //     const alg = await getAlgorithm(algorithmName)
+        //     expect(alg.body.algorithmImage).to.be.equal(algorithmImageV1)
+        //     await deleteAlgorithm(algorithmName,true)
             
             
             
-        }).timeout(1000 * 60 * 5);
+        // }).timeout(1000 * 60 * 5);
 
-        it('Delete  algorithim current version ', async () => {
+        it('Delete  algorithm current version ', async () => {
         
 
             await deleteAlgorithm(algorithmName,true)
