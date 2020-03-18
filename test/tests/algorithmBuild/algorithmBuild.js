@@ -131,7 +131,7 @@ describe('requirements ', () => {
         const code = path.join(process.cwd(), 'additionalFiles/tensor.tar.gz');
         const entry = 'main'
         const algName= pipelineRandomName(8).toLowerCase()    
-        const pythonVersion = "python:3.6"                    
+        //const pythonVersion = "python:3.6"                    
         
         const data = {
             name: algName,
@@ -141,8 +141,8 @@ describe('requirements ', () => {
             mem: '5Gi',
             entryPoint: entry,
             minHotWorkers: 0,
-            version: idGen(),
-            baseImage:pythonVersion
+            version: idGen()//,
+            //baseImage:pythonVersion
         }
     
         const res = await chai.request(config.apiServerUrl)
@@ -160,7 +160,43 @@ describe('requirements ', () => {
         expect(buildStatusAlg.status).to.be.equal("completed") 
         const result = await runAlgGetResult(algName,[4])
         await deleteAlgorithm(algName,true)    
-        //expect(result.data[0].result.sysVersion.toString()).to.be.equal("2")  
+        expect(result.status).to.be.equal("completed")  
+    }).timeout(1000 * 60 * 20)
+
+
+    it("test webhook git",async ()=>{
+        const data = {
+            ref: 'refs/heads/master',
+            before: 'dcc8a45a01f0ed6a0fe19e231cbd269ce2ebc9fa',
+            after: 'dcc8a45a01f0ed6a0fe19e231cbd269ce2ebc9fa',
+          
+            commits: [
+                {
+                    id: 'dcc8a45a01f0ed6a0fe19e231cbd269ce2ebc9fa'
+                    
+                }
+            ],
+           
+            repository: {
+               
+                html_url: 'https://github.com/tamir321/hkube.git',
+                description: null,
+                fork: false,
+                url: 'https://github.com/tamir321/hkube'                
+            }
+          
+        }
+
+       
+
+        const f = JSON.stringify(data)
+        const res = await chai.request(config.apiServerUrl)           
+            .post('/builds/webhook/github')
+            .type('form')
+            .set('content-type', 'application/x-www-form-urlencoded')            
+            .send ({'payload': JSON.stringify(data)}) 
+
+        
     }).timeout(1000 * 60 * 20)
 })
 
