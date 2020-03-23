@@ -95,6 +95,37 @@ const buildAlgorithm = async (code, algName, entry,baseVersion='python:3.7') => 
     return buildStatusAlg
 }
 
+const buildGitAlgorithm = async (algName,gitUrl,gitKind ,entry , branch  )=>{
+    const data = {
+        name: algName,
+        env: 'python',
+        cpu: 0.5,
+        gpu: 0,
+        mem: '512Mi',
+        entryPoint: entry,
+        minHotWorkers: 0,        
+        
+        gitRepository : {
+            url: gitUrl,
+            branchName : branch,
+            gitKind : gitKind
+        }
+    }
+
+    const res = await chai.request(config.apiServerUrl)
+        .post('/store/algorithms/apply')
+        .field('payload', JSON.stringify(data))       
+    logger.info(JSON.stringify(res.body))
+
+    // res.should.have.status(200)
+    expect(res.status).to.eql(200)
+    const buildIdAlg = res.body.buildId
+    const buildStatusAlg = await getStatusall(buildIdAlg, `/builds/status/`, 200, "completed", 1000 * 60 * 10)
+
+    return buildStatusAlg
+
+}
+
 const runAlgorithm = async (body)=>{
     const res = await chai.request(config.apiServerUrl)
         .post('/exec/algorithm')
@@ -152,6 +183,7 @@ module.exports = {
     getAlgorithmVersion,
     updateAlgorithmVersion,
     buildAlgoFromImage,
+    buildGitAlgorithm,
     deleteAlgorithmVersion,
     logResult
 
