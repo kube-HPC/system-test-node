@@ -78,7 +78,7 @@ const algJson = (algName,imageName) =>{
 
 describe('pipeline Tests 673', () => {
    
-    describe('pipeline includeInResults 673' , () => {
+    describe('pipeline includeInResults (git 673)' , () => {
         //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/673
         it('yellow node includeInResults = true', async () => {
             const testData = testData2
@@ -303,7 +303,7 @@ describe('pipeline Tests 673', () => {
 
 })
 
-describe('pipeline Defaults 754', () => {
+describe('pipeline Defaults (git 754)', () => {
 //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/754
     const validateDefault = (orgPipeline, pipelineData)=>{
         let compare = ["options","priority"]
@@ -399,7 +399,7 @@ describe('pipeline Defaults 754', () => {
         }).timeout(1000 * 60 * 7);
 
     })
-    describe('validate flowInput exist 725 756',()=>{
+    describe('validate flowInput exist (git 725 756)',()=>{
         //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/725
         //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/756
 
@@ -562,7 +562,7 @@ describe('pipeline Defaults 754', () => {
 
 
     })
-    describe('pause_resume_pipelineas 529',()=>{   
+    describe('pause_resume_pipelineas (git 529)',()=>{   
         //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/529
         const algorithmName = "algorithm-version-test"
         const algorithmImageV1 = "tamir321/algoversion:v1"

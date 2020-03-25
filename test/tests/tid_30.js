@@ -20,7 +20,8 @@ chai.use(chaiHttp);
 
 
 
-describe('pipelines will be executed using their name', () => {
+describe('pipelines will be executed using their name (git 35)', () => {
+    
     it('should return result 24', async () => {
         const name = "pipelineName"
 

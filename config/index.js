@@ -1,7 +1,9 @@
 const index = {
     tid_10: {
         testData1: require('../pipelines/addmult'),
-        testData2: require('../pipelines/multadd')
+        testData2: require('../pipelines/multadd'),
+        testData3: require('../pipelines/countLetters'),
+        testData4: require('../pipelines/countEven')
     },
     tid_30: {
         testData1: require('../pipelines/addmult'),

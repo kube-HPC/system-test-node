@@ -318,7 +318,34 @@ describe('git hub and git lab algorithm builds ', () => {
 
 
     it("test webhook gitlab",async ()=>{
+      const data = {
+        object_kind: "push",
+        before: "95790bf891e76fee5e1747ab589903a6a1f80f22",
+        after: "da1560886d4f094c3e6c9ef40349f7d38b5d27d7",
+        ref: "refs/heads/master",
+        checkout_sha: "da1560886d4f094c3e6c9ef40349f7d38b5d27d7",
        
+        repository:{
+          homepage: "https://gitlab.com/tamir321/hkube",
+          git_http_url:"https://gitlab.com/tamir321/hkube.git"
+        } ,
+        commits: [
+            {
+                id: "b6568db1bc1dcd7f8b4d5a946b0b91f9dacd7327",
+                timestamp: "2011-12-12T14:27:31+02:00",
+                url: "https://gitlab.com/tamir321/hkube/commit/b6568db1bc1dcd7f8b4d5a946b0b91f9dacd7327"
+                
+            }
+            ],
+        total_commits_count: 4
+       
+      } 
+
+
+      const res = await chai.request(config.apiServerUrl)           
+                .post('/builds/webhook/gitlab')
+                .send(data)
+
         
     }).timeout(1000 * 60 * 20)
 })
