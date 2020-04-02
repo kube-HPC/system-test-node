@@ -40,23 +40,23 @@ describe('pipelines will be executed using their name (git 35)', () => {
 
     }).timeout(5000000);
 
-    it.skip('should not run', async () => {
-        const name = "pipelineName"
+    // it.skip('should not run', async () => {
+    //     const name = "pipelineName"
 
-        testData1.descriptor.name = name
+    //     testData1.descriptor.name = name
 
-        const d = deconstructTestData(testData1)
+    //     const d = deconstructTestData(testData1)
 
-        //run the pipeline
-        const res = await runStored(d.inputData)
-        await delay(5 * 1000)
+    //     //run the pipeline
+    //     const res = await runStored(d.inputData)
+    //     await delay(5 * 1000)
 
-        //assertions
-        expect(res.status).to.eql(404)
-        expect(res.body.error).to.have.property('message')
-        expect(res.body.error.message).to.include('Not Found')
+    //     //assertions
+    //     expect(res.status).to.eql(404)
+    //     expect(res.body.error).to.have.property('message')
+    //     expect(res.body.error.message).to.include('Not Found')
 
-    }).timeout(5000000);
+    // }).timeout(5000000);
 
     it('should not run after deleting the pipeline', async () => {
         const name = "pipelineName"

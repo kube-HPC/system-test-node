@@ -48,9 +48,36 @@ const getPodNode = async (podName,namespace='default') => {
     return node
 }
 
+const FailSingelPod = async (podName, namespace = 'default') => {
+    //set test data to testData1
+    const d = deconstructTestData(testData1)
 
+    //store pipeline evalwait
+    await deletePipeline(d)
+     await storePipeline(d)
+
+    //run the pipeline evalwait
+    const res = await runStored(d)
+    const jobId = res.body.jobId
+    await delay(5000)
+    const ServewrPod = await filterPodsByName(podName,namespace)
+    write_log(ServewrPod[0].metadata.name)
+    const deleted = await deletePod(ServewrPod[0].metadata.name, namespace)
+    await delay(15000)
+
+    const result = await getResult(jobId, 200)
+
+    expect(result.status).to.be.equal('completed');
+
+    const newServer = await filterPodsByName(podName,namespace)
+    write_log(newServer[0].metadata.name)
+    expect(ServewrPod[0].metadata.name).to.be.not.equal(newServer[0].metadata.name)
+
+
+}
 
 module.exports = {
+    FailSingelPod,
     client,
     deletePod,
     filterPodsByName,

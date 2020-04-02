@@ -23,7 +23,7 @@ const index = {
         testData4a: require('../pipelines/evalwait400'),
         testData5: require('../pipelines/stringReplace'),
         testData6: require('../pipelines/evalcron1minutes'),
-        testData7: require('../pipelines/pipelineSimple2'),
+        testData7: require('../pipelines/evalwait'),
         testData8: require('../pipelines/evalerror')
     },
     tid_310: {
@@ -91,7 +91,8 @@ const index = {
         testData1: require('../pipelines/versatile-pipe')
     },
     batchOnBatch: {
-        testData1: require('../pipelines/batchOnBatch')
+        testData1: require('../pipelines/batchOnBatch'),
+        testData2: require('../pipelines/evalwait')
     }
     
 }

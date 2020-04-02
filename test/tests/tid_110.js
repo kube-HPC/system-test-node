@@ -20,7 +20,7 @@ const {
 chai.use(chaiHttp);
 
 
-describe('TID_110 severity levels test', () => {
+describe('TID_110 - batchTolerance  -  algorithm completed with failure (git 60 86)', () => {
 
   const dataSort = (obj) => {
     testData1.descriptor.options = obj.options

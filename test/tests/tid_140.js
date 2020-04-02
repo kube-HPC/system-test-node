@@ -23,16 +23,17 @@ const {
 chai.use(chaiHttp);
 
 const {
+    jnk,
     getLogByJobId
     } = require(path.join(process.cwd(), 'utils/elasticsearch'))
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-describe('TID-140- algorithm writes internal logs to Hkube logs,', () => {
+describe('HKUBE Logs elasticsearch,', () => {
    
    
-    it(" Writing internal algorithm information to the system log",async ()=>{
+    it(" TID-140 algorithm writes internal logs to Hkube logs",async ()=>{
          //set test data to testData1
          const d = deconstructTestData(testData1)
        
@@ -52,6 +53,28 @@ describe('TID-140- algorithm writes internal logs to Hkube logs,', () => {
         
     }).timeout(1000 * 60 * 5);
 
+    it(" TID_120 pipeline events in system log of Hkube (git 94 95 96 )", async () => {
+        //set test data to testData1
+        const d = deconstructTestData(testData1)
+
+        //store pipeline evalwait
+        await storePipeline(d)
+
+        //run the pipeline evalwait
+        const res = await runStored(d)
+        const jobId = res.body.jobId
+
+        const result = await getResult(jobId, 200)
+        //result.status.should.equal('completed')
+        await delay(20000);
+       
+        const log = await getLogByJobId(jobId)
+     
+        let a = log.hits.hits.filter(obj => obj._source.message.includes("job-completed"))
+        expect(a).to.have.lengthOf.greaterThan(0)
+        let b = log.hits.hits.filter(obj => obj._source.message.includes("pipeline started"))
+        expect(b).to.have.lengthOf.greaterThan(0)
+    }).timeout(1000 * 60 * 5);
 
 
 });

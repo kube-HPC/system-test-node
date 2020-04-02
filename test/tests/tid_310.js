@@ -192,17 +192,17 @@ describe('pipeline actions', () => {
         expect(a.length).to.be.equal(0)
     }).timeout(1000 * 60 * 5);
 
-    it(" mix condition", async () => {
-        
-        //set test data to testData1
-        const d = deconstructTestData(testData5)
-        await deletePipeline(d)
-        await storePipeline(d)
-        
-        const res = await runStoredAndWaitForResults(d)
-        const result = await  getResult(res,200)
+    // it(" mix condition bug 747", async () => {
+    //     //bug https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/747
        
-    }).timeout(1000 * 60 * 5);
+    //     const d = deconstructTestData(testData5)
+    //     await deletePipeline(d)
+    //     await storePipeline(d)
+        
+    //     const res = await runStoredAndWaitForResults(d)
+    //     const result = await  getResult(res,200)
+    //    expect(result.status).to.be.equal("completed")
+    // }).timeout(1000 * 60 * 5);
 
 
 });

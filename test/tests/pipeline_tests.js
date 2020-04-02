@@ -319,7 +319,7 @@ describe('pipeline Defaults (git 754)', () => {
     
    
 
-    it("type = Triger", async () => {
+    it("TID-450 type = Triger", async () => {
         const testData = testData2
         const triggerd = testData7        
         const simpleName =testData.descriptor.name
