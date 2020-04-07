@@ -248,7 +248,7 @@ describe('pipeline Tests 673', () => {
     }).timeout(1000 * 60 * 2)
 
 
-    it('type = raw tensor',async ()=>{
+    it('type = raw tensor (git 652)',async ()=>{
         const algorithmName = "tensor1"
         const tensorAlgPath = "docker.io/hkubedev/tensor1:v1.0.1"
         const tensorAlg = algJson(algorithmName,tensorAlgPath)
@@ -319,7 +319,7 @@ describe('pipeline Defaults (git 754)', () => {
     
    
 
-    it("TID-450 type = Triger", async () => {
+    it("TID-450 type = Triger (git 157)", async () => {
         const testData = testData2
         const triggerd = testData7        
         const simpleName =testData.descriptor.name

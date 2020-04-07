@@ -31,7 +31,8 @@ const index = {
         testData2: require('../pipelines/waitany'),
         testData3: require('../pipelines/indexedPipeline'),
         testData4: require('../pipelines/addmult2'),
-        testData5: require('../pipelines/mixConditions')
+        testData5: require('../pipelines/mixConditions'),
+        testData6: require('../pipelines/evalwait'),
     },
     tid_50: {
         testData1: require('../pipelines/eval-dynamic')
@@ -42,7 +43,8 @@ const index = {
     },
     tid_70: {
         testData1: require('../pipelines/evalfail'),
-        testData2: require('../pipelines/evalwait')
+        testData2: require('../pipelines/evalwait'),
+        testData3: require('../pipelines/primecheck')
     },
     tid_110: {
         testData1: require('../pipelines/eval-error')
@@ -73,7 +75,8 @@ const index = {
     algorithmTest: {
         testData1: require('../pipelines/AlgorithmTest'),
         testData2: require('../pipelines/AlgorithmTest2'),
-        testData3: require('../pipelines/AlgorithmTtl')
+        testData3: require('../pipelines/AlgorithmTtl'),
+        testData4: require('../pipelines/versatile-pipe')
     },
     pipelineTest: {       
         testData1: require('../pipelines/AlgorithmTest2'),

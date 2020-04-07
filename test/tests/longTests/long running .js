@@ -6,7 +6,8 @@ const delay = require('delay')
 
 
 const {
-    testData2
+    testData2,
+    testData3
 } = require(path.join(process.cwd(), 'config/index')).tid_70
 
 const {
@@ -70,10 +71,10 @@ const FailSingelPod = async (podName, namespace = 'default') => {
 
 
 }
-describe('TID-100 long running algorithms (git 46)', () => {
+describe('TID-100 371 long running algorithms  and pipline ', () => {
 
     
-    it('5 minutes algorithm  ', async () => {
+    it('5 minutes algorithm  (git 46)', async () => {
         const timeout = 5*60*1000
         const pipe = {
             "name": "evalwait",
@@ -97,7 +98,7 @@ describe('TID-100 long running algorithms (git 46)', () => {
     }).timeout(1000 * 60 * 10);
 
 
-    it('10 minutes algorithm with batch ', async () => {
+    it('10 minutes algorithm with batch (git 46)', async () => {
         
         const timeout = 10*60*1000
         const pipe = {
@@ -122,7 +123,20 @@ describe('TID-100 long running algorithms (git 46)', () => {
     }).timeout(1000 * 60 * 20);
 
 
+   it('TID 371 5000 batch (git 82)',async ()=>{
+    const d = deconstructTestData(testData3)
+    await deletePipeline(d)
+    //store pipeline evalwait
+    await storePipeline(d)
+    //run the pipeline evalwait
+    const res = await runStored(d)
+    const jobId = res.body.jobId
    
+    //get result
+    const result = await getResult(jobId, 200)
+   
+    expect(result.status).to.be.equal('completed');
+   }).timeout(1000 * 60 * 20);
 
 
 

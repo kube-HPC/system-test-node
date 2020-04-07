@@ -237,7 +237,7 @@ describe('TID-400 ~', () => {
 
 })
 
-it("TID-430- cron jobs ~", async () => {
+it("TID-430- cron jobs (git 154 155)~", async () => {
    
     testData6.descriptor.name= pipelineRandomName(8)
     const d = deconstructTestData(testData6)
@@ -253,7 +253,7 @@ it("TID-430- cron jobs ~", async () => {
 
    await deletePipeline(d)
 }).timeout(1000 * 60 * 7);
-describe("TID-440 priority tests ~",()=>{
+describe("TID-440 priority tests (git 58)~",()=>{
    
     it('Different priority same Pipeline ', async () => {
         const d = deconstructTestData(testData4)

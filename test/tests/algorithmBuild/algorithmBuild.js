@@ -125,7 +125,7 @@ describe('Algorithm build test', () => {
 
 })
 
-describe('requirements ', () => {
+describe('Algorithm requirements repository (git 387)', () => {
     
 
     it(`python with requirements - tensore`, async () => {
@@ -214,7 +214,7 @@ describe('requirements ', () => {
 
 })
 
-describe('git hub and git lab algorithm builds ', () => {
+describe('git hub and git lab algorithm builds (git 506)', () => {
     it("build github master algorithm",async ()=>{
         const entry = 'main'
         const algName= pipelineRandomName(8).toLowerCase()    
@@ -281,7 +281,7 @@ describe('git hub and git lab algorithm builds ', () => {
       
     }).timeout(1000 * 60 * 20)
 
-    it("test webhook github",async ()=>{
+    it("test webhook github (git 518)",async ()=>{
         const data = {
             ref: 'refs/heads/master',
             before: 'dcc8a45a01f0ed6a0fe19e231cbd269ce2ebc9fa',
@@ -317,7 +317,7 @@ describe('git hub and git lab algorithm builds ', () => {
     }).timeout(1000 * 60 * 20)
 
 
-    it("test webhook gitlab",async ()=>{
+    it("test webhook gitlab (git 518)",async ()=>{
       const data = {
         object_kind: "push",
         before: "95790bf891e76fee5e1747ab589903a6a1f80f22",
@@ -348,6 +348,15 @@ describe('git hub and git lab algorithm builds ', () => {
 
         
     }).timeout(1000 * 60 * 20)
+
+
+    // it('gitlab repository authentication',async ()=>{
+    //     //TODO
+    // })
+
+     // it('github repository authentication',async ()=>{
+    //     //TODO
+    // })
 })
 
 })

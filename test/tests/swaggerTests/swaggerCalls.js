@@ -346,7 +346,7 @@ describe('all swagger calls test ', () => {
 
     })
 
-    describe('graph api',()=>{
+    describe('graph api (git 545)',()=>{
         const pipe = {
                 name: "simple",
                 flowInput: {
@@ -389,7 +389,7 @@ describe('all swagger calls test ', () => {
 
     })
 
-    describe('storage', () => {
+    describe('storage git(554)', () => {
 
 
         it(' GET /storage/infol', async () => {
@@ -450,7 +450,7 @@ describe('all swagger calls test ', () => {
         }).timeout(1000 * 60)
 
 
-        xit(' GET storage data /storage/values/{path}', async () => {
+        it(' GET storage data /storage/values/{path}', async () => {
             
 
             const res = await chai.request(config.apiServerUrl)
