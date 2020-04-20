@@ -350,7 +350,7 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
     }).timeout(1000 * 60 * 20)
 
 
-    // it('gitlab repository authentication',async ()=>{
+    // it('gitlab repository authentication (Token)',async ()=>{
     //     //TODO
     // })
 

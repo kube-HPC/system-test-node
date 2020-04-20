@@ -24,7 +24,7 @@ chai.use(chaiHttp);
 
 
 
-describe('run pipelines in a queue', () => {
+describe('tid_51 run pipelines in a queue~ (git 54)', () => {
     it('should run the eval batch pipeline', async () => {
         let inputData = {
             flowInput: {
@@ -62,7 +62,7 @@ describe('run pipelines in a queue', () => {
         logger.info(`getting results from execution`)
         logger.info(`${res.status} ${JSON.stringify(res.body)}`)
 
-    }).timeout(5000000);
+    }).timeout(1000*60*5);
 
 
     it('should run the primes pipeline', async () => {
@@ -95,6 +95,6 @@ describe('run pipelines in a queue', () => {
         logger.info(`getting results from execution`)
         logger.info(`${res.status} ${JSON.stringify(res.body)}`)
 
-    }).timeout(5000000);
+    }).timeout(1000*60*5);
 
 });

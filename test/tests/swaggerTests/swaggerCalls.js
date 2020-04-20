@@ -939,6 +939,7 @@ describe('all swagger calls test ', () => {
 
             const pipe = {
                 name: 'addmultForTest',
+                description : 'addmultForTest pipeline description',
                 nodes: [{
                         nodeName: 'evaladd',
                         algorithmName: 'eval-alg',

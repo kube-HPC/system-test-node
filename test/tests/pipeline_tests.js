@@ -109,7 +109,7 @@ describe('pipeline Tests 673', () => {
             expect(black.length).to.be.equal(1)
         }).timeout(1000 * 60 * 2)
     })
-    describe('pipeline Types', () => {
+    describe('pipeline Types (git 614)', () => {
 
         const rawPipe = {
             name: "rawPipe",
@@ -562,7 +562,7 @@ describe('pipeline Defaults (git 754)', () => {
 
 
     })
-    describe('pause_resume_pipelineas (git 529)',()=>{   
+    describe('pause_resume_pipelineas (git 529 344)',()=>{   
         //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/529
         const algorithmName = "algorithm-version-test"
         const algorithmImageV1 = "tamir321/algoversion:v1"
