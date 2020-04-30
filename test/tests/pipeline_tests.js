@@ -212,7 +212,7 @@ describe('pipeline Tests 673', () => {
             expect(status.body.types).includes("sub-pipeline");
             expect(status.body.types).includes("internal");
             await deletePipeline(d)
-        }).timeout(1000 * 60 * 7);
+        }).timeout(1000 * 60 * 15);
 
     it('type= stored', async () => {
         const pipe = {

@@ -90,7 +90,7 @@ describe('TID-100 371 long running algorithms  and pipline ', () => {
         //run the pipeline evalwait
         const res = await runStored(pipe)
         const jobId = res.body.jobId
-       
+        await delay(timeout)
         //get result
         const result = await getResult(jobId, 200)
        
@@ -115,7 +115,7 @@ describe('TID-100 371 long running algorithms  and pipline ', () => {
         //run the pipeline evalwait
         const res = await runStored(pipe)
         const jobId = res.body.jobId
-       
+        await delay(timeout)
         //get result
         const result = await getResult(jobId, 200)
        

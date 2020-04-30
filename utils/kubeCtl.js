@@ -7,9 +7,24 @@ const {
 const path = require('path')
 const kubeconfig = new KubeConfig()
 kubeconfig.loadFromFile(process.env.K8S_CONFIG_PATH)
-
+const {
+    testData1
+} = require(path.join(process.cwd(), 'config/index')).tid_161
+const {
+    deletePipeline,
+    getPiplineNodes,
+    storePipeline,
+    runStored,
+    deconstructTestData,
+    runStoredAndWaitForResults
+} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+const chai = require('chai');
+const expect = chai.expect;
+const delay = require('delay')
 const Request = require('kubernetes-client/backends/request')
-
+const {
+    getResult
+} = require(path.join(process.cwd(), 'utils/results'))
 const backend = new Request({
     kubeconfig
 })

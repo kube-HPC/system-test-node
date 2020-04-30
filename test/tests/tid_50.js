@@ -35,7 +35,7 @@ describe('stop pipeline while its runing', () => {
             time: 60000
         }
 
-        await storePipeline(d.pipeline)
+        const a = await storePipeline(d.pipeline)
         const res = await runStored(d.inputData)
 
         const jobId = res.body.jobId

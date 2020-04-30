@@ -289,7 +289,7 @@ describe("TID-440 priority tests (git 58)~",()=>{
         const pipe = {   
             name: d.name,
             flowInput: {
-                range:300,
+                range:500,
                 inputs:4000               
             },            
             priority: 3

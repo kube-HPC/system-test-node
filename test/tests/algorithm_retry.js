@@ -60,7 +60,7 @@ describe('TID-115- the maximum retries for execution of failed algorithm exceede
         //run the pipeline evalwait
         const res = await runStored(d)
 
-        await sleep(2000)
+        await sleep(5000)
         const jobId = res.body.jobId
         console.log("jobid - " + jobId)
         let deletedPod = ""
