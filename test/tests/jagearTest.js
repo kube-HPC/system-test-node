@@ -74,6 +74,6 @@ describe('jagear', () => {
 
         expect(found).to.be.true
         
-    }).timeout(1000 * 60)
+    }).timeout(1000 * 5*60)
 
 })

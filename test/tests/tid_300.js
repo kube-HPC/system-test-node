@@ -51,7 +51,7 @@ const getRandomArry = (number) => {
     return result;
 }
 
-describe('TID-300', () => {
+describe('TID-300 (git 27 )', () => {
 
 
     it(" define_the_order_of_the_pipeline", async () => {

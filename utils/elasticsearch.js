@@ -53,41 +53,63 @@ const waitForLog = async (message, tags = {}, timeout = 5 * 60 * 1000, interval 
 }
 
 
-
-const getLogByJobId= async (jobId)=>{
+const getLogByJobId = async (jobId)=>{
     const client = getClient();
-    const tags = {};
-    const terms = Object.entries(tags).map(([k, v]) => ({
-        term: {
-            [k]: v
-        }
-    }));
-    terms.push({
-        term: {
-            'meta.internal.jobId': jobId
-        }
-    });
-
-    const query = {       
-        bool: {          
-            filter: terms           
-        }
-    }
     const res = await client.search({
-        body: {
-            size: 100,
-            query,
-            _source: [
-                "message",
-                "meta.type",
-                "@timestamp"
-                ]
+        body:{
+        size: 100,
+        query:{
+            match:{
+                'meta.internal.jobId': jobId
+            }
         },
-        index: 'logstash-*',
-    });
+        _source: [
+            "message",
+            "meta.type",
+            "@timestamp"
+            ]
+    }
+   
+    })
 
     return res
 }
+
+
+// const getLogByJobId= async (jobId)=>{
+//     const client = getClient();
+//     const tags = {};
+//     const terms = Object.entries(tags).map(([k, v]) => ({
+//         term: {
+//             [k]: v
+//         }
+//     }));
+//     terms.push({
+//         term: {
+//             'meta.internal.jobId': jobId
+//         }
+//     });
+
+//     const query = {       
+//         bool: {          
+//             filter: terms           
+//         }
+//     }
+//     const res = await client.search({
+//         body: {
+//             size: 100,
+//             query,
+//             _source: [
+//                 "message",
+//                 "meta.type",
+//                 "@timestamp"
+//                 ]
+//         },
+//         index: 'logstash-*',
+//     });
+
+//     return res
+// }
 
 
 
@@ -126,7 +148,7 @@ const getLogByPodName= async (podName)=>{
 
 
 module.exports = {
-
+    
     getClient,
     waitForLog,
     getLogByJobId,

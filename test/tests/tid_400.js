@@ -26,6 +26,7 @@ const {
 } = require(path.join(process.cwd(), 'utils/results'))
 
 const {
+    getPiplineNodes,
     runStoredAndWaitForResults,
     pipelineRandomName,
     deletePipeline,
@@ -35,6 +36,7 @@ const {
 } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 chai.use(chaiHttp);
 
+const {filterPodsByName} = require(path.join(process.cwd(), 'utils/kubeCtl'))
 // const pipelineRandomName = (length)=>{
     
         
@@ -48,7 +50,7 @@ chai.use(chaiHttp);
 //         return result;
 //     }
 
-describe('TID-400 ', () => {
+describe('TID-400 ~', () => {
 
 
     it("TID-400 many bytes put and get from object storage", async () => {
@@ -66,7 +68,7 @@ describe('TID-400 ', () => {
 
     }).timeout(1000 * 60 * 5);
 
-    describe('TID-410- different input types ', () => {
+    describe('TID-410- different input types ~', () => {
         
         it(" integers", async () => {
             //set test data to testData1
@@ -181,27 +183,28 @@ describe('TID-400 ', () => {
 
         }).timeout(1000 * 60 * 5);
 
-        it(" bool null", async () => {
-            //set test data to testData1
-            const d = deconstructTestData(testData3)
-            await deletePipeline(d)
-            const pipe = {   
-                name: d.name,
-                flowInput: {
-                    inputs:null
+        // it.skip(" bool null", async () => {
+        //     // bug https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/737
+        //     //set test data to testData1
+        //     const d = deconstructTestData(testData3)
+        //     await deletePipeline(d)
+        //     const pipe = {   
+        //         name: d.name,
+        //         flowInput: {
+        //             inputs:null
                    
-                }
-            }
+        //         }
+        //     }
            
-            //store pipeline addmuldiv
-            await storePipeline(d)
-            const res = await runStored(pipe)
-            const jobId = res.body.jobId
-            const result = await getResult(jobId, 200)
-            // let diff = []
-            expect(result.data[0].result).to.be.equal(null)
+        //     //store pipeline addmuldiv
+        //     await storePipeline(d)
+        //     const res = await runStored(pipe)
+        //     const jobId = res.body.jobId
+        //     const result = await getResult(jobId, 200)
+        //     // let diff = []
+        //     expect(result.data[0].result).to.be.equal(null)
 
-        }).timeout(1000 * 60 * 5);
+        // }).timeout(1000 * 60 * 5);
 
 
         it(" bool object type", async () => {
@@ -234,7 +237,7 @@ describe('TID-400 ', () => {
 
 })
 
-it("TID-430- cron jobs ", async () => {
+it("TID-430- cron jobs (git 154 155)~", async () => {
    
     testData6.descriptor.name= pipelineRandomName(8)
     const d = deconstructTestData(testData6)
@@ -250,7 +253,7 @@ it("TID-430- cron jobs ", async () => {
 
    await deletePipeline(d)
 }).timeout(1000 * 60 * 7);
-describe("TID-440",()=>{
+describe("TID-440 priority tests (git 58)~",()=>{
    
     it('Different priority same Pipeline ', async () => {
         const d = deconstructTestData(testData4)
@@ -286,7 +289,7 @@ describe("TID-440",()=>{
         const pipe = {   
             name: d.name,
             flowInput: {
-                range:300,
+                range:500,
                 inputs:4000               
             },            
             priority: 3
@@ -337,24 +340,9 @@ describe("TID-440",()=>{
     }).timeout(1000 * 60 * 7)
 })
 
-it.skip("TID-450- pipeline triggers", async () => {
-    const simpleName =testData2.descriptor.name
-    const simple = deconstructTestData(testData7)
-    await deletePipeline(simple)
-    await storePipeline(simple)
-    testData2.descriptor.name= pipelineRandomName(8)
-    testData2.descriptor.triggers.pipelines = [simpleName]
-    const d = deconstructTestData(testData7)
-    await deletePipeline(d)
-    await storePipeline(d)
-    await runStoredAndWaitForResults(simple)
-    //expect(status.body.types).includes("raw");
-    // bug was open cant get pipeline result by name
-   //await deletePipeline(d)
-}).timeout(1000 * 60 * 7);
 
 
-it("TID-460 - algorithm statuses", async () => {
+it("TID-460 - algorithm statuses ~", async () => {
 
     const d = deconstructTestData(testData8)
     await deletePipeline(d)
@@ -366,23 +354,45 @@ it("TID-460 - algorithm statuses", async () => {
 }).timeout(1000 * 60 * 7);
 
 
-it.skip("TID-470- dismiss resources after completion of an algorithm", async () => {
+ it("TID-470- dismiss resources after completion of an algorithm (git 120)", async () => {
+    const beforEvalPods = await filterPodsByName("eval-alg")
+    const d = deconstructTestData(testData7)
+    const pipe = {   
+        name: d.name,
+        flowInput: {            
+            inputs:[[30000,1],[30000,1],[30000,1],[30000,1],[30000,1]]               
+        },            
+        priority: 3
+    }
+    await deletePipeline(d)
+    await storePipeline(d)
+    const res = await runStored(pipe)
+    await delay(15000)
+    const pods = await getPiplineNodes(res.body.jobId)
+    await getResult(res.body.jobId, 200)
+    const res2 = await runStored(pipe)
+    await delay(15000)
+    const pods2 = await getPiplineNodes(res2.body.jobId)
+
+
+    const evalPods = await filterPodsByName("eval-alg")
+    await delay(3*60*1000)
+    const evalPods2 = await filterPodsByName("eval-alg")
+
+    const afterPods = await getPiplineNodes(res.body.jobId)
+    const afterPods2 = await getPiplineNodes(res2.body.jobId)
+    expect(pods.body.length).to.be.equal(5)
+    expect(pods2.body.length).to.be.equal(5)
+    expect(afterPods.body.length).to.be.equal(0)
+    expect(afterPods2.body.length).to.be.equal(0)
+ }).timeout(1000 * 60 * 8);
+
+
+// it.skip("TID-490 pipeline options", async () => {
 
    
 
-}).timeout(1000 * 60 * 7);
-
-it.skip("TID-480- ttl test", async () => {
-
-   
-
-}).timeout(1000 * 60 * 7);
-
-it.skip("TID-490 pipeline options", async () => {
-
-   
-
-}).timeout(1000 * 60 * 7);
+// }).timeout(1000 * 60 * 7);
 
 
 });

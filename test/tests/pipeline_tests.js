@@ -78,7 +78,7 @@ const algJson = (algName,imageName) =>{
 
 describe('pipeline Tests 673', () => {
    
-    describe('pipeline includeInResults 673' , () => {
+    describe('pipeline includeInResults (git 673)' , () => {
         //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/673
         it('yellow node includeInResults = true', async () => {
             const testData = testData2
@@ -109,7 +109,7 @@ describe('pipeline Tests 673', () => {
             expect(black.length).to.be.equal(1)
         }).timeout(1000 * 60 * 2)
     })
-    describe('pipeline Types', () => {
+    describe('pipeline Types (git 614)', () => {
 
         const rawPipe = {
             name: "rawPipe",
@@ -212,7 +212,7 @@ describe('pipeline Tests 673', () => {
             expect(status.body.types).includes("sub-pipeline");
             expect(status.body.types).includes("internal");
             await deletePipeline(d)
-        }).timeout(1000 * 60 * 7);
+        }).timeout(1000 * 60 * 15);
 
     it('type= stored', async () => {
         const pipe = {
@@ -248,7 +248,7 @@ describe('pipeline Tests 673', () => {
     }).timeout(1000 * 60 * 2)
 
 
-    it('type = raw tensor',async ()=>{
+    it('type = raw tensor (git 652)',async ()=>{
         const algorithmName = "tensor1"
         const tensorAlgPath = "docker.io/hkubedev/tensor1:v1.0.1"
         const tensorAlg = algJson(algorithmName,tensorAlgPath)
@@ -303,7 +303,7 @@ describe('pipeline Tests 673', () => {
 
 })
 
-describe('pipeline Defaults 754', () => {
+describe('pipeline Defaults (git 754)', () => {
 //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/754
     const validateDefault = (orgPipeline, pipelineData)=>{
         let compare = ["options","priority"]
@@ -319,7 +319,7 @@ describe('pipeline Defaults 754', () => {
     
    
 
-    it("type = Triger", async () => {
+    it("TID-450 type = Triger (git 157)", async () => {
         const testData = testData2
         const triggerd = testData7        
         const simpleName =testData.descriptor.name
@@ -399,7 +399,7 @@ describe('pipeline Defaults 754', () => {
         }).timeout(1000 * 60 * 7);
 
     })
-    describe('validate flowInput exist 725 756',()=>{
+    describe('validate flowInput exist (git 725 756)',()=>{
         //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/725
         //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/756
 
@@ -562,7 +562,7 @@ describe('pipeline Defaults 754', () => {
 
 
     })
-    describe('pause_resume_pipelineas 529',()=>{   
+    describe('pause_resume_pipelineas (git 529 344)',()=>{   
         //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/529
         const algorithmName = "algorithm-version-test"
         const algorithmImageV1 = "tamir321/algoversion:v1"

@@ -188,7 +188,8 @@ const runStoredAndWaitForResults = async (pipe) => {
     return jobId
 }
 
-const deconstructTestData = (testData) => {
+const deconstructTestData = (testDataOgr) => {
+    const testData = Object.create(testDataOgr)
     return {
         pipeline: testData.descriptor,
         name: testData.descriptor.name,

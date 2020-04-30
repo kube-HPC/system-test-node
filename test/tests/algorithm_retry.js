@@ -5,7 +5,20 @@ const path = require('path')
 const delay = require('delay')
 const {
     testData1,
+    testData2
 } = require(path.join(process.cwd(), 'config/index')).batchOnBatch
+
+const {
+    FailSingelPod,
+    body,    
+    deletePod,
+    filterPodsByName,
+    getPodNode
+} = require(path.join(process.cwd(), 'utils/kubeCtl'))
+ const {
+     getDriverIdByJobId
+ } = require(path.join(process.cwd(), 'utils/socketGet'))
+
 
 const {
     getResult,
@@ -13,28 +26,73 @@ const {
     getParsedGraph
   } = require(path.join(process.cwd(), 'utils/results'))
 
-// const KubernetesClient = require('@hkube/kubernetes-client').Client;
+ const {
+     getLogByJobId
+ } = require(path.join(process.cwd(), 'utils/elasticsearch'))
+
 const {
-    getExecPipeline,
-    runRaw,
-    getPipeline,
-    getPipelineStatus,
+    getPiplineNodes,
+    deletePipeline,   
+    runRaw,   
     storePipeline,
     runStored,
-    deconstructTestData,
-    runStoredAndWaitForResults,
-    resumePipeline,
-    pausePipeline,
-    stopPipeline,
-    exceCachPipeline
+    deconstructTestData
+   
 } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
-
+ const {
+     client
+ } = require(path.join(process.cwd(), 'utils/kubeCtl'))
 
 chai.use(chaiHttp);
+describe('TID-115- the maximum retries for execution of failed algorithm exceeded, (git 62 64) ~', () => {
+     function sleep(ms) {
+         return new Promise(resolve => setTimeout(resolve, ms));
+     }
+     
+    it('max_num_of_algo_retries due to kill algorithm  ', async () => {
 
-describe('algorithm retry Tests 602', () => {
+        //set test data to testData1
+        const d = deconstructTestData(testData2)
+
+        //store pipeline evalwait
+        await storePipeline(d)
+
+        //run the pipeline evalwait
+        const res = await runStored(d)
+
+        await sleep(5000)
+        const jobId = res.body.jobId
+        console.log("jobid - " + jobId)
+        let deletedPod = ""
+        let z = 0
+        do {
+            
+            await delay(2000)
+            const nodes = await getPiplineNodes(jobId)
+
+            const podName = nodes.body[0]
+            if (typeof podName !== "undefined" && deletedPod !== podName) {
+                z++
+                console.log("z=" + z +" killing pod-"+ podName)
+                const pod = await client.api.v1.namespaces('default').pods(podName).delete();
+                deletedPod = podName;
+                await delay(20000);
+            }
+        }
+        while (z < 4);
+
+        const result = await getResult(jobId, 200)
+        await delay(5000);
+        const log = await getLogByJobId(jobId)
+        console.log(result.status)
+        console.log(result.error)
+        expect(result.status).to.equal("failed")
+        expect(result.error).to.contain("is in CrashLoopBackOff, attempts:")
+    }).timeout(1000 * 60 * 5);
+})
+describe('algorithm retry Tests (git 602) ~', () => {
 //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/602
-    describe('pipeline Types', () => {
+    describe('pipeline Types ~', () => {
 
         const rawPipeCrash = (reson,retries)=> {
             return {
@@ -122,7 +180,7 @@ describe('algorithm retry Tests 602', () => {
             
         }
 
-    describe( 'pipelina crash ', async ()=>{
+    describe( 'pipelina crash ~', async ()=>{
 
        
         it('rawPipeCrash no retry', async () => {
@@ -179,7 +237,7 @@ describe('algorithm retry Tests 602', () => {
 
     })
 
-    describe( 'pipeline Error ', async ()=>{
+    describe( 'pipeline Error ~', async ()=>{
 
        
         it('rawPipeError no retry', async () => {
@@ -232,7 +290,7 @@ describe('algorithm retry Tests 602', () => {
 
     })
 
-    describe( 'pipeline Error and batchTolerance ', async ()=>{
+    describe( 'pipeline Error and batchTolerance ~', async ()=>{
         
         it('rawPipeError one retry batchTolerance =80', async () => {
             const rawPipe = rawPipeError("OnError",1)
@@ -315,6 +373,39 @@ describe('algorithm retry Tests 602', () => {
         
         }).timeout(1000 * 60 * 2)
 
+
+        it('TID-111 retry due to pod fail (git 65)',async ()=>{
+            const d = deconstructTestData(testData2)
+            await deletePipeline(d)
+            //store pipeline evalwait
+            await storePipeline(d)
+            const pipe = {
+                name: "evalwait",
+              flowInput:{
+                  inputs:[
+                            [60000,1],[60000,2],[60000,3],[60000,4],[60000,5],[60000,6],[60000,7],[60000,8],[60000,9],[60000,10],
+                            [60000,11],[60000,12],[60000,13],[60000,14],[60000,15],[60000,16],[60000,17],[60000,18],[60000,19],[60000,20],
+                            [60000,21],[60000,22],[60000,23],[60000,24],[60000,25],[60000,26],[60000,27],[60000,28],[60000,29],[60000,30],
+                            [60000,31],[60000,32],[60000,33],[60000,34],[60000,35],[60000,36],[60000,37],[60000,38],[60000,39],[60000,40],
+                            [60000,41],[60000,42],[60000,43],[60000,44],[60000,45],[60000,46],[60000,47],[60000,48],[60000,49],[60000,50]
+                                    ]
+              }
+          }
+            //run the pipeline evalwait
+            const res = await runStored(pipe)
+            const jobId = res.body.jobId
+            const driver = await getDriverIdByJobId(jobId)
+            const nodes = await getPiplineNodes(jobId)
+
+            const partNodes =nodes.body.slice(0,3)
+        
+            const allAlg = partNodes.map(async (element) => {deletePod(element,'default')})
+            await Promise.all(allAlg); 
+
+            const result = await  getResult(jobId,200)
+            expect(result.status).to.be.equal("completed")
+        
+        }).timeout(1000 * 60 * 10)
 
 
         it('batch on batch', async ()=>{

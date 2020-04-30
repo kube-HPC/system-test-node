@@ -15,7 +15,7 @@ const { deleteAlgorithm,
 
 const {
     testData1,
-    testData2,
+    testData4,
     testData3
 } = require(path.join(process.cwd(), 'config/index')).algorithmTest
 
@@ -41,7 +41,7 @@ chai.use(chaiHttp);
 
 describe('Alrogithm Tests', () => {
 
-    describe('Test Algorithm ttl',()=>{ 
+    describe('TID 480 - Test Algorithm ttl (git 61 342)',()=>{ 
         it('ttl = 3 one of the inputs = 5 seconds ',async ()=>{ 
             const d = deconstructTestData(testData3)
             await deletePipeline(d)
@@ -68,7 +68,7 @@ describe('Alrogithm Tests', () => {
         
      })
 
-    describe('Test Algorithm Version 560',()=>{   
+    describe('Test Algorithm Version (git 560 487)',()=>{   
         //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/560
         const algorithmName = "algorithm-version-test"
         const algorithmImageV1 = "tamir321/algoversion:v1"
@@ -305,6 +305,51 @@ describe('Alrogithm Tests', () => {
 
     } )
     
+
+    describe('algorithm execute another',()=>{
+        it('TID-600 algorithm execute another algorithm (git 288)', async () => {
+            let alg = {
+                        name: "versatile",
+                        cpu: 1,
+                        gpu: 0,
+                        mem: "256Mi",
+                        minHotWorkers: 0,
+                        algorithmImage: "tamir321/versatile:04",
+                        type: "Image",
+                        options: {
+                            debug: false,
+                            pending: false
+                            }       
+                }
+            const aa = await  deleteAlgorithm("versatile",true)
+            const bb = await buildAlgoFromImage(alg);
+    //need to add alg versatile-pipe
+            const algName = "black-alg"
+            const pipe = {
+                "name": "versatile-pipe",
+                "flowInput": {
+                    "inp": [{
+                        "type": "algorithm",
+                        "name": `${algName}`,
+                        "input":["a"]
+                    }]
+                }
+            }
+            const d = deconstructTestData(testData4)
+    
+            //store pipeline evalwait
+            const a = await storePipeline(d)
+        
+            //run the pipeline evalwait
+           
+    
+            const jobId = await runStoredAndWaitForResults(pipe)
+           
+            const graph = await getRawGraph(jobId)
+            expect(graph.body.nodes.length).to.be.equal(2)
+
+        }).timeout(1000 * 5*60)
+    })
    
 
 });

@@ -1,7 +1,9 @@
 const index = {
     tid_10: {
         testData1: require('../pipelines/addmult'),
-        testData2: require('../pipelines/multadd')
+        testData2: require('../pipelines/multadd'),
+        testData3: require('../pipelines/countLetters'),
+        testData4: require('../pipelines/countEven')
     },
     tid_30: {
         testData1: require('../pipelines/addmult'),
@@ -21,7 +23,7 @@ const index = {
         testData4a: require('../pipelines/evalwait400'),
         testData5: require('../pipelines/stringReplace'),
         testData6: require('../pipelines/evalcron1minutes'),
-        testData7: require('../pipelines/pipelineSimple2'),
+        testData7: require('../pipelines/evalwait'),
         testData8: require('../pipelines/evalerror')
     },
     tid_310: {
@@ -29,7 +31,8 @@ const index = {
         testData2: require('../pipelines/waitany'),
         testData3: require('../pipelines/indexedPipeline'),
         testData4: require('../pipelines/addmult2'),
-        testData5: require('../pipelines/mixConditions')
+        testData5: require('../pipelines/mixConditions'),
+        testData6: require('../pipelines/evalwait'),
     },
     tid_50: {
         testData1: require('../pipelines/eval-dynamic')
@@ -40,7 +43,8 @@ const index = {
     },
     tid_70: {
         testData1: require('../pipelines/evalfail'),
-        testData2: require('../pipelines/evalwait')
+        testData2: require('../pipelines/evalwait'),
+        testData3: require('../pipelines/primecheck')
     },
     tid_110: {
         testData1: require('../pipelines/eval-error')
@@ -71,7 +75,8 @@ const index = {
     algorithmTest: {
         testData1: require('../pipelines/AlgorithmTest'),
         testData2: require('../pipelines/AlgorithmTest2'),
-        testData3: require('../pipelines/AlgorithmTtl')
+        testData3: require('../pipelines/AlgorithmTtl'),
+        testData4: require('../pipelines/versatile-pipe')
     },
     pipelineTest: {       
         testData1: require('../pipelines/AlgorithmTest2'),
@@ -89,7 +94,8 @@ const index = {
         testData1: require('../pipelines/versatile-pipe')
     },
     batchOnBatch: {
-        testData1: require('../pipelines/batchOnBatch')
+        testData1: require('../pipelines/batchOnBatch'),
+        testData2: require('../pipelines/evalwait')
     }
     
 }

@@ -26,7 +26,7 @@ const input = {
    // name : "evalwait",
     flowInput: {
         inputs:[
-            [15000,1]
+            [25000,1]
         ]}
 }
 

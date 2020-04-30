@@ -11,7 +11,7 @@ const {
     testData2,
     testData3,
     testData4,
-    testData5
+    testData6
 } = require(path.join(process.cwd(), 'config/index')).tid_310
 const logger = require(path.join(process.cwd(), 'utils/logger'))
 
@@ -65,7 +65,7 @@ const getRandomArry = (number) => {
 describe('TID-310 - 360', ()=>{
 
 
-describe('TID-310 raw vs stored', () => {
+describe('TID-310 raw vs stored (git 43 )', () => {
 
 
     it(" run stored", async () => {
@@ -114,7 +114,7 @@ describe('TID-310 raw vs stored', () => {
 
 describe('pipeline actions', () => {
 
-    it(" TID-320 add the same pipeline twice", async () => {
+    it(" TID-320 add the same pipeline twice (git 67 41)", async () => {
 
         const d = deconstructTestData(testData4)
         const del320 = await deletePipeline(d.name)
@@ -135,7 +135,7 @@ describe('pipeline actions', () => {
     }).timeout(1000 * 60 * 5);
 
 
-    it(" TID-330- delete pipeline", async () => {
+    it(" TID-330- delete pipeline (git 69 41)", async () => {
         
         //set test data to testData1
         const d = deconstructTestData(testData4)
@@ -149,7 +149,7 @@ describe('pipeline actions', () => {
         expect(del1.text).to.contain("pipeline addmult Not Found")
     }).timeout(1000 * 60 * 5);
 
-    it(" TID-340- get all pipeline", async () => {
+    it(" TID-340- get all pipeline (git 70 41)", async () => {
         
         //set test data to testData1
         const d = deconstructTestData(testData4)
@@ -163,7 +163,7 @@ describe('pipeline actions', () => {
         expect(b.length).to.equal(1)
     }).timeout(1000 * 60 * 5);
 
-    it(" TID-350- wait any condition", async () => {
+    it(" TID-350- wait any condition (git 87)", async () => {
         
         //set test data to testData1
         const d = deconstructTestData(testData2)
@@ -178,7 +178,7 @@ describe('pipeline actions', () => {
     }).timeout(1000 * 60 * 5);
 
    
-    it(" TID-360- indexed condition", async () => {
+    it(" TID-360- indexed condition (git 88)", async () => {
         
         //set test data to testData1
         const d = deconstructTestData(testData3)
@@ -192,18 +192,55 @@ describe('pipeline actions', () => {
         expect(a.length).to.be.equal(0)
     }).timeout(1000 * 60 * 5);
 
-    it(" mix condition", async () => {
-        
+
+    it(" TID-380- 10 pipelines in parallel (git 83)", async () => {
+        //TBD: need to complete the test
+
         //set test data to testData1
-        const d = deconstructTestData(testData5)
-        await deletePipeline(d)
-        await storePipeline(d)
+        const d = deconstructTestData(testData6)
+        const name = d.name;
+        const pipelines = []
+        for(var i=0 ;i < 10 ;i++){
+            d.pipeline.name = name+i
+            // deletePipeline(d)
+            pipelines.push(storePipeline(d)) 
+        }
+      //  await deletePipeline(d)
+       // await storePipeline(d)
         
-        const res = await runStoredAndWaitForResults(d)
-        const result = await  getResult(res,200)
+       const jnk =  await Promise.all(pipelines)
+        const pipes = []
+        for(var i=0;i<4;i++)
+        {
+            const pipe = {   
+                name: name+i,
+                flowInput: {            
+                    inputs:[[3000,1],[3000,1],[3000,1],[10000,1],[10000,1]]               
+                },            
+                priority: 3
+            }
+            pipes.push(runStored(pipe))
+        }
+        const res = await Promise.all(pipes); 
+          await delay(3000)
+          const pipes1 = []
+         for(var i=5;i<10;i++)
+         {
+             const pipe = {   
+                 name: name+i,
+                 flowInput: {            
+                     inputs:[[3000,1],[3000,1],[3000,1],[10000,1],[10000,1]]               
+                 },            
+                 priority: 3
+             }
+             pipes1.push(runStored(pipe))
+         }
+         const res2 = await Promise.all(pipes1); 
+        
+     
        
     }).timeout(1000 * 60 * 5);
-
+   
 
 });
 

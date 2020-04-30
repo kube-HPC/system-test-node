@@ -11,6 +11,7 @@ const {
 } = require(path.join(process.cwd(), 'config/index')).tid_50
 
 const {
+    stopPipeline,
     storePipeline,
     runStored,
     deconstructTestData,
@@ -26,7 +27,7 @@ chai.use(chaiHttp);
 
 describe('stop pipeline while its runing', () => {
 
-    it('should stop the pipeline while running', async () => {
+    it('should stop the pipeline while running (git 42)', async () => {
         const d = deconstructTestData(testData1)
 
         d.inputData.flowInput = {
@@ -34,29 +35,20 @@ describe('stop pipeline while its runing', () => {
             time: 60000
         }
 
-        await storePipeline(d.pipeline)
+        const a = await storePipeline(d.pipeline)
         const res = await runStored(d.inputData)
 
         const jobId = res.body.jobId
 
         await delay(10000)
-        const stopInfo = {
-            jobId: jobId,
-            reason: "stop now"
-        }
+       
 
-        const stop = await chai.request(config.apiServerUrl)
-            .post('/exec/stop')
-            .send(stopInfo)
-
+        const stop = await stopPipeline(jobId)
         logger.info(JSON.stringify(stop))
 
         expect(stop.status).to.eql(200)
 
-        const stop2 = await chai.request(config.apiServerUrl)
-            .post('/exec/stop')
-            .send(stopInfo)
-
+        const stop2 = await stopPipeline(jobId)
         expect(stop2.status).to.eql(400)
         expect(stop2.body).to.have.property('error')
         logger.error(`stop2: ${stop2.body.error}`)

@@ -24,7 +24,7 @@ chai.use(chaiHttp);
 
 
 
-describe('run pipelines in a queue', () => {
+describe('tid_51 run pipelines in a queue~ (git 54)', () => {
     it('should run the eval batch pipeline', async () => {
         let inputData = {
             flowInput: {
@@ -43,11 +43,11 @@ describe('run pipelines in a queue', () => {
 
         const jobId = res.body.jobId;
 
-        await delay(35000)
+        await delay(100*1000)
 
         let runningPods = await getPodsRunning(jobId)
         logger.info(`getting running pods on id ${jobId}`)
-        assert.isAtLeast(runningPods.body.length, 15, `the job ${jobId} expected to have at least 15 running pods while got ${runningPods.body.length}`)
+        assert.isAtLeast(runningPods.body.length, 8, `the job ${jobId} expected to have at least 15 running pods while got ${runningPods.body.length}`)
 
         const result = await getResult(jobId, 200);
         if ('error' in result) {
@@ -62,7 +62,7 @@ describe('run pipelines in a queue', () => {
         logger.info(`getting results from execution`)
         logger.info(`${res.status} ${JSON.stringify(res.body)}`)
 
-    }).timeout(5000000);
+    }).timeout(1000*60*5);
 
 
     it('should run the primes pipeline', async () => {
@@ -95,6 +95,6 @@ describe('run pipelines in a queue', () => {
         logger.info(`getting results from execution`)
         logger.info(`${res.status} ${JSON.stringify(res.body)}`)
 
-    }).timeout(5000000);
+    }).timeout(1000*60*5);
 
 });
