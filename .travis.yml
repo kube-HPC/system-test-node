@@ -17,11 +17,13 @@ jobs:
       install:
       - ./travis/install.sh
       - npm ci
+      env: CAN_FAIL=true
       script: ./travis/pipelientest.sh  
     - stage: algorithmtest
       install:
       - ./travis/install.sh
       - npm ci
+      env: CAN_FAIL=true
       script: ./travis/algorithmtest.sh      
 stages:
   - deploy
