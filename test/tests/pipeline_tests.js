@@ -30,7 +30,9 @@ const {
     testData6,
     testData7,
     testData8,
-    testData9
+    testData9,
+    testData10,
+    testData11
 } = require(path.join(process.cwd(), 'config/index')).pipelineTest
 
 
@@ -529,7 +531,7 @@ describe('pipeline Defaults (git 754)', () => {
              const simple2TestData = testData2
              const versatileTestData = testData4
              const logBefore = await getWebSocketlogs()
-             const before = logBefore.filter(obj=>obj.message.includes("SubPipeline job error: unable to find flowInput.inp, alg subPipelineId")).length
+             const before = logBefore.filter(obj => typeof obj.message == "string").filter(obj=>obj.message.includes("SubPipeline job error: unable to find flowInput.inp, alg subPipelineId")).length
            
             const pipelineName = pipelineRandomName(8)
            
@@ -554,7 +556,7 @@ describe('pipeline Defaults (git 754)', () => {
             await delay(1000*20)
             const dr  =await getDriverIdByJobId(res.body.jobId)
             const log = await getWebSocketlogs()
-            const after = log.filter(obj=>obj.message.includes("SubPipeline job error: unable to find flowInput.inp, alg subPipelineId")).length
+            const after = log.filter(obj => typeof obj.message == "string").filter(obj=>obj.message.includes("SubPipeline job error: unable to find flowInput.inp, alg subPipelineId")).length
             await deletePipeline(d)
             expect(after).to.be.greaterThan(before)
             
@@ -642,6 +644,93 @@ describe('pipeline Defaults (git 754)', () => {
         
     } )
     
+    describe("TID-440 Pipeline priority tests (git 58)~",()=>{
    
+        it('Different priority same Pipeline ', async () => {
+            const d = deconstructTestData(testData11)
+            const pipe = {   
+                name: d.name,
+                flowInput: {
+                    range:250,
+                    inputs:2000               
+                },            
+                priority: 3
+            }
+            await deletePipeline(d)
+            await storePipeline(d)
+            const res2 = await runStored(pipe)
+            await delay(2000)
+            pipe.priority = 1
+            const res1 = await runStored(pipe)
+            // write_log(res.body)
+            const jobId1 = res1.body.jobId
+            const jobId2 = res2.body.jobId
+           
+            const result1 =  await getResult(jobId1, 200)
+            const result2 = await  getResult(jobId2, 200)
+            expect(result1.timeTook).to.be.lessThan(result2.timeTook)
+        }).timeout(1000 * 60 * 2)
+    
+    
+        it('Different priority Pipelines with Different algorithm', async () => {
+            const testDataA = testData11
+            const d = deconstructTestData(testData11)
+            await deletePipeline(d)
+            await storePipeline(d)
+            const pipe = {   
+                name: d.name,
+                flowInput: {
+                    range:600,
+                    inputs:4000               
+                },            
+                priority: 3
+            }
+            testData11.descriptor.name= testData11.descriptor.name+"2"
+            const d2 = deconstructTestData(testDataA)
+            d2.pipeline.nodes[0].algorithmName=d2.pipeline.nodes[1].algorithmName="eval-alg2"
+            await deletePipeline(d2)
+            await storePipeline(d2)
+            const res2 = await runStored(pipe)
+            await delay(5000)
+            pipe.name= d2.name
+            pipe.priority = 1
+            const res1 = await runStored(pipe)
+            // write_log(res.body)
+            const jobId1 = res1.body.jobId
+            const jobId2 = res2.body.jobId
+           
+            const result1 =  await getResult(jobId1, 200)
+            const result2 = await  getResult(jobId2, 200)
+            expect(result1.timeTook).to.be.lessThan(result2.timeTook)
+        }).timeout(1000 * 60 * 15)
+    
+    
+        it('Same priority pipelines different batch sizes ', async () => {
+            const d = deconstructTestData(testData10)
+            const pipe = {   
+                name: d.name,
+                flowInput: {
+                    range:500,
+                    inputs:1000               
+                },            
+                priority: 3
+            }
+            await deletePipeline(d)
+            await storePipeline(d)
+            const res2 = await runStored(pipe)
+            await delay(1000)
+            pipe.flowInput.range = 100
+            const res1 = await runStored(pipe)
+            // write_log(res.body)
+            const jobId1 = res1.body.jobId
+            const jobId2 = res2.body.jobId
+           
+            const result1 =  await getResult(jobId1, 200)
+            const result2 = await  getResult(jobId2, 200)
+            expect(result1.timeTook).to.be.lessThan(result2.timeTook)
+        }).timeout(1000 * 60 * 7)
+    })
+    
+    
 
 });

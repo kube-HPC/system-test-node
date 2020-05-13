@@ -87,7 +87,9 @@ const index = {
         testData6: require('../pipelines/pipelineSimpleNoInput'),
         testData7: require('../pipelines/pipelineDefaultsTest'),
         testData8: require('../pipelines/trigger'),
-        testData9: require('../pipelines/triggered')
+        testData9: require('../pipelines/triggered'),
+        testData10: require('../pipelines/evalwait161'),
+        testData11: require('../pipelines/evalwait400'),
 
     },
     jagearTest: {

@@ -253,92 +253,92 @@ it("TID-430- cron jobs (git 154 155)~", async () => {
 
    await deletePipeline(d)
 }).timeout(1000 * 60 * 7);
-describe("TID-440 priority tests (git 58)~",()=>{
+// describe("TID-440 priority tests (git 58)~",()=>{
    
-    it('Different priority same Pipeline ', async () => {
-        const d = deconstructTestData(testData4)
-        const pipe = {   
-            name: d.name,
-            flowInput: {
-                range:150,
-                inputs:1000               
-            },            
-            priority: 3
-        }
-        await deletePipeline(d)
-        await storePipeline(d)
-        const res2 = await runStored(pipe)
-        await delay(2000)
-        pipe.priority = 1
-        const res1 = await runStored(pipe)
-        // write_log(res.body)
-        const jobId1 = res1.body.jobId
-        const jobId2 = res2.body.jobId
+//     it('Different priority same Pipeline ', async () => {
+//         const d = deconstructTestData(testData4)
+//         const pipe = {   
+//             name: d.name,
+//             flowInput: {
+//                 range:150,
+//                 inputs:1000               
+//             },            
+//             priority: 3
+//         }
+//         await deletePipeline(d)
+//         await storePipeline(d)
+//         const res2 = await runStored(pipe)
+//         await delay(2000)
+//         pipe.priority = 1
+//         const res1 = await runStored(pipe)
+//         // write_log(res.body)
+//         const jobId1 = res1.body.jobId
+//         const jobId2 = res2.body.jobId
        
-        const result1 =  await getResult(jobId1, 200)
-        const result2 = await  getResult(jobId2, 200)
-        expect(result1.timeTook).to.be.lessThan(result2.timeTook)
-    }).timeout(1000 * 60 * 2)
+//         const result1 =  await getResult(jobId1, 200)
+//         const result2 = await  getResult(jobId2, 200)
+//         expect(result1.timeTook).to.be.lessThan(result2.timeTook)
+//     }).timeout(1000 * 60 * 2)
 
 
-    it('Different priority Pipelines with Different algorithm', async () => {
-        const testDataA = testData4a
-        const d = deconstructTestData(testData4a)
-        await deletePipeline(d)
-        await storePipeline(d)
-        const pipe = {   
-            name: d.name,
-            flowInput: {
-                range:600,
-                inputs:4000               
-            },            
-            priority: 3
-        }
-        testData4a.descriptor.name= testData4a.descriptor.name+"2"
-        const d2 = deconstructTestData(testDataA)
-        d2.pipeline.nodes[0].algorithmName=d2.pipeline.nodes[1].algorithmName="eval-alg2"
-        await deletePipeline(d2)
-        await storePipeline(d2)
-        const res2 = await runStored(pipe)
-        await delay(5000)
-        pipe.name= d2.name
-        pipe.priority = 1
-        const res1 = await runStored(pipe)
-        // write_log(res.body)
-        const jobId1 = res1.body.jobId
-        const jobId2 = res2.body.jobId
+//     it('Different priority Pipelines with Different algorithm', async () => {
+//         const testDataA = testData4a
+//         const d = deconstructTestData(testData4a)
+//         await deletePipeline(d)
+//         await storePipeline(d)
+//         const pipe = {   
+//             name: d.name,
+//             flowInput: {
+//                 range:600,
+//                 inputs:4000               
+//             },            
+//             priority: 3
+//         }
+//         testData4a.descriptor.name= testData4a.descriptor.name+"2"
+//         const d2 = deconstructTestData(testDataA)
+//         d2.pipeline.nodes[0].algorithmName=d2.pipeline.nodes[1].algorithmName="eval-alg2"
+//         await deletePipeline(d2)
+//         await storePipeline(d2)
+//         const res2 = await runStored(pipe)
+//         await delay(5000)
+//         pipe.name= d2.name
+//         pipe.priority = 1
+//         const res1 = await runStored(pipe)
+//         // write_log(res.body)
+//         const jobId1 = res1.body.jobId
+//         const jobId2 = res2.body.jobId
        
-        const result1 =  await getResult(jobId1, 200)
-        const result2 = await  getResult(jobId2, 200)
-        expect(result1.timeTook).to.be.lessThan(result2.timeTook)
-    }).timeout(1000 * 60 * 15)
+//         const result1 =  await getResult(jobId1, 200)
+//         const result2 = await  getResult(jobId2, 200)
+//         expect(result1.timeTook).to.be.lessThan(result2.timeTook)
+//     }).timeout(1000 * 60 * 15)
 
 
-    it('Same priority pipelines different batch sizes ', async () => {
-        const d = deconstructTestData(testData4)
-        const pipe = {   
-            name: d.name,
-            flowInput: {
-                range:500,
-                inputs:1000               
-            },            
-            priority: 3
-        }
-        await deletePipeline(d)
-        await storePipeline(d)
-        const res2 = await runStored(pipe)
-        await delay(1000)
-        pipe.flowInput.range = 100
-        const res1 = await runStored(pipe)
-        // write_log(res.body)
-        const jobId1 = res1.body.jobId
-        const jobId2 = res2.body.jobId
+//     it('Same priority pipelines different batch sizes ', async () => {
+//         const d = deconstructTestData(testData4)
+//         const pipe = {   
+//             name: d.name,
+//             flowInput: {
+//                 range:500,
+//                 inputs:1000               
+//             },            
+//             priority: 3
+//         }
+//         await deletePipeline(d)
+//         await storePipeline(d)
+//         const res2 = await runStored(pipe)
+//         await delay(1000)
+//         pipe.flowInput.range = 100
+//         const res1 = await runStored(pipe)
+//         // write_log(res.body)
+//         const jobId1 = res1.body.jobId
+//         const jobId2 = res2.body.jobId
        
-        const result1 =  await getResult(jobId1, 200)
-        const result2 = await  getResult(jobId2, 200)
-        expect(result1.timeTook).to.be.lessThan(result2.timeTook)
-    }).timeout(1000 * 60 * 7)
-})
+//         const result1 =  await getResult(jobId1, 200)
+//         const result2 = await  getResult(jobId2, 200)
+//         expect(result1.timeTook).to.be.lessThan(result2.timeTook)
+//     }).timeout(1000 * 60 * 7)
+// })
 
 
 
