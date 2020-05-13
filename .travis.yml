@@ -1,0 +1,21 @@
+language: node_js
+node_js:
+- '10'
+
+jobs:
+  include:
+    - stage: deploy
+      install:
+      - ./travis/install.sh
+      script: ./travis/deploy.sh
+    - stage: test
+      install:
+      - ./travis/install.sh
+      - npm ci
+      script: ./travis/test.sh    
+stages:
+  - deploy
+  - name: test
+    # if: tag IS present
+    
+  

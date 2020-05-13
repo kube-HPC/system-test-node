@@ -43,7 +43,7 @@ describe('tid_51 run pipelines in a queue~ (git 54)', () => {
 
         const jobId = res.body.jobId;
 
-        await delay(100*1000)
+        await delay(20*1000)
 
         let runningPods = await getPodsRunning(jobId)
         logger.info(`getting running pods on id ${jobId}`)
@@ -76,7 +76,7 @@ describe('tid_51 run pipelines in a queue~ (git 54)', () => {
         const jobId = res.body.jobId;
 
 
-         await delay(10 * 1000)
+         //await delay(10 * 1000)
 
         let runningPods = await getPodsRunning(jobId)
         logger.info(`getting running pods on id ${jobId}`)

@@ -1,0 +1,37 @@
+global:
+  production: true
+  clusterName: test
+  registry: ""
+  storage:
+    binary: true
+    s3:
+      url: http://minio1.kube-system.svc:9000 
+      access_key: ${AWS_ACCESS_KEY}
+      secret_key: ${AWS_SECRET_KEY}
+    fs:
+      pvc: 
+         name: 'hkube-storage'
+         capacity: '50Gi'
+         nfs_server: '172.22.0.115'
+         nfs_root: '/nfs/storageclass'
+      base_directory: '/hkubedata'
+  ingress:
+    use_regex: true
+    # hostname: ${CICD_HOSTNAME}
+env:
+  default_storage: 'fs'
+build_secret:
+  docker_registry: ''
+  docker_namespace: ''
+  docker_username: hkubedev
+  docker_password: ${DOCKER_BUILD_PUSH_PASSWORD}
+etcd:
+  persistentVolume:
+    enabled: true
+    storageClass: nfs-client
+task_executor:
+  env:
+    pipeline_drivers_amount: 30
+monitor_server:
+  env:
+    elasticsearch_service_url: 'http://elasticsearch-ingest.logging.svc.test:9200'
