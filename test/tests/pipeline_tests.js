@@ -681,7 +681,7 @@ describe('pipeline Defaults (git 754)', () => {
                 name: d.name,
                 flowInput: {
                     range:600,
-                    inputs:4000               
+                    inputs:6000               
                 },            
                 priority: 3
             }

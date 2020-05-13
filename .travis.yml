@@ -24,7 +24,13 @@ jobs:
       - ./travis/install.sh
       - npm ci
       env: CAN_FAIL=true
-      script: ./travis/algorithmtest.sh      
+      script: ./travis/algorithmtest.sh
+    - stage: algorithmBuild
+      install:
+      - ./travis/install.sh
+      - npm ci
+      env: CAN_FAIL=true
+      script: ./travis/algorithmBuild.sh       
 stages:
   - deploy
   - test

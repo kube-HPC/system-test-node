@@ -6,7 +6,8 @@
   "scripts": {
     "test": "mocha ./test/tests/swaggerTests/swaggerCalls.js",
     "pipelinetest":"mocha ./test/tests/pipeline_tests.js",
-    "algorithmtest":"mocha ./test/tests/algorithm_test.js"
+    "algorithmtest":"mocha ./test/tests/algorithm_test.js",
+    "algorithmBuild": "mocha ./test/tests/algorithmBuild/algorithmBuild.js"    
   },
   "author": "",
   "license": "ISC",
