@@ -12,10 +12,20 @@ jobs:
       install:
       - ./travis/install.sh
       - npm ci
-      script: ./travis/test.sh    
+      script: ./travis/test.sh
+    - stage: pipelinetest
+      install:
+      - ./travis/install.sh
+      - npm ci
+      script: ./travis/pipelientest.sh  
+    - stage: algorithmtest
+      install:
+      - ./travis/install.sh
+      - npm ci
+      script: ./travis/algorithmtest.sh      
 stages:
   - deploy
-  - name: test
-    # if: tag IS present
-    
+  - test
+  - pipelientest
+  - algorithmtest
   
