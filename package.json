@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha ./test/tests/swaggerTests/swaggerCalls.js",
-    "pipelinetest":"mocha ./test/tests/pipeline_tests.js",
-    "algorithmtest":"mocha ./test/tests/algorithm_test.js",
-    "algorithmBuild": "mocha ./test/tests/algorithmBuild/algorithmBuild.js"    
+    "pipelinetest": "mocha ./test/tests/pipeline_tests.js",
+    "algorithmtest": "mocha ./test/tests/algorithm_test.js",
+    "algorithmBuild": "mocha ./test/tests/algorithmBuild/algorithmBuild.js"
   },
   "author": "",
   "license": "ISC",
@@ -23,7 +23,7 @@
     "dotenv": "^8.2.0",
     "elasticsearch": "^15.5.0",
     "fs-extra": "^8.1.0",
-    "kubernetes-client": "^8.3.6",
+    "kubernetes-client": "^8.3.7",
     "mocha": "^5.2.0",
     "nyc": "^14.1.1",
     "request-promise": "^4.2.5",

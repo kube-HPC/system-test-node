@@ -675,6 +675,7 @@ describe('pipeline Defaults (git 754)', () => {
         it('Different priority Pipelines with Different algorithm', async () => {
             const testDataA = testData11
             const d = deconstructTestData(testData11)
+            d.pipeline.nodes[0].algorithmName=d.pipeline.nodes[1].algorithmName="eval-alg6"
             await deletePipeline(d)
             await storePipeline(d)
             const pipe = {   
@@ -687,13 +688,14 @@ describe('pipeline Defaults (git 754)', () => {
             }
             testData11.descriptor.name= testData11.descriptor.name+"2"
             const d2 = deconstructTestData(testDataA)
-            d2.pipeline.nodes[0].algorithmName=d2.pipeline.nodes[1].algorithmName="eval-alg2"
+            d2.pipeline.nodes[0].algorithmName=d2.pipeline.nodes[1].algorithmName="eval-alg7"
             await deletePipeline(d2)
             await storePipeline(d2)
             const res2 = await runStored(pipe)
             await delay(5000)
             pipe.name= d2.name
             pipe.priority = 1
+            //pipe.flowInput.range = 1000
             const res1 = await runStored(pipe)
             // write_log(res.body)
             const jobId1 = res1.body.jobId
