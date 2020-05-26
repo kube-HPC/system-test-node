@@ -419,7 +419,7 @@ describe('all swagger calls test ', () => {
             const res = await chai.request(config.apiServerUrl)
                 .get(`/storage/prefix/types`)
 
-            const path = res.body[0]
+            const path = res.body[1]
 
             const res1 = await chai.request(config.apiServerUrl)
                 .get(`/storage/prefixes/${path}`)
@@ -438,7 +438,7 @@ describe('all swagger calls test ', () => {
             const res = await chai.request(config.apiServerUrl)
                 .get(`/storage/prefix/types`)
 
-            const path = res.body[0]
+            const path = res.body[1]
 
             const res1 = await chai.request(config.apiServerUrl)
                 .get(`/storage/keys/${path}`)
@@ -456,7 +456,7 @@ describe('all swagger calls test ', () => {
             const res = await chai.request(config.apiServerUrl)
                 .get(`/storage/prefix/types`)
 
-            const path = res.body[0]
+            const path = res.body[1]
 
             const res1 = await chai.request(config.apiServerUrl)
                 .get(`/storage/keys/${path}`)
@@ -479,7 +479,7 @@ describe('all swagger calls test ', () => {
             const res = await chai.request(config.apiServerUrl)
                 .get(`/storage/prefix/types`)
 
-            const path = res.body[0]
+            const path = res.body[1]
 
             const res1 = await chai.request(config.apiServerUrl)
                 .get(`/storage/keys/${path}`)
@@ -503,7 +503,7 @@ describe('all swagger calls test ', () => {
             const res = await chai.request(config.apiServerUrl)
                 .get(`/storage/prefix/types`)
 
-            const path = res.body[0]
+            const path = res.body[1]
 
             const res1 = await chai.request(config.apiServerUrl)
                 .get(`/storage/keys/${path}`)
