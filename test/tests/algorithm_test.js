@@ -4,7 +4,8 @@ const chaiHttp = require('chai-http');
 const path = require('path')
 const delay = require('delay')
 
-const { deleteAlgorithm,
+const { runAlgorithm,
+        deleteAlgorithm,
         getAlgorithm,    
         getAlgorithmVersion,
         updateAlgorithmVersion,
@@ -12,6 +13,7 @@ const { deleteAlgorithm,
         deleteAlgorithmVersion
     } = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 
+const {filterPodsByName} = require(path.join(process.cwd(), 'utils/kubeCtl'))
 
 const {
     testData1,
@@ -305,7 +307,62 @@ describe('Alrogithm Tests', () => {
 
     } )
     
+    it('algorithm Environment Variables',async ()=>{
+        let alg ={
+            name: "convimagetob",
+            cpu: 1,
+            gpu: 0,
+            mem: "256Mi",
+            minHotWorkers: 0,
+        
+            type: "Image",
+            env: "python",
+            entryPoint: "main-image-to-Bynary.py",
+            options: {
+                binary: true,               
+                debug: false,
+                pending: false
+                }       ,
+            algorithmImage: "docker.io/hkubedev/convimagetobi:v77e81c13fbbb6295755d548ba8c8f0362b0c73c9",
+            algorithmEnv: {
+                FOO: "I got foo"
+            }
 
+        }
+        const algRun = {name: alg.name,
+            input:[]}
+        await  deleteAlgorithm(alg.name,true)
+        await buildAlgoFromImage(alg);
+        const res = await runAlgorithm(algRun)
+        const jobId = res.body.jobId
+        const result = await  getResult(jobId,200)
+        expect(result.data[0].result.EnvironmentVariables).to.be.equal(alg.algorithmEnv.FOO)
+    }).timeout(1000 * 5*60)
+
+
+    it('algorithm hot workers',async ()=>{
+        let  alg = {
+            name: "hot-worker-alg",
+            cpu: 1,
+            gpu: 0,
+            mem: "256Mi",
+            minHotWorkers: 0,
+            algorithmImage: "tamir321/versatile:04",
+            minHotWorkers :3,
+            type: "Image",
+            options: {
+                debug: false,
+                pending: false
+                }       
+            }
+       
+        await  deleteAlgorithm(alg.name,true)
+        await buildAlgoFromImage(alg);
+        await delay(30000)
+        const workers = await filterPodsByName(alg.name)
+        await  deleteAlgorithm(alg.name,true)
+        expect(workers.length).to.be.equal(alg.minHotWorkers)
+    }).timeout(1000 * 5*60)
     describe('algorithm execute another',()=>{
         it('TID-600 algorithm execute another algorithm (git 288)', async () => {
             let alg = {

@@ -615,6 +615,7 @@ describe('pipeline Defaults (git 754)', () => {
             const resume = await resumePipeline(jobId);
             const result = await getResult(jobId,200)                        
         }).timeout(1000 * 60 * 10);
+        
         it('pause stop pipeline', async () => {
             const pipe = {   
                 name: d.name,
@@ -646,6 +647,70 @@ describe('pipeline Defaults (git 754)', () => {
     
     describe("TID-440 Pipeline priority tests (git 58)~",()=>{
    
+        it('pipeline queue priority test',async()=>{
+            function timeout(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+            const d = deconstructTestData(testData11)
+            const priority3 = "pipe-priority3"
+            const priority1 = "pipe-priority1"
+            d.pipeline.name = d.name = priority3
+            d.pipeline.priority =3
+            let pipe1JobId =''
+            let pipe3JobId =''
+            const pipe1 = {   
+                name: priority1,
+                flowInput: {
+                    range:20,
+                    inputs:2000               
+                }
+            }
+            
+            const pipe3 = {   
+                name: priority3,
+                flowInput: {
+                    range:20,
+                    inputs:2000               
+                }
+            }
+            await deletePipeline(d)
+            await storePipeline(d)
+
+            d.pipeline.name = d.name = priority1
+            d.pipeline.priority =1
+            await deletePipeline(d)
+            await storePipeline(d)
+
+            for(i=0;i<10;i++){
+                var parents = await Promise.all([
+                    runStored(pipe3),
+                    runStored(pipe3),
+                    runStored(pipe3),
+                    runStored(pipe3),    
+                    timeout(900)
+                  
+                ]);
+                pipe3JobId  = parents
+            }
+            
+            for(i=0;i<10;i++){
+                var parents = await Promise.all([
+                    runStored(pipe1),
+                    runStored(pipe1),
+                    runStored(pipe1),
+                    runStored(pipe1),    
+                    timeout(900)
+                  
+                ]);
+                pipe1JobId  = parents
+            }
+           
+            const result1 =  await getResult(pipe1JobId[3].body.jobId, 200)
+            const result2 = await  getResult(pipe3JobId[3].body.jobId, 200)
+            expect(result1.timeTook).to.be.lessThan(result2.timeTook)
+
+
+        }).timeout(1000 * 60 * 25)
         it('Different priority same Pipeline ', async () => {
             const d = deconstructTestData(testData11)
             const pipe = {   

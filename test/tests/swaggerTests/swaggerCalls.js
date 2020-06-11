@@ -438,7 +438,7 @@ describe('all swagger calls test ', () => {
             const res = await chai.request(config.apiServerUrl)
                 .get(`/storage/prefix/types`)
 
-            const path = res.body[1]
+            const path = res.body[6]
 
             const res1 = await chai.request(config.apiServerUrl)
                 .get(`/storage/keys/${path}`)
@@ -470,7 +470,7 @@ describe('all swagger calls test ', () => {
 
 
 
-        }).timeout(1000 * 60)
+        }).timeout(1000 * 60*10)
 
 
         it(' GET stream data /storage/stream/{path}', async () => {

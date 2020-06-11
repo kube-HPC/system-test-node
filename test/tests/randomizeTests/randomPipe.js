@@ -12,6 +12,8 @@ const {
 
 chai.use(chaiHttp);
 const {
+    runStored,
+    storePipeline,
     runRaw
 } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 const {
@@ -22,7 +24,7 @@ describe('randomize tests', () => {
     //TODO: need to create eval-alg algrorithms
     it('randomize a pipeline and get its result', async () => {
 
-        const randPipe = randomize(10)
+        const randPipe = randomize(40)
         const res = await runRaw(randPipe)
         expect(res).to.have.status(200)
         const jobId = res.body.jobId
@@ -32,13 +34,35 @@ describe('randomize tests', () => {
 
 
     it('Run multiple random pipelines', async () => {
-
-        for (let i = 0; i < 5; i++) {
-            const randPipe = randomize(10)
-            const res = runRaw(randPipe)
-            expect(res).to.have.status(200)
-            const jobId = res.body.jobId
+        function timeout(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
         }
+       
+            const randPipe10 = randomize(10)
+            randPipe10.name="ranpipe10"
+            await storePipeline(randPipe10)
+            const randPipe15 = randomize(15)
+            randPipe15.name="ranpipe15"
+            await storePipeline(randPipe15)
+            const randPipe20 = randomize(20)
+            randPipe20.name="ranpipe20" 
+            await storePipeline(randPipe20)
+            const randPipe25 = randomize(25)
+            randPipe25.name="ranpipe25"
+            await storePipeline(randPipe25)
+
+            for (i=0;i<200;i++){
+                var parents = await Promise.all([
+                    runStored({name:"ranpipe10"}),
+                    runStored({name:"ranpipe15"}),
+                    runStored({name:"ranpipe20"}),
+                    runStored({name:"ranpipe25"}),    
+                    timeout(900)
+                  
+                ]);
+            }
+            
+        
 
     }).timeout(1000 * 60 * 5)
 
