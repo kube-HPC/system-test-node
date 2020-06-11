@@ -1003,7 +1003,7 @@ describe('all swagger calls test ', () => {
 
     describe('Experiment', () => {
         const experiment ={
-            name: "new Experiment",
+            name: "new-experiment",
             description: "string description"
         }
 
