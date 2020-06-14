@@ -10,7 +10,7 @@ const retRange = (input) => {
 
 const descriptor = {
     name: "DefaultsTest",
-    experimentName: "new",
+    experimentName: "main",
     nodes: [
         {
             nodeName: "green",

@@ -111,7 +111,7 @@ const buildGitAlgorithm = async (algName,gitUrl,gitKind ,entry , branch  )=>{
             gitKind : gitKind
         }
     }
-
+    console.log(data)
     const res = await chai.request(config.apiServerUrl)
         .post('/store/algorithms/apply')
         .field('payload', JSON.stringify(data))       

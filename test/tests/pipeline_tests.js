@@ -177,8 +177,9 @@ describe('pipeline Tests 673', () => {
             await storePipeline(d)
             await runStoredAndWaitForResults(simple)
             await delay(3 * 1000);
+            await deletePipeline(d)
             jobs = await getWebSocketJobs();
-            jobId = jobs.filter(obj => obj.key.endsWith(triggeredPipe))[0].key
+            jobId = jobs.filter(obj => obj.key.includes(triggeredPipe))[0].key
             const status = await  getExecPipeline(jobId)
             expect(status.body.types).includes("trigger");
             expect(status.body.types).includes("stored");
@@ -338,7 +339,7 @@ describe('pipeline Defaults (git 754)', () => {
         await runStoredAndWaitForResults(simple)
         await delay(3 * 1000);
         jobs = await getWebSocketJobs();
-        jobId = jobs.filter(obj => obj.key.endsWith(triggeredPipe))[0].key
+        jobId = jobs.filter(obj => obj.key.includes(triggeredPipe))[0].key
         const pipelineData = await getExecPipeline(jobId);
         await deletePipeline(d)
         const rr = validateDefault(triggerd.descriptor,pipelineData.body)
@@ -389,7 +390,7 @@ describe('pipeline Defaults (git 754)', () => {
             await storePipeline(d)
             await delay(1000*90)
             
-            const result =  await getCronResult(d.name,5,"new")
+            const result =  await getCronResult(d.name,5,"main")
             const jobId = result.body[0].jobId
             const pipelineData = await  getExecPipeline(jobId)
             await deletePipeline(d)
@@ -516,7 +517,7 @@ describe('pipeline Defaults (git 754)', () => {
             await runStoredAndWaitForResults(trigger)
             await delay(1000*20)
             jobs = await getWebSocketJobs();
-            jobId = jobs.filter(obj => obj.key.endsWith(triggerdName))[0].key
+            jobId = jobs.filter(obj => obj.key.includes(triggerdName))[0].key
             const result = await getResult(jobId,200)
             await deletePipeline(triggered)
             expect(result.data.length).to.be.equal(10)
@@ -651,6 +652,20 @@ describe('pipeline Defaults (git 754)', () => {
             function timeout(ms) {
                 return new Promise(resolve => setTimeout(resolve, ms));
             }
+
+            function getJobId(array){
+                
+                for(i=0;i<array.length;i++){
+                    if(typeof array[i].body.jobId != "undefined"){
+                        return array[i].body.jobId;
+                        break;
+                    }
+                }
+                console.log("fail to get jobId")
+               return null
+            }
+
+
             const d = deconstructTestData(testData11)
             const priority3 = "pipe-priority3"
             const priority1 = "pipe-priority1"
@@ -705,8 +720,10 @@ describe('pipeline Defaults (git 754)', () => {
                 pipe1JobId  = parents
             }
            
-            const result1 =  await getResult(pipe1JobId[3].body.jobId, 200)
-            const result2 = await  getResult(pipe3JobId[3].body.jobId, 200)
+
+
+            const result1 =  await getResult(getJobId(pipe1JobId), 200)
+            const result2 = await  getResult(getJobId(pipe3JobId), 200)
             expect(result1.timeTook).to.be.lessThan(result2.timeTook)
 
 
