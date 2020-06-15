@@ -46,12 +46,13 @@ describe('Alrogithm Tests', () => {
         console.log("************Test running now****************")
     })
   
-    // describe('TID 480 - Test Algorithm ttl (git 61 342)',()=>{ 
+     describe('TID 480 - Test Algorithm ttl (git 61 342)',()=>{ 
       
 
-    //     it('Test1',()=>{
-    //         console.log("************Test running now1****************")
-    //     })
+         it('Test1',()=>{
+             console.log("************Test running now1****************")
+         })
+     })
     //     // it('ttl = 3 one of the inputs = 5 seconds ',async ()=>{ 
     //     //     const d = deconstructTestData(testData3)
     //     //     await deletePipeline(d)
