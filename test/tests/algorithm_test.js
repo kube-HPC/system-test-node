@@ -42,41 +42,41 @@
 // chai.use(chaiHttp);
 
 describe('Alrogithm Tests', () => {
-
+    it('Test',()=>{
+        console.log("************Test running now****************")
+    })
   
-    describe('TID 480 - Test Algorithm ttl (git 61 342)',()=>{ 
-        it('Test',()=>{
-            console.log("************Test running now****************")
-        })
+    // describe('TID 480 - Test Algorithm ttl (git 61 342)',()=>{ 
+      
 
-        it('Test1',()=>{
-            console.log("************Test running now1****************")
-        })
-        // it('ttl = 3 one of the inputs = 5 seconds ',async ()=>{ 
-        //     const d = deconstructTestData(testData3)
-        //     await deletePipeline(d)
-        //     await storePipeline(d)
-        //     const jobId = await runStoredAndWaitForResults(d)
-        //     const graph = await getRawGraph(jobId)
-        //     const nodesStatus = graph.body.nodes[0].batch
-        //     const nodesError = nodesStatus.filter(obj => obj.error=="Algorithm TTL expired")
-        //     expect(nodesError.length).to.be.equal(1)
+    //     it('Test1',()=>{
+    //         console.log("************Test running now1****************")
+    //     })
+    //     // it('ttl = 3 one of the inputs = 5 seconds ',async ()=>{ 
+    //     //     const d = deconstructTestData(testData3)
+    //     //     await deletePipeline(d)
+    //     //     await storePipeline(d)
+    //     //     const jobId = await runStoredAndWaitForResults(d)
+    //     //     const graph = await getRawGraph(jobId)
+    //     //     const nodesStatus = graph.body.nodes[0].batch
+    //     //     const nodesError = nodesStatus.filter(obj => obj.error=="Algorithm TTL expired")
+    //     //     expect(nodesError.length).to.be.equal(1)
            
-        // }).timeout(1000 * 60 * 5);
+    //     // }).timeout(1000 * 60 * 5);
 
-        // it('ttl =0 one of the inputs = 5 seconds',async ()=>{ 
-        //     const d = deconstructTestData(testData3)
-        //     await deletePipeline(d)
-        //     d.pipeline.nodes[0].ttl=0
-        //     await storePipeline(d)
-        //     const jobId = await runStoredAndWaitForResults(d)
-        //     const graph = await getRawGraph(jobId)
-        //     const nodesStatus = graph.body.nodes[0].batch
-        //     const nodesError = nodesStatus.filter(obj => obj.error=="Algorithm TTL expired")
-        //     expect(nodesError.length).to.be.equal(0)
-        // }).timeout(1000 * 60 * 5);
+    //     // it('ttl =0 one of the inputs = 5 seconds',async ()=>{ 
+    //     //     const d = deconstructTestData(testData3)
+    //     //     await deletePipeline(d)
+    //     //     d.pipeline.nodes[0].ttl=0
+    //     //     await storePipeline(d)
+    //     //     const jobId = await runStoredAndWaitForResults(d)
+    //     //     const graph = await getRawGraph(jobId)
+    //     //     const nodesStatus = graph.body.nodes[0].batch
+    //     //     const nodesError = nodesStatus.filter(obj => obj.error=="Algorithm TTL expired")
+    //     //     expect(nodesError.length).to.be.equal(0)
+    //     // }).timeout(1000 * 60 * 5);
         
-     })
+    //  })
 
     // describe('Test Algorithm Version (git 560 487)',()=>{   
     //     //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/560
