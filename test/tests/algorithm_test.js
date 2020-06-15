@@ -1,45 +1,45 @@
-// const chai = require('chai');
-// const expect = chai.expect;
-// const chaiHttp = require('chai-http');
-// const path = require('path')
-// const delay = require('delay')
+ const chai = require('chai');
+ const expect = chai.expect;
+ const chaiHttp = require('chai-http');
+ const path = require('path')
+ const delay = require('delay')
 
-// const { runAlgorithm,
-//         deleteAlgorithm,
-//         getAlgorithm,    
-//         getAlgorithmVersion,
-//         updateAlgorithmVersion,
-//         buildAlgoFromImage,
-//         deleteAlgorithmVersion
-//     } = require(path.join(process.cwd(), 'utils/algorithmUtils'))
+ const { runAlgorithm,
+         deleteAlgorithm,
+         getAlgorithm,    
+         getAlgorithmVersion,
+         updateAlgorithmVersion,
+         buildAlgoFromImage,
+         deleteAlgorithmVersion
+     } = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 
-// const {filterPodsByName} = require(path.join(process.cwd(), 'utils/kubeCtl'))
+ const {filterPodsByName} = require(path.join(process.cwd(), 'utils/kubeCtl'))
 
-// const {
-//     testData1,
-//     testData4,
-//     testData3
-// } = require(path.join(process.cwd(), 'config/index')).algorithmTest
+ const {
+     testData1,
+     testData4,
+     testData3
+ } = require(path.join(process.cwd(), 'config/index')).algorithmTest
 
 
-// const {
-//     getResult,
-//     getRawGraph,
-//     getParsedGraph
-//   } = require(path.join(process.cwd(), 'utils/results'))
+ const {
+     getResult,
+     getRawGraph,
+     getParsedGraph
+   } = require(path.join(process.cwd(), 'utils/results'))
 
 // // const KubernetesClient = require('@hkube/kubernetes-client').Client;
-// const {
-//     deletePipeline,
-//     getPipeline,
-//     getPipelineStatus,
-//     storePipeline,
-//     runStored,
-//     deconstructTestData,
-//     runStoredAndWaitForResults
-// } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+ const {
+     deletePipeline,
+     getPipeline,
+     getPipelineStatus,
+     storePipeline,
+     runStored,
+     deconstructTestData,
+     runStoredAndWaitForResults
+ } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 
-// chai.use(chaiHttp);
+ chai.use(chaiHttp);
 
 describe('Alrogithm Tests', () => {
     it('Test',()=>{
