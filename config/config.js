@@ -1,5 +1,5 @@
 require('dotenv').config()
-const webhookUrl = process.env.WEDHOOK_URL;
+const webhookUrl = process.env.WEBHOOK_URL;
 const baseUrl = process.env.BASE_URL;
 const httpUrl = baseUrl.replace("https", "http")
 const config = {

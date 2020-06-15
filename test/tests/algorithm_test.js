@@ -44,10 +44,7 @@
 
  const {getWebSocketData} = require(path.join(process.cwd(), 'utils/socketGet'))
 describe('Alrogithm Tests', () => {
-    it('Test',async ()=>{
-        const data = await getWebSocketData()
-        console.log("************Test running now****************")
-    })
+   
   
      describe('TID 480 - Test Algorithm ttl (git 61 342)',()=>{ 
       
@@ -273,7 +270,7 @@ describe('Alrogithm Tests', () => {
                 debug: false,
                 pending: false
                 }       ,
-            algorithmImage: "docker.io/hkubedev/convimagetobi:v77e81c13fbbb6295755d548ba8c8f0362b0c73c9",
+            algorithmImage: "docker.io/hkubedev/jnk:v4aad2880ae8f10211ac10a314ecfe85a31281081",
             algorithmEnv: {
                 FOO: "I got foo"
             }
@@ -282,7 +279,7 @@ describe('Alrogithm Tests', () => {
         const algRun = {name: alg.name,
             input:[]}
         await  deleteAlgorithm(alg.name,true)
-        await buildAlgoFromImage(alg);
+        const jnk = await buildAlgoFromImage(alg);
         const res = await runAlgorithm(algRun)
         const jobId = res.body.jobId
         const result = await  getResult(jobId,200)
