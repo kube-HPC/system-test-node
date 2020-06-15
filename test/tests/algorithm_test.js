@@ -13,7 +13,7 @@
          deleteAlgorithmVersion
      } = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 
- const {filterPodsByName} = require(path.join(process.cwd(), 'utils/kubeCtl'))
+ //const {filterPodsByName} = require(path.join(process.cwd(), 'utils/kubeCtl'))
 
  const {
      testData1,
