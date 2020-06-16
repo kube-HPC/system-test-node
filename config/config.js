@@ -1,4 +1,5 @@
 require('dotenv').config()
+const githubToken = process.env.GitHub_Token
 const webhookUrl = process.env.WEBHOOK_URL;
 const baseUrl = process.env.BASE_URL;
 const httpUrl = baseUrl.replace("https", "http")
@@ -9,7 +10,8 @@ const config = {
     podsApiUrl: process.env.API_URL || `${baseUrl}/hkube/monitor-server/pods/`,
     reject_selfSigned: false,
     baseUrl,
-    webhookUrl
+    webhookUrl,
+    githubToken
 }
 if (!config.reject_selfSigned) {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";

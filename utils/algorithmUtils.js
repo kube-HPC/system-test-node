@@ -95,7 +95,7 @@ const buildAlgorithm = async (code, algName, entry,baseVersion='python:3.7') => 
     return buildStatusAlg
 }
 
-const buildGitAlgorithm = async (algName,gitUrl,gitKind ,entry , branch  )=>{
+const buildGitAlgorithm = async (algName,gitUrl,gitKind ,entry , branch ,commit = "null" ,tag = "null" ,token="null")=>{
     const data = {
         name: algName,
         env: 'python',
@@ -111,12 +111,27 @@ const buildGitAlgorithm = async (algName,gitUrl,gitKind ,entry , branch  )=>{
             gitKind : gitKind
         }
     }
+    if(typeof commit != "string"){
+        
+            data.gitRepository.commit = commit
+        }
+
+    if(tag != "null"){
+        data.gitRepository.tag=tag
+    }
+
+    if(token != "null"){
+        data.gitRepository.token=token
+    }
     console.log(data)
     const res = await chai.request(config.apiServerUrl)
         .post('/store/algorithms/apply')
         .field('payload', JSON.stringify(data))       
     logger.info(JSON.stringify(res.body))
-
+    if(res.status !=200){
+        logger.info(JSON.stringify(res.text))
+        return res
+    }
     // res.should.have.status(200)
     expect(res.status).to.eql(200)
     const buildIdAlg = res.body.buildId

@@ -43,6 +43,8 @@ const {
     buildGitAlgorithm,    
     getAlgorithim} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 
+    const {getWebSocketData} = require(path.join(process.cwd(), 'utils/socketGet'))
+
 chai.use(chaiHttp);
 
 chai.use(assertArrays);
@@ -226,8 +228,9 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
         expect(buildStatusAlg.status).to.be.equal("completed") 
         const result = await runAlgGetResult(algName,[4])
         await deleteAlgorithm(algName,true)
-        expect(result.data[0].result.version).to.be.equal("master margev1")     
-        //result.data[0].result.version  =  "master margev1"
+        expect(result.data[0].result.version).to.be.equal("master margev1") 
+        expect(result.data[0].result.commit).to.be.equal("A6")     
+      
        
     }).timeout(1000 * 60 * 20)
 
@@ -284,12 +287,12 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
     it("test webhook github (git 518)",async ()=>{
         const data = {
             ref: 'refs/heads/master',
-            before: 'dcc8a45a01f0ed6a0fe19e231cbd269ce2ebc9fa',
-            after: 'dcc8a45a01f0ed6a0fe19e231cbd269ce2ebc9fa',
+            before: 'f96bd9ffc2d6e0e31fea1b28328600156c5877b0',
+            after: 'f96bd9ffc2d6e0e31fea1b28328600156c5877b0',
           
             commits: [
                 {
-                    id: 'dcc8a45a01f0ed6a0fe19e231cbd269ce2ebc9fa'
+                    id: 'f96bd9ffc2d6e0e31fea1b28328600156c5877b0'
                     
                 }
             ],
@@ -304,8 +307,22 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
           
         }
 
-       
+        const entry = 'main'
+        const algName= pipelineRandomName(8).toLowerCase()    
 
+        const gitUrl = "https://github.com/tamir321/hkube.git"
+        const branch = "master"
+        const gitKind = "github"
+        const commit  = {
+            "id": "87b27e20c2a37ab11ef0d851479f473127c4400d"
+            }
+        
+        const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch   ,commit)
+        expect(buildStatusAlg.status).to.be.equal("completed") 
+        const result = await runAlgGetResult(algName,[4])
+        expect(result.data[0].result.commit).to.be.equal("A1")
+        
+       //send webhook
         const f = JSON.stringify(data)
         const res = await chai.request(config.apiServerUrl)           
             .post('/builds/webhook/github')
@@ -313,7 +330,35 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
             .set('content-type', 'application/x-www-form-urlencoded')            
             .send ({'payload': JSON.stringify(data)}) 
 
-        
+       
+
+         const  buildStatusAlg2 = await getStatusall(res.body[0].buildId, `/builds/status/`, 200, "completed", 1000 * 60 * 10)
+         expect(buildStatusAlg2.status).to.be.equal("completed") 
+
+
+         const updateVersion = await  updateAlgorithmVersion(algName,buildStatusAlg2.algorithmImage,true)
+         const resultAfterCommit = await runAlgGetResult(algName,[4])
+         await deleteAlgorithm(algName,true)   
+        expect(resultAfterCommit.data[0].result.commit).to.be.equal("A4")
+
+
+    }).timeout(1000 * 60 * 20)
+
+
+    it("test github commit by tag",async ()=>{
+        const entry = 'main'
+        const algName= pipelineRandomName(8).toLowerCase()    
+
+        const gitUrl = "https://github.com/tamir321/hkube.git"
+        const branch = "master"
+        const gitKind = "github"
+        const commit  = "null"
+        const tag = "A5"
+        const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,commit,tag)
+        expect(buildStatusAlg.status).to.be.equal("completed") 
+        const result = await runAlgGetResult(algName,[4])
+        expect(result.data[0].result.commit).to.be.equal("A5")
+            
     }).timeout(1000 * 60 * 20)
 
 
@@ -331,9 +376,9 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
         } ,
         commits: [
             {
-                id: "b6568db1bc1dcd7f8b4d5a946b0b91f9dacd7327",
+                id: "cfae25c1512e57c1431acc2bb927e70c2e9d0d23",
                 timestamp: "2011-12-12T14:27:31+02:00",
-                url: "https://gitlab.com/tamir321/hkube/commit/b6568db1bc1dcd7f8b4d5a946b0b91f9dacd7327"
+                url: "https://gitlab.com/tamir321/hkube/commit/cfae25c1512e57c1431acc2bb927e70c2e9d0d23"
                 
             }
             ],
@@ -341,7 +386,7 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
        
       } 
 
-
+    
       const res = await chai.request(config.apiServerUrl)           
                 .post('/builds/webhook/gitlab')
                 .send(data)
@@ -354,9 +399,24 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
     //     //TODO
     // })
 
-     // it('github repository authentication',async ()=>{
-    //     //TODO
-    // })
+      it('github repository authentication',async ()=>{
+        const entry = 'main'
+        const algName= pipelineRandomName(8).toLowerCase()    
+
+        const gitUrl = "https://github.com/tamir321/hkubePrivate.git"
+        const branch = "master"
+        const gitKind = "github"
+        const commit  = "null"
+        const tag = "null"
+        const token =config.githubToken
+        const failBuild =   await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,commit,tag) 
+        expect(JSON.parse(failBuild.text).error.message).to.be.equal(`Not Found (${gitUrl.slice(0,-4)})`)
+        const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,commit,tag,token)
+        expect(buildStatusAlg.status).to.be.equal("completed") 
+        const result = await runAlgGetResult(algName,[4]) 
+        expect(result.data[0].result).to.be.equal("private-repo") 
+        await deleteAlgorithm(algName,true) 
+     }).timeout(1000 * 60 * 20)
 })
 
 })
