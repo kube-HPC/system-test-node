@@ -39,3 +39,5 @@ storage_cleaner:
   pattern: "0 5 * * * "
 etcd_cleaner:
   pattern: "0 5 * * * "
+jaeger:
+  enabled: true  

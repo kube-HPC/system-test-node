@@ -70,7 +70,7 @@ describe('TID-400 ~', () => {
 
     describe('TID-410- different input types ~', () => {
         
-        it(" integers", async () => {
+        it("integers", async () => {
             //set test data to testData1
             const d = deconstructTestData(testData2)
             await deletePipeline(d)
@@ -93,7 +93,7 @@ describe('TID-400 ~', () => {
         }).timeout(1000 * 60 * 5);
 
 
-        it(" float", async () => {
+        it("float", async () => {
             //set test data to testData1
             const d = deconstructTestData(testData2)
             await deletePipeline(d)
