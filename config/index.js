@@ -90,10 +90,12 @@ const index = {
         testData9: require('../pipelines/triggered'),
         testData10: require('../pipelines/evalwait161'),
         testData11: require('../pipelines/evalwait400'),
+        testData12: require('../pipelines/evalwait')
 
     },
     jagearTest: {
-        testData1: require('../pipelines/versatile-pipe')
+        testData1: require('../pipelines/versatile-pipe'),
+        testData2: require('../pipelines/cacheTest')
     },
     batchOnBatch: {
         testData1: require('../pipelines/batchOnBatch'),

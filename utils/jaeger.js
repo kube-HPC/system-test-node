@@ -6,9 +6,17 @@ const logger = require(path.join(process.cwd(), 'utils/logger'))
 
 
 const getSpansByJodid = async (jobId) =>{
-    const res = await chai.request(config.jagearApiUrl).
-        get(`/jaeger/api/traces?lookback=1h&maxDuration&minDuration&service=worker&tags={"jobId":"${jobId}"}`)
-    return res.body.data[0].spans
+    const res = await chai.request(config.baseUrl).
+        get(`/hkube/monitor-server//jaeger?jobId=${jobId}`)
+        
+        return res.body.data[0].spans
 }
-
+//  https://test.hkube.io/hkube/monitor-server//jaeger?jobId=main:versatile-pipe:c005ca0a-d318-420f-94c3-63e566b9a126
 module.exports = {getSpansByJodid}
+
+
+// const getSpansByJodid = async (jobId) =>{
+//     const res = await chai.request(config.jagearApiUrl).
+//         get(`/jaeger/api/traces?lookback=1h&maxDuration&minDuration&service=worker&tags={"jobId":"${jobId}"}`)
+//     return res.body.data[0].spans
+// }

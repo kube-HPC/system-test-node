@@ -17,7 +17,7 @@ const {
 } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 
 const {
-    buildAlgorithm,
+    buildAlgorithmAndWait,
     deleteAlgorithm
 } = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 const logger = require(path.join(process.cwd(), 'utils/logger'))
@@ -42,12 +42,12 @@ describe('Store algorithm', () => {
 
         // apply the first alg
         const code1 = path.join(process.cwd(), 'additionalFiles/eyeMat.tar.gz');
-        await buildAlgorithm(code1, testalg1, 'eyeMat.py')
+        await buildAlgorithmAndWait(code1, testalg1, 'eyeMat.py')
 
         //apply the second alg
 
         const code2 = path.join(process.cwd(), 'additionalFiles/multMat.tar.gz');
-        await buildAlgorithm(code2, testalg2, 'multMat.py')
+        await buildAlgorithmAndWait(code2, testalg2, 'multMat.py')
 
         // run the pipeline
 

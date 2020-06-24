@@ -1,5 +1,6 @@
 require('dotenv').config()
 const githubToken = process.env.GitHub_Token
+const gitlabToken = process.env.Gitlab_Token
 const webhookUrl = process.env.WEBHOOK_URL;
 const baseUrl = process.env.BASE_URL;
 const httpUrl = baseUrl.replace("https", "http")
@@ -11,7 +12,8 @@ const config = {
     reject_selfSigned: false,
     baseUrl,
     webhookUrl,
-    githubToken
+    githubToken,
+    gitlabToken
 }
 if (!config.reject_selfSigned) {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";

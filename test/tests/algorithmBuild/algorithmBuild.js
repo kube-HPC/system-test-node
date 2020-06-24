@@ -39,9 +39,12 @@ const {
     updateAlgorithmVersion,
     buildAlgoFromImage,
     deleteAlgorithmVersion,
+    buildAlgorithmAndWait,
     buildAlgorithm,
     buildGitAlgorithm,    
-    getAlgorithim} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
+    getAlgorithim,
+    stopBuild,
+    rerunBuild} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 
     const {getWebSocketData} = require(path.join(process.cwd(), 'utils/socketGet'))
 
@@ -68,7 +71,7 @@ describe('Algorithm build test', () => {
             const algName= pipelineRandomName(8).toLowerCase()    
             const pythonVersion = "python:2.7"                    
             
-            const buildStatusAlg = await buildAlgorithm(code1, algName,entry,pythonVersion)
+            const buildStatusAlg = await buildAlgorithmAndWait(code1, algName,entry,pythonVersion)
             expect(buildStatusAlg.status).to.be.equal("completed") 
             const result = await runAlgGetResult(algName,[4])
             await deleteAlgorithm(algName,true)    
@@ -80,7 +83,7 @@ describe('Algorithm build test', () => {
             const algName= pipelineRandomName(8).toLowerCase()    
             const pythonVersion = "python:3.5"                    
             
-            const buildStatusAlg = await buildAlgorithm(code1, algName,entry,pythonVersion)
+            const buildStatusAlg = await buildAlgorithmAndWait(code1, algName,entry,pythonVersion)
             expect(buildStatusAlg.status).to.be.equal("completed") 
             const result = await runAlgGetResult(algName,[4])
             await deleteAlgorithm(algName,true)    
@@ -93,7 +96,7 @@ describe('Algorithm build test', () => {
             const algName= pipelineRandomName(8).toLowerCase()    
             const pythonVersion = "python:3.6"                    
             
-            const buildStatusAlg = await buildAlgorithm(code1, algName,entry,pythonVersion)
+            const buildStatusAlg = await buildAlgorithmAndWait(code1, algName,entry,pythonVersion)
             expect(buildStatusAlg.status).to.be.equal("completed") 
             const result = await runAlgGetResult(algName,[4])
             await deleteAlgorithm(algName,true)    
@@ -105,7 +108,7 @@ describe('Algorithm build test', () => {
             const algName= pipelineRandomName(8).toLowerCase()    
             const pythonVersion = "python:3.7"                    
             
-            const buildStatusAlg = await buildAlgorithm(code1, algName,entry,pythonVersion)
+            const buildStatusAlg = await buildAlgorithmAndWait(code1, algName,entry,pythonVersion)
             expect(buildStatusAlg.status).to.be.equal("completed") 
             const result = await runAlgGetResult(algName,[4])
             await deleteAlgorithm(algName,true)    
@@ -117,14 +120,38 @@ describe('Algorithm build test', () => {
             const algName= pipelineRandomName(8).toLowerCase()    
             const pythonVersion = "python:3.7-slim"                    
             
-            const buildStatusAlg = await buildAlgorithm(code1, algName,entry,pythonVersion)
+            const buildStatusAlg = await buildAlgorithmAndWait(code1, algName,entry,pythonVersion)
             expect(buildStatusAlg.status).to.be.equal("completed") 
             const result = await runAlgGetResult(algName,[4])
             await deleteAlgorithm(algName,true)    
             expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,7,7,final,0")   
         }).timeout(1000 * 60 * 20)
 
+        const getBuildStates = async (jobId) => {
+            const res = await chai.request(config.apiServerUrl)
+                .get(`/builds/status/${jobId}`);
+            return res.body.status
+        
+        }
 
+
+        it('stop rerun build',async ()=>{
+            const entry = 'main37'
+            const algName= pipelineRandomName(8).toLowerCase()    
+            const pythonVersion = "python:3.7"                    
+            
+            const buildId = await buildAlgorithm(code1, algName,entry,pythonVersion)
+            await delay(2000)
+            const res =await stopBuild(buildId)
+            await delay(2000)
+            const status = await getBuildStates(buildId)
+            expect(status).to.be.equal("stopped")
+            const rerun = await rerunBuild(buildId)
+            await delay(5000)
+            let rereunStatus = await getBuildStates(buildId)
+            expect(rereunStatus).to.be.equal("active")
+            await deleteAlgorithm(algName,true)
+        }).timeout(1000 * 60 * 3)
 })
 
 describe('Algorithm requirements repository (git 387)', () => {
@@ -376,9 +403,9 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
         } ,
         commits: [
             {
-                id: "cfae25c1512e57c1431acc2bb927e70c2e9d0d23",
+                id: "507aa9b1db90ccda19aef145849fb18362ab1bb7",
                 timestamp: "2011-12-12T14:27:31+02:00",
-                url: "https://gitlab.com/tamir321/hkube/commit/cfae25c1512e57c1431acc2bb927e70c2e9d0d23"
+                url: "https://gitlab.com/tamir321/hkube/commit/507aa9b1db90ccda19aef145849fb18362ab1bb7"
                 
             }
             ],
@@ -386,18 +413,78 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
        
       } 
 
-    
-      const res = await chai.request(config.apiServerUrl)           
-                .post('/builds/webhook/gitlab')
-                .send(data)
+      const entry = 'main'
+      const algName= pipelineRandomName(8).toLowerCase()    
 
-        
+      const gitUrl = "https://gitlab.com/tamir321/hkube.git"
+      const branch = "master"
+      const gitKind = "gitlab"
+      const commit  = {
+          "id": "3d85086db8f5a842391a8c1f6cd88d8150670b68"
+          }
+      
+      const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch   ,commit)
+      expect(buildStatusAlg.status).to.be.equal("completed") 
+      const result = await runAlgGetResult(algName,[4])
+      expect(result.data[0].result.commit).to.be.equal("A5")
+      
+    
+       const res = await chai.request(config.apiServerUrl)           
+                 .post('/builds/webhook/gitlab')
+                 .send(data)
+
+        const  buildStatusAlg2 = await getStatusall(res.body[0].buildId, `/builds/status/`, 200, "completed", 1000 * 60 * 10)
+        expect(buildStatusAlg2.status).to.be.equal("completed") 
+
+
+        const updateVersion = await  updateAlgorithmVersion(algName,buildStatusAlg2.algorithmImage,true)
+        const resultAfterCommit = await runAlgGetResult(algName,[4])
+        await deleteAlgorithm(algName,true)   
+        expect(resultAfterCommit.data[0].result.commit).to.be.equal("A7")
     }).timeout(1000 * 60 * 20)
 
+    const jnkkk=	{
+      "name": "jnkkk",
+      "env": "python",
+      "cpu": 1,
+      "gpu": 0,
+      "mem": "512Mi",
+      "options": {
+        "debug": false,
+        "pending": false,
+        "opengl": true
+      },
+      "mounts": [],
+      "gitRepository": {
+        "url": "https://gitlab.com/tamir321/hkubepravate.git",
+        "branchName": "master",
+        "token": "4tye_Qw1xdGwzzowA5zA",
+        "gitKind": "gitlab"
+      },
+      "entryPoint": "main",
+      "minHotWorkers": 0,
+      "type": "Git"
+    }
+    
+    it('gitlab repository authentication (Token)',async ()=>{
 
-    // it('gitlab repository authentication (Token)',async ()=>{
-    //     //TODO
-    // })
+        const entry = 'main'
+        const algName= pipelineRandomName(8).toLowerCase()    
+
+        const gitUrl = "https://gitlab.com/tamir321/hkubepravate.git"
+        const branch = "master"
+        const gitKind = "gitlab"
+        const commit  = {"id":"66e76131b39fd2e1df6b46ec179962fa7cbbd24c"}
+        const tag = "null"
+        const token = config.gitlabToken
+        const failBuild =   await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,commit,tag) 
+        expect(JSON.parse(failBuild.text).error.message).to.be.equal(`Not Found (${gitUrl.slice(0,-4)})`)
+        const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,commit,tag,token)
+        expect(buildStatusAlg.status).to.be.equal("completed") 
+        const result = await runAlgGetResult(algName,[4]) 
+        expect(result.data[0].result.result).to.be.equal("private-repo") 
+        await deleteAlgorithm(algName,true) 
+     }).timeout(1000 * 60 * 20)
 
       it('github repository authentication',async ()=>{
         const entry = 'main'

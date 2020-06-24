@@ -67,7 +67,7 @@ const buildAlgoFromImage = async (alg)=>{
     return res
 }
 
-const buildAlgorithm = async (code, algName, entry,baseVersion='python:3.7') => {
+const buildAlgorithm= async (code, algName, entry,baseVersion='python:3.7') => {
     const data = {
         name: algName,
         env: 'python',
@@ -90,6 +90,13 @@ const buildAlgorithm = async (code, algName, entry,baseVersion='python:3.7') => 
     // res.should.have.status(200)
     expect(res.status).to.eql(200)
     const buildIdAlg = res.body.buildId
+   
+    return buildIdAlg
+}
+
+const buildAlgorithmAndWait = async (code, algName, entry,baseVersion='python:3.7') => {
+    
+    const buildIdAlg = await buildAlgorithm(code,algName,entry,baseVersion)
     const buildStatusAlg = await getStatusall(buildIdAlg, `/builds/status/`, 200, "completed", 1000 * 60 * 10)
 
     return buildStatusAlg
@@ -186,7 +193,32 @@ const updateAlgorithmVersion = async (Algname , imageName, Force = true)=>{
     return res
 }
 
+const stopBuild = async (buildId)=>{
+    let body = {
+        "buildId": buildId
+      }
 
+    const res = await chai.request(config.apiServerUrl)
+    .post(`/builds/stop`)
+    .send(body)
+
+    return res
+    
+}
+
+
+const rerunBuild = async (buildId)=>{
+    let body = {
+        "buildId": buildId
+      }
+
+    const res = await chai.request(config.apiServerUrl)
+    .post(`/builds/rerun`)
+    .send(body)
+
+    return res
+    
+}
 
 module.exports = {
     runAlgorithm,
@@ -195,11 +227,14 @@ module.exports = {
     updateAlgorithm,
     deleteAlgorithm,
     buildAlgorithm,
+    buildAlgorithmAndWait,
     getAlgorithmVersion,
     updateAlgorithmVersion,
     buildAlgoFromImage,
     buildGitAlgorithm,
     deleteAlgorithmVersion,
-    logResult
+    logResult,
+    stopBuild,
+    rerunBuild
 
 }

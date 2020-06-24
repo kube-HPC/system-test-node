@@ -84,7 +84,7 @@ describe('Node Tests git 660', () => {
             pipe.nodes[0].input = [ "add",
                                     "#[0...10]",
                                     "#[10,20,30]"]
-            pipe.nodes[0].algorithmName = "tamir"
+            pipe.nodes[0].algorithmName = "eval-alg"
             const res = await runRaw(pipe)
             const jobId = res.body.jobId
             const result = await  getResult(jobId,200) 
@@ -154,8 +154,11 @@ describe('Node Tests git 660', () => {
             const res = await runRaw(pipe)
             const jobId = res.body.jobId
             const result = await  getResult(jobId,200) 
+            console.log(result.data.length)
+            console.log(result.data[0].result)
             expect(result.data.length).to.be.equal(30)
-            expect(result.data[0].length).to.be.equal(4)
+            
+            expect(result.data[0].result.length).to.be.equal(4)
           }).timeout(1000 * 60 * 2)
 
 
@@ -219,8 +222,9 @@ describe('Node Tests git 660', () => {
             const jobId = res.body.jobId
             const result = await  getResult(jobId,200) 
             expect(result.data.length).to.be.equal(50)
-            expect(JSON.stringify(result.data[37].result)).to.be.equal(JSON.stringify("99",[[7],[12]]))
-            expect(JSON.stringify(result.data[49].result)).to.be.equal(JSON.stringify("99",[[9],[14]]))
+            console.log(result.data[37].result)
+            expect(JSON.stringify(result.data[37].result)).to.be.equal(JSON.stringify(["99",[7],[12]]))
+            expect(JSON.stringify(result.data[49].result)).to.be.equal(JSON.stringify(["99",[9],[14]]))
           }).timeout(1000 * 60 * 2)
 
           it(' batch + fix indexed', async () => {
@@ -232,8 +236,8 @@ describe('Node Tests git 660', () => {
             const jobId = res.body.jobId
             const result = await  getResult(jobId,200) 
             expect(result.data.length).to.be.equal(10)
-            expect(JSON.stringify(result.data[7].result)).to.be.equal(JSON.stringify("99",[[7],null]))
-            expect(JSON.stringify(result.data[4].result)).to.be.equal(JSON.stringify("99",[[4],[14]]))
+            expect(JSON.stringify(result.data[7].result)).to.be.equal(JSON.stringify(["99",[7],null]))
+            expect(JSON.stringify(result.data[4].result)).to.be.equal(JSON.stringify(["99",[4],[14]]))
           }).timeout(1000 * 60 * 2)
 
 
@@ -245,7 +249,7 @@ describe('Node Tests git 660', () => {
             const res = await runRaw(pipe)
             const jobId = res.body.jobId
             const result = await  getResult(jobId,200) 
-            expect(result.data.length).to.be.equal(10)
+            expect(result.data.length).to.be.equal(100)
             expect(JSON.stringify(result.data[37].result)).to.be.equal(JSON.stringify([[7],[12]]))
             expect(JSON.stringify(result.data[49].result)).to.be.equal(JSON.stringify([[9],[14]]))
           }).timeout(1000 * 60 * 2)
@@ -305,7 +309,7 @@ describe('Node Tests git 660', () => {
         const result = await  getResult(jobId,200) 
         expect(result.data.length).to.be.equal(100)
         expect(JSON.stringify(result.data[99].result)).to.be.equal(JSON.stringify([[9,19],null]))
-        expect(JSON.stringify(result.data[9].result)).to.be.equal(JSON.stringify([[9,19],19]))
+        expect(JSON.stringify(result.data[9].result)).to.be.equal(JSON.stringify([[0,19],[19]]))
         }).timeout(1000 * 60 * 2)
 
         it('flowInput batch +any ', async () => {
@@ -324,7 +328,7 @@ describe('Node Tests git 660', () => {
         
         }).timeout(1000 * 60 * 2)
 
-        it(' batch + fix indexed', async () => {
+        it('a batch + fix indexed', async () => {
           pipe.nodes[0].input = [ "#[0...10]"]
           pipe.nodes[1].input = [ "#[10...15]"]
           pipe.nodes[2].input = [ "99","#@one","#@two"]
@@ -333,8 +337,8 @@ describe('Node Tests git 660', () => {
           const jobId = res.body.jobId
           const result = await  getResult(jobId,200) 
           expect(result.data.length).to.be.equal(10)
-          expect(JSON.stringify(result.data[7].result)).to.be.equal(JSON.stringify("99",[[7],null]))
-          expect(JSON.stringify(result.data[4].result)).to.be.equal(JSON.stringify("99",[[4],[14]]))
+          expect(JSON.stringify(result.data[7].result)).to.be.equal(JSON.stringify(["99",[7],null]))
+          expect(JSON.stringify(result.data[4].result)).to.be.equal(JSON.stringify(["99",[4],[14]]))
         }).timeout(1000 * 60 * 2)
 
 

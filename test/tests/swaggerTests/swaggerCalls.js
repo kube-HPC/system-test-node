@@ -38,7 +38,7 @@ const {
     updateAlgorithmVersion,
     buildAlgoFromImage,
     deleteAlgorithmVersion,
-    buildAlgorithm,    
+    buildAlgorithmAndWait,    
     getAlgorithim} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 const tos = require(path.join(process.cwd(), 'utils/results'.toString()))
 // const testData2 = require ('../../pipelines/multadd')
@@ -1063,7 +1063,7 @@ describe('all swagger calls test ', () => {
             const testalg = 'pyeyemat'
             const algName= pipelineRandomName(8).toLowerCase()                        
             const code1 = path.join(process.cwd(), 'additionalFiles/eyeMat.tar.gz');
-            const buildStatusAlg = await buildAlgorithm(code1, algName,testalg )
+            const buildStatusAlg = await buildAlgorithmAndWait(code1, algName,testalg )
             expect(buildStatusAlg.status).to.be.equal("completed") 
             await deleteAlgorithm(algName,true)    
         }).timeout(1000 * 60 * 20)

@@ -32,7 +32,19 @@ jobs:
       - ./travis/install.sh
       - npm ci
       env: CAN_FAIL=true
-      script: ./travis/algorithmBuild.sh       
+      script: ./travis/algorithmBuild.sh  
+    - stage: nodeTest
+      install:
+      - ./travis/install.sh
+      - npm ci
+      env: CAN_FAIL=true
+      script: ./travis/nodetest.sh 
+    - stage: jagearTest
+      install:
+      - ./travis/install.sh
+      - npm ci
+      env: CAN_FAIL=true
+      script: ./travis/jagearTest.sh      
 stages:
   - deploy
   - test

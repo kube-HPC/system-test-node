@@ -30,6 +30,7 @@ const {
 
 // const KubernetesClient = require('@hkube/kubernetes-client').Client;
 const {
+    deletePipeline,
     getPiplineNodes,
     storePipeline,
     runStored,
@@ -50,7 +51,7 @@ describe('Test worker cache 576', () => {
         const alg =  await storeAlgorithm("lonstringv1");
         //set test data to testData1
         const d = deconstructTestData(testData1)
-
+        await deletePipeline(d)
         //store pipeline evalwait
         await storePipeline(d)
 

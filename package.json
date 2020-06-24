@@ -7,6 +7,7 @@
     "test": "mocha ./test/tests/swaggerTests/swaggerCalls.js",
     "pipelinetest": "mocha ./test/tests/pipeline_tests.js",
     "jageartest":"mocha ./test/tests/jagearTest.js",
+    "nodetest":"mocha ./test/tests/node_tests.js",
     "algorithmtest": "mocha ./test/tests/algorithm_test.js",
     "algorithmBuild": "mocha ./test/tests/algorithmBuild/algorithmBuild.js"
   },

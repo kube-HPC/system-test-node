@@ -32,7 +32,8 @@ const {
     testData8,
     testData9,
     testData10,
-    testData11
+    testData11,
+    testData12
 } = require(path.join(process.cwd(), 'config/index')).pipelineTest
 
 
@@ -643,7 +644,104 @@ describe('pipeline Defaults (git 754)', () => {
             
         }).timeout(1000 * 60 * 5);
 
+
+        it('delete pipeline stop all pipeline',async()=>{
+            function timeout(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            
+            const d = deconstructTestData(testData11)
+            const priority3 = "pipe-priority3"
+            
+            d.pipeline.name = d.name = priority3
+            d.pipeline.priority =3
+           
+            let pipe3JobId =[]
+           
+            function getJobId(array){
+                
+                for(i=0;i<array.length;i++){
+                    if(typeof array[i].body.jobId != "undefined"){
+                        return array[i].body.jobId;
+                        break;
+                    }
+                }
+                console.log("fail to get jobId")
+               return null
+            }
+            
+            const pipe3 = {   
+                name: priority3,
+                flowInput: {
+                    range:20,
+                    inputs:25000               
+                }
+            }
+            await deletePipeline(d)
+            await storePipeline(d)
+
+           
+
+            for(i=0;i<20;i++){
+                var parents = await Promise.all([
+                    runStored(pipe3),
+                    runStored(pipe3),
+                    runStored(pipe3),
+                    runStored(pipe3),    
+                    timeout(900)
+                  
+                ]);
+                pipe3JobId.push(parents)
+            }
+            
+            
+            const first  = await getPipelineStatus(getJobId(pipe3JobId[0]))
+            const last  = await getPipelineStatus(getJobId(pipe3JobId[19]))
+
+            await deletePipeline(d)
+
+            const firstAfter  = await getPipelineStatus(getJobId(pipe3JobId[0]))
+            const lastAfter  = await getPipelineStatus(getJobId(pipe3JobId[19]))
+
+            expect(first.body.status).to.be.equal("active")
+            expect(last.body.status).to.be.equal("pending")
+            expect(firstAfter.body.status).to.be.equal("stopped")
+            expect(lastAfter.body.status).to.be.equal("stopped")
+            
+        }).timeout(1000 * 60 * 25)
+
         
+        it(' concurrentPipelines - pending  pipeline', async () => {
+
+
+            //set test data to testData1
+            const d = deconstructTestData(testData12)
+            await deletePipeline(d.name)
+            d.pipeline.options = {concurrentPipelines:{
+                amount :1,
+                rejectOnFailure:false
+            }}
+            //store pipeline evalwait
+            await storePipeline(d)
+            //run the pipeline evalwait  twice the second time will be pending till the first exection completed
+            await runStored(d)
+            
+            const res = await runStored(d)
+            const jobId = res.body.jobId
+            const currentStatus= await getPipelineStatus(jobId)
+            
+            expect(currentStatus.body.status).to.have.equal("pending")
+           
+            
+            await deletePipeline(d.name)
+           
+    
+        }).timeout(1000 * 60 * 5);
+       
+
+
+
     } )
     
     describe("TID-440 Pipeline priority tests (git 58)~",()=>{
