@@ -261,6 +261,23 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
        
     }).timeout(1000 * 60 * 20)
 
+    it("build github master algorithm java",async ()=>{
+        const entry = 'Algorithm'
+        const algName= pipelineRandomName(8).toLowerCase()    
+        const language = 'java'
+        const gitUrl = "https://github.com/tamir321/hkubeJava.git"
+        const branch = "master"
+        const gitKind = "github"
+        const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,language )
+        expect(buildStatusAlg.status).to.be.equal("completed") 
+        const result = await runAlgGetResult(algName,[4,3,2,1])
+        await deleteAlgorithm(algName,true)
+        expect(result.data[0].result.data.myAnswer).to.be.equal(33) 
+        expect(result.data[0].result.files.link).to.be.equal("mylink")     
+      
+       
+    }).timeout(1000 * 60 * 20)
+
 
     it("build github branch algorithm",async ()=>{
         const entry = 'main'
@@ -443,28 +460,6 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
         expect(resultAfterCommit.data[0].result.commit).to.be.equal("A7")
     }).timeout(1000 * 60 * 20)
 
-    const jnkkk=	{
-      "name": "jnkkk",
-      "env": "python",
-      "cpu": 1,
-      "gpu": 0,
-      "mem": "512Mi",
-      "options": {
-        "debug": false,
-        "pending": false,
-        "opengl": true
-      },
-      "mounts": [],
-      "gitRepository": {
-        "url": "https://gitlab.com/tamir321/hkubepravate.git",
-        "branchName": "master",
-        "token": "4tye_Qw1xdGwzzowA5zA",
-        "gitKind": "gitlab"
-      },
-      "entryPoint": "main",
-      "minHotWorkers": 0,
-      "type": "Git"
-    }
     
     it('gitlab repository authentication (Token)',async ()=>{
 

@@ -30,26 +30,12 @@ const {
 
 
 const {
-    getResult,
-    getCronResult
+    getResult
   } = require(path.join(process.cwd(), 'utils/results'))
 
 // const KubernetesClient = require('@hkube/kubernetes-client').Client;
-const {
-    getExecPipeline,
-    runRaw,
-    deletePipeline,
-    pipelineRandomName,
-    getPipelineStatus,
-    storePipeline,
-    runStored,
-    deconstructTestData,
-    runStoredAndWaitForResults,
-    resumePipeline,
-    pausePipeline,
-    stopPipeline,
-    exceCachPipeline,
-    getPipelinestatusByName
+const {    
+    runRaw    
 } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 
 chai.use(chaiHttp);
@@ -249,7 +235,7 @@ describe('Node Tests git 660', () => {
             const res = await runRaw(pipe)
             const jobId = res.body.jobId
             const result = await  getResult(jobId,200) 
-            expect(result.data.length).to.be.equal(100)
+            expect(result.data.length).to.be.equal(50)
             expect(JSON.stringify(result.data[37].result)).to.be.equal(JSON.stringify([[7],[12]]))
             expect(JSON.stringify(result.data[49].result)).to.be.equal(JSON.stringify([[9],[14]]))
           }).timeout(1000 * 60 * 2)
@@ -322,10 +308,9 @@ describe('Node Tests git 660', () => {
           const res = await runRaw(pipe)
           const jobId = res.body.jobId
           const result = await  getResult(jobId,200) 
-          for(i=0;i<result.data.length;i++){
-            console.log(i+" "+JSON.stringify(result.data[i].result))
-          }
         
+          expect(result.data.length).to.be.equal(1000)
+          expect(JSON.stringify(result.data[99].result)).to.be.equal("[[0,19],[19]]")
         }).timeout(1000 * 60 * 2)
 
         it('a batch + fix indexed', async () => {
@@ -353,9 +338,7 @@ describe('Node Tests git 660', () => {
           const res = await runRaw(pipe)
           const jobId = res.body.jobId
           const result = await  getResult(jobId,200) 
-          for(i=0;i<result.data.length;i++){
-            console.log(i+" "+JSON.stringify(result.data[i].result))
-          }
+         
         }).timeout(1000 * 60 * 2)
   })
   

@@ -102,10 +102,10 @@ const buildAlgorithmAndWait = async (code, algName, entry,baseVersion='python:3.
     return buildStatusAlg
 }
 
-const buildGitAlgorithm = async (algName,gitUrl,gitKind ,entry , branch ,commit = "null" ,tag = "null" ,token="null")=>{
+const buildGitAlgorithm = async (algName,gitUrl,gitKind ,entry , branch ,language = 'python',commit = "null" ,tag = "null" ,token="null")=>{
     const data = {
         name: algName,
-        env: 'python',
+        env: language,
         cpu: 0.5,
         gpu: 0,
         mem: '512Mi',
