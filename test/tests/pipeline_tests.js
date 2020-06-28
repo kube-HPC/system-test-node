@@ -8,6 +8,7 @@ var diff = require('deep-diff').diff
 const { runAlgorithm,
         deleteAlgorithm,
         storeAlgorithm,
+        StoreDebugAlgorithm,
         getAlgorithm,    
         getAlgorithmVersion,
         updateAlgorithmVersion,
@@ -302,6 +303,22 @@ describe('pipeline Tests 673', () => {
         const expected = ["cron","internal","stored"]
         const a = expected.filter(v=> types.includes(v) )
         expect(a.length).to.be.equal(3)
+
+    }).timeout(1000 * 60 * 7);
+
+
+    it("type = Debug ", async () => {
+        
+        const algName= pipelineRandomName(8).toLowerCase()
+        
+        const  debugAlg = await StoreDebugAlgorithm(algName)
+        const alg = {name: algName,
+        input:[1]}
+        const res = await runAlgorithm(alg)
+        const jobId = res.body.jobId
+        const status = await  getExecPipeline(jobId)
+        await deleteAlgorithm(algName,true)
+        expect(status.body.types[1]).to.be.equal("debug");
 
     }).timeout(1000 * 60 * 7);
 
@@ -851,8 +868,7 @@ describe('pipeline Defaults (git 754)', () => {
             expect(result1.timeTook).to.be.lessThan(result2.timeTook)
         }).timeout(1000 * 60 * 2)
     
-    
-        it('Different priority Pipelines with Different algorithm', async () => {
+            it('Different priority Pipelines with Different algorithm', async () => {
             const testDataA = testData11
             const d = deconstructTestData(testData11)
             d.pipeline.nodes[0].algorithmName=d.pipeline.nodes[1].algorithmName="eval-alg6"

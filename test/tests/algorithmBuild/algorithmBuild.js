@@ -147,7 +147,7 @@ describe('Algorithm build test', () => {
             const status = await getBuildStates(buildId)
             expect(status).to.be.equal("stopped")
             const rerun = await rerunBuild(buildId)
-            await delay(5000)
+            await delay(15000)
             let rereunStatus = await getBuildStates(buildId)
             expect(rereunStatus).to.be.equal("active")
             await deleteAlgorithm(algName,true)
@@ -361,7 +361,7 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
             "id": "87b27e20c2a37ab11ef0d851479f473127c4400d"
             }
         
-        const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch   ,commit)
+        const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,'python',commit)
         expect(buildStatusAlg.status).to.be.equal("completed") 
         const result = await runAlgGetResult(algName,[4])
         expect(result.data[0].result.commit).to.be.equal("A1")
@@ -398,7 +398,7 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
         const gitKind = "github"
         const commit  = "null"
         const tag = "A5"
-        const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,commit,tag)
+        const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch,'python' ,commit,tag)
         expect(buildStatusAlg.status).to.be.equal("completed") 
         const result = await runAlgGetResult(algName,[4])
         expect(result.data[0].result.commit).to.be.equal("A5")
@@ -440,7 +440,7 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
           "id": "3d85086db8f5a842391a8c1f6cd88d8150670b68"
           }
       
-      const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch   ,commit)
+      const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,'python'  ,commit)
       expect(buildStatusAlg.status).to.be.equal("completed") 
       const result = await runAlgGetResult(algName,[4])
       expect(result.data[0].result.commit).to.be.equal("A5")
@@ -472,9 +472,9 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
         const commit  = {"id":"66e76131b39fd2e1df6b46ec179962fa7cbbd24c"}
         const tag = "null"
         const token = config.gitlabToken
-        const failBuild =   await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,commit,tag) 
+        const failBuild =   await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,'python',commit,tag) 
         expect(JSON.parse(failBuild.text).error.message).to.be.equal(`Not Found (${gitUrl.slice(0,-4)})`)
-        const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,commit,tag,token)
+        const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,'python',commit,tag,token)
         expect(buildStatusAlg.status).to.be.equal("completed") 
         const result = await runAlgGetResult(algName,[4]) 
         expect(result.data[0].result.result).to.be.equal("private-repo") 
@@ -491,9 +491,9 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
         const commit  = "null"
         const tag = "null"
         const token =config.githubToken
-        const failBuild =   await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,commit,tag) 
+        const failBuild =   await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,'python' ,commit,tag) 
         expect(JSON.parse(failBuild.text).error.message).to.be.equal(`Not Found (${gitUrl.slice(0,-4)})`)
-        const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,commit,tag,token)
+        const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,'python',commit,tag,token)
         expect(buildStatusAlg.status).to.be.equal("completed") 
         const result = await runAlgGetResult(algName,[4]) 
         expect(result.data[0].result).to.be.equal("private-repo") 

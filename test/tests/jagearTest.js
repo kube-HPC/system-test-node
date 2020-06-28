@@ -46,43 +46,27 @@ describe('jagear', () => {
                 }       
             }
             
-    it('test', async () => {
-        const aa = await  deleteAlgorithm("versatile",true)
-        const bb = await buildAlgoFromImage(alg);
-//need to add alg versatile-pipe
+    it('test jagear  start algorithms', async () => {
+
         const algName = "black-alg"
         const pipe = {
-            "name": "versatile-pipe",
-            "flowInput": {
-                "inp": [{
-                    "type": "algorithm",
-                    "name": `${algName}`,
-                    "input":["a"]
-                }]
-            }
+            name: "simple",
+            flowInput: {
+                files: {
+                    link: "link1"
+                }
+            },
+            priority: 1
         }
-        const d = deconstructTestData(testData1)
-
-        //store pipeline evalwait
-        const a = await storePipeline(d)
-    
-        //run the pipeline evalwait
-       
-
         const jobId = await runStoredAndWaitForResults(pipe)
         const data = await getSpansByJodid(jobId)
-        let found = false
-        data.forEach(element => {
-            // console.log(element.operationName)
-            if (element.operationName.startsWith(algName)) {
-                found = true
-            }
-
-        });
-
+        const startsAlgs = ["yellow-alg start","black-alg start","green-alg start"]
+        const dataOperations = data.map(item => item.operationName).filter((value, index, self) => self.indexOf(value) === index)
+        const found = startsAlgs.every(r=> dataOperations.includes(r))
+       
         expect(found).to.be.true
         
-    }).timeout(1000 * 5*60)
+    }).timeout(1000 * 10*60)
 
 })
 

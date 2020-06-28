@@ -236,6 +236,10 @@ describe('Node Tests git 660', () => {
             const jobId = res.body.jobId
             const result = await  getResult(jobId,200) 
             expect(result.data.length).to.be.equal(50)
+
+
+            console.log(JSON.stringify(result.data[37].result))        
+            console.log(JSON.stringify(result.data[49].result))          
             expect(JSON.stringify(result.data[37].result)).to.be.equal(JSON.stringify([[7],[12]]))
             expect(JSON.stringify(result.data[49].result)).to.be.equal(JSON.stringify([[9],[14]]))
           }).timeout(1000 * 60 * 2)

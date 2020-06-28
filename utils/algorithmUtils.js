@@ -26,7 +26,17 @@ const logResult = (result, text = '') => {
     }
 }
 
+const StoreDebugAlgorithm =  async (algorithmName) =>{
 
+    const debudAlg = {
+        "name": algorithmName
+        }
+    const res = await chai.request(config.apiServerUrl)
+    .post('/store/algorithms/debug')
+    .send(debudAlg)
+    logResult(res, 'algorithmUtils StoreDebugAlgorithm')
+    return res
+}
 
 const getAlgorithm = async (name) => {
     const res = await chai.request(config.apiServerUrl)
@@ -221,6 +231,7 @@ const rerunBuild = async (buildId)=>{
 }
 
 module.exports = {
+    StoreDebugAlgorithm,
     runAlgorithm,
     getAlgorithm,
     storeAlgorithm,
