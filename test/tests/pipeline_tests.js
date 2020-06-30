@@ -46,6 +46,7 @@ const {
 
 // const KubernetesClient = require('@hkube/kubernetes-client').Client;
 const {
+    getPipelineTriggerTree,
     getExecPipeline,
     runRaw,
     deletePipeline,
@@ -761,7 +762,7 @@ describe('pipeline Defaults (git 754)', () => {
 
 
     } )
-    
+
     describe("Trigger pipeline ",()=>{
         it("Trigger tree", async () => {
             const testData = testData2
@@ -857,7 +858,7 @@ describe('pipeline Defaults (git 754)', () => {
             await deletePipeline(e)
             await storePipeline(e)
             
-            const tree = await getPipelineTriggerTree()
+            const tree = await getPipelineTriggerTree("")
             await deletePipeline(triggeredPipe)
             await deletePipeline(triggeredPipe2)
             await deletePipeline(simpleName)
