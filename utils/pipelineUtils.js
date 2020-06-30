@@ -48,6 +48,12 @@ const getPipelineStatus = async (id) => {
     return res
 }
 
+const getPipelineTriggerTree = async (pielineName) => {
+    const res = await chai.request(config.apiServerUrl)
+        .get(`/pipelines/triggers/tree?name=${pielineName}`)
+    logResult(res, 'PipelineUtils getPipelineTriggerTree')
+    return res
+}
 const storePipeline = async (pipeObj) => {
 
     let pipeline = pipeObj
@@ -310,6 +316,7 @@ module.exports = {
     stopPipeline,
     exceCachPipeline,
     getPipelineResultsByName,
-    getPipelinestatusByName 
+    getPipelinestatusByName,
+    getPipelineTriggerTree
 
 }

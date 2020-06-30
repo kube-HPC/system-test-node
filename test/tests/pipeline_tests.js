@@ -39,6 +39,7 @@ const {
 
 
 const {
+    getJobIdsTree,
     getResult,
     getCronResult
   } = require(path.join(process.cwd(), 'utils/results'))
@@ -761,6 +762,113 @@ describe('pipeline Defaults (git 754)', () => {
 
     } )
     
+    describe("Trigger pipeline ",()=>{
+        it("Trigger tree", async () => {
+            const testData = testData2
+            
+            const simpleName =testData.descriptor.name
+            const simple = deconstructTestData(testData)
+            await deletePipeline(simple)
+            await storePipeline(simple)
+            const triggeredPipe  = pipelineRandomName(8)
+            const triggeredPipe2  = pipelineRandomName(8)
+            testData.descriptor.name = triggeredPipe
+            testData.descriptor.triggers.pipelines = [simpleName]
+            testData.descriptor.nodes[0].input[0]="[1,2]"
+            const d = deconstructTestData(testData)
+            await deletePipeline(d)
+            await storePipeline(d)
+
+            testData.descriptor.name = triggeredPipe2
+            testData.descriptor.triggers.pipelines = [triggeredPipe]
+            testData.descriptor.nodes[0].input[0]="[1,2]"
+            const e  = deconstructTestData(testData)
+            await deletePipeline(e)
+            await storePipeline(e)
+            //getJobIdsTree
+            // await runStoredAndWaitForResults(simple)
+            // await delay(3 * 1000);
+            // await deletePipeline(d)
+            // jobs = await getWebSocketJobs();
+            // jobId = jobs.filter(obj => obj.key.includes(triggeredPipe))[0].key
+            // const status = await  getExecPipeline(jobId)
+            
+            // await deletePipeline(d)
+        }).timeout(1000 * 60 * 7);
+
+        it("Triger get result tree", async () => {
+            const testData = testData2
+            
+            const simpleName =testData.descriptor.name
+            const simple = deconstructTestData(testData)
+            await deletePipeline(simple)
+            await storePipeline(simple)
+            const triggeredPipe  = pipelineRandomName(8)
+            const triggeredPipe2  = pipelineRandomName(8)
+            testData.descriptor.name = triggeredPipe
+            testData.descriptor.triggers.pipelines = [simpleName]
+            testData.descriptor.nodes[0].input[0]="[1,2]"
+            const d = deconstructTestData(testData)
+            await deletePipeline(d)
+            await storePipeline(d)
+
+            testData.descriptor.name = triggeredPipe2
+            testData.descriptor.triggers.pipelines = [triggeredPipe]
+            testData.descriptor.nodes[0].input[0]="[1,2]"
+            const e  = deconstructTestData(testData)
+            await deletePipeline(e)
+            await storePipeline(e)
+            //getJobIdsTree
+            const jobId =  await runStoredAndWaitForResults(simple)
+  
+             const tree = await getJobIdsTree(jobId)
+             const firstChildJobId = tree.body.children.filter(a => a.name == triggeredPipe )[0].jobId
+             await getResult(firstChildJobId,200)
+             const tree1 = await getJobIdsTree(jobId)
+             const secondChild = tree1.body.children.filter(a => a.name == triggeredPipe ).filter(a => a.name=triggeredPipe2)
+             expect(secondChild.length).to.be.equal(1)
+             await deletePipeline(triggeredPipe)
+             await deletePipeline(triggeredPipe2)
+
+        }).timeout(1000 * 60 * 7);
+
+
+        it("Triger cycle pipeline tree", async () => {
+            const testData = testData2
+            const triggeredPipe  = pipelineRandomName(8)
+            const triggeredPipe2  = pipelineRandomName(8)
+            testData.descriptor.triggers.pipelines = [triggeredPipe2]
+            const simpleName =testData.descriptor.name
+            const simple = deconstructTestData(testData)
+            await deletePipeline(simple)
+            await storePipeline(simple)
+            
+            testData.descriptor.name = triggeredPipe
+            testData.descriptor.triggers.pipelines = [simpleName]
+            testData.descriptor.nodes[0].input[0]="[1,2]"
+            const d = deconstructTestData(testData)
+            await deletePipeline(d)
+            await storePipeline(d)
+
+            testData.descriptor.name = triggeredPipe2
+            testData.descriptor.triggers.pipelines = [triggeredPipe]
+            testData.descriptor.nodes[0].input[0]="[1,2]"
+            const e  = deconstructTestData(testData)
+            await deletePipeline(e)
+            await storePipeline(e)
+            
+            const tree = await getPipelineTriggerTree()
+            await deletePipeline(triggeredPipe)
+            await deletePipeline(triggeredPipe2)
+            await deletePipeline(simpleName)
+            expect(tree.status).to.be.equal(400)
+            expect(tree.body.error.message).to.be.equal("the pipelines triggers is cyclic")
+
+        }).timeout(1000 * 60 * 7);
+
+
+
+    })
     describe("TID-440 Pipeline priority tests (git 58)~",()=>{
    
         it('pipeline queue priority test',async()=>{

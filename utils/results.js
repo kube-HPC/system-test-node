@@ -56,6 +56,14 @@ const getStates = async (jobId) => {
 
 }
 
+
+const getJobIdsTree = async (jobId) => {
+    const res = await chai.request(config.apiServerUrl)
+        .get(`/exec/tree/${jobId}`);
+    return res
+
+}
+
 const getPodsRunning = async (jobId) => {
     const res = await chai.request(config.baseUrl)
         .get(`/hkube/monitor-server/pods/${jobId}`)
@@ -162,5 +170,6 @@ module.exports = {
     getJobResult,
     getRawGraph,
     getParsedGraph,
-    getCronResult
+    getCronResult,
+    getJobIdsTree
 }
