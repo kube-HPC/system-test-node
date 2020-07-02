@@ -100,7 +100,7 @@ describe('Algorithm build test', () => {
             expect(buildStatusAlg.status).to.be.equal("completed") 
             const result = await runAlgGetResult(algName,[4])
             await deleteAlgorithm(algName,true)    
-            expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,6,10,final,0")  
+            expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,6,11,final,0")  
         }).timeout(1000 * 60 * 20)
 
         it(`python 3.7`, async () => {
@@ -112,7 +112,7 @@ describe('Algorithm build test', () => {
             expect(buildStatusAlg.status).to.be.equal("completed") 
             const result = await runAlgGetResult(algName,[4])
             await deleteAlgorithm(algName,true)    
-            expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,7,7,final,0")  
+            expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,7,8,final,0")  
         }).timeout(1000 * 60 * 20)
 
         it(`python 3.7-slim`, async () => {
@@ -124,7 +124,7 @@ describe('Algorithm build test', () => {
             expect(buildStatusAlg.status).to.be.equal("completed") 
             const result = await runAlgGetResult(algName,[4])
             await deleteAlgorithm(algName,true)    
-            expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,7,7,final,0")   
+            expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,7,8,final,0")   
         }).timeout(1000 * 60 * 20)
 
         const getBuildStates = async (jobId) => {
@@ -401,8 +401,9 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
         const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch,'python' ,commit,tag)
         expect(buildStatusAlg.status).to.be.equal("completed") 
         const result = await runAlgGetResult(algName,[4])
+        await deleteAlgorithm(algName,true) 
         expect(result.data[0].result.commit).to.be.equal("A5")
-            
+           
     }).timeout(1000 * 60 * 20)
 
 
