@@ -332,6 +332,21 @@ describe('Node Tests git 660', () => {
         }).timeout(1000 * 60 * 2)
 
 
+        it('custom input', async () => {
+          pipe.nodes[0].input = [ "#[0...10]"]
+          pipe.nodes[1].input = [ "#[10...20]"]
+          pipe.nodes[2].input = [ {"a":"@one","b":"@two"}]
+          pipe.nodes[2].batchOperation = "indexed"
+          const res = await runRaw(pipe)
+          const jobId = res.body.jobId
+          const result = await  getResult(jobId,200) 
+          expect(result.data.length).to.be.equal(1)
+          expect(result.data[0].result[0].a.length).to.be.equal(10)
+          expect(result.data[0].result[0].b.length).to.be.equal(10)
+
+        }).timeout(1000 * 60 * 2)
+
+
         it('flowInput = null', async () => {
           
           pipe.nodes[0].input = ["#@flowInput.one","#@flowInput.two"]

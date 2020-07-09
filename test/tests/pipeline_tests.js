@@ -766,8 +766,8 @@ describe('pipeline Defaults (git 754)', () => {
     describe("Trigger pipeline ",()=>{
         it("Trigger tree", async () => {
             const testData = testData2
-            
-            const simpleName =testData.descriptor.name
+
+            const simpleName = testData.descriptor.name.toString()
             const simple = deconstructTestData(testData)
             await deletePipeline(simple)
             await storePipeline(simple)
@@ -786,18 +786,16 @@ describe('pipeline Defaults (git 754)', () => {
             const e  = deconstructTestData(testData)
             await deletePipeline(e)
             await storePipeline(e)
-            //getJobIdsTree
-            // await runStoredAndWaitForResults(simple)
-            // await delay(3 * 1000);
-            // await deletePipeline(d)
-            // jobs = await getWebSocketJobs();
-            // jobId = jobs.filter(obj => obj.key.includes(triggeredPipe))[0].key
-            // const status = await  getExecPipeline(jobId)
+            const tree = await getPipelineTriggerTree(simpleName)
             
-            // await deletePipeline(d)
+
+            await deletePipeline(triggeredPipe)
+            await deletePipeline(triggeredPipe2)
+            expect(tree.text).to.include(triggeredPipe)
+            expect(tree.text).to.include(triggeredPipe2)
         }).timeout(1000 * 60 * 7);
 
-        it("Triger get result tree", async () => {
+        it("Trigger get result tree", async () => {
             const testData = testData2
             
             const simpleName =testData.descriptor.name
@@ -834,7 +832,7 @@ describe('pipeline Defaults (git 754)', () => {
         }).timeout(1000 * 60 * 7);
 
 
-        it("Triger cycle pipeline tree", async () => {
+        it("Trigger cycle pipeline tree", async () => {
             const testData = testData2
             const triggeredPipe  = pipelineRandomName(8)
             const triggeredPipe2  = pipelineRandomName(8)
