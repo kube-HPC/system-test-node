@@ -31,7 +31,12 @@ const getResult = async (jobId, expectedStatus, timeout = 60 * 1000 * 10, interv
     } while (Date.now() - start < timeout);
     expect.fail(`timeout exceeded trying to get ${expectedStatus} status in result for jobId ${jobId}`);
 };
+ const getJobIdStatus = async (jobId) =>{
+    const res = await chai.request(config.apiServerUrl)
+    .get(`/exec/status/${jobId}`);
+    return res
 
+ }
 const getStatus = async (jobId, expectedCode, expectedStatus, timeout = 60 * 1000, interval = 1000) => {
     const start = Date.now();
     do {
@@ -171,5 +176,6 @@ module.exports = {
     getRawGraph,
     getParsedGraph,
     getCronResult,
-    getJobIdsTree
+    getJobIdsTree,
+    getJobIdStatus
 }

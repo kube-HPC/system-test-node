@@ -32,6 +32,7 @@ const {
     getPipelineStatus
 } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 const {
+    runAlgGetResult,
     runAlgorithm,
     getAlgorithm,
     deleteAlgorithm,    
@@ -53,16 +54,7 @@ chai.use(chaiHttp);
 chai.use(assertArrays);
 
 describe('Algorithm build test', () => {
-    
-    const runAlgGetResult =async (algName,inupts)=>{
-        const alg = {name: algName,
-        input:inupts}
-        const res = await runAlgorithm(alg)
-        const jobId = res.body.jobId
-        const result = await  getResult(jobId,200)
-        return result
-       // expect(result.data[0].result).to.be.equal(42)
-    }
+   
     describe('python version test', () => {
         const code1 = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
     

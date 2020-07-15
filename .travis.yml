@@ -44,7 +44,13 @@ jobs:
       - ./travis/install.sh
       - npm ci
       env: CAN_FAIL=true
-      script: ./travis/jagearTest.sh      
+      script: ./travis/jagearTest.sh
+    - stage: cliTest
+      install:
+      - ./travis/install.sh
+      - npm ci
+      env: CAN_FAIL=true
+      script: ./travis/cli.sh        
 stages:
   - deploy
   - test

@@ -7,12 +7,11 @@ const path = require('path')
 const config = require(path.join(process.cwd(), 'config/config'))
 const logger = require(path.join(process.cwd(), 'utils/logger'))
 const {
-    idGen,
-    getStatusall
-} = require(path.join(process.cwd(), 'utils/results'))
+        getResult,
+        idGen,
+        getStatusall} = require(path.join(process.cwd(), 'utils/results'))
 const {
-    write_log
-} = require(path.join(process.cwd(), 'utils/misc_utils'))
+        write_log} = require(path.join(process.cwd(), 'utils/misc_utils'))
 
 
 const fse = require('fs')
@@ -158,6 +157,16 @@ const buildGitAlgorithm = async (algName,gitUrl,gitKind ,entry , branch ,languag
 
 }
 
+ 
+const runAlgGetResult =async (algName,inupts)=>{
+    const alg = {name: algName,
+    input:inupts}
+    const res = await runAlgorithm(alg)
+    const jobId = res.body.jobId
+    const result = await  getResult(jobId,200)
+    return result
+   // expect(result.data[0].result).to.be.equal(42)
+}
 const runAlgorithm = async (body)=>{
     const res = await chai.request(config.apiServerUrl)
         .post('/exec/algorithm')
@@ -166,6 +175,13 @@ const runAlgorithm = async (body)=>{
     return res
 }
 
+const getBuildList = async (name)=>{
+    const res = await chai.request(config.apiServerUrl)
+        .get(`/builds/list/${name}`)
+    logResult(res, "algorithmUtils getBuildList")
+    return res.body;
+
+}
 
 const getAlgorithmVersion = async (name)=>{
     const res = await chai.request(config.apiServerUrl)
@@ -231,6 +247,7 @@ const rerunBuild = async (buildId)=>{
 }
 
 module.exports = {
+    runAlgGetResult,
     StoreDebugAlgorithm,
     runAlgorithm,
     getAlgorithm,
@@ -246,6 +263,7 @@ module.exports = {
     deleteAlgorithmVersion,
     logResult,
     stopBuild,
-    rerunBuild
+    rerunBuild,
+    getBuildList
 
 }

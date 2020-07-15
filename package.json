@@ -6,10 +6,11 @@
   "scripts": {
     "test": "mocha ./test/tests/swaggerTests/swaggerCalls.js",
     "pipelinetest": "mocha ./test/tests/pipeline_tests.js",
-    "jageartest":"mocha ./test/tests/jagearTest.js",
-    "nodetest":"mocha ./test/tests/node_tests.js",
+    "jageartest": "mocha ./test/tests/jagearTest.js",
+    "nodetest": "mocha ./test/tests/node_tests.js",
     "algorithmtest": "mocha ./test/tests/algorithm_test.js",
-    "algorithmBuild": "mocha ./test/tests/algorithmBuild/algorithmBuild.js"
+    "algorithmBuild": "mocha ./test/tests/algorithmBuild/algorithmBuild.js",
+    "cliTest": "mocha ./test/tests/cliTests.js"
   },
   "author": "",
   "license": "ISC",
@@ -20,11 +21,13 @@
     "chai": "^4.1.2",
     "chai-arrays": "^2.0.0",
     "chai-http": "^4.3.0",
+    "child_process": "^1.0.2",
     "crypto-random-string": "^1.0.0",
     "delay": "^3.0.0",
     "dotenv": "^8.2.0",
     "elasticsearch": "^15.5.0",
     "fs-extra": "^8.1.0",
+    "js-yaml": "^3.14.0",
     "kubernetes-client": "^8.3.7",
     "mocha": "^5.2.0",
     "nyc": "^14.1.1",

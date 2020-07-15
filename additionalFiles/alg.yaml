@@ -1,0 +1,12 @@
+name: 5y7dodpa
+env: python
+baseImage: 'python:3.7'
+resources:
+  cpu: 0.1
+  gpu: 0
+  mem: 256Mi
+code:
+  path: python.versions.tar.gz
+  entryPoint: main35
+workerEnv:
+  DEBUG_MODE: 'false'
