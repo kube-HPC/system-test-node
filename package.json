@@ -10,13 +10,12 @@
     "nodetest": "mocha ./test/tests/node_tests.js",
     "algorithmtest": "mocha ./test/tests/algorithm_test.js",
     "algorithmBuild": "mocha ./test/tests/algorithmBuild/algorithmBuild.js",
-    "cliTest": "mocha ./test/tests/cliTests.js"
+    "cliTests": "mocha ./test/tests/cliTests.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@elastic/elasticsearch": "^7.6.1",
-    "@hkube/hkubectl": "^1.1.36",
     "@hkube/kubernetes-client": "^1.0.27",
     "chai": "^4.1.2",
     "chai-arrays": "^2.0.0",

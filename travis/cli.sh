@@ -15,4 +15,4 @@ npm run clitest
 
 #&& sudo mv hkubectl /usr/local/bin/
 
-npm run cliTest
+npm run cliTests
