@@ -33,16 +33,21 @@ chai.use(assertArrays);
 const fs = require('fs');
 
 const yaml = require('js-yaml');
-
-const  execSyncReturenJSON = async  (command)=>{
-    
+const exceSyncString = async (command) =>{
     console.log("start- " + command)
     output = execSync(command);
     const noColor = output.toString('utf8').replace( /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');  
     console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")     
     console.log(noColor)
     console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")     
-    const  obj = yaml.load(noColor)
+    return noColor
+
+}
+
+const  execSyncReturenJSON = async  (command)=>{
+    
+    const noColor= await exceSyncString(command)
+  
     const result = JSON.stringify(obj, null, 2)
     const jsonResult = JSON.parse(result)
     return jsonResult
@@ -95,8 +100,8 @@ describe('cli test', () => {
                             `--mem 256Mi `+
                             `--codePath ${filePath} `
             
-            const buildResult = await execSync(runBulid);
-            console.log(buildResult.toString('utf8'))
+            const buildResult = await exceSyncString(runBulid);
+           
             const result = await runAlgGetResult(algName,[4])
             await deleteAlgorithm(algName,true)    
             expect(result.data[0].result.version.toString()).to.be.equal("3.5")  
@@ -113,15 +118,15 @@ describe('cli test', () => {
             fs.writeFileSync(algFile, yamlStr, 'utf8');
             const runBulid = `hkubectl algorithm apply `+
                             `-f ${algFile}`            
-            const buildResult = await execSync(runBulid);
-            console.log(buildResult.toString('utf8'))
+            const buildResult = await exceSyncString(runBulid);
+          
             const result = await runAlgGetResult(algName,[4])
             
             expect(result.data[0].result.version.toString()).to.be.equal("3.5")  
             
             const deleteAlg  = `hkubectl algorithm delete ${algName}`
-            const deleteResult = await execSync(deleteAlg);
-            console.log(deleteResult.toString('utf8'))
+            const deleteResult = await exceSyncString(deleteAlg);
+          
             const alg = await getAlgorithm(algName)
             console.log(alg.body)   
             expect(alg.status).to.be.equal(404)                  
@@ -146,11 +151,11 @@ describe('cli test', () => {
                             `--mem 256Mi `+
                             `--codePath ./additionalFiles/${trgzFile2} `
             console.log("start build 1")
-            const buildResult = await execSync(runBulid);
-            console.log(buildResult.toString('utf8'))
+            const buildResult = await exceSyncString(runBulid);
+         
             console.log("start build 2")
-            const buildResult2 = await execSync(runBulidV2);
-            console.log(buildResult2.toString('utf8'))
+            const buildResult2 = await exceSyncString(runBulidV2);
+          
             const result = await runAlgGetResult(algName,[4])
          
             expect(result.data[0].result.version.toString()).to.be.equal("1")  
@@ -189,11 +194,11 @@ describe('cli test', () => {
                             `--setCurrent true `+
                             `--codePath ./additionalFiles/${trgzFile2} `
             console.log("start build 1")
-            const buildResult = await execSync(runBulid);
-            console.log(buildResult.toString('utf8'))
+            const buildResult = await exceSyncString(runBulid);
+           
             console.log("start build 2")
-            const buildResult2 = await execSync(runBulidV2);
-            console.log(buildResult2.toString('utf8'))
+            const buildResult2 = await exceSyncString(runBulidV2);
+            
             const result = await runAlgGetResult(algName,[4])
          
             expect(result.data[0].result.version.toString()).to.be.equal("1.1")  
@@ -211,8 +216,8 @@ describe('cli test', () => {
                             `--codePath ./additionalFiles/python.versions.tar.gz `+
                             `--noWait`
             
-            const buildResult = await execSync(runBulid);
-            console.log(buildResult.toString('utf8'))
+            const buildResult = await exceSyncString(runBulid);
+           
             const builds = await getBuildList(algName)
             console.log(builds)
             const buildStatusAlg = await getStatusall(builds[0].buildId, `/builds/status/`, 200, "completed", 1000 * 60 * 10)
@@ -231,10 +236,9 @@ describe('cli test', () => {
         it('pipeline get',async ()=>{
 
             const get = "hkubectl pipeline get simple"
-            const output = execSync(get);
-            const str = output.toString('utf-8')
+            const output = await exceSyncString(get);
             console.log(str)
-           // expect(output.name).to.be.equal("simple")
+            expect(output).to.contain("name:      simple")
         }).timeout(1000 * 60 * 6)
 
         it('pipeline store from file',async ()=>{
@@ -247,8 +251,8 @@ describe('cli test', () => {
             let jsonStr = JSON.stringify(data);
             fs.writeFileSync(pipelineTemp, jsonStr,'utf8');
             const store = `hkubectl pipeline store -f `+ pipelineTemp
-            const output = execSync(store);
-            console.log(output.toString('utf8'))
+            const output = await exceSyncString(store);
+           
             const pipe = await getPipeline(pipelineName)
             expect(pipe.body.name).to.be.equal(pipelineName)
             await deletePipeline(pipelineName)
@@ -343,11 +347,9 @@ describe('cli test', () => {
         it('exec get pipe ', async () => {
             
             const get = "hkubectl exec get simple"
-            const output = execSync(get);
+            const output = await exceSyncString(get);
 
-            const outputStr = output.toString('utf8')
-        console.log(outputStr)
-        expect(outputStr).contain("name:      simple")
+            expect(output).contain("name:      simple")
 
         }).timeout(1000 * 60 * 6)
 
@@ -361,14 +363,13 @@ describe('cli test', () => {
             
             const cti = " hkubectl exec result --jobId = "+jsonResult.jobId
             
-            const output = execSync(cti);
+            const output = await exceSyncString(cti);
 
             //const ctlResult = await execSyncReturenJSON(cti)
 
             console.log(result)
-            console.log("===========")
-            console.log(output.toString('utf8'))
-            expect(output.toString('utf8')).to.contain("result:        42")
+
+            expect(output).to.contain("result:        42")
         }).timeout(1000 * 60 * 6)
 
     });
