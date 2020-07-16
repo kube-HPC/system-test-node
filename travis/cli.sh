@@ -4,7 +4,7 @@ export WEBHOOK_URL=${WEBHOOK_MASTER_URL}
 curl -Lo hkubectl https://github.com/kube-HPC/hkubectl/releases/download/$(curl -s https://api.github.com/repos/kube-HPC/hkubectl/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")')/hkubectl-linux \
 && chmod +x hkubectl 
 echo "export PATH=$PWD:$PATH" > setPath
-mkdir ~/.hkube
+mkdir -p ~/.hkube
 cat <<EOF >~/.hkube/.hkuberc
 {
   "endpoint": "https://test.hkube.io",

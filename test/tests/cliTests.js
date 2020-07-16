@@ -10,6 +10,7 @@ const assertArrays = require('chai-arrays');
 const execSync = require('child_process').execSync;
 const {
     pipelineRandomName,
+    getPipeline,
     deletePipeline,
     getPiplineNodes,
     storePipeline,
@@ -30,15 +31,15 @@ const {runAlgGetResult,
 chai.use(chaiHttp);
 chai.use(assertArrays);
 const fs = require('fs');
+
 const yaml = require('js-yaml');
 
 const  execSyncReturenJSON = async  (command)=>{
-    //const  yaml = require('js-yaml')
+    
     console.log("start-" + command)
-   
     output = execSync(command);
-    console.log("end")
-    const  obj = yaml.load(output)
+    const noColor = output.toString('utf8').replace( /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');       
+    const  obj = yaml.load(noColor)
     const result = JSON.stringify(obj, null, 2)
     const jsonResult = JSON.parse(result)
     return jsonResult
@@ -51,15 +52,28 @@ describe('cli test', () => {
             const runSimple = "hkubectl algorithm list "
             
             const jsonResult = await execSyncReturenJSON(runSimple);
-            console.log(jsonResult)
+           // console.log(jsonResult)
             console.log("jsonResult.result.length-"+jsonResult.result.length)
             expect(jsonResult.result.length).to.be.above(6)
            
         }).timeout(1000 * 60 * 6)
-
+       
+        // it('buffer',async ()=>{
+        //     const out =execSync("hkubectl algorithm get green-alg ",{ encoding: 'utf-8' });
+        //     //const out =fs.readFileSync("./1.ymal", 'utf8');
+        //     console.log(out)
+        //     const str = out.toString('utf-8')
+        //     console.log(str)
+        //     console.log("++++++++++++++++++++++++++++")              
+        //     const jnk1 = yaml.load(str)           
+        //     console.log("---------------------------")
+        //     console.log(jnk1)
+        // }).timeout(1000 * 60 * 6)
+        
+        
+        
         it('hkube algorithm get',async ()=>{
-            const runSimple = "hkubectl algorithm get green-alg "
-            
+            const runSimple = "hkubectl algorithm get green-alg "            
             const jsonResult = await execSyncReturenJSON(runSimple);
             console.log(jsonResult)
            
@@ -69,14 +83,14 @@ describe('cli test', () => {
 
         it('hkube algorithm apply',async ()=>{
             const algName = pipelineRandomName(8).toLowerCase()
-            
+            const filePath = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
             const runBulid = `hkubectl algorithm apply ${algName} `+
                             `--env python `+
                             `--codeEntryPoint main35 `+
                             `--gpu 0 `+
                             `--cpu 1 `+
                             `--mem 256Mi `+
-                            `--codePath ./additionalFiles/python.versions.tar.gz `
+                            `--codePath ${filePath} `
             
             const buildResult = await execSync(runBulid);
             console.log(buildResult.toString('utf8'))
@@ -88,7 +102,7 @@ describe('cli test', () => {
 
         it('hkube algorithm apply from file and delete',async ()=>{
             const algName = pipelineRandomName(8).toLowerCase()
-            const algFile = './additionalFiles/alg.yaml'
+            const algFile = path.join(process.cwd(),'./additionalFiles/alg.yaml');
             let fileContents = fs.readFileSync(algFile, 'utf8');
             let data = yaml.safeLoad(fileContents);
             data.name = `${algName}`
@@ -209,6 +223,35 @@ describe('cli test', () => {
 
 
     })
+    describe('hkubecl piprline tests', () => {
+
+        it('pipeline get',async ()=>{
+
+            const get = "hkubectl pipeline get simple"
+            const output = execSync(get);
+
+            const outputStr = output.toString('utf8')
+            console.log(outputStr)
+            expect(outputStr).contain("name:      simple")
+        }).timeout(1000 * 60 * 6)
+
+        it('pipeline store from file',async ()=>{
+            const pipelineName = pipelineRandomName(8).toLowerCase()
+            const pipelineFile = './pipelines/simpelraw.json'
+            const pipelineTemp = './pipelines/temp.json'
+            let fileContents = fs.readFileSync(pipelineFile, 'utf8');
+            let data = JSON.parse(fileContents);
+            data.name = `${pipelineName}`
+            let jsonStr = JSON.stringify(data);
+            fs.writeFileSync(pipelineTemp, jsonStr,'utf8');
+            const store = `hkubectl pipeline store -f `+ pipelineTemp
+            const output = execSync(store);
+            console.log(output.toString('utf8'))
+            const pipe = await getPipeline(pipelineName)
+            expect(pipe.body.name).to.be.equal(pipelineName)
+            await deletePipeline(pipelineName)
+        }).timeout(1000 * 60 * 6)
+    })
     describe('hkubecl exec tests', () => {
     
         it('exec stored pipe wait', async () => {   
@@ -223,6 +266,7 @@ describe('cli test', () => {
 
         it('exec stored pipe noWait', async () => {
             const runSimple = "hkubectl exec stored simple --noWait"
+            
             const jsonResult = await execSyncReturenJSON(runSimple)
 
             console.log(jsonResult)
