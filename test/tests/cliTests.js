@@ -378,7 +378,7 @@ describe('cli test', () => {
              });
             });
            }
-        it('synce create watch python',async ()=>{
+        it('synce create watch changes python',async ()=>{
             const filePath = path.join(process.cwd(), 'additionalFiles/main.py');
             const algName = pipelineRandomName(8).toLowerCase()
             const folderPath = path.join(process.cwd(),algName)
@@ -418,6 +418,38 @@ describe('cli test', () => {
             await deleteAlgorithm(algName,true)
             expect(result2.data[0].result.version.toString()).to.be.equal("2")  
 
+        }).timeout(1000 * 60 * 10)
+
+
+        it('synce python alg with requirements',async ()=>{
+            const folderPath = path.join(process.cwd(), 'additionalFiles/pythonAlg');
+            const algName = pipelineRandomName(8).toLowerCase()
+         
+            var fs = require('fs');
+          
+            if (!fs.existsSync(algName)){
+                fs.mkdirSync(algName);}
+
+          
+            
+            const command = ` hkubectl sync create`+
+                            ` --entryPoint main.py`+
+                            ` --algorithmName ${algName}`+
+                            ` --folder ${folderPath}`+
+                            ` --env python`
+            console.log(command)
+            await exceSyncString(command)
+            
+            const watch = `hkubectl sync watch`+
+                           ` -a ${algName}`+
+                           ` -f ${folderPath}`
+
+            execShellCommand(watch)
+
+            await delay(20*1000)
+            const result = await runAlgGetResult(algName,[4])
+            
+        
         }).timeout(1000 * 60 * 10)
     })
 });
