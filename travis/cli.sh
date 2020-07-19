@@ -7,7 +7,8 @@ curl -Lo hkubectl https://github.com/kube-HPC/hkubectl/releases/download/$(curl 
 echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 echo path before 
 echo $PATH
-echo "export PATH=$PWD:$PATH" > setPath
+export PWD = `/bin/pwd`
+export PATH=${PWD}:${PATH}
 echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 echo path After 
 echo $PATH
