@@ -47,9 +47,12 @@ const exceSyncString = async (command) =>{
 const  execSyncReturenJSON = async  (command)=>{
     
     const noColor= await exceSyncString(command)
-  
+    const  obj = yaml.load(noColor)
     const result = JSON.stringify(obj, null, 2)
+   
     const jsonResult = JSON.parse(result)
+  
+    console.log("execSyncReturenJSON return typeof jsonResult = " +typeof jsonResult)
     return jsonResult
 }
 
