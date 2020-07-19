@@ -65,19 +65,7 @@ describe('cli test', () => {
             expect(jsonResult.result.length).to.be.above(6)
            
         }).timeout(1000 * 60 * 6)
-       
-        // it('buffer',async ()=>{
-        //     const out =execSync("hkubectl algorithm get green-alg ",{ encoding: 'utf-8' });
-        //     //const out =fs.readFileSync("./1.ymal", 'utf8');
-        //     console.log(out)
-        //     const str = out.toString('utf-8')
-        //     console.log(str)
-        //     console.log("++++++++++++++++++++++++++++")              
-        //     const jnk1 = yaml.load(str)           
-        //     console.log("---------------------------")
-        //     console.log(jnk1)
-        // }).timeout(1000 * 60 * 6)
-        
+           
         
         
         it('hkube algorithm get',async ()=>{
