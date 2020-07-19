@@ -121,7 +121,7 @@ describe('cli test', () => {
             const alg = await getAlgorithm(algName)
             console.log(alg.body)   
             expect(alg.status).to.be.equal(404)                  
-        }).timeout(1000 * 60 * 6)
+        }).timeout(1000 * 60 * 10)
         
         it.skip('hkube algorithm apply alg version',async ()=>{
             const algName = pipelineRandomName(8).toLowerCase()
@@ -228,7 +228,7 @@ describe('cli test', () => {
 
             const get = "hkubectl pipeline get simple"
             const output = await exceSyncString(get);
-            console.log(str)
+            
             expect(output).to.contain("name:      simple")
         }).timeout(1000 * 60 * 6)
 
@@ -364,4 +364,60 @@ describe('cli test', () => {
         }).timeout(1000 * 60 * 6)
 
     });
+
+    describe('sync test', ()=>{
+        const delay = require('delay')
+        function execShellCommand(cmd) {
+            const exec = require('child_process').exec;
+            return new Promise((resolve, reject) => {
+             exec(cmd, (error, stdout, stderr) => {
+              if (error) {
+               console.warn(error);
+              }
+              resolve(stdout? stdout : stderr);
+             });
+            });
+           }
+        it('synce create watch python',async ()=>{
+            const filePath = path.join(process.cwd(), 'additionalFiles/main.py');
+            const algName = pipelineRandomName(8).toLowerCase()
+            const folderPath = path.join(process.cwd(),algName)
+            var fs = require('fs');
+          
+            if (!fs.existsSync(algName)){
+                fs.mkdirSync(algName);}
+
+            var data = fs.readFileSync(filePath, 'utf8');
+            fs.writeFileSync(`${folderPath}/main.py`, data, {encoding:'utf8',flag:'w'} )
+            
+            const command = ` hkubectl sync create`+
+                            ` --entryPoint main.py`+
+                            ` --algorithmName ${algName}`+
+                            ` --folder ${folderPath}`+
+                            ` --env python`
+            console.log(command)
+            await exceSyncString(command)
+            
+            const watch = `hkubectl sync watch`+
+                           ` -a ${algName}`+
+                           ` -f ${folderPath}`
+
+            execShellCommand(watch)
+
+            await delay(20*1000)
+            const result = await runAlgGetResult(algName,[4])
+            
+          //  await deleteAlgorithm(algName,true)    
+            expect(result.data[0].result.version.toString()).to.be.equal("1")  
+
+            const newmain = data.replace(`"version":"1"`,`"version":"2"`)
+
+            fs.writeFileSync(`${folderPath}/main.py`, newmain, {encoding:'utf8',flag:'w'} )
+            await delay(20*1000)
+            const result2 = await runAlgGetResult(algName,[4])
+            await deleteAlgorithm(algName,true)
+            expect(result2.data[0].result.version.toString()).to.be.equal("2")  
+
+        }).timeout(1000 * 60 * 10)
+    })
 });
