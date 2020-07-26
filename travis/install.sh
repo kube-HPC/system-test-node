@@ -12,4 +12,4 @@ kubectl cluster-info
 curl -LO https://get.helm.sh/helm-v3.3.0-rc.1-linux-amd64.tar.gz
 tar -zxvf helm-v3.3.0-rc.1-linux-amd64.tar.gz
 mv linux-amd64/helm $PWD/bin/helm
-helm init --client-only
+#helm init --client-only
