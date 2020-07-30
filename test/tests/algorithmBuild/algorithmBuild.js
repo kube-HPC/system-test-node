@@ -133,17 +133,18 @@ describe('Algorithm build test', () => {
             const pythonVersion = "python:3.7"                    
             
             const buildId = await buildAlgorithm(code1, algName,entry,pythonVersion)
-            await delay(2000)
+            await delay(30000)
             const res =await stopBuild(buildId)
-            await delay(2000)
+            await delay(10000)
             const status = await getBuildStates(buildId)
             expect(status).to.be.equal("stopped")
             const rerun = await rerunBuild(buildId)
-            await delay(15000)
+            await delay(50000)
             let rereunStatus = await getBuildStates(buildId)
-            expect(rereunStatus).to.be.equal("active")
             await deleteAlgorithm(algName,true)
-        }).timeout(1000 * 60 * 3)
+            expect(rereunStatus).to.be.equal("active")
+           
+        }).timeout(1000 * 60 * 5)
 })
 
 describe('Algorithm requirements repository (git 387)', () => {

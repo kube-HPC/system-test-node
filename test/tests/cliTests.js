@@ -1,7 +1,7 @@
 const chai = require('chai');
 const path = require('path');
 const chaiHttp = require('chai-http');
-
+const config = require(path.join(process.cwd(), 'config/config'));
 
 const expect = chai.expect;
 const assertArrays = require('chai-arrays');
@@ -18,12 +18,14 @@ const {
     deconstructTestData,
     runStoredAndWaitForResults} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 
-const { getJobIdStatus,
+const {getRawGraph, 
+        getJobIdStatus,
         getResult,
         getStatusall} = require(path.join(process.cwd(), 'utils/results'))
     
 
-const {runAlgGetResult,
+const {buildAlgorithmAndWait,
+        runAlgGetResult,
         getAlgorithm, 
         deleteAlgorithm,   
         getBuildList} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
@@ -427,11 +429,6 @@ describe('cli test', () => {
          
             var fs = require('fs');
           
-            if (!fs.existsSync(algName)){
-                fs.mkdirSync(algName);}
-
-          
-            
             const command = ` hkubectl sync create`+
                             ` --entryPoint main.py`+
                             ` --algorithmName ${algName}`+
@@ -448,8 +445,100 @@ describe('cli test', () => {
 
             await delay(20*1000)
             const result = await runAlgGetResult(algName,[4])
-            
-        
+            console.log(result)
+            deleteAlgorithm(algName)
         }).timeout(1000 * 60 * 10)
+    })
+
+
+
+    describe("code API ",()=>{
+
+        describe("python code API",()=>{
+
+            const algName = pipelineRandomName(8).toLowerCase();
+            let algExsis = false
+            const createAlg = async ()=>{
+                if(!algExsis){
+                    const code = path.join(process.cwd(), 'additionalFiles/pythonAlg/pythonApi.tar.gz');
+                    const entry = 'main'                     
+                    const pythonVersion = "python:3.7"                                    
+                    const buildStatusAlg = await buildAlgorithmAndWait(code, algName,entry,pythonVersion)
+                    expect(buildStatusAlg.status).to.be.equal("completed") 
+                    algExsis = true;
+                }
+               
+                
+
+            }
+            const getResultFromStorage = async (storagePath)=>{
+                const res = await chai.request(config.apiServerUrl)
+                        .get(`/storage/values/${storagePath}`)
+                return res
+            }
+
+            it("sart algorithm",async ()=>{
+                await createAlg();
+                const startAlg = [{
+                    action:"start_alg",
+                    name:"green-alg",
+                    input:["4"]
+                }]
+                const result = await runAlgGetResult(algName,startAlg)
+                console.log(result)
+                expect(result.data[0].result).to.be.equal(42)
+                const graph = await getRawGraph(result.jobId)
+                expect(graph.body.nodes.length).to.be.equal(2)
+               
+
+            }).timeout(1000 * 60 * 10)
+
+            it("sart stored pipeline",async ()=>{
+                    await createAlg();
+                    const startPipe = [{
+                        action:"start_stored_subpipeline",
+                        name:"simple",
+                        flowInput: {
+                            "files": {
+                                "link": "links-1"
+                            }
+                        }
+                    }]
+                    const result = await runAlgGetResult(algName,startPipe)
+                    
+                    const path = result.data[0].result.result.storageInfo.path
+                    const res = await getResultFromStorage(path)
+                   
+                    expect(res.body[0].result).to.be.equal(42)
+            }).timeout(1000 * 60 * 10)
+
+            it("sart raw pipelien",async ()=>{
+                await createAlg();
+                const startRaw = [{
+                    action:"start_raw_subpipeline",
+                    name:"raw-simple",
+                    nodes:[  {
+                        "nodeName": "one",
+                        "algorithmName": "green-alg",
+                        "input": []
+                    }
+                    // ,
+                    // {
+                    //     "nodeName": "two",
+                    //     "algorithmName": "green-alg",
+                    //     "input": ["@one"]
+                    // }
+                ],
+                    flowInput: {}
+                }]
+                const result = await runAlgGetResult(algName,startRaw)
+                const path = result.data[0].result.result.storageInfo.path
+                const res = await getResultFromStorage(path)
+               
+                expect(res.body[0].result).to.be.equal(42)
+            }).timeout(1000 * 60 * 10)
+        })
+
+
     })
 });

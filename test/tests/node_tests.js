@@ -30,14 +30,14 @@ const {
 
 
 const {
+  getRawGraph,
     getResult
   } = require(path.join(process.cwd(), 'utils/results'))
 
 // const KubernetesClient = require('@hkube/kubernetes-client').Client;
-const {    
-    runRaw,
-    exceCachPipeline    
-} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+const {pipelineRandomName,  
+      runRaw,
+      exceCachPipeline} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 
 chai.use(chaiHttp);
 
@@ -454,5 +454,30 @@ describe('Node Tests git 660', () => {
           expect(JSON.stringify(orgRes.data)==JSON.stringify(cachRes.data)).to.be.true 
         }).timeout(1000 * 60 * 2)
   })
-  
+
+  describe("Fail schdualing",()=>{
+    const algName= pipelineRandomName(8).toLowerCase()    
+    const alg15cpu = { "name": `${algName}`,
+                        "algorithmImage": "hkube/algorunner",
+                        "cpu": 15,
+                        "mem": "1Gi",
+                        "options": {
+                            "debug": false,
+                            "pending": false
+                        },
+                        "minHotWorkers": 0,
+                        "type": "Image"}
+                    
+   
+    it("node Fail schdualing due to lack of resource",async ()=>{    
+            await buildAlgoFromImage(alg15cpu);
+            const alg = {name: algName,
+                        input:[]}
+            const res = await runAlgorithm(alg);
+            await delay(30000);
+            const graph = await getRawGraph(res.body.jobId)
+            await deleteAlgorithm(algName)
+            expect(graph.body.nodes[0].status).to.be.equal('FailedScheduling')
+          }).timeout(1000 * 60 * 2)
+  })
 });
