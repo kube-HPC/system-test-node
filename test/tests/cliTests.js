@@ -230,8 +230,11 @@ describe('cli test', () => {
 
             const get = "hkubectl pipeline get simple"
             const output = await exceSyncString(get);
+        
+            const expected = ["name","simple"]
+            const result = output.split("\n")
             
-            expect(output).to.contain("name:      simple")
+            expect(expected.filter(a=>result[1].includes(a)).length).to.be.equal(2)
         }).timeout(1000 * 60 * 6)
 
         it('pipeline store from file',async ()=>{
@@ -341,9 +344,11 @@ describe('cli test', () => {
             
             const get = "hkubectl exec get simple"
             const output = await exceSyncString(get);
-
-            expect(output).contain("name:      simple")
-
+            const expected = ["name","simple"]
+            const result = output.split("\n")
+            
+            expect(expected.filter(a=>result[1].includes(a)).length).to.be.equal(2)
+            
         }).timeout(1000 * 60 * 6)
 
         it('exec results pipe ', async () => {
@@ -460,7 +465,7 @@ describe('cli test', () => {
             let algExsis = false
             const createAlg = async ()=>{
                 if(!algExsis){
-                    const code = path.join(process.cwd(), 'additionalFiles/pythonAlg/pythonApi.tar.gz');
+                    const code = path.join(process.cwd(), 'additionalFiles/pythonAlg/pythonApi.tar.gz');//pythonApi.tar.gz
                     const entry = 'main'                     
                     const pythonVersion = "python:3.7"                                    
                     const buildStatusAlg = await buildAlgorithmAndWait(code, algName,entry,pythonVersion)
