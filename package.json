@@ -10,7 +10,8 @@
     "nodetest": "mocha ./test/tests/node_tests.js",
     "algorithmtest": "mocha ./test/tests/algorithm_test.js",
     "algorithmBuild": "mocha ./test/tests/algorithmBuild/algorithmBuild.js",
-    "cliTests": "mocha ./test/tests/cliTests.js"
+    "cliTests": "mocha ./test/tests/cliTests.js",
+    "HighAvailability":"mocha ./test/tests/longTests/High_Availability.js"
   },
   "author": "",
   "license": "ISC",

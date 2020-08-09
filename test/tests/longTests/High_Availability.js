@@ -6,7 +6,10 @@ const delay = require('delay')
 
 
 const {
-    testData1
+    testData1,
+    testData2,
+    testData3,
+    testData4
 } = require(path.join(process.cwd(), 'config/index')).tid_161
 
 const {
@@ -45,37 +48,126 @@ const {
 } = require(path.join(process.cwd(), 'utils/elasticsearch'))
 
 describe('TID-161- High Availability for HKube infrastructure services', () => {
-
+    describe('pipeline driver fail over', () => {
+ 
     
-    it('Fail pipeline driver  ', async () => {
-       
+        it('Fail pipeline driver  ', async () => {
+           
+    
+            //set test data to testData1
+            const d = deconstructTestData(testData1)
+            await deletePipeline(d)
+            //store pipeline evalwait
+            await storePipeline(d)
+            //run the pipeline evalwait
+            const res = await runStored(d)
+            const jobId = res.body.jobId
+            const driver = await getDriverIdByJobId(jobId)
+    
+            const podName = driver[0].podName
+            write_log('podName-' + podName)
+            await delay(2000)
+    
+            const pod = await deletePod(podName)
+            await delay(2000)
+            //get result
+            const result = await getResult(jobId, 200)
+            write_log(result.status)
+            write_log(result.error, 'error')
+            expect(result.status).to.be.equal('completed');
+        }).timeout(1000 * 60 * 60);
+    
+        it('kill pipeline driver  singe batch', async () => {
+            const d = deconstructTestData(testData3)
+            const pipe = {   
+                name: d.name,
+                flowInput: {
+                    inp: 25000
+                }
+            }
+     
+            await delay(2000)
+            await deletePipeline(d.name)
+            await storePipeline(d)
+            const res = await runStored(pipe)        
+            const jobId = res.body.jobId
+            await delay(15000)
+            const driver = await getDriverIdByJobId(jobId)
+    
+            const podName = driver[0].podName
+            write_log('podName-' + podName)
+     
+            const pod = await deletePod(podName)
+            write_log('podName-' + podName)
+             await delay(25000)
+             
+             const newdriver = await getDriverIdByJobId(jobId)
+             console.log("mew driver ="+ newdriver)
+         
+            await delay(3000)
+        
+            const result = await getResult(jobId,200)
+            
+            
+        }).timeout(1000 * 60 * 5);
+    
+        it('kill pipeline driver  multiple batch', async () => {
+            const e = deconstructTestData(testData2)
+          
+            await storePipeline(e)
+           
+            const res = await runStored(e)        
+            const jobId = res.body.jobId
+            await delay(5000)
+           
+          
+           const driver = await getDriverIdByJobId(jobId)
+    
+           const podName = driver[0].podName
+           write_log('podName-' + podName)
+           await delay(2000)
+    
+           const pod = await deletePod(podName)
+           write_log('podName-' + podName)
+            await delay(10000)
+            const newdriver = await getDriverIdByJobId(jobId)
+            console.log("mew driver ="+ newdriver)
+            const result = await getResult(jobId,200)                        
+        }).timeout(1000 * 60 * 10);
+        
+      
+    
+        it('kill pipeline driver   batch on batch', async () => {
+            const e = deconstructTestData(testData4)
+            await storePipeline(e)
+           
+            const res = await runStored(e)        
+            const jobId = res.body.jobId
+            await delay(70000)
+           
+          
+           const driver = await getDriverIdByJobId(jobId)
+    
+           const podName = driver[0].podName
+           write_log('podName-' + podName)
+           await delay(2000)
+    
+           const pod = await deletePod(podName)
+           write_log('podName-' + podName)
+            await delay(10000)
+            const newdriver = await getDriverIdByJobId(jobId)
+            console.log("mew driver ="+ newdriver)
+            const result = await getResult(jobId,200)                        
+        }).timeout(1000 * 60 * 10);
+    
+    
+    })
+    
+  
 
-        //set test data to testData1
-        const d = deconstructTestData(testData1)
-        await deletePipeline(d)
-        //store pipeline evalwait
-        await storePipeline(d)
-        //run the pipeline evalwait
-        const res = await runStored(d)
-        const jobId = res.body.jobId
-        const driver = await getDriverIdByJobId(jobId)
 
-        const podName = driver[0].podName
-        write_log('podName-' + podName)
-        await delay(2000)
-
-        const pod = await deletePod(podName)
-        await delay(2000)
-        //get result
-        const result = await getResult(jobId, 200)
-        write_log(result.status)
-        write_log(result.error, 'error')
-        expect(result.status).to.be.equal('completed');
-    }).timeout(1000 * 60 * 60);
-
-
-    it('Fail algorithm pod  ', async () => {
-        const numberToDelete =15
+    it.skip('Fail algorithm pod  ', async () => {
+        const numberToDelete =50
         const pipe = {   
             name: "eval-dynamic-160",
             flowInput: {
@@ -93,12 +185,12 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
         
         const jobId = res.body.jobId
       
-        await delay(30000)
+        await delay(20000)
         const nodes = await getPiplineNodes(jobId)
         const partNodes =nodes.body.slice(0,numberToDelete)
         
         const allAlg = partNodes.map(async (element) => {deletePod(element,'default')})
-        await Promise.all(allAlg); 
+         await Promise.all(allAlg); 
     
         await delay(15000) 
         const log = await getLogByPodName(partNodes[0])
@@ -185,14 +277,14 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
 
     }).timeout(1000 * 60 * 60);
 
-    it('Fail prometheus  ', async () => {
+    it.skip('Fail prometheus  ', async () => {
 
         await FailSingelPod("prometheus-node", "monitoring")
 
     }).timeout(1000 * 60 * 60);
 
 
-    it('Fail monitoring-grafana  ', async () => {
+    it.skip('Fail monitoring-grafana  ', async () => {
 
         await FailSingelPod("monitoring-grafana", "monitoring")
 

@@ -53,7 +53,11 @@ const index = {
         testData1: require('../pipelines/waitcom')
     },
     tid_161: {
-        testData1: require('../pipelines/evalwait161')
+        testData1: require('../pipelines/evalwait161'),
+        testData2: require('../pipelines/dropPipeBatch'),
+        testData3: require('../pipelines/dropPipeSingel'),
+        testData4: require('../pipelines/dropPipeBatchOnBatch')
+
     },
     gpu_tests: {
         testData1: require('../pipelines/gpuPipeline'),

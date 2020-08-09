@@ -9,7 +9,7 @@ const retRange = (input) => {
 
 
 const descriptor = {
-    name: "algorithm-version-test-v2",
+    name: "DropPipeSingel",
     nodes: [
         {
             nodeName: "evalsleep",
