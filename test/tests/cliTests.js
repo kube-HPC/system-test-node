@@ -27,7 +27,8 @@ const {getRawGraph,
 const {buildAlgorithmAndWait,
         runAlgGetResult,
         getAlgorithm, 
-        deleteAlgorithm,   
+        deleteAlgorithm,
+        buildGitAlgorithm,    
         getBuildList} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 
 chai.use(chaiHttp);
@@ -431,27 +432,31 @@ describe('cli test', () => {
         it('synce python alg with requirements',async ()=>{
             const folderPath = path.join(process.cwd(), 'additionalFiles/pythonAlg');
             const algName = pipelineRandomName(8).toLowerCase()
-         
+            console.log("alg-name-"+algName)
             var fs = require('fs');
           
             const command = ` hkubectl sync create`+
-                            ` --entryPoint main.py`+
+                            ` --entryPoint ${algName}.py`+
                             ` --algorithmName ${algName}`+
                             ` --folder ${folderPath}`+
                             ` --env python`
+                        
             console.log(command)
             await exceSyncString(command)
-            
             const watch = `hkubectl sync watch`+
-                           ` -a ${algName}`+
-                           ` -f ${folderPath}`
-
+            ` -a ${algName}`+
+            ` -f ${folderPath}`
+            console.log("watch-"+watch)
             execShellCommand(watch)
+            var filePath = `${folderPath}/main.py`
+            var fs = require('fs');
+            var data = fs.readFileSync(filePath, 'utf8');
+            fs.writeFileSync(`${folderPath}/${algName}.py`, data, {encoding:'utf8',flag:'w'} )
 
-            await delay(20*1000)
-            const result = await runAlgGetResult(algName,[4])
-            console.log(result)
-            deleteAlgorithm(algName)
+           await delay(20*1000)
+           const result = await runAlgGetResult(algName,[4])
+           console.log(result)
+           deleteAlgorithm(algName)
         }).timeout(1000 * 60 * 10)
     })
 
@@ -511,10 +516,10 @@ describe('cli test', () => {
                     }]
                     const result = await runAlgGetResult(algName,startPipe)
                     
-                    const path = result.data[0].result.result.storageInfo.path
-                    const res = await getResultFromStorage(path)
+                   // const path = result.data[0].result.result.storageInfo.path
+                   // const res = await getResultFromStorage(path)
                    
-                    expect(res.body[0].result).to.be.equal(42)
+                    expect(result.data[0].result[0].result).to.be.equal(42)
             }).timeout(1000 * 60 * 10)
 
             it("sart raw pipelien",async ()=>{
@@ -537,13 +542,88 @@ describe('cli test', () => {
                     flowInput: {}
                 }]
                 const result = await runAlgGetResult(algName,startRaw)
-                const path = result.data[0].result.result.storageInfo.path
-                const res = await getResultFromStorage(path)
+                //const path = result.data[0].result.result.storageInfo.path
+               // const res = await getResultFromStorage(path)
                
-                expect(res.body[0].result).to.be.equal(42)
+                expect(result.data[0].result[0].result).to.be.equal(42)
             }).timeout(1000 * 60 * 10)
         })
 
 
     })
+
+
+    describe.skip("Java code API",()=>{
+
+        const algName ="cupvdpqw" ;//pipelineRandomName(8).toLowerCase();
+        let algExsis = true //false
+        const createAlg = async ()=>{
+            if(!algExsis){
+                const entry = 'javaApi'                
+                const language = 'java'
+                const gitUrl = "https://github.com/tamir321/hkubeJava.git"
+                const branch = "master"
+                const gitKind = "github"
+                const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,language )
+                expect(buildStatusAlg.status).to.be.equal("completed") 
+                algExsis = true;
+            }
+           
+            
+
+        }
+        const getResultFromStorage = async (storagePath)=>{
+            const res = await chai.request(config.apiServerUrl)
+                    .get(`/storage/values/${storagePath}`)
+            return res
+        }
+
+        it("Java sart algorithm",async ()=>{
+            await createAlg();
+            const startAlg = [{
+                action:"startAlg",
+                algName:"green-alg",
+                alginput:["4"]
+            }]
+            const result = await runAlgGetResult(algName,startAlg)
+            console.log(result)
+            expect(result.data[0].result.response).to.be.equal(42)
+            const graph = await getRawGraph(result.jobId)
+            expect(graph.body.nodes.length).to.be.equal(2)
+           
+
+        }).timeout(1000 * 60 * 10)
+
+        it("Java sart stored pipeline",async ()=>{
+                await createAlg();
+                const startPipe = [{
+                    action:"startStored",
+                    PipeName:"simple",
+                    PipeInput: ["4"]
+                }]
+                const result = await runAlgGetResult(algName,startPipe)
+                
+                const path = result.data[0].result.result.storageInfo.path
+                const res = await getResultFromStorage(path)
+               
+                expect(res.body[0].result).to.be.equal(42)
+        }).timeout(1000 * 60 * 10)
+
+        it("Java sart raw pipelien",async ()=>{
+            await createAlg();
+            const startRaw = [{
+                action:"startRaw",
+                PipeName:"raw-simple"
+                }
+            ]
+            const result = await runAlgGetResult(algName,startRaw)
+            const path = result.data[0].result.result.storageInfo.path
+            const res = await getResultFromStorage(path)
+           
+            expect(res.body[0].result).to.be.equal(42)
+        }).timeout(1000 * 60 * 10)
+    })
+
+
+
 });
