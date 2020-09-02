@@ -62,8 +62,9 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
             //run the pipeline evalwait
             const res = await runStored(d)
             const jobId = res.body.jobId
+            console.log("jobId = "+ jobId);
             const driver = await getDriverIdByJobId(jobId)
-    
+            console.log("driver = "+ driver);
             const podName = driver[0].podName
             write_log('podName-' + podName)
             await delay(2000)
@@ -118,7 +119,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
            
             const res = await runStored(e)        
             const jobId = res.body.jobId
-            await delay(5000)
+            await delay(3000)
            
           
            const driver = await getDriverIdByJobId(jobId)
@@ -143,7 +144,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
            
             const res = await runStored(e)        
             const jobId = res.body.jobId
-            await delay(70000)
+            await delay(7000)
            
           
            const driver = await getDriverIdByJobId(jobId)
@@ -191,6 +192,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
         
         const allAlg = partNodes.map(async (element) => {deletePod(element,'default')})
          await Promise.all(allAlg); 
+        
     
         await delay(15000) 
         const log = await getLogByPodName(partNodes[0])

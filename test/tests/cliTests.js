@@ -36,6 +36,7 @@ chai.use(assertArrays);
 const fs = require('fs');
 
 const yaml = require('js-yaml');
+
 const exceSyncString = async (command) =>{
     console.log("start- " + command)
     output = execSync(command);
@@ -280,11 +281,14 @@ describe('cli test', () => {
 
         it('exec raw pipe ', async () => {
             const runSimple = "hkubectl exec raw -f ./pipelines/simpelraw.json"
-            const jsonResult = await execSyncReturenJSON(runSimple)
-
+            //const jsonResult = await execSyncReturenJSON(runSimple)
+            const output = await execSync(runSimple +" --json");
+            
+            const jsonResult = output.toString('utf8')
             console.log(jsonResult)
-            console.log("jobId ="+ jsonResult.result.jobId)
-            const result = await getResult(jsonResult.result.jobId,200)
+            const js = JSON.parse(jsonResult)
+            console.log("jobId ="+ js.jobId)
+            const result = await getResult(js.jobId,200)
             console.log(result)
             expect(result.data[0].result).to.be.equal(42)
         }).timeout(1000 * 60 * 6)
@@ -343,7 +347,7 @@ describe('cli test', () => {
 
         it('exec get pipe ', async () => {
             
-            const get = "hkubectl exec get simple"
+            const get = "hkubectl pipeline get simple"
             const output = await exceSyncString(get);
             const expected = ["name","simple"]
             const result = output.split("\n")
