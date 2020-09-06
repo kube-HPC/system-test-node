@@ -557,10 +557,10 @@ describe('cli test', () => {
     })
 
 
-    describe.skip("Java code API",()=>{
+    describe("Java code API",()=>{
 
-        const algName ="cupvdpqw" ;//pipelineRandomName(8).toLowerCase();
-        let algExsis = true //false
+        const algName = pipelineRandomName(8).toLowerCase();
+        let algExsis = false
         const createAlg = async ()=>{
             if(!algExsis){
                 const entry = 'javaApi'                
@@ -576,11 +576,11 @@ describe('cli test', () => {
             
 
         }
-        const getResultFromStorage = async (storagePath)=>{
-            const res = await chai.request(config.apiServerUrl)
-                    .get(`/storage/values/${storagePath}`)
-            return res
-        }
+        // const getResultFromStorage = async (storagePath)=>{
+        //     const res = await chai.request(config.apiServerUrl)
+        //             .get(`/storage/values/${storagePath}`)
+        //     return res
+        // }
 
         it("Java sart algorithm",async ()=>{
             await createAlg();
@@ -606,11 +606,10 @@ describe('cli test', () => {
                     PipeInput: ["4"]
                 }]
                 const result = await runAlgGetResult(algName,startPipe)
-                
-                const path = result.data[0].result.result.storageInfo.path
-                const res = await getResultFromStorage(path)
+                console.log(result)
                
-                expect(res.body[0].result).to.be.equal(42)
+               
+                expect(result.data[0].result.response[0].result).to.be.equal(42)
         }).timeout(1000 * 60 * 10)
 
         it("Java sart raw pipelien",async ()=>{
@@ -621,10 +620,16 @@ describe('cli test', () => {
                 }
             ]
             const result = await runAlgGetResult(algName,startRaw)
-            const path = result.data[0].result.result.storageInfo.path
-            const res = await getResultFromStorage(path)
+
+            console.log(result)
+               
+               
+            expect(result.data[0].result.response[0].result).to.be.equal(42)
+
+            //const path = result.data[0].result.result.storageInfo.path
+           // const res = await getResultFromStorage(path)
            
-            expect(res.body[0].result).to.be.equal(42)
+           // expect(res.body[0].result).to.be.equal(42)
         }).timeout(1000 * 60 * 10)
     })
 
