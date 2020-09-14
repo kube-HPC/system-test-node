@@ -79,7 +79,7 @@ describe('Algorithm build test', () => {
             expect(buildStatusAlg.status).to.be.equal("completed") 
             const result = await runAlgGetResult(algName,[4])
             await deleteAlgorithm(algName,true)    
-            expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,5,9,final,0")    
+            expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,5,10,final,0")    
         }).timeout(1000 * 60 * 20)
 
 
