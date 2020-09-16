@@ -519,10 +519,7 @@ describe('cli test', () => {
                         }
                     }]
                     const result = await runAlgGetResult(algName,startPipe)
-                    
-                   // const path = result.data[0].result.result.storageInfo.path
-                   // const res = await getResultFromStorage(path)
-                   
+                 
                     expect(result.data[0].result.result).to.be.equal(42)
             }).timeout(1000 * 60 * 10)
 
@@ -536,19 +533,12 @@ describe('cli test', () => {
                         "algorithmName": "green-alg",
                         "input": []
                     }
-                    // ,
-                    // {
-                    //     "nodeName": "two",
-                    //     "algorithmName": "green-alg",
-                    //     "input": ["@one"]
-                    // }
+                    
                 ],
                     flowInput: {}
                 }]
                 const result = await runAlgGetResult(algName,startRaw)
-                //const path = result.data[0].result.result.storageInfo.path
-               // const res = await getResultFromStorage(path)
-               
+              
                 expect(result.data[0].result.result).to.be.equal(42)
             }).timeout(1000 * 60 * 10)
         })
