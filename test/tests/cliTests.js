@@ -538,8 +538,8 @@ describe('cli test', () => {
                     flowInput: {}
                 }]
                 const result = await runAlgGetResult(algName,startRaw)
-              
-                expect(result.data[0].result.result).to.be.equal(42)
+                console.log(result)
+                expect(result.data[0].result[0].result).to.be.equal(42)
             }).timeout(1000 * 60 * 10)
         })
 
