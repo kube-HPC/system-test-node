@@ -322,6 +322,9 @@ describe('all swagger calls test ', () => {
         }).timeout(1000 * 60 * 5)
         it(`test the GET /exec/tree/{jobId} rest call`, async () => {
 
+            await deletePipeline('pipe1')
+            await deletePipeline('pipe2')
+            
             const a= await storePipeline('origPipeline')
             const ab= await storePipeline('sonPipeline')
 
