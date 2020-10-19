@@ -12,8 +12,8 @@ global:
       pvc: 
          name: 'hkube-storage'
          capacity: '50Gi'
-         nfs_server: '172.22.0.115'
-         nfs_root: '/nfs/storageclass'
+         #nfs_server: '172.22.0.115'
+         #nfs_root: '/nfs/storageclass'
       base_directory: '/hkubedata'
   ingress:
     use_regex: true
