@@ -150,7 +150,72 @@ describe('Node Tests git 660', () => {
 
 
     })
+    describe('pipe line cach input data' , () => {
 
+      const pipe = {
+                  name: "nodeAdd19",
+                  nodes: [
+                      {
+                          nodeName: "one",
+                          algorithmName: "eval-alg",
+                          input: [
+                              "@flowInput.range"
+                          ],
+                          extraData: {
+                              "code": [
+                                  "(input) => {",
+                                  "const range=  input[0]+7;",
+                                  "return range }"
+                              ]
+                          }
+                      },
+                      {
+                          nodeName: "two",
+                          algorithmName: "eval-alg",
+                          input: [
+                              "@one"
+                          ],
+                          extraData: {
+                              "code": [
+                                  "(input) => {",
+                                  "const range=  input[0]+12;",
+                                  "return range }"
+                              ]
+                          }
+                      }
+                  ],
+                  experimentName: "main",
+                  options: {
+                      "ttl": 3600,
+                      "batchTolerance": 80,
+                      "progressVerbosityLevel": "info"
+                  },
+                  flowInput: {
+                      "range": 10
+                  },
+                  priority: 3
+              }
+
+
+              it(' run node get data from flowInput', async () => {
+                const expectedResult =29
+                const res = await runRaw(pipe)
+                const jobId = res.body.jobId
+                const result = await  getResult(jobId,200) 
+               
+                const job2 = await exceCachPipeline(jobId,"one")
+                const res2 = await await  getResult(job2.body.jobId,200) 
+                const job3 = await exceCachPipeline(jobId,"two")
+                const res3 = await await  getResult(job3.body.jobId,200) 
+
+                expect(result.data[0].result).to.be.equal(expectedResult)
+                expect(res3.data[0].result).to.be.equal(expectedResult)
+                expect(res2.data[0].result).to.be.equal(expectedResult)
+              }).timeout(1000 * 60 * 2)
+
+
+
+    })
 
     describe('pipe line batch input' , () => {
         const pipe ={
@@ -375,6 +440,25 @@ describe('Node Tests git 660', () => {
           const orgRes = await  getResult(jobId,200) 
 
           const res2 = await exceCachPipeline(jobId,"three")
+          const jobId2 = res2.body.jobId
+          const cachRes = await getResult(jobId2, 200)
+
+          expect(JSON.stringify(orgRes.data)==JSON.stringify(cachRes.data)).to.be.true 
+        }).timeout(1000 * 60 * 2)
+
+
+        it('caching (Run Node) batch index flowInput',async ()=>{
+          pipe.nodes[0].input = ["#@flowInput.one","#@flowInput.two"]
+          pipe.nodes[0].batchOperation = "cartesian"
+          pipe.nodes[2].input = ["#@one","#@two"]
+          pipe.nodes[2].batchOperation = "indexed"
+          pipe.flowInput.one = [0,1,2,3,4,5,6,7,8,9]
+          pipe.flowInput.two = [10,11,12,13,14,15,16,17,18,19]
+          const res = await runRaw(pipe)
+          const jobId = res.body.jobId
+          const orgRes = await  getResult(jobId,200) 
+
+          const res2 = await exceCachPipeline(jobId,"one")
           const jobId2 = res2.body.jobId
           const cachRes = await getResult(jobId2, 200)
 

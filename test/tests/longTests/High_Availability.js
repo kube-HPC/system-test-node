@@ -155,9 +155,9 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
     
            const pod = await deletePod(podName)
            write_log('podName-' + podName)
-            await delay(10000)
+            await delay(15000)
             const newdriver = await getDriverIdByJobId(jobId)
-            console.log("mew driver ="+ newdriver)
+            console.log("new driver ="+ newdriver)
             const result = await getResult(jobId,200)                        
         }).timeout(1000 * 60 * 10);
     

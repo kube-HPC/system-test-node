@@ -28,12 +28,12 @@ chai.use(chaiHttp);
 
 
 const gpuAlg = {
-    "name": "gpu-alg1",
+    "name": "gpu-alg-1",
     "cpu": 1,
     "gpu": 1,
     "mem": "5Gi",
     "minHotWorkers": 0,
-    "algorithmImage": "yehiyam/gpu-alg",
+    "algorithmImage": "docker.io/hkubedev/python-gpu:v1.0.0",
     "type": "Image",
     "options": {
         "debug": false,
@@ -42,9 +42,9 @@ const gpuAlg = {
 }
 describe('test gpu algs', () => {
 
-    it('soter gpu algorithm',async ()=>{
+    it.skip('soter gpu algorithm',async ()=>{
         await buildAlgoFromImage(gpuAlg);
-        gpuAlg.name = "gpu-alg2"
+        gpuAlg.name = "gpu-alg-2"
         await buildAlgoFromImage(gpuAlg);
     })
     
@@ -69,7 +69,7 @@ describe('test gpu algs', () => {
 
 
 
-        await deletePipeline(d1.name)
-        await deletePipeline(d2.name)
+       // await deletePipeline(d1.name)
+       // await deletePipeline(d2.name)
     }).timeout(5000000);
 })

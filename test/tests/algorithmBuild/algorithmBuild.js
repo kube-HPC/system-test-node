@@ -375,7 +375,7 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
 
          const updateVersion = await  updateAlgorithmVersion(algName,buildStatusAlg2.algorithmImage,true)
          const resultAfterCommit = await runAlgGetResult(algName,[4])
-         await deleteAlgorithm(algName,true)   
+        // await deleteAlgorithm(algName,true)   
         expect(resultAfterCommit.data[0].result.commit).to.be.equal("A4")
 
 
@@ -450,7 +450,7 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
 
         const updateVersion = await  updateAlgorithmVersion(algName,buildStatusAlg2.algorithmImage,true)
         const resultAfterCommit = await runAlgGetResult(algName,[4])
-        await deleteAlgorithm(algName,true)   
+      //  await deleteAlgorithm(algName,true)   
         expect(resultAfterCommit.data[0].result.commit).to.be.equal("A7")
     }).timeout(1000 * 60 * 20)
 

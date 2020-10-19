@@ -22,24 +22,24 @@ const descriptor = {
 const input = {
     flowInput: {
         data: [{
-                train_size: 300,
+                train_size: 200,
                 num_epochs: 2,
-                output: 's3://keras/xxx'
+                output: '/var/metrics'
             },
             {
-                train_size: 300,
+                train_size: 400,
                 num_epochs: 2,
-                output: 's3://keras/xxx'
+                output: '/var/metrics'
             },
             {
-                train_size: 300,
+                train_size: 700,
                 num_epochs: 2,
-                output: 's3://keras/xxx'
+                output: '/var/metrics'
             },
             {
-                train_size: 300,
+                train_size: 800,
                 num_epochs: 2,
-                output: 's3://keras/xxx'
+                output: '/var/metrics'
             }
         ]
     }

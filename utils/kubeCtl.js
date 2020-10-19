@@ -38,16 +38,22 @@ kubeconfig.setCurrentContext(process.env.K8S_CONTEXT)
         write_log
     } = require(path.join(process.cwd(), 'utils/misc_utils'))
 
+
 const deletePod = async (podName, namespace='default') => {
     let deletedPod = ''
     if (typeof podName !== "undefined") {
          write_log("start delete - " +podName)
         deletedPod = await client.api.v1.namespaces(namespace).pods(podName).delete()
+        
     } else {
          write_log("Not delete")
     }
     return deletedPod
 }
+
+
+
+
 
 const filterPodsByName = async (name,namespace='default') => {
     const pod = await client.api.v1.namespaces(namespace).pods().get()
@@ -59,6 +65,8 @@ const filterPodsByName = async (name,namespace='default') => {
 
 const getPodNode = async (podName,namespace='default') => {
     const pod = await client.api.v1.namespaces(namespace).pods(podName).get()
+   
+    
     const node = pod.body.spec.nodeName
     return node
 }

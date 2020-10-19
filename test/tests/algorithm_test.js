@@ -30,6 +30,7 @@
 
 // // const KubernetesClient = require('@hkube/kubernetes-client').Client;
  const {
+    runRaw,
      deletePipeline,
      getPipeline,
      getPipelineStatus,
@@ -253,6 +254,76 @@ describe('Alrogithm Tests', () => {
 
     } )
     
+
+    describe('Test algorithm reservedMemory',()=>{
+
+        it('validate that  reservedMemory Variables saved as DISCOVERY_MAX_CACHE_SIZE',async ()=>{
+            let alg ={
+                name: "env",
+                cpu: 1,
+                gpu: 0,
+                mem: "256Mi",
+                reservedMemory: "3Gi",
+                minHotWorkers: 0,
+                env: "python",
+                entryPoint: "main",
+                type: "Image",
+                options: {
+                    "debug": false,
+                    "pending": false
+                },
+                "version": "1.0.0",
+                algorithmImage: "docker.io/hkubedev/env:v1.0.0"
+            }
+
+            const pipe = {
+                name: "env",
+               
+                nodes: [
+                    {
+                        algorithmName: "env",
+                        input: [
+                            "DISCOVERY_MAX_CACHE_SIZE"
+                        ],
+                        nodeName: "env"
+                    }
+                ],                                
+                options: {
+                    "batchTolerance": 100,
+                    "concurrentPipelines": {
+                        "amount": 10,
+                        "rejectOnFailure": true
+                    },
+                    "progressVerbosityLevel": "info",
+                    "ttl": 3600
+                },
+                priority: 3,
+                experimentName: "main",
+                
+            }
+            await  deleteAlgorithm(alg.name,true)
+            alg.reservedMemory= "3Gi"
+            await buildAlgoFromImage(alg);
+           // const jnk = await buildAlgoFromImage(alg);
+            const res =  await runRaw(pipe)
+            const jobId = res.body.jobId
+            const result = await  getResult(jobId,200)
+            console.log(result)
+            expect(result.data[0].result).to.be.equal("3072")
+            alg.name = "env1"
+            alg.reservedMemory= "512Mi"
+            pipe.nodes[0].algorithmName="env1"
+            await  deleteAlgorithm(alg.name,true)
+            await buildAlgoFromImage(alg);
+            const res2 =  await runRaw(pipe)
+            const jobId2 = res2.body.jobId
+            const result2 = await  getResult(jobId2,200)
+            expect(result2.data[0].result).to.be.equal("512")
+            console.log(result2)
+        }).timeout(1000 * 5*60)
+    
+    })    
+
     describe('Test algorithm Environment Variables',()=>{
     it('algorithm Environment Variables',async ()=>{
         let alg ={
@@ -285,6 +356,9 @@ describe('Alrogithm Tests', () => {
         const result = await  getResult(jobId,200)
         expect(result.data[0].result.EnvironmentVariables).to.be.equal(alg.algorithmEnv.FOO)
     }).timeout(1000 * 5*60)
+
+
+
 
 
     it('algorithm hot workers',async ()=>{

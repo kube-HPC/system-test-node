@@ -28,7 +28,7 @@ build_secret:
 etcd:
   persistentVolume:
     enabled: true
-    storageClass: nfs-client
+    storageClass: etcd-sc-aws
 task_executor:
   env:
     pipeline_drivers_amount: 30
