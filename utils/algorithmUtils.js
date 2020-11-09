@@ -199,17 +199,23 @@ const deleteAlgorithm = async (name,force = true) => {
     return res
 }
 
-const deleteAlgorithmVersion = async (name,image) => {
+// const deleteAlgorithmVersion = async (name,image) => {
+//     const res = await chai.request(config.apiServerUrl)
+//         .delete(`/versions/algorithms/${name}?image=${image}`)
+//     logResult(res, "algorithmUtils deleteAlgorithm")
+//     return res
+// }
+
+const deleteAlgorithmVersion = async (name,version) => {
     const res = await chai.request(config.apiServerUrl)
-        .delete(`/versions/algorithms/${name}?image=${image}`)
+        .delete(`/versions/algorithms/${name}/${version}`)
     logResult(res, "algorithmUtils deleteAlgorithm")
     return res
 }
-
-const updateAlgorithmVersion = async (Algname , imageName, Force = true)=>{
+const updateAlgorithmVersion = async (Algname , algVersion, Force = true)=>{
     let value = {
         name: Algname,
-        image: imageName,
+        version: algVersion,
         force: Force
     }
     const res = await chai.request(config.apiServerUrl)

@@ -641,13 +641,13 @@ describe('all swagger calls test ', () => {
 
     it('Delete /versions/algorithms/{name}', async () => {
         await  deleteAlgorithm(algorithmName,true)
-         await buildAlgoFromImage(algorithmV1);         
-         await buildAlgoFromImage(algorithmV2);
+        let v1= await buildAlgoFromImage(algorithmV1);         
+        let v2= await buildAlgoFromImage(algorithmV2);
         //validate there are two images
         
         let algVersion = await getAlgorithmVersion(algorithmName);
         expect(algVersion.body.length).to.be.equal(2)
-        const del = await deleteAlgorithmVersion(algorithmName,algorithmImageV2)
+        const del = await deleteAlgorithmVersion(algorithmName,v2.body.algorithm.version)
         await delay(2000)
         algVersion = await getAlgorithmVersion(algorithmName);
         expect(algVersion.body.length).to.be.equal(1)
@@ -659,11 +659,11 @@ describe('all swagger calls test ', () => {
     it('Post Apply algorithm version', async () => {
         await  deleteAlgorithm(algorithmName,true)
          await buildAlgoFromImage(algorithmV1);         
-         await buildAlgoFromImage(algorithmV2);
+         let v2= await buildAlgoFromImage(algorithmV2);
          let alg= await getAlgorithm(algorithmName)
          expect(alg.body.algorithmImage).to.be.equal("tamir321/algoversion:v1")
         
-        await updateAlgorithmVersion(algorithmName,algorithmImageV2,true)
+        let jnk = await updateAlgorithmVersion(algorithmName,v2.body.algorithm.version,true)
         alg= await getAlgorithm(algorithmName)
         
         expect(alg.body.algorithmImage).to.be.equal("tamir321/algoversion:v2")

@@ -325,9 +325,8 @@ describe('Alrogithm Tests', () => {
     })    
 
     describe('Test algorithm Environment Variables',()=>{
-    it('algorithm Environment Variables',async ()=>{
         let alg ={
-            name: "convimagetob",
+            name: "ev",
             cpu: 1,
             gpu: 0,
             mem: "256Mi",
@@ -335,29 +334,107 @@ describe('Alrogithm Tests', () => {
         
             type: "Image",
             env: "python",
-            entryPoint: "main-image-to-Bynary.py",
+            entryPoint: "main",
             options: {
                 binary: true,               
                 debug: false,
                 pending: false
                 }       ,
-            algorithmImage: "docker.io/hkubedev/jnk:v4aad2880ae8f10211ac10a314ecfe85a31281081",
+            algorithmImage:  "docker.io/hkubedev/tamir-test:v1.0.0",
             algorithmEnv: {
-                FOO: "I got foo"
+                FOO: "I got foo",
+                SECRET:{"secretKeyRef": {
+                    "name": "docker-credentials-secret",
+                    "key": "docker_push_password"
+                }},
+                CM:{"configMapKeyRef": {
+                    "name": "api-server-configmap",
+                    "key": "DEFAULT_STORAGE"
+                }},
+                
+                REASOURCE:{
+                    "resourceFieldRef": {
+                        "containerName": "algorunner",
+                        "resource": "requests.cpu"
+                    }
+                }
+                ,
+                FR : {
+                    "fieldRef":{
+                        "fieldPath": "spec.nodeName"}
+              
+                }
+    
             }
 
         }
+        let algCreated= false
+        const createAlg = async ()=>{
+            if(!algCreated){
+                await  deleteAlgorithm(alg.name,true)
+                await buildAlgoFromImage(alg);
+                algCreated =true
+
+            }
+           
+        }
+
+        it('algorithm Environment Variables ',async ()=>{
+            await createAlg()
+            const algRun = {name: alg.name,
+                input:[{"action":"env","EnvironmentVariable":"FOO"}]}
+         
+            const res = await runAlgorithm(algRun)
+            const jobId = res.body.jobId
+            const result = await  getResult(jobId,200)
+            expect(result.data[0].result.EnvironmentVariables).to.be.equal(alg.algorithmEnv.FOO)
+        }).timeout(1000 * 5*60)
+
+        it('algorithm Environment Variables secretKeyRef',async ()=>{
+            await createAlg()
+            const algRun = {name: alg.name,
+                input:[{"action":"env","EnvironmentVariable":"SECRET"}]}
+        
+            const res = await runAlgorithm(algRun)
+            const jobId = res.body.jobId
+            const result = await  getResult(jobId,200)
+            expect(result.data[0].result.EnvironmentVariables).to.contain("Mmhy6")
+        }).timeout(1000 * 5*60)
+
+        it('algorithm Environment Variables configMapKeyRef',async ()=>{
+            await createAlg()
+            const algRun = {name: alg.name,
+                input:[{"action":"env","EnvironmentVariable":"CM"}]}
+           
+            const res = await runAlgorithm(algRun)
+            const jobId = res.body.jobId
+            const result = await  getResult(jobId,200)
+            expect(result.data[0].result.EnvironmentVariables).to.be.equal("fs")
+        }).timeout(1000 * 5*60)
+
+    it('algorithm Environment Variables resourceFieldRefCE',async ()=>{
+        await createAlg()
         const algRun = {name: alg.name,
-            input:[]}
-        await  deleteAlgorithm(alg.name,true)
-        const jnk = await buildAlgoFromImage(alg);
+            input:[{"action":"env","EnvironmentVariable":"REASOURCE"}]}
+
         const res = await runAlgorithm(algRun)
         const jobId = res.body.jobId
         const result = await  getResult(jobId,200)
-        expect(result.data[0].result.EnvironmentVariables).to.be.equal(alg.algorithmEnv.FOO)
+        expect(result.data[0].result.EnvironmentVariables).to.be.equal("1")
     }).timeout(1000 * 5*60)
 
 
+    it('algorithm Environment Variables fieldRef',async ()=>{
+        await createAlg()
+
+        const algRun = {name: alg.name,
+            input:[{"action":"env","EnvironmentVariable":"FR"}]}
+  
+        const res = await runAlgorithm(algRun)
+        const jobId = res.body.jobId
+        const result = await  getResult(jobId,200)
+        expect(result.data[0].result.EnvironmentVariables).to.contain("compute.internal")
+    }).timeout(1000 * 5*60)
 
 
 
