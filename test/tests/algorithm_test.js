@@ -109,7 +109,7 @@ describe('Alrogithm Tests', () => {
             await buildAlgoFromImage(algorithmV1);
             const algVersion = await getAlgorithmVersion(algorithmName);
             expect(algVersion.body.length).to.be.equal(1)
-            await buildAlgoFromImage(algorithmV2);
+            let v2 = await buildAlgoFromImage(algorithmV2);
             //validate there are two images
             const algVersion2 = await getAlgorithmVersion(algorithmName);
             expect(algVersion2.body.length).to.be.equal(2)
@@ -121,7 +121,7 @@ describe('Alrogithm Tests', () => {
             const result1 = await getResult(jobId,200)
             expect(result1.data[0].result.vaerion).to.be.equal("v1")
             
-            const update = await updateAlgorithmVersion(algorithmName,algorithmImageV2,true);
+            const update = await updateAlgorithmVersion(algorithmName,v2.body.algorithm.version,true);
             await delay(2000)
             const jobId2 = await runStoredAndWaitForResults(d)
             //validate result should be (v2)
@@ -179,13 +179,13 @@ describe('Alrogithm Tests', () => {
             }
             await deleteAlgorithm(algorithmName,true)
             await buildAlgoFromImage(algorithmV1);         
-            await buildAlgoFromImage(algorithmV2);              
+            let v2 = await buildAlgoFromImage(algorithmV2);              
             await delay(2000)
             await storePipeline(d)
             const res = await runStored(pipe)        
             const jobId = res.body.jobId
             await delay(10000)
-            const update = await updateAlgorithmVersion(algorithmName,algorithmImageV2,true);
+            const update = await updateAlgorithmVersion(algorithmName,v2.body.algorithm.version,true);
             expect(update.status).to.be.equal(201);
             await delay(5000);
             const status = await getPipelineStatus(jobId)
@@ -209,13 +209,13 @@ describe('Alrogithm Tests', () => {
 
             await deleteAlgorithm(algorithmName,true)
             await buildAlgoFromImage(algorithmV1);         
-            await buildAlgoFromImage(algorithmV2);              
+            let v2 =await buildAlgoFromImage(algorithmV2);              
             await delay(2000)
             await storePipeline(d)
             const res = await runStored(pipe)        
             const jobId = res.body.jobId
             await delay(10000)
-            const update = await updateAlgorithmVersion(algorithmName,algorithmImageV2,false);
+            const update = await updateAlgorithmVersion(algorithmName,v2.body.algorithm.version,false);
             expect(update.status).to.be.equal(400);
             await delay(3000)
             const result2 = await getResult(jobId,200)
@@ -234,14 +234,14 @@ describe('Alrogithm Tests', () => {
         
 
             await deleteAlgorithm(algorithmName,true)
-            await buildAlgoFromImage(algorithmV1);         
-            await buildAlgoFromImage(algorithmV2);              
+            let v1 =await buildAlgoFromImage(algorithmV1);         
+            let v2 = await buildAlgoFromImage(algorithmV2);              
             await delay(2000)
             
-            const update = await updateAlgorithmVersion(algorithmName,algorithmImageV2,false);
-            let deleteAlg  =await deleteAlgorithmVersion(algorithmName,algorithmImageV2);
+            const update = await updateAlgorithmVersion(algorithmName,v2.body.algorithm.version,false);
+            let deleteAlg  =await deleteAlgorithmVersion(algorithmName,v2.body.algorithm.version);
             expect(deleteAlg.body.error.message).to.be.equal("unable to remove used version")
-            deleteAlg  =await deleteAlgorithmVersion(algorithmName,algorithmImageV1);
+            deleteAlg  =await deleteAlgorithmVersion(algorithmName,v1.body.algorithm.version);
             expect(deleteAlg.status).to.be.equal(200)
             const algVersion = await getAlgorithmVersion(algorithmName)
             expect(algVersion.body.length).to.be.equal(1)
