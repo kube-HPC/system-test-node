@@ -52,7 +52,11 @@ const deletePod = async (podName, namespace='default') => {
 }
 
 
+const getNodes = async (namespace='default')=>{
 
+    const res = await client.api.v1.nodes.get()//await client.api.v1.namespaces(namespace).getNodes();
+    return res.body.items.map((n)=>{return n.metadata.name})
+}
 
 
 const filterPodsByName = async (name,namespace='default') => {
@@ -104,7 +108,8 @@ module.exports = {
     client,
     deletePod,
     filterPodsByName,
-    getPodNode
+    getPodNode,
+    getNodes
 }
 
 

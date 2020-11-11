@@ -191,6 +191,30 @@ const getAlgorithmVersion = async (name)=>{
 
 }
 
+const getAlgVersion = async (name,version)=>{
+    const res = await chai.request(config.apiServerUrl)
+        .get(`/versions/algorithms/${name}/${version}`)
+    logResult(res, "algorithmUtils getAlgorithimVersion")
+    return res;
+
+}
+const tagAlgorithmVersion = async (algName , algVersion ,algTag)=>{
+
+    let  alg = { name : algName,
+                 version : algVersion,
+                 pinned : false,
+                 tag: algTag
+        
+    } 
+
+    const res = await chai.request(config.apiServerUrl)
+        .post(`/versions/algorithms/tag`)
+        .send(alg)
+    logResult(res, "algorithmUtils tagAlgorithmVersion")
+    
+    return res;
+
+}
 
 const deleteAlgorithm = async (name,force = true) => {
     const res = await chai.request(config.apiServerUrl)
@@ -270,6 +294,8 @@ module.exports = {
     logResult,
     stopBuild,
     rerunBuild,
-    getBuildList
+    getBuildList,
+    tagAlgorithmVersion,
+    getAlgVersion
 
 }

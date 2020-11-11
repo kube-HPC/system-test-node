@@ -10,10 +10,16 @@
          getAlgorithmVersion,
          updateAlgorithmVersion,
          buildAlgoFromImage,
-         deleteAlgorithmVersion
+         deleteAlgorithmVersion,
+         buildAlgorithmAndWait,
+         tagAlgorithmVersion,
+         getAlgVersion
      } = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 
- //const {filterPodsByName} = require(path.join(process.cwd(), 'utils/kubeCtl'))
+ const {filterPodsByName,
+        getNodes,
+        getPodNode
+        } = require(path.join(process.cwd(), 'utils/kubeCtl'))
 
  const {
      testData1,
@@ -78,7 +84,7 @@ describe('Alrogithm Tests', () => {
         
      })
 
-    describe('Test Algorithm Version (git 560 487)',()=>{   
+    describe('Test Algorithm Version (git 560 487 998)',()=>{   
         //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/560
         const algorithmName = "algorithm-version-test"
         const algorithmImageV1 = "tamir321/algoversion:v1"
@@ -104,6 +110,86 @@ describe('Alrogithm Tests', () => {
         const algorithmV2 = algJson(algorithmName,algorithmImageV2)
         const d = deconstructTestData(testData1)
         //store pipeline
+
+        it('algorithm change creates a new version',async()=>{
+            await  deleteAlgorithm(algorithmName,true)
+            let v1 = await buildAlgoFromImage(algorithmV1);            
+            algorithmV1.algorithmEnv = {"FOO":"123456"}
+            let v2 = await buildAlgoFromImage(algorithmV1);
+            const algVersion2 = await getAlgorithmVersion(algorithmName);
+            expect(algVersion2.body.length).to.be.equal(2)
+            let alg  = await getAlgorithm(algorithmName)
+            expect(JSON.parse(alg.text).version).to.be.equal(v1.body.algorithm.version)
+            const update = await updateAlgorithmVersion(algorithmName,v2.body.algorithm.version,true);
+            alg  = await getAlgorithm(algorithmName)
+            expect(JSON.parse(alg.text).algorithmEnv.FOO).to.be.equal('123456')
+            
+        }).timeout(1000 * 60 * 10);
+
+
+        it('algorithm version can have tag  ',async()=>{
+            
+            await  deleteAlgorithm(algorithmName,true)
+            const v1 = await buildAlgoFromImage(algorithmV1);
+            
+            const tag = await tagAlgorithmVersion(algorithmName,v1.body.algorithm.version,"myTag1")
+            const v1Tag = await getAlgVersion(algorithmName,v1.body.algorithm.version)
+            algorithmV1.cpu = 2
+            const v2 =await buildAlgoFromImage(algorithmV1);
+            const algVersion2 = await getAlgorithmVersion(algorithmName);
+            expect(algVersion2.body.length).to.be.equal(2)
+            await tagAlgorithmVersion(algorithmName,v2.body.algorithm.version,"myTag2")
+            const v2Tag = await getAlgVersion(algorithmName,v2.body.algorithm.version)
+
+            expect(JSON.parse(v1Tag.text).tag).to.be.equal("myTag1")
+            expect(JSON.parse(v2Tag.text).tag).to.be.equal("myTag2")
+        }).timeout(1000 * 60 * 10);
+
+
+        it('update algorithm nodeSelector',async () =>{
+            const nodes = await getNodes();
+            await  deleteAlgorithm(algorithmName,true)
+            await delay(10000)
+            const podName0 = await filterPodsByName(algorithmName);  
+            const names0 = podName0.map((n)=>{return n.metadata.name})       
+            algorithmV1.nodeSelector = {"kubernetes.io/hostname": nodes[2] }
+            algorithmV1.minHotWorkers = 1;
+            let v1 = await buildAlgoFromImage(algorithmV1); 
+            await delay(2000)
+            const podName = await filterPodsByName(algorithmName);
+            const names = podName.map((n)=>{return n.metadata.name})
+            const podname = names.filter(e => !names0.includes(e))
+            const podNode =   await getPodNode(podname[0])
+            expect(podNode).to.be.equal(nodes[2])
+            algorithmV1.nodeSelector = {"kubernetes.io/hostname": nodes[1] }
+            let v2 = await buildAlgoFromImage(algorithmV1);            
+            const update = await updateAlgorithmVersion(algorithmName,v2.body.algorithm.version,true);
+            await delay(20000)
+            const podName1 = await filterPodsByName(algorithmName);
+            const names1 = podName1.map((n)=>{return n.metadata.name})
+            const podname1 = names1.filter(e => !names.includes(e))
+            const podNode1 =   await getPodNode(podname1[0])
+            expect(podNode1).to.be.equal(nodes[1])
+        }).timeout(1000 * 60 * 10);
+    
+        it.skip(`change baseImage trriger new Build`, async () => {
+            // const code1 = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
+            // const entry = 'main27'
+             const algName= "python2.7-test"    
+            // const pythonVersion = "python:2.7"                    
+            
+            // const buildStatusAlg = await buildAlgorithmAndWait(code1, algName,entry,pythonVersion)
+            // expect(buildStatusAlg.status).to.be.equal("completed") 
+
+             let alg = await getAlgorithm(algName)
+
+             let algJson = JSON.parse(alg.text);
+           // alg  = await getAlgorithm(algName)
+            algJson.baseImage = "python:3.5"
+            let v2 = await buildAlgoFromImage(algJson);
+            
+        }).timeout(1000 * 60 * 20)
+
         it('Update  Algorithm version', async () => {
             await  deleteAlgorithm(algorithmName,true)
             await buildAlgoFromImage(algorithmV1);
@@ -131,7 +217,9 @@ describe('Alrogithm Tests', () => {
             await  deleteAlgorithm(algorithmName,true)
         }).timeout(1000 * 60 * 10);
 
+        it.skip('update algorithm version kill the algorithm job',async () =>{
 
+        }).timeout(1000 * 60 * 10);
 
         it('Delete  Algorithm deletes pipeline', async () => {
 
