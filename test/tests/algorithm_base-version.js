@@ -6,7 +6,7 @@ const delay = require('delay')
 
 const { deleteAlgorithm,
         runAlgorithm,       
-        buildAlgoFromImage,      
+        storeAlgorithmApplay,      
     } = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 
 const {
@@ -49,7 +49,7 @@ describe('baseline  version Tests', () => {
             const algpython27 = algJson(algorithmName,python27)
            
             await  deleteAlgorithm(algorithmName,true)
-            await buildAlgoFromImage(algpython27);
+            await storeAlgorithmApplay(algpython27);
             const alg = {name: algorithmName,
                             input:[1]}
             const res = await runAlgorithm(alg)
@@ -66,7 +66,7 @@ describe('baseline  version Tests', () => {
             const algpython35 = algJson(algorithmName,python35)
            
             await  deleteAlgorithm(algorithmName,true)
-            await buildAlgoFromImage(algpython35);
+            await storeAlgorithmApplay(algpython35);
             const alg = {name: algorithmName,
                             input:[1]}
             const res = await runAlgorithm(alg)
@@ -81,7 +81,7 @@ describe('baseline  version Tests', () => {
             const algpython36 = algJson(algorithmName,python36)
            
             await  deleteAlgorithm(algorithmName,true)
-            await buildAlgoFromImage(algpython36);
+            await storeAlgorithmApplay(algpython36);
             const alg = {name: algorithmName,
                             input:[1]}
             const res = await runAlgorithm(alg)
@@ -96,7 +96,7 @@ describe('baseline  version Tests', () => {
             const algpython37 = algJson(algorithmName,python37)
            
             await  deleteAlgorithm(algorithmName,true)
-            await buildAlgoFromImage(algpython37);
+            await storeAlgorithmApplay(algpython37);
             const alg = {name: algorithmName,
                             input:[1]}
             const res = await runAlgorithm(alg)
@@ -111,7 +111,7 @@ describe('baseline  version Tests', () => {
             const algpython37 = algJson(algorithmName,python37)
            
             await  deleteAlgorithm(algorithmName,true)
-            await buildAlgoFromImage(algpython37);
+            await storeAlgorithmApplay(algpython37);
             const alg = {name: algorithmName,
                             input:[1]}
             const res = await runAlgorithm(alg)

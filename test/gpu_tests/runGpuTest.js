@@ -21,7 +21,7 @@ const {
 
 
 const {
-    buildAlgoFromImage 
+    storeAlgorithmApplay 
 } = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 chai.use(chaiHttp);
 
@@ -43,9 +43,9 @@ const gpuAlg = {
 describe('test gpu algs', () => {
 
     it.skip('soter gpu algorithm',async ()=>{
-        await buildAlgoFromImage(gpuAlg);
+        await storeAlgorithmApplay(gpuAlg);
         gpuAlg.name = "gpu-alg-2"
-        await buildAlgoFromImage(gpuAlg);
+        await storeAlgorithmApplay(gpuAlg);
     })
     
     it('should run the pipeline gpu-demo and after 2 seconds run the gpuDemo-1 pipeline', async () => {

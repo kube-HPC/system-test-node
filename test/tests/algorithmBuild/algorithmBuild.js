@@ -19,18 +19,9 @@ const {
     idGen,
     runRaw,
     getRawGraph,
-    getParsedGraph
-} = require(path.join(process.cwd(), 'utils/results'))
+    getParsedGraph } = require(path.join(process.cwd(), 'utils/results'))
 const {
-    pipelineRandomName,
-    runStoredAndWaitForResults,
-    storePipeline,
-    runStored,
-    deletePipeline,
-    resumePipeline,
-    pausePipeline,
-    getPipelineStatus
-} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+    pipelineRandomName} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 const {
     runAlgGetResult,
     runAlgorithm,
@@ -38,7 +29,7 @@ const {
     deleteAlgorithm,    
     getAlgorithmVersion,
     updateAlgorithmVersion,
-    buildAlgoFromImage,
+    storeAlgorithmApplay,
     deleteAlgorithmVersion,
     buildAlgorithmAndWait,
     buildAlgorithm,
@@ -236,6 +227,7 @@ describe('Algorithm requirements repository (git 387)', () => {
 
 })
 
+
 describe('git hub and git lab algorithm builds (git 506)', () => {
     it("build github master algorithm",async ()=>{
         const entry = 'main'
@@ -249,9 +241,7 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
         const result = await runAlgGetResult(algName,[4])
         await deleteAlgorithm(algName,true)
         expect(result.data[0].result.version).to.be.equal("master margev1") 
-        expect(result.data[0].result.commit).to.be.equal("A6")     
-      
-       
+        expect(result.data[0].result.commit).to.be.equal("A6")                  
     }).timeout(1000 * 60 * 20)
 
     it("build github master algorithm java",async ()=>{
@@ -358,9 +348,12 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
         expect(buildStatusAlg.status).to.be.equal("completed") 
         const result = await runAlgGetResult(algName,[4])
         expect(result.data[0].result.commit).to.be.equal("A1")
-        
+        const currentVersion = await getAlgorithmVersion(algName);
+        console.log("~~~~~~~~~~~~~~~~~~~")
+        console.log(currentVersion.body)
+        console.log("~~~~~~~~~~~~~~~~~~~")
        //send webhook
-        const f = JSON.stringify(data)
+       // const f = JSON.stringify(data)
         const res = await chai.request(config.apiServerUrl)           
             .post('/builds/webhook/github')
             .type('form')
@@ -371,9 +364,13 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
 
          const  buildStatusAlg2 = await getStatusall(res.body[0].buildId, `/builds/status/`, 200, "completed", 1000 * 60 * 10)
          expect(buildStatusAlg2.status).to.be.equal("completed") 
-
-
-         const updateVersion = await  updateAlgorithmVersion(algName,buildStatusAlg2.algorithmImage,true)
+         const newVersion = await getAlgorithmVersion(algName);
+         console.log("~~~~~~~~~~~~~~~~~~~")
+         console.log(newVersion.body)
+         console.log("~~~~~~~~~~~~~~~~~~~")
+         //v2.body.algorithm.version
+         const updateVersion = await  updateAlgorithmVersion(algName,newVersion.body[0].version,true)
+         await delay(5000)
          const resultAfterCommit = await runAlgGetResult(algName,[4])
         // await deleteAlgorithm(algName,true)   
         expect(resultAfterCommit.data[0].result.commit).to.be.equal("A4")
@@ -446,9 +443,13 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
 
         const  buildStatusAlg2 = await getStatusall(res.body[0].buildId, `/builds/status/`, 200, "completed", 1000 * 60 * 10)
         expect(buildStatusAlg2.status).to.be.equal("completed") 
-
-
-        const updateVersion = await  updateAlgorithmVersion(algName,buildStatusAlg2.algorithmImage,true)
+        const newVersion = await getAlgorithmVersion(algName);
+        console.log("~~~~~~~~~~~~~~~~~~~")
+        console.log(newVersion.body)
+        console.log("~~~~~~~~~~~~~~~~~~~")
+        //v2.body.algorithm.version
+        const updateVersion = await  updateAlgorithmVersion(algName,newVersion.body[0].version,true)
+        await delay(5000)
         const resultAfterCommit = await runAlgGetResult(algName,[4])
       //  await deleteAlgorithm(algName,true)   
         expect(resultAfterCommit.data[0].result.commit).to.be.equal("A7")
@@ -493,6 +494,57 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
         expect(result.data[0].result).to.be.equal("private-repo") 
         await deleteAlgorithm(algName,true) 
      }).timeout(1000 * 60 * 20)
+
+
+     describe('git hub/lab versions tests', () => {
+        
+        it("changing commit  trigger new build",async ()=>{
+            const algName= pipelineRandomName(8).toLowerCase()    
+            const entry = 'main'           
+            const gitUrl = "https://gitlab.com/tamir321/hkube.git"
+            const branch = "master"
+            const gitKind = "gitlab"
+            let commit  = {
+                "id": "3d85086db8f5a842391a8c1f6cd88d8150670b68"
+                }
+            
+            const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,'python'  ,commit)
+            
+            
+            commit = {
+                "id": "507aa9b1db90ccda19aef145849fb18362ab1bb7"
+            }
+            const buildStatusAlg2 = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,'python'  ,commit)
+            expect(buildStatusAlg2.buildId).to.be.not.equal(buildStatusAlg.buildId)
+            //deleteAlgorithm(algName)
+          }).timeout(1000 * 60 * 20)
+      
+
+
+          it("changing branch  trigger new build",async ()=>{
+            const algName= pipelineRandomName(8).toLowerCase()    
+            const entry = 'main'           
+            const gitUrl = "https://gitlab.com/tamir321/hkube.git"
+            const branch = "master"
+            const gitKind = "gitlab"
+            let commit  = {
+                "id": "3d85086db8f5a842391a8c1f6cd88d8150670b68"
+                }
+            
+            const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,'python'  ,commit)
+
+            const Alg = {name : algName,
+                gitRepository :{
+                    url : gitUrl,
+                    branch : "branch1"
+                } }
+            const jnk = await storeAlgorithmApplay(Alg)
+
+          }).timeout(1000 * 60 * 20)
+
+
+
+     })
 })
 
 })

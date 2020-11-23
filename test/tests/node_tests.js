@@ -6,13 +6,23 @@ const delay = require('delay');
 const { pipe } = require('winston-daily-rotate-file');
 var diff = require('deep-diff').diff
 
+const {
+  FailSingelPod,
+  body,    
+  deletePod,
+  filterPodsByName,
+  deleteJob,
+  getPodNode,
+  filterjobsByName
+} = require(path.join(process.cwd(), 'utils/kubeCtl'))
+
 const { runAlgorithm,
         deleteAlgorithm,
         storeAlgorithm,
         getAlgorithm,    
         getAlgorithmVersion,
         updateAlgorithmVersion,
-        buildAlgoFromImage,
+        storeAlgorithmApplay,
         deleteAlgorithmVersion,
         getAlgorithim} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 
@@ -23,10 +33,7 @@ const {
         } = require(path.join(process.cwd(), 'utils/socketGet'))
 
 const {   
-    testData1,
-    testData2,
-   
-} = require(path.join(process.cwd(), 'config/index')).pipelineTest
+      testData1} = require(path.join(process.cwd(), 'config/index')).nodeTest
 
 
 const {
@@ -35,8 +42,13 @@ const {
   } = require(path.join(process.cwd(), 'utils/results'))
 
 // const KubernetesClient = require('@hkube/kubernetes-client').Client;
-const {pipelineRandomName,  
+const {deconstructTestData,
+      runStored,
+      pipelineRandomName,  
       runRaw,
+      deletePipeline,
+      storePipeline,
+      runStoredAndWaitForResults,
       exceCachPipeline} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 
 chai.use(chaiHttp);
@@ -59,7 +71,7 @@ describe('Node Tests git 660', () => {
         }
        
         it('singel batch indexed', async () => {
-          pipe.nodes[0].input = [ "#[0...10]"]
+          pipe.nodes[0].input = [ "#[0...9]"]
           const res = await runRaw(pipe)
           const jobId = res.body.jobId
           const result = await  getResult(jobId,200) 
@@ -69,9 +81,15 @@ describe('Node Tests git 660', () => {
 
         it('two batch indexed python', async () => {
             pipe.nodes[0].input = [ "add",
-                                    "#[0...10]",
+                                    "#[0...9]",
                                     "#[10,20,30]"]
-            pipe.nodes[0].algorithmName = "eval-alg"
+            pipe.nodes[0].algorithmName = "green-alg"
+            // pipe.nodes[1] = {
+            //             nodeName: "two",
+            //             algorithmName: "yellow-alg",
+            //             input: ["@one"]
+                       
+            //         }
             const res = await runRaw(pipe)
             const jobId = res.body.jobId
             const result = await  getResult(jobId,200) 
@@ -81,7 +99,7 @@ describe('Node Tests git 660', () => {
 
         
           it('two batch indexed  ', async () => {
-            pipe.nodes[0].input = [ "#[0...10]",
+            pipe.nodes[0].input = [ "#[0...9]",
                                     "#[10,20,30]"]
             const res = await runRaw(pipe)
             const jobId = res.body.jobId
@@ -92,7 +110,7 @@ describe('Node Tests git 660', () => {
            
           it('two batch one object  indexed', async () => {
             pipe.nodes[0].input = [ {"data":"stam"},
-                                    "#[0...10]",
+                                    "#[0...9]",
                                     "#[10,20,30]"]
             pipe.nodes[0].batchOperation ="indexed"
             const res = await runRaw(pipe)
@@ -102,7 +120,7 @@ describe('Node Tests git 660', () => {
           }).timeout(1000 * 60 * 2)
 
           it('singel batch cartesian', async () => {
-            pipe.nodes[0].input = [ "#[0...10]"]
+            pipe.nodes[0].input = [ "#[0...9]"]
             pipe.nodes[0].batchOperation ="cartesian"
             const res = await runRaw(pipe)
             const jobId = res.body.jobId
@@ -111,7 +129,7 @@ describe('Node Tests git 660', () => {
           }).timeout(1000 * 60 * 2)
           
         it('two batch cartesian', async () => {
-            pipe.nodes[0].input = [ "#[0...10]",
+            pipe.nodes[0].input = [ "#[0...9]",
                                     "#[10,20,30]"]
             pipe.nodes[0].batchOperation ="cartesian"
             const res = await runRaw(pipe)
@@ -123,7 +141,7 @@ describe('Node Tests git 660', () => {
           
           it('two batch one object  cartesian', async () => {
             pipe.nodes[0].input = [ {"data":"stam"},
-                                    "#[0...10]",
+                                    "#[0...9]",
                                     "#[10,20,30]"]
             pipe.nodes[0].batchOperation ="cartesian"
             const res = await runRaw(pipe)
@@ -135,7 +153,7 @@ describe('Node Tests git 660', () => {
           it('two batch two object  cartesian', async () => {
             pipe.nodes[0].input = [  {"date":"now"},
                                     {"data":"stam"},
-                                    "#[0...10]",
+                                    "#[0...9]",
                                     "#[10,20,30]"]
             pipe.nodes[0].batchOperation ="cartesian"
             const res = await runRaw(pipe)
@@ -243,8 +261,8 @@ describe('Node Tests git 660', () => {
         }
        
         it(' batch indexed', async () => {
-          pipe.nodes[0].input =  [ "#[0...10]"]
-          pipe.nodes[1].input =[ "#[10...20]"]
+          pipe.nodes[0].input =  [ "#[0...9]"]
+          pipe.nodes[1].input =[ "#[10...19]"]
           const res = await runRaw(pipe)
           const jobId = res.body.jobId
           const result = await  getResult(jobId,200) 
@@ -253,8 +271,8 @@ describe('Node Tests git 660', () => {
         }).timeout(1000 * 60 * 2)
 
         it(' batch cartesian', async () => {
-            pipe.nodes[0].input = [ "#[0...10]"]
-            pipe.nodes[1].input = [ "#[10...15]"]
+            pipe.nodes[0].input = [ "#[0...9]"]
+            pipe.nodes[1].input = [ "#[10...14]"]
             pipe.nodes[2].input = [ "#@one","#@two"]
             pipe.nodes[2].batchOperation = "cartesian"
             const res = await runRaw(pipe)
@@ -266,8 +284,8 @@ describe('Node Tests git 660', () => {
           }).timeout(1000 * 60 * 2)
 
           it(' batch + fix cartesian', async () => {
-            pipe.nodes[0].input = [ "#[0...10]"]
-            pipe.nodes[1].input = [ "#[10...15]"]
+            pipe.nodes[0].input = [ "#[0...9]"]
+            pipe.nodes[1].input = [ "#[10...14]"]
             pipe.nodes[2].input = [ "99","#@one","#@two"]
             pipe.nodes[2].batchOperation = "cartesian"
             const res = await runRaw(pipe)
@@ -280,8 +298,8 @@ describe('Node Tests git 660', () => {
           }).timeout(1000 * 60 * 2)
 
           it(' batch + fix indexed', async () => {
-            pipe.nodes[0].input = [ "#[0...10]"]
-            pipe.nodes[1].input = [ "#[10...15]"]
+            pipe.nodes[0].input = [ "#[0...9]"]
+            pipe.nodes[1].input = [ "#[10...14]"]
             pipe.nodes[2].input = [ "99","#@one","#@two"]
             pipe.nodes[2].batchOperation = "indexed"
             const res = await runRaw(pipe)
@@ -294,8 +312,8 @@ describe('Node Tests git 660', () => {
 
 
           it('any on batch', async () => {
-            pipe.nodes[0].input = [ "#[0...10]"]
-            pipe.nodes[1].input = [ "#[10...15]"]
+            pipe.nodes[0].input = [ "#[0...9]"]
+            pipe.nodes[1].input = [ "#[10...14]"]
             pipe.nodes[2].input = ["*@one","#@two"]
             pipe.nodes[2].batchOperation = "indexed"
             const res = await runRaw(pipe)
@@ -384,7 +402,7 @@ describe('Node Tests git 660', () => {
         }).timeout(1000 * 60 * 2)
 
         it('a batch + fix indexed', async () => {
-          pipe.nodes[0].input = [ "#[0...10]"]
+          pipe.nodes[0].input = [ "#[0...9]"]
           pipe.nodes[1].input = [ "#[10...15]"]
           pipe.nodes[2].input = [ "99","#@one","#@two"]
           pipe.nodes[2].batchOperation = "indexed"
@@ -398,8 +416,8 @@ describe('Node Tests git 660', () => {
 
 
         it('custom input', async () => {
-          pipe.nodes[0].input = [ "#[0...10]"]
-          pipe.nodes[1].input = [ "#[10...20]"]
+          pipe.nodes[0].input = [ "#[0...9]"]
+          pipe.nodes[1].input = [ "#[10...19]"]
           pipe.nodes[2].input = [ {"a":"@one","b":"@two"}]
           pipe.nodes[2].batchOperation = "indexed"
           const res = await runRaw(pipe)
@@ -481,7 +499,7 @@ describe('Node Tests git 660', () => {
           expect(JSON.stringify(orgRes.data)==JSON.stringify(cachRes.data)).to.be.true 
         }).timeout(1000 * 60 * 2)
         it('caching (Run Node) batch + fix indexed', async () => {
-          pipe.nodes[0].input = [ "#[0...10]"]
+          pipe.nodes[0].input = [ "#[0...9]"]
           pipe.nodes[1].input = [ "#[10...15]"]
           pipe.nodes[2].input = [ "99","#@one","#@two"]
           pipe.nodes[2].batchOperation = "indexed"
@@ -554,7 +572,7 @@ describe('Node Tests git 660', () => {
                     
    
     it("node Fail schdualing due to lack of resource",async ()=>{    
-            await buildAlgoFromImage(alg15cpu);
+            await storeAlgorithmApplay(alg15cpu);
             const alg = {name: algName,
                         input:[]}
             const res = await runAlgorithm(alg);
@@ -564,4 +582,41 @@ describe('Node Tests git 660', () => {
             expect(graph.body.nodes[0].status).to.be.equal('FailedScheduling')
           }).timeout(1000 * 60 * 2)
   })
+
+
+  describe("some test",()=>{
+    it("node get data from batch after batch was killed",async ()=>{    
+     
+         const testData = testData1
+         const d = deconstructTestData(testData)
+         await deletePipeline(d)
+         await storePipeline(d)
+         const jobId = await runStored(d)
+         await delay(15000);
+        const jobs =  await filterjobsByName("green-alg")
+        console.log(jobs)
+         
+        const del = jobs.map((e) =>{
+           
+         return deleteJob(e.metadata.name) 
+         
+       })
+      await Promise.all(del)
+       const pods =  await filterPodsByName("green-alg")
+
+       const delpod = pods.map((e) =>{
+           
+        return deletePod(e.metadata.name) 
+        
+      })
+      await Promise.all(delpod)
+      
+      const result = await  getResult(jobId,200)
+      expect(result.status).to.be.equal("completed")
+    }).timeout(1000 * 60 * 2)
+
+
+
+  })
+
 });

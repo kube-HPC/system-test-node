@@ -12,7 +12,7 @@ const { runAlgorithm,
         getAlgorithm,    
         getAlgorithmVersion,
         updateAlgorithmVersion,
-        buildAlgoFromImage,
+        storeAlgorithmApplay,
         deleteAlgorithmVersion,
         getAlgorithim} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 
@@ -260,7 +260,7 @@ describe('pipeline Tests 673', () => {
         const tensorAlgPath = "docker.io/hkubedev/tensor1:v1.0.1"
         const tensorAlg = algJson(algorithmName,tensorAlgPath)
         tensorAlg.mem = "5Gi"                  
-        await buildAlgoFromImage(tensorAlg);
+        await storeAlgorithmApplay(tensorAlg);
         const tensorRawPipe = {
             name: "tesorPipe",
             nodes: [{
@@ -602,7 +602,7 @@ describe('pipeline Defaults (git 754)', () => {
                 }
             }
             await deleteAlgorithm(algorithmName,true)
-            await buildAlgoFromImage(algorithmV1);         
+            await storeAlgorithmApplay(algorithmV1);         
                
             await delay(2000)
             await storePipeline(d)
@@ -645,7 +645,7 @@ describe('pipeline Defaults (git 754)', () => {
                 }
             }
             await deleteAlgorithm(algorithmName,true)
-            await buildAlgoFromImage(algorithmV1);         
+            await storeAlgorithmApplay(algorithmV1);         
                
             await delay(2000)
             await storePipeline(d)

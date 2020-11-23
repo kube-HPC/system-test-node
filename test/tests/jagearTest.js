@@ -24,7 +24,7 @@ const {
 chai.use(chaiHttp);
 chai.use(assertArrays);
 const { deleteAlgorithm,   
-    buildAlgoFromImage} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
+    storeAlgorithmApplay} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 const {
         testData1,
         testData2

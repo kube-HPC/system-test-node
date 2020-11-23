@@ -154,18 +154,7 @@ describe('cli test', () => {
             const result = await runAlgGetResult(algName,[4])
          
             expect(result.data[0].result.version.toString()).to.be.equal("1")  
-        //    let setcurrent =  `hkubectl algorithm apply ${algName} `+
-        //                     `--env python `+
-        //                     `--codeEntryPoint mainv1 `+
-        //                     `--gpu 0 `+
-        //                     `--cpu 1 `+
-        //                     `--mem 256Mi `+
-        //                     `--setCurrent true `+
-        //                     `--codePath ./additionalFiles/${trgzFile2} `
-        //     console.log("start build 3")
-        //     const setcurrentResult = await execSync(setcurrent);
-        //     console.log(setcurrentResult.toString('utf8'))
-        //     const result = await runAlgGetResult(algName,[4])
+     
 
         }).timeout(1000 * 60 * 10)
 

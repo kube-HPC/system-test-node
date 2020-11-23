@@ -38,6 +38,12 @@ kubeconfig.setCurrentContext(process.env.K8S_CONTEXT)
         write_log
     } = require(path.join(process.cwd(), 'utils/misc_utils'))
 
+const deleteJob = async (jobName, namespace='default') => {
+        write_log("start delete job- " +deleteJob)
+        const delJob  = await client.apis.batch.v1.namespaces(namespace).jobs(jobName).delete()
+
+        return delJob
+    }
 
 const deletePod = async (podName, namespace='default') => {
     let deletedPod = ''
@@ -58,6 +64,13 @@ const getNodes = async (namespace='default')=>{
     return res.body.items.map((n)=>{return n.metadata.name})
 }
 
+const filterjobsByName = async (name,namespace='default') => {
+    const job = await client.apis.batch.v1.namespaces(namespace).jobs().get()
+
+    const jobs = job.body.items.filter(obj => obj.metadata.name.startsWith(name))
+
+    return jobs
+}
 
 const filterPodsByName = async (name,namespace='default') => {
     const pod = await client.api.v1.namespaces(namespace).pods().get()
@@ -109,7 +122,9 @@ module.exports = {
     deletePod,
     filterPodsByName,
     getPodNode,
-    getNodes
+    getNodes,
+    deleteJob,
+    filterjobsByName
 }
 
 

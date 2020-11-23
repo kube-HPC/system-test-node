@@ -104,6 +104,9 @@ const index = {
     batchOnBatch: {
         testData1: require('../pipelines/batchOnBatch'),
         testData2: require('../pipelines/evalwait')
+    },
+    nodeTest:{
+        testData1: require('../pipelines/singel-on-bach')
     }
     
 }

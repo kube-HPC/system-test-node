@@ -31,7 +31,7 @@ const {
 chai.use(chaiHttp);
 
 const { 
-    buildAlgoFromImage    
+    storeAlgorithmApplay    
 } = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 
 describe('TID-500 ', () => {
@@ -144,7 +144,7 @@ describe('TID-500 ', () => {
                     }       
                 }
     
-            const res =  await  await buildAlgoFromImage(alg);
+            const res =  await  await storeAlgorithmApplay(alg);
            expect(res.text).includes("algorithm name must contain only lower-case alphanumeric, dash or dot")
         }).timeout(1000 * 60 * 5);
 

@@ -36,7 +36,7 @@ const {
     deleteAlgorithm,    
     getAlgorithmVersion,
     updateAlgorithmVersion,
-    buildAlgoFromImage,
+    storeAlgorithmApplay,
     deleteAlgorithmVersion,
     buildAlgorithmAndWait,    
     getAlgorithim} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
@@ -627,10 +627,10 @@ describe('all swagger calls test ', () => {
     const algorithmV2 = algJson(algorithmName,algorithmImageV2)  
     it('Get   /versions/algorithms/{name}', async () => {
         await  deleteAlgorithm(algorithmName,true)
-         await buildAlgoFromImage(algorithmV1);
+         await storeAlgorithmApplay(algorithmV1);
          const algVersion = await getAlgorithmVersion(algorithmName);
          expect(algVersion.body.length).to.be.equal(1)
-         await buildAlgoFromImage(algorithmV2);
+         await storeAlgorithmApplay(algorithmV2);
         //validate there are two images
         const algVersion2 = await getAlgorithmVersion(algorithmName);
         
@@ -641,8 +641,8 @@ describe('all swagger calls test ', () => {
 
     it('Delete /versions/algorithms/{name}', async () => {
         await  deleteAlgorithm(algorithmName,true)
-        let v1= await buildAlgoFromImage(algorithmV1);         
-        let v2= await buildAlgoFromImage(algorithmV2);
+        let v1= await storeAlgorithmApplay(algorithmV1);         
+        let v2= await storeAlgorithmApplay(algorithmV2);
         //validate there are two images
         
         let algVersion = await getAlgorithmVersion(algorithmName);
@@ -658,8 +658,8 @@ describe('all swagger calls test ', () => {
 
     it('Post Apply algorithm version', async () => {
         await  deleteAlgorithm(algorithmName,true)
-         await buildAlgoFromImage(algorithmV1);         
-         let v2= await buildAlgoFromImage(algorithmV2);
+         await storeAlgorithmApplay(algorithmV1);         
+         let v2= await storeAlgorithmApplay(algorithmV2);
          let alg= await getAlgorithm(algorithmName)
          expect(alg.body.algorithmImage).to.be.equal("tamir321/algoversion:v1")
         
