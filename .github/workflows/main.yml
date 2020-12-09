@@ -1,0 +1,48 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI-MAIN
+
+# Controls when the action will run. 
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  deploy:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+      - name: create kubeconfig
+        run: |
+          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
+          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
+      - name: verify kubectl
+        run: kubectl cluster-info
+      - name: deploy
+        run: ./deploy.sh
+        env:
+          DOCKER_BUILD_PUSH_PASSWORD: ${{ secrets.DOCKER_BUILD_PUSH_PASSWORD }}
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm ci
+      - name: create kubeconfig
+        run: |
+          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
+          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
+      - name: test
+        run: npm test
+        env:
+          BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
+
