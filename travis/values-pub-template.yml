@@ -28,7 +28,7 @@ build_secret:
 etcd:
   persistentVolume:
     enabled: true
-    storageClass: etcd-sc2
+    storageClass: etcd-sc
 task_executor:
   env:
     pipeline_drivers_amount: 30
