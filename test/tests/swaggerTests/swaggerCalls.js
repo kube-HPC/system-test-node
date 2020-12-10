@@ -324,20 +324,22 @@ describe('all swagger calls test ', () => {
 
             await deletePipeline('pipe1')
             await deletePipeline('pipe2')
-            
+            await delay(1000);
             const a= await storePipeline('origPipeline')
+            await delay(1000);
             const ab= await storePipeline('sonPipeline')
-
+            
+            expect(ab).to.have.status(201,"fail to create pipeline")
             const run = await runStored('pipe1')
             const jobId = run.body.jobId
 
             const result = await getResult(jobId, 200);
-
+            await delay(1000);
             const res = await chai.request(config.apiServerUrl)
-                .get(`/exec/tree/${jobId}`)
+                 .get(`/exec/tree/${jobId}`)
 
             expect(res).to.have.status(200)
-
+            await delay(1000);
             await deletePipeline('pipe1')
             await deletePipeline('pipe2')
 
