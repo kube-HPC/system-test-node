@@ -71,7 +71,9 @@ describe('Node Tests git 660', () => {
         }
        
         it('singel batch indexed', async () => {
+          pipe.name = "singel_batch_index"
           pipe.nodes[0].input = [ "#[0...9]"]
+          pipe.nodes[0].batchOperation ="indexed"
           const res = await runRaw(pipe)
           const jobId = res.body.jobId
           const result = await  getResult(jobId,200) 
@@ -79,28 +81,13 @@ describe('Node Tests git 660', () => {
         }).timeout(1000 * 60 * 2)
 
 
-        it('two batch indexed python', async () => {
-            pipe.nodes[0].input = [ "add",
-                                    "#[0...9]",
-                                    "#[10,20,30]"]
-            pipe.nodes[0].algorithmName = "green-alg"
-            // pipe.nodes[1] = {
-            //             nodeName: "two",
-            //             algorithmName: "yellow-alg",
-            //             input: ["@one"]
-                       
-            //         }
-            const res = await runRaw(pipe)
-            const jobId = res.body.jobId
-            const result = await  getResult(jobId,200) 
-            expect(result.data.length).to.be.equal(10)
-          }).timeout(1000 * 60 * 2)
-
 
         
           it('two batch indexed  ', async () => {
             pipe.nodes[0].input = [ "#[0...9]",
                                     "#[10,20,30]"]
+            pipe.name = "two_batch_index"
+            pipe.nodes[0].batchOperation ="indexed"
             const res = await runRaw(pipe)
             const jobId = res.body.jobId
             const result = await  getResult(jobId,200) 
@@ -109,6 +96,7 @@ describe('Node Tests git 660', () => {
 
            
           it('two batch one object  indexed', async () => {
+            pipe.name = "two_batch_one_object_index"
             pipe.nodes[0].input = [ {"data":"stam"},
                                     "#[0...9]",
                                     "#[10,20,30]"]
@@ -120,6 +108,7 @@ describe('Node Tests git 660', () => {
           }).timeout(1000 * 60 * 2)
 
           it('singel batch cartesian', async () => {
+            pipe.name = "singel_batch_cartesian"
             pipe.nodes[0].input = [ "#[0...9]"]
             pipe.nodes[0].batchOperation ="cartesian"
             const res = await runRaw(pipe)
@@ -129,6 +118,7 @@ describe('Node Tests git 660', () => {
           }).timeout(1000 * 60 * 2)
           
         it('two batch cartesian', async () => {
+          pipe.name = "two_batch_cartesian"
             pipe.nodes[0].input = [ "#[0...9]",
                                     "#[10,20,30]"]
             pipe.nodes[0].batchOperation ="cartesian"
@@ -140,6 +130,7 @@ describe('Node Tests git 660', () => {
 
           
           it('two batch one object  cartesian', async () => {
+            pipe.name = "two_batch_one_object_cartesian"
             pipe.nodes[0].input = [ {"data":"stam"},
                                     "#[0...9]",
                                     "#[10,20,30]"]
@@ -151,6 +142,7 @@ describe('Node Tests git 660', () => {
           }).timeout(1000 * 60 * 2)
 
           it('two batch two object  cartesian', async () => {
+          pipe.name = "two_batch_two_object_cartesian"
             pipe.nodes[0].input = [  {"date":"now"},
                                     {"data":"stam"},
                                     "#[0...9]",
@@ -165,6 +157,21 @@ describe('Node Tests git 660', () => {
             
             expect(result.data[0].result.length).to.be.equal(4)
           }).timeout(1000 * 60 * 2)
+
+
+        it('two batch indexed python', async () => {
+          pipe.name = "two_batch_index_python"
+          pipe.nodes[0].input = [ "add",
+                                  "#[0...9]",
+                                  "#[10,20,30]"]
+          pipe.nodes[0].algorithmName = "green-alg"
+          pipe.nodes[0].batchOperation ="indexed"
+          const res = await runRaw(pipe)
+          const jobId = res.body.jobId
+          const result = await  getResult(jobId,200) 
+          expect(result.data.length).to.be.equal(10)
+        }).timeout(1000 * 60 * 2)
+
 
 
     })
