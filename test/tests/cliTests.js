@@ -614,4 +614,64 @@ describe('cli test', () => {
 
 
 
+    describe("Node JS  code API",()=>{
+
+        const algName = pipelineRandomName(8).toLowerCase();
+        let algExsis = false
+        const createAlg = async ()=>{
+            if(!algExsis){
+                const entry = 'hkubeApi'                
+                const language = 'nodejs'
+                const gitUrl = "https://github.com/tamir321/hkube-js-algorithm.git"
+                const branch = "main"
+                const gitKind = "github"
+                const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,language )
+                expect(buildStatusAlg.status).to.be.equal("completed") 
+                algExsis = true;
+            }
+           
+            
+
+        }
+    
+
+        it("Node sart algorithm",async ()=>{
+            await createAlg();
+            const startAlg = [{"action":"startAlg","algName":"green-alg","input":[1]}]
+            const result = await runAlgGetResult(algName,startAlg)
+            console.log(result)
+            expect(result.data[0].result).to.be.equal(42)
+            const graph = await getRawGraph(result.jobId)
+            expect(graph.body.nodes.length).to.be.equal(2)
+           
+
+        }).timeout(1000 * 60 * 10)
+
+        it("Node sart stored pipeline",async ()=>{
+                await createAlg();
+                const startPipe = [{"action":"startStored","pipeName":"simple","input":{"inp":"5"}}]
+                const result = await runAlgGetResult(algName,startPipe)
+                console.log(result)
+               
+               
+                expect(result.data[0].result[0].result).to.be.equal(42)
+        }).timeout(1000 * 60 * 10)
+
+        it("node sart raw pipelien",async ()=>{
+             await createAlg();
+            const startRaw = [{"action":"startRaw","pipeName":"raw",
+              "pipNodes":"[{\"algorithmName\": \"green-alg\",\"input\": [\"@flowInput.bar\"],\"nodeName\": \"a\"},{\"algorithmName\": \"yellow-alg\",\"input\": [\"@a\"], \"nodeName\": \"b\"}]"
+              ,"input":{"bar":{"size":"3","batch":"4"}}}
+            ]
+            const result = await runAlgGetResult(algName,startRaw)
+
+            console.log(result)
+               
+               
+            expect(result.data[0].result[0].result).to.be.equal(42)
+         
+        }).timeout(1000 * 60 * 10)
+    })
+
+
 });

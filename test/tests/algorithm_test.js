@@ -172,24 +172,46 @@ describe('Alrogithm Tests', () => {
             expect(podNode1).to.be.equal(nodes[1])
         }).timeout(1000 * 60 * 10);
     
-        it.skip(`change baseImage trriger new Build`, async () => {
+        it(`change baseImage trigger new Build`, async () => {
              const code1 = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
              const entry = 'main27'
              const algName= "python2.7-test-1"    
              const pythonVersion = "python:2.7"                    
-            
+            await deleteAlgorithm(algName)
              const buildStatusAlg = await buildAlgorithmAndWait(code1, algName,entry,pythonVersion)
              expect(buildStatusAlg.status).to.be.equal("completed") 
-             expect(buildStatusAlg.algorithmImage).to.endsWith(buildStatusAlg.imageTag)
+             expect(buildStatusAlg.algorithmImage).to.contain(buildStatusAlg.imageTag)//.endsWith(buildStatusAlg.imageTag)
              let alg = await getAlgorithm(algName)
 
              let algJson = JSON.parse(alg.text);
              alg  = await getAlgorithm(algName)
              algJson.baseImage = "python:3.5"
              let v2 = await storeAlgorithmApplay(algJson);
-             expect(v2.algorithmImage).to.endsWith(v2.imageTag)
+             //expect(v2.algorithmImage).to.contain(v2.imageTag)
              expect(v2.imageTag).to.not.be.equal(buildStatusAlg.imageTag)
+             expect(v2.body.messages[0].startsWith("a build was triggered due to change in baseImage")).to.be.true
         }).timeout(1000 * 60 * 20)
+
+
+        it(`change env trigger new Build`, async () => {
+            const code1 = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
+            const entry = 'main27'
+            const algName= "python2.7-test-1"    
+            const pythonVersion = "python:2.7"                    
+            await deleteAlgorithm(algName)
+            const buildStatusAlg = await buildAlgorithmAndWait(code1, algName,entry,pythonVersion)
+            expect(buildStatusAlg.status).to.be.equal("completed") 
+            expect(buildStatusAlg.algorithmImage).to.contain(buildStatusAlg.imageTag)//.endsWith(buildStatusAlg.imageTag)
+            let alg = await getAlgorithm(algName)
+
+            let algJson = JSON.parse(alg.text);
+            alg  = await getAlgorithm(algName)
+            algJson.env = "nodejs"
+            let v2 = await storeAlgorithmApplay(algJson);
+            //expect(v2.algorithmImage).to.contain(v2.imageTag)
+            expect(v2.imageTag).to.not.be.equal(buildStatusAlg.imageTag)
+            expect(v2.body.messages[0].startsWith("a build was triggered due to change in env")).to.be.true
+       }).timeout(1000 * 60 * 20)
 
         it('Update  Algorithm version', async () => {
             await  deleteAlgorithm(algorithmName,true)

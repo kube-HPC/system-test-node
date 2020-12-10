@@ -629,12 +629,13 @@ describe('all swagger calls test ', () => {
         await  deleteAlgorithm(algorithmName,true)
          await storeAlgorithmApplay(algorithmV1);
          const algVersion = await getAlgorithmVersion(algorithmName);
-         expect(algVersion.body.length).to.be.equal(1)
+         const  versionAmount = algVersion.body.length
+         expect(versionAmount).to.be.greaterThan(0)
          await storeAlgorithmApplay(algorithmV2);
         //validate there are two images
         const algVersion2 = await getAlgorithmVersion(algorithmName);
         
-        expect(algVersion2.body.length).to.be.equal(2)
+        expect(algVersion2.body.length).to.be.equal(versionAmount+1)
         await  deleteAlgorithm(algorithmName,true)
        
     }).timeout(1000 * 60 * 5);
