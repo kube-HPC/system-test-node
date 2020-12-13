@@ -23,6 +23,7 @@ jobs:
       - name: create hkubectl
         run: |
           ./travis/cli.sh
+          echo $PWD >> $GITHUB_PATH 
       - name: test
         run:  |       
           npm run cliTests
