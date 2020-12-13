@@ -20,6 +20,7 @@ jobs:
           echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
         env:
           KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
+          HKUBE_URL: ${{ secrets.HKUBE }}
       - name: create hkubectl
         run: |
           ./travis/cli.sh
