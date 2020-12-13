@@ -126,6 +126,9 @@ jobs:
         run: |
           ./travis/cli.sh
           echo $PWD >> $GITHUB_PATH 
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
+          HKUBE_URL: ${{ secrets.HKUBE }}
       - name: test
         run:  |       
           npm run cliTests

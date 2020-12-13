@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CliCodeApi
+name: CliCodeApi1
 
 # Controls when the action will run. 
 on:
@@ -25,6 +25,9 @@ jobs:
         run: |
           ./travis/cli.sh
           echo $PWD >> $GITHUB_PATH 
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
+          HKUBE_URL: ${{ secrets.HKUBE }}
       - name: test
         run:  |       
           npm run cliTests
