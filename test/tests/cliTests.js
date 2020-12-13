@@ -64,27 +64,27 @@ describe('cli test', () => {
 
     describe('hkubecl algorithm tests', () => { 
         it('hkube algorithm list',async ()=>{
-            const runSimple = "hkubectl algorithm list "
+            const runSimple = "hkubectl algorithm list --json"
             
             const jsonResult = await execSyncReturenJSON(runSimple);
-           // console.log(jsonResult)
-            console.log("jsonResult.result.length-"+jsonResult.result.length)
-            expect(jsonResult.result.length).to.be.above(6)
+            console.log(jsonResult)
+            console.log("jsonResult.length-"+jsonResult.length)
+            expect(jsonResult.length).to.be.above(6)
            
         }).timeout(1000 * 60 * 6)
            
         
         
         it('hkube algorithm get',async ()=>{
-            const runSimple = "hkubectl algorithm get green-alg "            
+            const runSimple = "hkubectl algorithm get green-alg --json"            
             const jsonResult = await execSyncReturenJSON(runSimple);
             console.log(jsonResult)
            
-            expect(jsonResult.result.name).to.be.equal('green-alg')
+            expect(jsonResult.name).to.be.equal('green-alg')
            
         }).timeout(1000 * 60 * 6)
 
-        it('hkube algorithm apply',async ()=>{
+        it.only('hkube algorithm apply',async ()=>{
             const algName = pipelineRandomName(8).toLowerCase()
             const filePath = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
             const runBulid = `hkubectl algorithm apply ${algName} `+
@@ -455,7 +455,7 @@ describe('cli test', () => {
 
 
 
-    describe("code API ",()=>{
+    describe.skip("code API ",()=>{
 
         describe("python code API",()=>{
 
