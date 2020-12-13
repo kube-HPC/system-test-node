@@ -28,6 +28,7 @@ jobs:
         run:  |       
           npm run cliTests
         env:
+          HKUBE_URL: ${{ secrets.HKUBE }}
           BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
           KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}

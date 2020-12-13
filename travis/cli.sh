@@ -7,7 +7,7 @@ curl -Lo hkubectl https://github.com/kube-HPC/hkubectl/releases/download/$(curl 
 mkdir -p ~/.hkube
 cat <<EOF >~/.hkube/.hkuberc
 {
-  "endpoint": "${BASE_URL}",
+  "endpoint": "${HKUBE_URL}",
   "rejectUnauthorized": false
 }
 EOF
