@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Test
+name: CliCodeApi
 
 # Controls when the action will run. 
 on:
@@ -34,7 +34,7 @@ jobs:
           K8S_CONFIG_PATH: /tmp/config
   HighAvailability:
     runs-on: ubuntu-latest
-    needs: [CliAndCodeApi,algorithmBuild,algorithmTest]
+    needs: [CliAndCodeApi]
     if: ${{ always() }}
     steps:
       - uses: actions/checkout@v2
