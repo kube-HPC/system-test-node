@@ -122,11 +122,13 @@ jobs:
           echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
         env:
           KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
-      - name: test
-        run:  |
-          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
-          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
+      - name: create hkubectl
+        run: |
           ./travis/cli.sh
+          echo $PWD >> $GITHUB_PATH 
+      - name: test
+        run:  |       
+          npm run cliTests
         env:
           BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}

@@ -84,7 +84,7 @@ describe('cli test', () => {
            
         }).timeout(1000 * 60 * 6)
 
-        it.only('hkube algorithm apply',async ()=>{
+        it('hkube algorithm apply',async ()=>{
             const algName = pipelineRandomName(8).toLowerCase()
             const filePath = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
             const runBulid = `hkubectl algorithm apply ${algName} `+
@@ -455,7 +455,7 @@ describe('cli test', () => {
 
 
 
-    describe.skip("code API ",()=>{
+    describe("code API ",()=>{
 
         describe("python code API",()=>{
 
