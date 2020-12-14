@@ -568,7 +568,7 @@ describe('Node Tests git 660', () => {
     const algName= pipelineRandomName(8).toLowerCase()    
     const alg15cpu = { "name": `${algName}`,
                         "algorithmImage": "hkube/algorunner",
-                        "cpu": 15,
+                        "cpu": 30,
                         "mem": "1Gi",
                         "options": {
                             "debug": false,
@@ -579,13 +579,13 @@ describe('Node Tests git 660', () => {
                     
    
     it("node Fail schdualing due to lack of resource",async ()=>{    
-            await storeAlgorithmApplay(alg15cpu);
+            const jnk = await storeAlgorithmApplay(alg15cpu);
             const alg = {name: algName,
                         input:[]}
             const res = await runAlgorithm(alg);
             await delay(30000);
             const graph = await getRawGraph(res.body.jobId)
-            await deleteAlgorithm(algName)
+           // await deleteAlgorithm(algName)
             expect(graph.body.nodes[0].status).to.be.equal('FailedScheduling')
           }).timeout(1000 * 60 * 2)
   })

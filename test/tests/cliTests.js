@@ -84,7 +84,7 @@ const  execSyncReturenJSON = async  (command)=>{
             
             }).timeout(1000 * 60 * 6)
 
-            it.only('hkube algorithm apply',async ()=>{
+            it('hkube algorithm apply',async ()=>{
                 const algName = pipelineRandomName(8).toLowerCase()
                 const filePath = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
                 const runBulid = `hkubectl algorithm apply ${algName} `+
@@ -215,7 +215,7 @@ const  execSyncReturenJSON = async  (command)=>{
 
 
         })
-        describe.skip('hkubecl pipeline tests', () => {
+        describe('hkubecl pipeline tests', () => {
 
             it('pipeline get',async ()=>{
 
@@ -245,7 +245,7 @@ const  execSyncReturenJSON = async  (command)=>{
                 await deletePipeline(pipelineName)
             }).timeout(1000 * 60 * 6)
         })
-        describe.skip('hkubecl exec tests', () => {
+        describe('hkubecl exec tests', () => {
         
             it('exec stored pipe wait', async () => {   
         
@@ -366,7 +366,7 @@ const  execSyncReturenJSON = async  (command)=>{
 
         });
 
-        describe.skip('sync test', ()=>{
+        describe('sync test', ()=>{
             const delay = require('delay')
             function execShellCommand(cmd) {
                 const exec = require('child_process').exec;
@@ -454,7 +454,7 @@ const  execSyncReturenJSON = async  (command)=>{
         })
 
 });
-    describe.skip('Hkube code API tests', () => {
+    describe('Hkube code API tests', () => {
     describe("code API ",()=>{
 
         describe("python code API",()=>{
