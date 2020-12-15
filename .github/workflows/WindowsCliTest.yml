@@ -29,7 +29,7 @@ jobs:
       - name: create hkubectl
         run: |
           Invoke-WebRequest -OutFile d:\tmp\hkubectl.exe -Uri https://github.com/kube-HPC/hkubectl/releases/download/v1.1.61/hkubectl-win.exe
-          d:\tmp\hkubectl.exe config set endpoint ${HKUBE_URL}
+          d:\tmp\hkubectl.exe config set endpoint https://test.hkube.io
           d:\tmp\hkubectl.exe config set rejectUnauthorized false
           echo ~~~~~~~~~~~~~
           d:\tmp\hkubectl --version
