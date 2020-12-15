@@ -17,14 +17,15 @@ jobs:
       - run: npm ci
       - name: create kubeconfig
         run: |
-          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
-          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
+          mkdir -p d:/tmp 
+          echo "$KUBE_CONFIG_DATA" | base64 --decode > d:/tmp/config
+          echo KUBECONFIG=d:/tmp/config >> $GITHUB_ENV
         env:
           KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
           HKUBE_URL: ${{ secrets.HKUBE }}
       - name: create hkubectl
         run: |
-          ./travis/cli.sh
+          ./travis/cliWin.sh
           echo $PWD >> $GITHUB_PATH 
         env:
           KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
