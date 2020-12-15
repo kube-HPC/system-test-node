@@ -28,9 +28,9 @@ jobs:
           HKUBE_URL: ${{ secrets.HKUBE }}
       - name: create hkubectl
         run: |
-          curl.exe --output hkubectl --url https://github.com/kube-HPC/hkubectl/releases/download/v1.1.61/hkubectl-win.exe
-          hkubectl config set endpoint ${HKUBE_URL}
-          hkubectl config set rejectUnauthorized false
+          curl.exe --output .\hkubectl --url https://github.com/kube-HPC/hkubectl/releases/download/v1.1.61/hkubectl-win.exe
+          .\hkubectl config set endpoint ${HKUBE_URL}
+          .\hkubectl config set rejectUnauthorized false
           echo ~~~~~~~~~~~~~algorithm get green-alg~~~~~~~~~~~~~~~~~~~~~~~
           hkubectl --version
           hkubectl algorithm get green-alg --json
