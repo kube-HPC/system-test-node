@@ -35,7 +35,7 @@ jobs:
           d:\tmp\hkubectl --version
           d:\tmp\hkubectl algorithm get green-alg --json
           echo ~~~===========
-          echo "d:\tmp" >> $GITHUB_PATH 
+          $env:Path += ";d:\tmp" 
           hkubectl --version
         env:
           KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
