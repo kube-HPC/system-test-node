@@ -36,11 +36,13 @@ jobs:
           d:\tmp\hkubectl algorithm get green-alg --json
           echo ~~~===========
           echo "d:\tmp" >> $GITHUB_PATH 
+          hkubectl --version
         env:
           KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
           HKUBE_URL: ${{ secrets.HKUBE }}
       - name: test
-        run:  |       
+        run:  |   
+          echo "d:\tmp" >> $GITHUB_PATH    
           npm run cliTests
         env:
           HKUBE_URL: ${{ secrets.HKUBE }}
