@@ -17,9 +17,12 @@ jobs:
       - run: npm ci
       - name: create kubeconfig
         run: |
-          mkdir  d:/tmp 
-          echo "$KUBE_CONFIG_DATA" | base64 --decode > d:/tmp/config
-          echo KUBECONFIG=d:/tmp/config >> $GITHUB_PATH
+          mkdir  d:\tmp 
+          echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          echo "$KUBE_CONFIG_DATA" >> d:\tmp\config64.b64
+          certutil -decode d:\tmp\config64.b64 d:\tmp\config
+          echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          echo KUBECONFIG=d:/tmp/config >> $GITHUB_ENV
         env:
           KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
           HKUBE_URL: ${{ secrets.HKUBE }}
