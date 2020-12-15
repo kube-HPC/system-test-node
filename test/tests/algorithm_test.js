@@ -148,6 +148,7 @@ describe('Alrogithm Tests', () => {
 
         it('update algorithm nodeSelector',async () =>{
             const nodes = await getNodes();
+            console.log("nodes ="+nodes)
             await  deleteAlgorithm(algorithmName,true)
             await delay(10000)
             const podName0 = await filterPodsByName(algorithmName);  
