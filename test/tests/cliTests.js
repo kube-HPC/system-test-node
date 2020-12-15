@@ -33,7 +33,7 @@ const {buildAlgorithmAndWait,
 
 chai.use(chaiHttp);
 chai.use(assertArrays);
-const fs = require('fs');
+
 
 const yaml = require('js-yaml');
 
@@ -60,7 +60,7 @@ const  execSyncReturenJSON = async  (command)=>{
     return jsonResult
 }
 
-
+describe('cli + code api tests', () => {
     describe('Hkubectl Tests', () => {
         describe('hkubecl algorithm tests', () => { 
             it('hkube algorithm list',async ()=>{
@@ -104,6 +104,7 @@ const  execSyncReturenJSON = async  (command)=>{
             }).timeout(1000 * 60 * 6)
 
             it('hkube algorithm apply from file and delete',async ()=>{
+                const fs = require('fs');
                 const algName = pipelineRandomName(8).toLowerCase()
                 const algFile = path.join(process.cwd(),'./additionalFiles/alg.yaml');
                 let fileContents = fs.readFileSync(algFile, 'utf8');
@@ -111,6 +112,7 @@ const  execSyncReturenJSON = async  (command)=>{
                 data.name = `${algName}`
                 let yamlStr = yaml.safeDump(data);
                 fs.writeFileSync(algFile, yamlStr, 'utf8');
+               
                 const runBulid = `hkubectl algorithm apply `+
                                 `-f ${algFile}`            
                 const buildResult = await exceSyncString(runBulid);
@@ -229,6 +231,7 @@ const  execSyncReturenJSON = async  (command)=>{
             }).timeout(1000 * 60 * 6)
 
             it('pipeline store from file',async ()=>{
+                const fs = require('fs');
                 const pipelineName = pipelineRandomName(8).toLowerCase()
                 const pipelineFile = './pipelines/simpelraw.json'
                 const pipelineTemp = './pipelines/temp.json'
@@ -239,7 +242,7 @@ const  execSyncReturenJSON = async  (command)=>{
                 fs.writeFileSync(pipelineTemp, jsonStr,'utf8');
                 const store = `hkubectl pipeline store -f `+ pipelineTemp
                 const output = await exceSyncString(store);
-            
+             
                 const pipe = await getPipeline(pipelineName)
                 expect(pipe.body.name).to.be.equal(pipelineName)
                 await deletePipeline(pipelineName)
@@ -367,21 +370,35 @@ const  execSyncReturenJSON = async  (command)=>{
         });
 
         describe('sync test', ()=>{
+            after(async()=>{
+                console.log("sater after")
+                console.log("algList = "+ algLIst)
+                const del = algLIst.map((e) =>{
+                    console.log("del"+e)
+                    return deleteAlgorithm(e) 
+                    
+                  })
+                 await Promise.all(del)
+
+            })
+            let algLIst = []
             const delay = require('delay')
             function execShellCommand(cmd) {
                 const exec = require('child_process').exec;
                 return new Promise((resolve, reject) => {
-                exec(cmd, (error, stdout, stderr) => {
-                if (error) {
-                console.warn(error);
-                }
-                resolve(stdout? stdout : stderr);
-                });
+                    exec(cmd, (error, stdout, stderr) => {
+                    if (error) {
+                    console.warn(error);
+                    }
+                    resolve(stdout? stdout : stderr);
+                    });
                 });
             }
-            it('synce create watch changes python',async ()=>{
+          
+            it('sync create watch changes python',async ()=>{
                 const filePath = path.join(process.cwd(), 'additionalFiles/main.py');
                 const algName = pipelineRandomName(8).toLowerCase()
+                algLIst.push(algName)
                 const folderPath = path.join(process.cwd(),algName)
                 var fs = require('fs');
             
@@ -415,6 +432,7 @@ const  execSyncReturenJSON = async  (command)=>{
 
                 fs.writeFileSync(`${folderPath}/main.py`, newmain, {encoding:'utf8',flag:'w'} )
                 await delay(20*1000)
+             
                 const result2 = await runAlgGetResult(algName,[4])
                 await deleteAlgorithm(algName,true)
                 expect(result2.data[0].result.version.toString()).to.be.equal("2")  
@@ -422,9 +440,10 @@ const  execSyncReturenJSON = async  (command)=>{
             }).timeout(1000 * 60 * 10)
 
 
-            it('synce python alg with requirements',async ()=>{
+            it('sync python alg with requirements',async ()=>{
                 const folderPath = path.join(process.cwd(), 'additionalFiles/pythonAlg');
                 const algName = pipelineRandomName(8).toLowerCase()
+                algLIst.push(algName)
                 console.log("alg-name-"+algName)
                 var fs = require('fs');
             
@@ -442,20 +461,21 @@ const  execSyncReturenJSON = async  (command)=>{
                 console.log("watch-"+watch)
                 execShellCommand(watch)
                 var filePath = `${folderPath}/main.py`
-                var fs = require('fs');
+               
                 var data = fs.readFileSync(filePath, 'utf8');
                 fs.writeFileSync(`${folderPath}/${algName}.py`, data, {encoding:'utf8',flag:'w'} )
 
-            await delay(20*1000)
-            const result = await runAlgGetResult(algName,[4])
-            console.log(result)
-            deleteAlgorithm(algName)
-            }).timeout(1000 * 60 * 10)
+                await delay(20*1000)
+            
+                const result = await runAlgGetResult(algName,[4])
+                console.log(result)
+                deleteAlgorithm(algName)
+                }).timeout(1000 * 60 * 10)
         })
 
 });
     describe('Hkube code API tests', () => {
-    describe("code API ",()=>{
+   
 
         describe("python code API",()=>{
 
@@ -673,6 +693,6 @@ const  execSyncReturenJSON = async  (command)=>{
         }).timeout(1000 * 60 * 10)
     })
 
-    });
+   
 
-
+});
