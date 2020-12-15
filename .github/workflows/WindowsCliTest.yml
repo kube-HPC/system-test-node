@@ -41,3 +41,4 @@ jobs:
         env:
           KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
           HKUBE_URL: ${{ secrets.HKUBE }}
+          BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
