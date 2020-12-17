@@ -1,7 +1,7 @@
 var http = require('http');
 var fs = require('fs');
 const https = require('https');
-
+const delay = require('delay');
 const latest ="https://github.com/kube-HPC/hkubectl/releases/latest"
 
 
@@ -24,6 +24,20 @@ async function app() {
     console.log('myArgs: ', myArgs);
     const file = fs.createWriteStream(myArgs[0]);
     var a = await operation(file) 
+    await delay(10000)
+    fs.access(myArgs[0], fs.F_OK, (err) => {
+        if (err) {
+          console.error(err)
+          return
+        }
+        var stats = fs.statSync(myArgs[0])
+        var fileSizeInBytes = stats.size;
+// Convert the file size to megabytes (optional)
+      
+
+        console.log(myArgs[0]  + " file exists size = " +fileSizeInBytes )
+        //file exists
+      })
 }
 
  app()
