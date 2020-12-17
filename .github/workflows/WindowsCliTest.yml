@@ -29,6 +29,7 @@ jobs:
       - name: create hkubectl
         run: |
           npm run downloadWinCtl "d:\tmp\hkubectl.exe"
+          Start-Sleep -s 15
           d:\tmp\hkubectl.exe config set endpoint https://test.hkube.io
           d:\tmp\hkubectl.exe config set rejectUnauthorized false
           echo ~~~~~~~~~~~~~
