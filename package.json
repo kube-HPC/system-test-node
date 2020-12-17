@@ -13,7 +13,8 @@
     "cliTests": "mocha ./test/tests/cliTests.js --exit",
     "codeApiTests": "mocha ./test/tests/codeApi.js --exit",
     "HighAvailability":"mocha ./test/tests/longTests/High_Availability.js",
-    "downloadWinCtl":"node ./additionalFiles/downloadCli.js"
+    "downloadWinCtl":"node ./additionalFiles/downloadCli.js",
+    "getLatestCtlVersion":"node ./additionalFiles/getLatestVersion.js"
   },
   "author": "",
   "license": "ISC",
