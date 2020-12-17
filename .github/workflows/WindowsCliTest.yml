@@ -28,9 +28,10 @@ jobs:
           HKUBE_URL: ${{ secrets.HKUBE }}
       - name: create hkubectl
         run: |
-          $version = npm run getLatestVersion
+          $version = node ./additionalFiles/getLatestVersion.js
+          echo $version
           $downloadFIle = "https://github.com/kube-HPC/hkubectl/releases/download/"+$version+"/hkubectl-win.exe"
-          echo dowload file from $downloadFIle
+          echo downloadFIle file from $downloadFIle
           Invoke-WebRequest -OutFile d:\tmp\hkubectl.exe -Uri $downloadFIle
           d:\tmp\hkubectl.exe config set endpoint https://test.hkube.io
           d:\tmp\hkubectl.exe config set rejectUnauthorized false
