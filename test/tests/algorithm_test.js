@@ -46,6 +46,9 @@
      runStoredAndWaitForResults
  } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 
+ const {
+    pipelineRandomName} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+
  chai.use(chaiHttp);
 
 
@@ -148,29 +151,36 @@ describe('Alrogithm Tests', () => {
 
         it('update algorithm nodeSelector',async () =>{
             const nodes = await getNodes();
-            console.log("nodes ="+nodes)
-            await  deleteAlgorithm(algorithmName,true)
-            await delay(10000)
-            const podName0 = await filterPodsByName(algorithmName);  
-            const names0 = podName0.map((n)=>{return n.metadata.name})       
-            algorithmV1.nodeSelector = {"kubernetes.io/hostname": nodes[2] }
-            algorithmV1.minHotWorkers = 1;
-            let v1 = await storeAlgorithmApplay(algorithmV1); 
+           
+            const algName= pipelineRandomName(8).toLowerCase()    
+            const algV1 = algJson(algName,algorithmImageV1)
+            const algV2 = algJson(algName,algorithmImageV2)
+            algV1.nodeSelector = {"kubernetes.io/hostname": nodes[2] }
+            algV1.minHotWorkers = 1;
+            let v1 = await storeAlgorithmApplay(algV1); 
             await delay(2000)
-            const podName = await filterPodsByName(algorithmName);
+            const podName = await filterPodsByName(algName);
             const names = podName.map((n)=>{return n.metadata.name})
-            const podname = names.filter(e => !names0.includes(e))
-            const podNode =   await getPodNode(podname[0])
+            
+            const podNode =   await getPodNode(names[0])
             expect(podNode).to.be.equal(nodes[2])
-            algorithmV1.nodeSelector = {"kubernetes.io/hostname": nodes[1] }
-            let v2 = await storeAlgorithmApplay(algorithmV1);            
-            const update = await updateAlgorithmVersion(algorithmName,v2.body.algorithm.version,true);
+            algV2.nodeSelector = {"kubernetes.io/hostname": nodes[1] }
+            algV2.minHotWorkers = 1;
+            
+            let v2 = await storeAlgorithmApplay(algV2);            
+            const update = await updateAlgorithmVersion(algName,v2.body.algorithm.version,true);
             await delay(20000)
-            const podName1 = await filterPodsByName(algorithmName);
+            const podName1 = await filterPodsByName(algName);
             const names1 = podName1.map((n)=>{return n.metadata.name})
-            const podname1 = names1.filter(e => !names.includes(e))
-            const podNode1 =   await getPodNode(podname1[0])
+                var index = names1.indexOf(names[0]);
+                if (index !== -1) {
+                  
+                    names1.splice(index, 1);
+                }
+                //var filteredAry = ary.filter(e => e !== 'seven')
+            const podNode1 =   await getPodNode(names1[0])
             expect(podNode1).to.be.equal(nodes[1])
+            deleteAlgorithm(algName)
         }).timeout(1000 * 60 * 10);
     
         it(`change baseImage trigger new Build`, async () => {

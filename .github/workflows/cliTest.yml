@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: CliCodeApi1
+name: mac-cli
 
 # Controls when the action will run. 
 on:
@@ -8,8 +8,8 @@ on:
   workflow_dispatch:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:    
-  CliAndCodeApi:
-    runs-on: ubuntu-latest
+  macCli:
+    runs-on: macos-11.0
     timeout-minutes: 60
     if: ${{ always() }}
     steps:
