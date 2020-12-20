@@ -24,7 +24,7 @@ jobs:
           HKUBE_URL: ${{ secrets.HKUBE }}
       - name: create hkubectl
         run: |
-          ./travis/cli.sh
+          ./travis/cliMac.sh
           echo $PWD >> $GITHUB_PATH 
         env:
           KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
