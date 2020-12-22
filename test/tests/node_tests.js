@@ -33,9 +33,10 @@ const {
         } = require(path.join(process.cwd(), 'utils/socketGet'))
 
 const {   
-      testData1} = require(path.join(process.cwd(), 'config/index')).nodeTest
+      testData1,
+      testData2} = require(path.join(process.cwd(), 'config/index')).nodeTest
 
-
+     
 const {
   getRawGraph,
     getResult
@@ -49,6 +50,7 @@ const {deconstructTestData,
       deletePipeline,
       storePipeline,
       runStoredAndWaitForResults,
+      checkResults,
       exceCachPipeline} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 
 chai.use(chaiHttp);
@@ -625,5 +627,250 @@ describe('Node Tests git 660', () => {
 
 
   })
+
+
+
+describe('TID_110 - batchTolerance  -  algorithm completed with failure (git 60 86)', () => {
+
+  const dataSort = (obj) => {
+    testData2.descriptor.options = obj.options
+    testData2.descriptor.flowInput = obj.flowInput
+
+  }
+
+
+  it('should complete the pipeline, 100 percent tolerance with one fail', async () => {
+
+    const obj = {
+      flowInput: {
+        nums: [
+          1,
+          24,
+          3,
+          4,
+          5
+        ]
+      },
+
+      options: {
+        batchTolerance: 100,
+        progressVerbosityLevel: 'debug'
+      }
+    }
+
+
+    dataSort(obj)
+
+    const d = testData2.descriptor
+    //store pipeline
+    await storePipeline(d)
+
+
+    const res = await runStored(d.name)
+
+
+    await checkResults(res, 200, 'completed', d, true)
+
+  }).timeout(5000000);
+
+
+
+  it('should fail the pipeline, 20 percent tolerance with one fail', async () => {
+    const obj = {
+      flowInput: {
+        nums: [
+          1,
+          24,
+          3,
+          4,
+          5
+        ]
+      },
+
+      options: {
+        batchTolerance: 20,
+        progressVerbosityLevel: 'debug'
+
+      }
+    }
+
+    dataSort(obj)
+    const d = testData2.descriptor
+
+
+    await storePipeline(d)
+    const res = await runStored(d.name)
+
+    await checkResults(res, 200, 'failed', d, true)
+
+  }).timeout(5000000);
+
+
+  it('should complete the pipeline, 60 percent tolerance with one fail', async () => {
+    const obj = {
+      flowInput: {
+        nums: [
+          1,
+          24,
+          3,
+          4,
+          5
+        ]
+      },
+
+      options: {
+        batchTolerance: 60,
+        progressVerbosityLevel: 'debug'
+
+      }
+    }
+
+    dataSort(obj)
+    const d = testData2.descriptor
+
+
+    await storePipeline(d)
+    const res = await runStored(d.name)
+
+    await checkResults(res, 200, 'completed', d, true)
+  }).timeout(5000000);
+
+
+  it('should fail the pipeline, -2 percent tolerance with one fail', async () => {
+    const obj = {
+      flowInput: {
+        nums: [
+          1,
+          24,
+          3,
+          4,
+          5
+        ]
+      },
+
+      options: {
+        batchTolerance: -2,
+        progressVerbosityLevel: 'debug'
+
+      }
+    }
+
+    dataSort(obj)
+    const d = testData2.descriptor
+
+    const res = await storePipeline(d)
+
+    expect(res.status).to.eql(400)
+    expect(res.body).to.have.property('error')
+    expect(res.body.error.message).to.include('batchTolerance should be >= 0')
+
+    await deletePipeline(d)
+
+  }).timeout(5000000);
+
+
+  it('should fail the pipeline, 101 percent tolerance with one fail', async () => {
+    const obj = {
+      flowInput: {
+        nums: [
+          1,
+          24,
+          3,
+          4,
+          5
+        ]
+      },
+
+      options: {
+        batchTolerance: 101,
+        progressVerbosityLevel: 'debug'
+
+      }
+    }
+
+    dataSort(obj)
+    const d = testData2.descriptor
+
+    const res = await storePipeline(d)
+
+    expect(res.status).to.eql(400)
+    expect(res.body).to.have.property('error')
+    expect(res.body.error.message).to.include('batchTolerance should be <= 100')
+
+
+    await deletePipeline(d)
+
+  }).timeout(5000000);
+
+
+  it('should fail the pipeline, 20.6 percent tolerance with one fail', async () => {
+    const obj = {
+      flowInput: {
+        nums: [
+          1,
+          24,
+          3,
+          4,
+          5
+        ]
+      },
+
+      options: {
+        batchTolerance: 20.6,
+        progressVerbosityLevel: 'debug'
+
+      }
+    }
+
+    dataSort(obj)
+    const d = testData2.descriptor
+
+    const res = await storePipeline(d)
+    expect(res.status).to.eql(400)
+
+
+    expect(res.body).to.have.property('error')
+    expect(res.body.error.message).to.include('batchTolerance should be integer')
+
+
+    await deletePipeline(d)
+
+  }).timeout(5000000);
+
+
+
+  it('should fail the pipeline, "twenty" percent tolerance with one fail', async () => {
+    const obj = {
+
+      flowInput: {
+        nums: [
+          1,
+          24,
+          3,
+          4,
+          5
+        ]
+      },
+
+      options: {
+        batchTolerance: 'twenty',
+        progressVerbosityLevel: 'debug'
+
+      }
+    }
+
+    dataSort(obj)
+    const d = testData2.descriptor
+
+    const res = await storePipeline(d)
+    expect(res.status).to.eql(400)
+    expect(res.body).to.have.property('error')
+    expect(res.body.error.message).to.include('batchTolerance should be integer')
+
+    await deletePipeline(d)
+
+  }).timeout(5000000);
+
+});
 
 });

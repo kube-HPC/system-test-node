@@ -106,7 +106,8 @@ const index = {
         testData2: require('../pipelines/evalwait')
     },
     nodeTest:{
-        testData1: require('../pipelines/singel-on-bach')
+        testData1: require('../pipelines/singel-on-bach'),
+        testData2: require('../pipelines/eval-error')
     }
     
 }
