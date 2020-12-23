@@ -838,7 +838,7 @@ describe('all swagger calls test ', () => {
                     .attach("README.md", fs.readFileSync(readMeSecondFile.FilePath), "README.md");
 
                 write_log("res result =" + res.status)
-                expect(res).to.have.status(201)
+                expect(res).to.have.status(200)
                 const timeout = await delay(1000 * 2);
                 const readme = await chai.request(config.apiServerUrl)
                     .get(`/readme/algorithms/${algName}`)
@@ -1046,10 +1046,10 @@ describe('all swagger calls test ', () => {
 
 
 
-        it('test /experiment​/list​/all', async () => {
+        it('test /experiment​ list', async () => {
           
             const res = await chai.request(config.apiServerUrl)
-            .get(`/experiment/list/all`)
+            .get(`/experiment`)
 
             expect(res).to.have.status(200)         
           
