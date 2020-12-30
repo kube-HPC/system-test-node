@@ -34,7 +34,16 @@ const {
 
 const {   
       testData1,
-      testData2} = require(path.join(process.cwd(), 'config/index')).nodeTest
+      testData2,
+      testData401,
+      testData402,
+      testData403,
+      testData404,
+      testData404a,
+      testData405,
+      testData406,
+      testData407,
+      testData408} = require(path.join(process.cwd(), 'config/index')).nodeTest
 
      
 const {
@@ -629,6 +638,153 @@ describe('Node Tests git 660', () => {
   })
 
 
+  describe('TID-410- different input types ~', () => {
+        
+    it("integers", async () => {
+        //set test data to testData1
+        const d = deconstructTestData(testData402)
+        await deletePipeline(d)
+        const pipe = {   
+            name: d.name,
+            flowInput: {
+                addInput:[3,5],
+                multInput:[8]
+            }
+        }
+       
+        //store pipeline addmuldiv
+        await storePipeline(d)
+        const res = await runStored(pipe)
+        const jobId = res.body.jobId
+        const result = await getResult(jobId, 200)
+        // let diff = []
+        expect(result.data[0].result).to.be.equal(64)
+
+    }).timeout(1000 * 60 * 5);
+
+
+    it("float", async () => {
+        //set test data to testData1
+        const d = deconstructTestData(testData402)
+        await deletePipeline(d)
+        const pipe = {   
+            name: d.name,
+            flowInput: {
+                addInput:[2.5,3.4],
+                multInput:[1.35]
+            }
+        }
+       
+        //store pipeline addmuldiv
+        await storePipeline(d)
+        const res = await runStored(pipe)
+        const jobId = res.body.jobId
+        const result = await getResult(jobId, 200)
+        // let diff = []
+        expect(result.data[0].result).to.be.closeTo(7.965,0.001)
+
+    }).timeout(1000 * 60 * 5);
+
+
+    it(" string", async () => {
+        //set test data to testData1
+        const d = deconstructTestData(testData405)
+        await deletePipeline(d)
+        const pipe = {   
+            name: d.name,
+            flowInput: {
+                inputs:["hello world","world","earth"]
+               
+            }
+        }
+       
+        //store pipeline addmuldiv
+        await storePipeline(d)
+        const res = await runStored(pipe)
+        const jobId = res.body.jobId
+        const result = await getResult(jobId, 200)
+        // let diff = []
+        expect(result.data[0].result).to.be.equal("hello earth")
+
+    }).timeout(1000 * 60 * 5);
+
+
+    it(" bool true", async () => {
+        //set test data to testData1
+        const d = deconstructTestData(testData403)
+        await deletePipeline(d)
+        const pipe = {   
+            name: d.name,
+            flowInput: {
+                inputs:true
+               
+            }
+        }
+       
+        //store pipeline addmuldiv
+        await storePipeline(d)
+        const res = await runStored(pipe)
+        const jobId = res.body.jobId
+        const result = await getResult(jobId, 200)
+        // let diff = []
+        expect(result.data[0].result).to.be.equal(true)
+
+    }).timeout(1000 * 60 * 5);
+
+    it(" bool false", async () => {
+        //set test data to testData1
+        const d = deconstructTestData(testData403)
+        await deletePipeline(d)
+        const pipe = {   
+            name: d.name,
+            flowInput: {
+                inputs:false
+               
+            }
+        }
+       
+        //store pipeline addmuldiv
+        await storePipeline(d)
+        const res = await runStored(pipe)
+        const jobId = res.body.jobId
+        const result = await getResult(jobId, 200)
+        // let diff = []
+        expect(result.data[0].result).to.be.equal(false)
+
+    }).timeout(1000 * 60 * 5);
+
+
+
+
+    it(" bool object type", async () => {
+        //set test data to testData1
+        const d = deconstructTestData(testData403)
+        await deletePipeline(d)
+        const pipe = {   
+            name: d.name,
+            flowInput: {
+                inputs:{
+                    name:"hkube",
+                    type:"type1",
+                    prop:["prop1","prop2","prop3",4,7,89.022,-987]                        
+                }
+               
+            }
+        }
+       
+        //store pipeline addmuldiv
+        await storePipeline(d)
+        const res = await runStored(pipe)
+        const jobId = res.body.jobId
+        const result = await getResult(jobId, 200)
+        // let diff = []
+        expect(result.data[0].result).to.be.deep.equal(pipe.flowInput.inputs)
+
+    }).timeout(1000 * 60 * 5);
+
+
+
+})
 
 describe('TID_110 - batchTolerance  -  algorithm completed with failure (git 60 86)', () => {
 

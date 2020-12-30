@@ -107,7 +107,16 @@ const index = {
     },
     nodeTest:{
         testData1: require('../pipelines/singel-on-bach'),
-        testData2: require('../pipelines/eval-error')
+        testData2: require('../pipelines/eval-error'),
+        testData401: require('../pipelines/bytes'),
+        testData402: require('../pipelines/addmult'),
+        testData403: require('../pipelines/bool'),
+        testData404: require('../pipelines/evalwait161'),
+        testData404a: require('../pipelines/evalwait400'),
+        testData405: require('../pipelines/stringReplace'),
+        testData406: require('../pipelines/evalcron1minutes'),
+        testData407: require('../pipelines/evalwait'),
+        testData408: require('../pipelines/evalerror')
     }
     
 }

@@ -217,7 +217,7 @@ const checkResults = async (res, expectedStatusCode, expectedStatus, testData, s
 
 
     const result = await getResult(jobId, expectedStatusCode);
-    if ('error' in result) {
+    if (result.error ) {
         process.stdout.write(result.error)
     }
 
