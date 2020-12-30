@@ -183,7 +183,7 @@ describe('pipeline Tests 673', () => {
             await delay(3 * 1000);
             await deletePipeline(d)
             jobs = await getWebSocketJobs();
-            jobId = jobs.filter(obj => obj.key.includes(triggeredPipe))[0].key
+            jobId = jobs.filter(obj => obj.pipeline.triggers)[0].key
             const status = await  getExecPipeline(jobId)
             expect(status.body.types).includes("trigger");
             expect(status.body.types).includes("stored");
@@ -359,7 +359,7 @@ describe('pipeline Defaults (git 754)', () => {
         await runStoredAndWaitForResults(simple)
         await delay(3 * 1000);
         jobs = await getWebSocketJobs();
-        jobId = jobs.filter(obj => obj.key.includes(triggeredPipe))[0].key
+        jobId = jobs.filter(obj => obj.pipeline.triggers)[0].key
         const pipelineData = await getExecPipeline(jobId);
         await deletePipeline(d)
         const rr = validateDefault(triggerd.descriptor,pipelineData.body)
@@ -532,12 +532,13 @@ describe('pipeline Defaults (git 754)', () => {
             const trigger = deconstructTestData(testData8)
             await deletePipeline(trigger)
             await storePipeline(trigger)
+            
             await deletePipeline(triggered)
             await storePipeline(triggered)
             await runStoredAndWaitForResults(trigger)
             await delay(1000*20)
             jobs = await getWebSocketJobs();
-            jobId = jobs.filter(obj => obj.key.includes(triggerdName))[0].key
+            jobId = jobs.filter(obj => obj.pipeline.triggers)[0].key
             const result = await getResult(jobId,200)
             await deletePipeline(triggered)
             expect(result.data.length).to.be.equal(10)
