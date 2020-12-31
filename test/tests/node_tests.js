@@ -579,7 +579,7 @@ describe('Node Tests git 660', () => {
     const algName= pipelineRandomName(8).toLowerCase()    
     const alg15cpu = { "name": `${algName}`,
                         "algorithmImage": "hkube/algorunner",
-                        "cpu": 30,
+                        "cpu": 14,
                         "mem": "1Gi",
                         "options": {
                             "debug": false,
@@ -594,11 +594,11 @@ describe('Node Tests git 660', () => {
             const alg = {name: algName,
                         input:[]}
             const res = await runAlgorithm(alg);
-            await delay(30000);
+            await delay(90000);
             const graph = await getRawGraph(res.body.jobId)
-           // await deleteAlgorithm(algName)
+            await deleteAlgorithm(algName)
             expect(graph.body.nodes[0].status).to.be.equal('FailedScheduling')
-          }).timeout(1000 * 60 * 2)
+          }).timeout(1000 * 60 * 3)
   })
 
 

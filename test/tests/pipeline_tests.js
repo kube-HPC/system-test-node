@@ -631,7 +631,7 @@ describe('pipeline Defaults (git 754)', () => {
             await delay(8000)
            
             const pause = await pausePipeline(jobId);
-            await delay(120000)
+            await delay(60000)
             let pipelineStatus = await getPipelineStatus(jobId)
             expect(pipelineStatus.body.status).to.be.equal("paused")
             const resume = await resumePipeline(jobId);
