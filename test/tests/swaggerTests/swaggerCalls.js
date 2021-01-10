@@ -1069,7 +1069,7 @@ describe('all swagger calls test ', () => {
             const testalg = 'pyeyemat'
             const algName= pipelineRandomName(8).toLowerCase()                        
             const code1 = path.join(process.cwd(), 'additionalFiles/eyeMat.tar.gz');
-            const buildStatusAlg = await buildAlgorithmAndWait(code1, algName,testalg )
+            const buildStatusAlg = await buildAlgorithmAndWait({code:code1,algName:algName,entry:testalg} )
             expect(buildStatusAlg.status).to.be.equal("completed") 
             await deleteAlgorithm(algName,true)    
         }).timeout(1000 * 60 * 20)

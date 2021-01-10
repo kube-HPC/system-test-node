@@ -76,7 +76,7 @@ describe('code api tests ', () => {
                 const code = path.join(process.cwd(), 'additionalFiles/pythonAlg/pythonApi.tar.gz');//pythonApi.tar.gz
                 const entry = 'main'                     
                 const pythonVersion = "python:3.7"                                    
-                const buildStatusAlg = await buildAlgorithmAndWait(code, algName,entry,pythonVersion)
+                const buildStatusAlg = await buildAlgorithmAndWait({code:code, algName:algName,entry:entry,baseVersion:pythonVersion})
                 expect(buildStatusAlg.status).to.be.equal("completed") 
                 algExsis = true;
                 algLIst.push(algName)

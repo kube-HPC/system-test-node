@@ -54,7 +54,9 @@
 
  const {getWebSocketData} = require(path.join(process.cwd(), 'utils/socketGet'))
 describe('Alrogithm Tests', () => {
-   
+     
+
+
   
      describe('TID 480 - Test Algorithm ttl (git 61 342)',()=>{ 
       
@@ -144,8 +146,8 @@ describe('Alrogithm Tests', () => {
             await tagAlgorithmVersion(algorithmName,v2.body.algorithm.version,"myTag2")
             const v2Tag = await getAlgVersion(algorithmName,v2.body.algorithm.version)
 
-            expect(JSON.parse(v1Tag.text).tag).to.be.equal("myTag1")
-            expect(JSON.parse(v2Tag.text).tag).to.be.equal("myTag2")
+            expect(JSON.parse(v1Tag.text).tags[0]).to.be.equal("myTag1")
+            expect(JSON.parse(v2Tag.text).tags[0]).to.be.equal("myTag2")
         }).timeout(1000 * 60 * 10);
 
 
@@ -189,7 +191,7 @@ describe('Alrogithm Tests', () => {
              const algName= "python2.7-test-1"    
              const pythonVersion = "python:2.7"                    
             await deleteAlgorithm(algName)
-             const buildStatusAlg = await buildAlgorithmAndWait(code1, algName,entry,pythonVersion)
+             const buildStatusAlg = await buildAlgorithmAndWait({code:code1, algName:algName,entry:entry,baseVersion:pythonVersion})
              expect(buildStatusAlg.status).to.be.equal("completed") 
              expect(buildStatusAlg.algorithmImage).to.contain(buildStatusAlg.imageTag)//.endsWith(buildStatusAlg.imageTag)
              let alg = await getAlgorithm(algName)
@@ -210,7 +212,7 @@ describe('Alrogithm Tests', () => {
             const algName= "python2.7-test-1"    
             const pythonVersion = "python:2.7"                    
             await deleteAlgorithm(algName)
-            const buildStatusAlg = await buildAlgorithmAndWait(code1, algName,entry,pythonVersion)
+            const buildStatusAlg = await buildAlgorithmAndWait({code:code1, algName:algName,entry:entry,baseVersion:pythonVersion})
             expect(buildStatusAlg.status).to.be.equal("completed") 
             expect(buildStatusAlg.algorithmImage).to.contain(buildStatusAlg.imageTag)//.endsWith(buildStatusAlg.imageTag)
             let alg = await getAlgorithm(algName)

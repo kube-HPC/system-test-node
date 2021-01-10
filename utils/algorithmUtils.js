@@ -76,7 +76,7 @@ const storeAlgorithmApplay = async (alg)=>{
     return res
 }
 
-const buildAlgorithm= async (code, algName, entry,baseVersion='python:3.7') => {
+const buildAlgorithm= async ({code, algName, entry,baseVersion='python:3.7',algorithmArray = []}) => {
     const data = {
         name: algName,
         env: 'python',
@@ -88,7 +88,7 @@ const buildAlgorithm= async (code, algName, entry,baseVersion='python:3.7') => {
         version: idGen(),
         baseImage:baseVersion
     }
-
+    algorithmArray.push(algName)
     const res = await chai.request(config.apiServerUrl)
         .post('/store/algorithms/apply')
         .field('payload', JSON.stringify(data))
@@ -103,15 +103,15 @@ const buildAlgorithm= async (code, algName, entry,baseVersion='python:3.7') => {
     return buildIdAlg
 }
 
-const buildAlgorithmAndWait = async (code, algName, entry,baseVersion='python:3.7') => {
+const buildAlgorithmAndWait = async ({code, algName, entry,baseVersion='python:3.7',algorithmArray = []}) => {
     
-    const buildIdAlg = await buildAlgorithm(code,algName,entry,baseVersion)
+    const buildIdAlg = await buildAlgorithm({code:code,algName:algName,entry:entry,baseVersion:baseVersion,algorithmArray:algorithmArray})
     const buildStatusAlg = await getStatusall(buildIdAlg, `/builds/status/`, 200, "completed", 1000 * 60 * 10)
 
     return buildStatusAlg
 }
 
-const buildGitAlgorithm = async (algName,gitUrl,gitKind ,entry , branch ,language = 'python',commit = "null" ,tag = "null" ,token="null")=>{
+const buildGitAlgorithm = async ({algName,gitUrl,gitKind ,entry , branch ,language = 'python',commit = "null" ,tag = "null" ,token="null",algorithmArray=[]})=>{
     const data = {
         name: algName,
         env: language,
@@ -127,6 +127,7 @@ const buildGitAlgorithm = async (algName,gitUrl,gitKind ,entry , branch ,languag
             gitKind : gitKind
         }
     }
+    algorithmArray.push(algName)
     if(typeof commit != "string"){
         
             data.gitRepository.commit = commit
@@ -203,7 +204,7 @@ const tagAlgorithmVersion = async (algName , algVersion ,algTag)=>{
     let  alg = { name : algName,
                  version : algVersion,
                  pinned : false,
-                 tag: algTag
+                 tags: [algTag]
         
     } 
 
@@ -277,6 +278,7 @@ const rerunBuild = async (buildId)=>{
 }
 
 module.exports = {
+   
     runAlgGetResult,
     StoreDebugAlgorithm,
     runAlgorithm,

@@ -45,16 +45,48 @@ chai.use(chaiHttp);
 chai.use(assertArrays);
 
 describe('Algorithm build test', () => {
+    let algLIst = []
+    after( async()=> {
+        console.log("sater after")
+        console.log("algList = "+ algLIst)
+        j = 0
+        z = 3
+        
+        while (j < algLIst.length){
+            
+            delAlg = algLIst.slice(j,z)
+            const del = delAlg.map((e) =>{
+                return deleteAlgorithm(e)       
+              })
+            console.log("delAlg-"+delAlg)
+            const delResult  = await Promise.all(del)
+            console.log("delResult-"+delResult)
+            await delay(2000)
+             j +=3
+             z +=3
+             console.log("j="+j+",z="+z)
+        }
+
+
+           console.log("end -----")
+
+        
+    })
+
+
    
+
     describe('python version test', () => {
         const code1 = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
+        
+
     
         it(`python 2.7`, async () => {
             const entry = 'main27'
             const algName= pipelineRandomName(8).toLowerCase()    
             const pythonVersion = "python:2.7"                    
             
-            const buildStatusAlg = await buildAlgorithmAndWait(code1, algName,entry,pythonVersion)
+            const buildStatusAlg = await buildAlgorithmAndWait({code:code1, algName:algName,entry:entry,baseVersion:pythonVersion,algorithmArray:algLIst})
             expect(buildStatusAlg.status).to.be.equal("completed") 
             const result = await runAlgGetResult(algName,[4])
             await deleteAlgorithm(algName,true)    
@@ -66,7 +98,7 @@ describe('Algorithm build test', () => {
             const algName= pipelineRandomName(8).toLowerCase()    
             const pythonVersion = "python:3.5"                    
             
-            const buildStatusAlg = await buildAlgorithmAndWait(code1, algName,entry,pythonVersion)
+            const buildStatusAlg = await buildAlgorithmAndWait({code:code1, algName:algName,entry:entry,baseVersion:pythonVersion,algorithmArray:algLIst})
             expect(buildStatusAlg.status).to.be.equal("completed") 
             const result = await runAlgGetResult(algName,[4])
             await deleteAlgorithm(algName,true)    
@@ -79,7 +111,7 @@ describe('Algorithm build test', () => {
             const algName= pipelineRandomName(8).toLowerCase()    
             const pythonVersion = "python:3.6"                    
             
-            const buildStatusAlg = await buildAlgorithmAndWait(code1, algName,entry,pythonVersion)
+            const buildStatusAlg = await buildAlgorithmAndWait({code:code1, algName:algName,entry:entry,baseVersion:pythonVersion,algorithmArray:algLIst})
             expect(buildStatusAlg.status).to.be.equal("completed") 
             const result = await runAlgGetResult(algName,[4])
             await deleteAlgorithm(algName,true)    
@@ -91,7 +123,7 @@ describe('Algorithm build test', () => {
             const algName= pipelineRandomName(8).toLowerCase()    
             const pythonVersion = "python:3.7"                    
             
-            const buildStatusAlg = await buildAlgorithmAndWait(code1, algName,entry,pythonVersion)
+            const buildStatusAlg = await buildAlgorithmAndWait({code:code1, algName:algName,entry:entry,baseVersion:pythonVersion,algorithmArray:algLIst})
             expect(buildStatusAlg.status).to.be.equal("completed") 
             const result = await runAlgGetResult(algName,[4])
             await deleteAlgorithm(algName,true)    
@@ -103,7 +135,7 @@ describe('Algorithm build test', () => {
             const algName= pipelineRandomName(8).toLowerCase()    
             const pythonVersion = "python:3.7-slim"                    
             
-            const buildStatusAlg = await buildAlgorithmAndWait(code1, algName,entry,pythonVersion)
+            const buildStatusAlg = await buildAlgorithmAndWait({code:code1, algName:algName,entry:entry,baseVersion:pythonVersion,algorithmArray:algLIst})
             expect(buildStatusAlg.status).to.be.equal("completed") 
             const result = await runAlgGetResult(algName,[4])
             await deleteAlgorithm(algName,true)    
@@ -123,7 +155,7 @@ describe('Algorithm build test', () => {
             const algName= pipelineRandomName(8).toLowerCase()    
             const pythonVersion = "python:3.7"                    
             
-            const buildId = await buildAlgorithm(code1, algName,entry,pythonVersion)
+            const buildId = await buildAlgorithm({code:code1, algName:algName,entry:entry,baseVersion:pythonVersion,algorithmArray:algLIst})
             await delay(30000)
             const res =await stopBuild(buildId)
             await delay(10000)
@@ -232,11 +264,11 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
     it("build github master algorithm",async ()=>{
         const entry = 'main'
         const algName= pipelineRandomName(8).toLowerCase()    
-
+        const language = 'python'
         const gitUrl = "https://github.com/tamir321/hkube.git"
         const branch = "master"
         const gitKind = "github"
-        const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch  )
+        const buildStatusAlg = await buildGitAlgorithm({algName,gitUrl,gitKind ,entry , branch,language,  algorithmArray:algLIst})
         expect(buildStatusAlg.status).to.be.equal("completed") 
         const result = await runAlgGetResult(algName,[4])
         await deleteAlgorithm(algName,true)
@@ -251,7 +283,7 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
         const gitUrl = "https://github.com/tamir321/hkubeJava.git"
         const branch = "master"
         const gitKind = "github"
-        const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,language )
+        const buildStatusAlg = await buildGitAlgorithm({algName,gitUrl,gitKind ,entry , branch ,language ,algorithmArray:algLIst})
         expect(buildStatusAlg.status).to.be.equal("completed") 
         const result = await runAlgGetResult(algName,[4,3,2,1])
         await deleteAlgorithm(algName,true)
@@ -269,7 +301,7 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
         const gitUrl = "https://github.com/tamir321/hkube.git"
         const branch = "branch2"
         const gitKind = "github"
-        const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch  )
+        const buildStatusAlg = await buildGitAlgorithm({algName,gitUrl,gitKind ,entry , branch  ,algorithmArray:algLIst})
         expect(buildStatusAlg.status).to.be.equal("completed") 
         const result = await runAlgGetResult(algName,[4])
         await deleteAlgorithm(algName,true)    
@@ -286,7 +318,7 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
         const gitUrl = "https://gitlab.com/tamir321/hkube.git"
         const branch = "master"
         const gitKind = "gitlab"
-        const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch  )
+        const buildStatusAlg = await buildGitAlgorithm({algName,gitUrl,gitKind ,entry , branch  ,algorithmArray:algLIst})
         expect(buildStatusAlg.status).to.be.equal("completed") 
         const result = await runAlgGetResult(algName,[4])
         await deleteAlgorithm(algName,true)
@@ -303,7 +335,7 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
         const gitUrl = "https://gitlab.com/tamir321/hkube.git"
         const branch = "branch1"
         const gitKind = "gitlab"
-        const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch  )
+        const buildStatusAlg = await buildGitAlgorithm({algName,gitUrl,gitKind ,entry , branch  ,algorithmArray:algLIst})
         expect(buildStatusAlg.status).to.be.equal("completed") 
         const result = await runAlgGetResult(algName,[4])
         await deleteAlgorithm(algName,true)    
@@ -343,8 +375,8 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
         const commit  = {
             "id": "87b27e20c2a37ab11ef0d851479f473127c4400d"
             }
-        
-        const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,'python',commit)
+        const language ='python'
+        const buildStatusAlg = await buildGitAlgorithm({algName,gitUrl,gitKind ,entry , branch ,language,commit,algorithmArray:algLIst})
         expect(buildStatusAlg.status).to.be.equal("completed") 
         const result = await runAlgGetResult(algName,[4])
         expect(result.data[0].result.commit).to.be.equal("A1")
@@ -388,7 +420,8 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
         const gitKind = "github"
         const commit  = "null"
         const tag = "A5"
-        const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch,'python' ,commit,tag)
+        const language ='python'
+        const buildStatusAlg = await buildGitAlgorithm({algName,gitUrl,gitKind ,entry , branch,language ,commit,tag,algorithmArray:algLIst})
         expect(buildStatusAlg.status).to.be.equal("completed") 
         const result = await runAlgGetResult(algName,[4])
         await deleteAlgorithm(algName,true) 
@@ -430,8 +463,8 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
       const commit  = {
           "id": "3d85086db8f5a842391a8c1f6cd88d8150670b68"
           }
-      
-      const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,'python'  ,commit)
+     const language ='python'
+      const buildStatusAlg = await buildGitAlgorithm({algName,gitUrl,gitKind ,entry , branch ,language  ,commit,algorithmArray:algLIst})
       expect(buildStatusAlg.status).to.be.equal("completed") 
       const result = await runAlgGetResult(algName,[4])
       expect(result.data[0].result.commit).to.be.equal("A5")
@@ -467,9 +500,10 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
         const commit  = {"id":"66e76131b39fd2e1df6b46ec179962fa7cbbd24c"}
         const tag = "null"
         const token = config.gitlabToken
-        const failBuild =   await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,'python',commit,tag) 
+        const language ='python'
+        const failBuild =   await buildGitAlgorithm({algName,gitUrl,gitKind ,entry , branch ,language,commit,tag,algorithmArray:algLIst}) 
         expect(JSON.parse(failBuild.text).error.message).to.be.equal(`Not Found (${gitUrl.slice(0,-4)})`)
-        const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,'python',commit,tag,token)
+        const buildStatusAlg = await buildGitAlgorithm({algName,gitUrl,gitKind ,entry , branch ,language,commit,tag,token,algorithmArray:algLIst})
         expect(buildStatusAlg.status).to.be.equal("completed") 
         const result = await runAlgGetResult(algName,[4]) 
         expect(result.data[0].result.result).to.be.equal("private-repo") 
@@ -486,9 +520,10 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
         const commit  = "null"
         const tag = "null"
         const token =config.githubToken
-        const failBuild =   await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,'python' ,commit,tag) 
+        const language = 'python'
+        const failBuild =   await buildGitAlgorithm({algName,gitUrl,gitKind ,entry , branch ,language ,commit,tag,algorithmArray:algLIst}) 
         expect(JSON.parse(failBuild.text).error.message).to.be.equal(`Not Found (${gitUrl.slice(0,-4)})`)
-        const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,'python',commit,tag,token)
+        const buildStatusAlg = await buildGitAlgorithm({algName,gitUrl,gitKind ,entry , branch ,language,commit,tag,token,algorithmArray:algLIst})
         expect(buildStatusAlg.status).to.be.equal("completed") 
         const result = await runAlgGetResult(algName,[4]) 
         expect(result.data[0].result).to.be.equal("private-repo") 
@@ -507,14 +542,14 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
             let commit  = {
                 "id": "3d85086db8f5a842391a8c1f6cd88d8150670b68"
                 }
-            
-            const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,'python'  ,commit)
+            const language = 'python'
+            const buildStatusAlg = await buildGitAlgorithm({algName,gitUrl,gitKind ,entry , branch ,language  ,commit,algorithmArray:algLIst})
             
             
             commit = {
                 "id": "507aa9b1db90ccda19aef145849fb18362ab1bb7"
             }
-            const buildStatusAlg2 = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,'python'  ,commit)
+            const buildStatusAlg2 = await buildGitAlgorithm({algName,gitUrl,gitKind ,entry , branch ,language ,commit,algorithmArray:algLIst})
             expect(buildStatusAlg2.buildId).to.be.not.equal(buildStatusAlg.buildId)
             //deleteAlgorithm(algName)
           }).timeout(1000 * 60 * 20)
@@ -531,7 +566,7 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
                 "id": "3d85086db8f5a842391a8c1f6cd88d8150670b68"
                 }
             
-            const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,'python'  ,commit)
+            const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,'python'  ,commit,algLIst)
 
             const Alg = {name : algName,
                 gitRepository :{
