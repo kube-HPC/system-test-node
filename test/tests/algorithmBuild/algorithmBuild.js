@@ -47,6 +47,7 @@ chai.use(assertArrays);
 describe('Algorithm build test', () => {
     let algLIst = []
     after( async()=> {
+        this.timeout(1000 * 60 * 20)
         console.log("sater after")
         console.log("algList = "+ algLIst)
         j = 0
@@ -68,10 +69,10 @@ describe('Algorithm build test', () => {
         }
 
 
-           console.log("end -----")
-
-        
+           console.log("end -----")    
     })
+
+
 
 
    

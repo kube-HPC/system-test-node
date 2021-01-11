@@ -147,7 +147,7 @@ describe('code api tests ', () => {
   
 
     describe("Java code API",()=>{
-
+//buildGitAlgorithm({algName,gitUrl,gitKind ,entry , branch,language,  algorithmArray:algLIst})
         const algName = pipelineRandomName(8).toLowerCase();
         let algExsis = false
         const createAlg = async ()=>{
@@ -157,7 +157,7 @@ describe('code api tests ', () => {
                 const gitUrl = "https://github.com/tamir321/hkubeJava.git"
                 const branch = "master"
                 const gitKind = "github"
-                const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,language )
+                const buildStatusAlg = await buildGitAlgorithm({algName,gitUrl,gitKind ,entry , branch ,language })
                 expect(buildStatusAlg.status).to.be.equal("completed") 
                 algExsis = true;
                 algLIst.push(algName)
@@ -236,7 +236,7 @@ describe('code api tests ', () => {
                 const gitUrl = "https://github.com/tamir321/hkube-js-algorithm.git"
                 const branch = "main"
                 const gitKind = "github"
-                const buildStatusAlg = await buildGitAlgorithm(algName,gitUrl,gitKind ,entry , branch ,language )
+                const buildStatusAlg = await buildGitAlgorithm({algName,gitUrl,gitKind ,entry , branch ,language })
                 expect(buildStatusAlg.status).to.be.equal("completed") 
                 algExsis = true;
                 algLIst.push(algName)
