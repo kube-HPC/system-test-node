@@ -23,7 +23,7 @@ env:
 build_secret:
   docker_registry: ''
   docker_namespace: ''
-  docker_username: hkubedev
+  docker_username: ${DOCKER_BUILD_PUSH_USERNAME}
   docker_password: ${DOCKER_BUILD_PUSH_PASSWORD}
 etcd:
   persistentVolume:

@@ -31,6 +31,7 @@ jobs:
         run: ./travis/deploy.sh
         env:
           DOCKER_BUILD_PUSH_PASSWORD: ${{ secrets.DOCKER_BUILD_PUSH_PASSWORD }}
+          DOCKER_BUILD_PUSH_USERNAME: ${{ secrets.DOCKER_BUILD_PUSH_USERNAME }}
   tests:
     runs-on: ubuntu-latest
     needs: deploy
