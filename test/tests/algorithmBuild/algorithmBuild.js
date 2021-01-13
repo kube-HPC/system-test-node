@@ -46,15 +46,15 @@ chai.use(assertArrays);
 
 describe('Algorithm build test', () => {
     let algLIst = []
-    after( async()=> {
-        this.timeout(1000 * 60 * 20)
+    
+    after(async function() {
+        this.timeout(2*60*1000);
         console.log("sater after")
         console.log("algList = "+ algLIst)
         j = 0
         z = 3
         
         while (j < algLIst.length){
-            
             delAlg = algLIst.slice(j,z)
             const del = delAlg.map((e) =>{
                 return deleteAlgorithm(e)       
@@ -69,18 +69,17 @@ describe('Algorithm build test', () => {
         }
 
 
-           console.log("end -----")    
+           console.log("end -----")  
+           
     })
 
-
-
+  
 
    
 
     describe('python version test', () => {
         const code1 = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
         
-
     
         it(`python 2.7`, async () => {
             const entry = 'main27'

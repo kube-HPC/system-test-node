@@ -55,6 +55,33 @@
  const {getWebSocketData} = require(path.join(process.cwd(), 'utils/socketGet'))
 describe('Alrogithm Tests', () => {
      
+    let algLIst = []
+    
+    after(async function() {
+        this.timeout(2*60*1000);
+        console.log("sater after")
+        console.log("algList = "+ algLIst)
+        j = 0
+        z = 3
+        
+        while (j < algLIst.length){
+            delAlg = algLIst.slice(j,z)
+            const del = delAlg.map((e) =>{
+                return deleteAlgorithm(e)       
+              })
+            console.log("delAlg-"+delAlg)
+            const delResult  = await Promise.all(del)
+            console.log("delResult-"+delResult)
+            await delay(2000)
+             j +=3
+             z +=3
+             console.log("j="+j+",z="+z)
+        }
+
+
+           console.log("end -----")  
+           
+    })
 
 
   
@@ -191,7 +218,7 @@ describe('Alrogithm Tests', () => {
              const algName= "python2.7-test-1"    
              const pythonVersion = "python:2.7"                    
             await deleteAlgorithm(algName)
-             const buildStatusAlg = await buildAlgorithmAndWait({code:code1, algName:algName,entry:entry,baseVersion:pythonVersion})
+             const buildStatusAlg = await buildAlgorithmAndWait({code:code1, algName:algName,entry:entry,baseVersion:pythonVersion,algorithmArray:algLIst})
              expect(buildStatusAlg.status).to.be.equal("completed") 
              expect(buildStatusAlg.algorithmImage).to.contain(buildStatusAlg.imageTag)//.endsWith(buildStatusAlg.imageTag)
              let alg = await getAlgorithm(algName)
@@ -212,7 +239,7 @@ describe('Alrogithm Tests', () => {
             const algName= "python2.7-test-1"    
             const pythonVersion = "python:2.7"                    
             await deleteAlgorithm(algName)
-            const buildStatusAlg = await buildAlgorithmAndWait({code:code1, algName:algName,entry:entry,baseVersion:pythonVersion})
+            const buildStatusAlg = await buildAlgorithmAndWait({code:code1, algName:algName,entry:entry,baseVersion:pythonVersion,algorithmArray:algLIst})
             expect(buildStatusAlg.status).to.be.equal("completed") 
             expect(buildStatusAlg.algorithmImage).to.contain(buildStatusAlg.imageTag)//.endsWith(buildStatusAlg.imageTag)
             let alg = await getAlgorithm(algName)
@@ -520,7 +547,7 @@ describe('Alrogithm Tests', () => {
             const res = await runAlgorithm(algRun)
             const jobId = res.body.jobId
             const result = await  getResult(jobId,200)
-            expect(result.data[0].result.EnvironmentVariables).to.contain("Mmhy6")
+            expect(result.data[0].result.EnvironmentVariables).to.contain("Hkube")
         }).timeout(1000 * 5*60)
 
         it('algorithm Environment Variables configMapKeyRef',async ()=>{

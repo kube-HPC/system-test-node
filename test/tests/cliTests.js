@@ -11,24 +11,20 @@ const execSync = require('child_process').execSync;
 const {
     pipelineRandomName,
     getPipeline,
-    deletePipeline,
-    getPiplineNodes,
-    storePipeline,
-    runStored,
-    deconstructTestData,
-    runStoredAndWaitForResults} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+    deletePipeline
+    } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 
-const {getRawGraph, 
+const { 
         getJobIdStatus,
         getResult,
         getStatusall} = require(path.join(process.cwd(), 'utils/results'))
     
 
-const {buildAlgorithmAndWait,
+const {
         runAlgGetResult,
         getAlgorithm, 
-        deleteAlgorithm,
-        buildGitAlgorithm,    
+        
+        deleteAlgorithm,  
         getBuildList} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 
 chai.use(chaiHttp);
@@ -62,6 +58,33 @@ const  execSyncReturenJSON = async  (command)=>{
 
 
     describe('Hkubectl Tests', () => {
+        let algLIst = []
+    
+        after(async function() {
+            this.timeout(2*60*1000);
+            console.log("sater after")
+            console.log("algList = "+ algLIst)
+            j = 0
+            z = 3
+            
+            while (j < algLIst.length){
+                delAlg = algLIst.slice(j,z)
+                const del = delAlg.map((e) =>{
+                    return deleteAlgorithm(e)       
+                  })
+                console.log("delAlg-"+delAlg)
+                const delResult  = await Promise.all(del)
+                console.log("delResult-"+delResult)
+                await delay(2000)
+                 j +=3
+                 z +=3
+                 console.log("j="+j+",z="+z)
+            }
+    
+    
+               console.log("end -----")  
+               
+        })
         describe('hkubecl algorithm tests', () => { 
             it('hkube algorithm list',async ()=>{
                 const runSimple = "hkubectl algorithm list --json"
@@ -86,6 +109,7 @@ const  execSyncReturenJSON = async  (command)=>{
 
             it('hkube algorithm apply',async ()=>{
                 const algName = pipelineRandomName(8).toLowerCase()
+                algLIst.push(algName)
                 const filePath = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
                 const runBulid = `hkubectl algorithm apply ${algName} `+
                                 `--env python `+
@@ -106,6 +130,7 @@ const  execSyncReturenJSON = async  (command)=>{
             it('hkube algorithm apply from file and delete',async ()=>{
                 const fs = require('fs');
                 const algName = pipelineRandomName(8).toLowerCase()
+                algLIst.push(algName)
                 const algFile = path.join(process.cwd(),'./additionalFiles/alg.yaml');
                 let fileContents = fs.readFileSync(algFile, 'utf8');
                 let data = yaml.safeLoad(fileContents);
@@ -131,6 +156,7 @@ const  execSyncReturenJSON = async  (command)=>{
             
             it('hkube algorithm apply alg version',async ()=>{
                 const algName = pipelineRandomName(8).toLowerCase()
+                algLIst.push(algName)
                 let trgzFile = 'version1.tar.gz'
                 let runBulid = `hkubectl algorithm apply ${algName} `+
                                 `--env python `+
@@ -162,6 +188,7 @@ const  execSyncReturenJSON = async  (command)=>{
 
             it('hkube algorithm apply alg version setCurrent',async ()=>{
                 const algName = pipelineRandomName(8).toLowerCase()
+                algLIst.push(algName)
                 let trgzFile = 'version1.tar.gz'
                 let runBulid = `hkubectl algorithm apply ${algName} `+
                                 `--env python `+
@@ -192,7 +219,7 @@ const  execSyncReturenJSON = async  (command)=>{
 
             it('hkube algorithm apply nowait',async ()=>{
                 const algName = pipelineRandomName(8).toLowerCase()
-                
+                algLIst.push(algName)
                 const runBulid = `hkubectl algorithm apply ${algName} `+
                                 `--env python `+
                                 `--codeEntryPoint main35 `+
@@ -370,18 +397,7 @@ const  execSyncReturenJSON = async  (command)=>{
         });
 
         describe('sync test', ()=>{
-            after(async()=>{
-                console.log("sater after")
-                console.log("algList = "+ algLIst)
-                const del = algLIst.map((e) =>{
-                    console.log("del"+e)
-                    return deleteAlgorithm(e) 
-                    
-                  })
-                 await Promise.all(del)
-
-            })
-            let algLIst = []
+         
             const delay = require('delay')
             function execShellCommand(cmd) {
                 const exec = require('child_process').exec;
