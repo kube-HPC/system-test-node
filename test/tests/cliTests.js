@@ -2,7 +2,7 @@ const chai = require('chai');
 const path = require('path');
 const chaiHttp = require('chai-http');
 const config = require(path.join(process.cwd(), 'config/config'));
-
+const delay = require('delay')
 const expect = chai.expect;
 const assertArrays = require('chai-arrays');
 
