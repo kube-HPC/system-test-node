@@ -405,7 +405,7 @@ describe('all swagger calls test ', () => {
 
             expect(res).to.have.status(200)
 
-        }).timeout(1000 * 60)
+        }).timeout(1000 * 60*3)
 
         it(' GET /storage/prefix/types', async () => {
             
@@ -415,7 +415,7 @@ describe('all swagger calls test ', () => {
 
             expect(res).to.have.status(200)
 
-        }).timeout(1000 * 60)
+        }).timeout(1000 * 60*3)
 
 
         it(' GET keys by path /storage/prefixes/{path}', async () => {
@@ -433,7 +433,7 @@ describe('all swagger calls test ', () => {
 
 
 
-        }).timeout(1000 * 60)
+        }).timeout(1000 * 60*3)
 
 
 
@@ -452,7 +452,7 @@ describe('all swagger calls test ', () => {
 
 
 
-        }).timeout(1000 * 60)
+        }).timeout(1000 * 60*3)
 
 
         it(' GET storage data /storage/values/{path}', async () => {
@@ -522,7 +522,7 @@ describe('all swagger calls test ', () => {
 
 
 
-        }).timeout(1000 * 60)
+        }).timeout(1000 * 60*3)
         
 
     })
@@ -543,7 +543,7 @@ describe('all swagger calls test ', () => {
             expect(res2).to.have.status(200)
             expect(res2.body).to.have.lengthOf(5)
 
-        }).timeout(1000 * 60)
+        }).timeout(1000 * 60*3)
 
 
         it('test the GET /pipelines/status/{name} rest call', async () => {
@@ -560,7 +560,7 @@ describe('all swagger calls test ', () => {
             expect(res2).to.have.status(200)
             expect(res2.body).to.have.lengthOf(5)
 
-        }).timeout(1000 * 60)
+        }).timeout(1000 * 60*3)
 
 
 
@@ -578,7 +578,7 @@ describe('all swagger calls test ', () => {
             expect(res2).to.have.status(200)
             expect(res2.body).to.have.lengthOf(5)
 
-        }).timeout(1000 * 60)
+        }).timeout(1000 * 60*3)
 
 
         it.skip('test the GET /pipelines/status/stored/{name} rest call', async () => {
@@ -595,7 +595,7 @@ describe('all swagger calls test ', () => {
             expect(res2).to.have.status(200)
             expect(res2.body).to.have.lengthOf(5)
 
-        }).timeout(1000 * 60)
+        }).timeout(1000 * 60*3)
 
     })
 
@@ -708,7 +708,7 @@ describe('all swagger calls test ', () => {
                 await chai.request(config.apiServerUrl)
                     .delete(`/readme/pipelines/${pipelineName}`)
 
-            }).timeout(1000 * 60)
+            }).timeout(1000 * 60*3)
 
             it('test the Get /readme/pipline', async () => {
 
@@ -729,7 +729,7 @@ describe('all swagger calls test ', () => {
                 await chai.request(config.apiServerUrl)
                     .delete(`/readme/pipelines/${pipelineName}`)
 
-            }).timeout(1000 * 60)
+            }).timeout(1000 * 60*3)
 
 
 
@@ -758,7 +758,7 @@ describe('all swagger calls test ', () => {
                 await chai.request(config.apiServerUrl)
                     .delete(`/readme/pipelines/${pipelineName}`)
 
-            }).timeout(1000 * 60)
+            }).timeout(1000 * 60*3)
 
 
 
@@ -779,7 +779,7 @@ describe('all swagger calls test ', () => {
                 expect(readme).to.have.status(404)
 
 
-            }).timeout(1000 * 60)
+            }).timeout(1000 * 60*3)
 
         })
 
@@ -805,7 +805,7 @@ describe('all swagger calls test ', () => {
                     .delete(`/readme/algorithms/${algName}`)
 
 
-            }).timeout(1000 * 60)
+            }).timeout(1000 * 60*3)
 
             it('test the Get /readme/algorithms', async () => {
 
@@ -823,7 +823,7 @@ describe('all swagger calls test ', () => {
                 const del = await chai.request(config.apiServerUrl)
                     .delete(`/readme/algorithms/${algName}`)
 
-            }).timeout(1000 * 60)
+            }).timeout(1000 * 60*3)
 
 
 
@@ -851,7 +851,7 @@ describe('all swagger calls test ', () => {
                     .delete(`/readme/algorithms/${algName}`)
 
 
-            }).timeout(1000 * 60)
+            }).timeout(1000 * 60*3)
 
 
 
@@ -872,7 +872,7 @@ describe('all swagger calls test ', () => {
 
 
 
-            }).timeout(1000 * 60)
+            }).timeout(1000 * 60*3)
 
         })
     })
@@ -891,7 +891,7 @@ describe('all swagger calls test ', () => {
                 .get(`/webhooks/status/${jobId}`)
             expect(res).to.have.status(200)
 
-        }).timeout(1000 * 60)
+        }).timeout(1000 * 60*3)
 
         it('test the Get webhooks/results/{jobId}', async () => {
 
@@ -904,7 +904,7 @@ describe('all swagger calls test ', () => {
             expect(res).to.have.status(200)
 
 
-        }).timeout(1000 * 60)
+        }).timeout(1000 * 60*3)
 
         it('test the Get webhooks/list/{jobId}', async () => {
             const jobId = await runStoredAndWaitForResults(pipe)
@@ -914,7 +914,7 @@ describe('all swagger calls test ', () => {
             expect(res).to.have.status(200)
 
 
-        }).timeout(1000 * 60)
+        }).timeout(1000 * 60*3)
     })
 
     describe('Store Pipelines', () => {
@@ -939,7 +939,7 @@ describe('all swagger calls test ', () => {
 
                 expect(res).to.have.status(200)
 
-        }).timeout(1000 * 60)
+        }).timeout(1000 * 60*3)
 
         it('test the POST /store/pipelines', async () => {
 
