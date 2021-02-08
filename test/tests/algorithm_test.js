@@ -406,6 +406,12 @@ describe('Alrogithm Tests', () => {
 
     describe('Test algorithm reservedMemory',()=>{
 
+        //the alg code 
+        // def start(args, hkubeapi):
+        //     input=args['input'][0]
+        //     EnvironmentVariables = os.getenv(input, 'Foo does not exist')
+        //     time.sleep(2)
+        //     return EnvironmentVariables
         it('validate that  reservedMemory Variables saved as DISCOVERY_MAX_CACHE_SIZE',async ()=>{
             let alg ={
                 name: "env",
@@ -415,14 +421,14 @@ describe('Alrogithm Tests', () => {
                 reservedMemory: "3Gi",
                 minHotWorkers: 0,
                 env: "python",
-                entryPoint: "main",
+                entryPoint: "envAlg",
                 type: "Image",
                 options: {
                     "debug": false,
                     "pending": false
                 },
                 "version": "1.0.0",
-                algorithmImage: "docker.io/hkubedev/env:v1.0.0"
+                algorithmImage: "docker.io/hkubedevtest/env-alg:vv61f5gc4"
             }
 
             const pipe = {
@@ -469,7 +475,7 @@ describe('Alrogithm Tests', () => {
             const result2 = await  getResult(jobId2,200)
             expect(result2.data[0].result).to.be.equal("512")
             console.log(result2)
-        }).timeout(1000 * 5*60)
+        }).timeout(1000 * 10*60)
     
     })    
 
@@ -483,13 +489,13 @@ describe('Alrogithm Tests', () => {
         
             type: "Image",
             env: "python",
-            entryPoint: "main",
+            entryPoint: "envAlg",
             options: {
                 binary: true,               
                 debug: false,
                 pending: false
                 }       ,
-            algorithmImage:  "docker.io/hkubedev/tamir-test:v1.0.0",
+            algorithmImage: "docker.io/hkubedevtest/env-alg:vv61f5gc4" ,//"docker.io/hkubedevtest/stream-image-sleep-end:v8ie4jvzf",
             algorithmEnv: {
                 FOO: "I got foo",
                 SECRET:{"secretKeyRef": {
@@ -531,7 +537,8 @@ describe('Alrogithm Tests', () => {
         it('algorithm Environment Variables ',async ()=>{
             await createAlg()
             const algRun = {name: alg.name,
-                input:[{"action":"env","EnvironmentVariable":"FOO"}]}
+                input:["FOO"]}
+                //input:[{"action":"env","EnvironmentVariable":"FOO"}]}
          
             const res = await runAlgorithm(algRun)
             const jobId = res.body.jobId
@@ -542,34 +549,37 @@ describe('Alrogithm Tests', () => {
         it('algorithm Environment Variables secretKeyRef',async ()=>{
             await createAlg()
             const algRun = {name: alg.name,
-                input:[{"action":"env","EnvironmentVariable":"SECRET"}]}
+                //input:[{"action":"env","EnvironmentVariable":"SECRET"}]}
+                input:["SECRET"]}
         
             const res = await runAlgorithm(algRun)
             const jobId = res.body.jobId
             const result = await  getResult(jobId,200)
-            expect(result.data[0].result.EnvironmentVariables).to.contain("Hkube")
+            expect(result.data[0].result).to.contain("Hkube")
         }).timeout(1000 * 5*60)
 
         it('algorithm Environment Variables configMapKeyRef',async ()=>{
             await createAlg()
             const algRun = {name: alg.name,
-                input:[{"action":"env","EnvironmentVariable":"CM"}]}
+                input:["CM"]}
+               // input:[{"action":"env","EnvironmentVariable":"CM"}]}
            
             const res = await runAlgorithm(algRun)
             const jobId = res.body.jobId
             const result = await  getResult(jobId,200)
-            expect(result.data[0].result.EnvironmentVariables).to.be.equal("fs")
+            expect(result.data[0].result).to.be.equal("fs")
         }).timeout(1000 * 5*60)
 
     it('algorithm Environment Variables resourceFieldRefCE',async ()=>{
         await createAlg()
         const algRun = {name: alg.name,
-            input:[{"action":"env","EnvironmentVariable":"REASOURCE"}]}
+            input:["REASOURCE"]}
+           // input:[{"action":"env","EnvironmentVariable":"REASOURCE"}]}
 
         const res = await runAlgorithm(algRun)
         const jobId = res.body.jobId
         const result = await  getResult(jobId,200)
-        expect(result.data[0].result.EnvironmentVariables).to.be.equal("1")
+        expect(result.data[0].result).to.be.equal("1")
     }).timeout(1000 * 5*60)
 
 
@@ -577,12 +587,13 @@ describe('Alrogithm Tests', () => {
         await createAlg()
 
         const algRun = {name: alg.name,
-            input:[{"action":"env","EnvironmentVariable":"FR"}]}
+            input:["FR"]}
+            //input:[{"action":"env","EnvironmentVariable":"FR"}]}
   
         const res = await runAlgorithm(algRun)
         const jobId = res.body.jobId
         const result = await  getResult(jobId,200)
-        expect(result.data[0].result.EnvironmentVariables).to.contain("compute.internal")
+        expect(result.data[0].result).to.contain("compute.internal")
     }).timeout(1000 * 5*60)
 
 
