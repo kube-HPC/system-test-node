@@ -1,0 +1,118 @@
+{
+    "name": "streaming-image-1-source-v2",
+    "kind": "stream",
+    "nodes": [
+        {
+            "nodeName": "image",
+            "algorithmName": "stream-image",
+            "input": [
+                "#@flowInput.inp"
+            ],
+            "stateType": "stateful"
+        },
+        {
+            "nodeName": "A",
+            "algorithmName": "get-image-error3",
+            "input": [
+                "@flowInput.rateLimit"
+            ],
+            "stateType": "stateless"
+        },
+        {
+            "nodeName": "B",
+            "algorithmName": "get-image-error1",
+            "input": [
+                "@flowInput.rateLimit1"
+            ],
+            "stateType": "stateless"
+        },
+        {
+            "nodeName": "C",
+            "algorithmName": "get-image-error2",
+            "input": [
+                "@flowInput.rateLimit2"
+            ],
+            "stateType": "stateless"
+        },
+        {
+            "nodeName": "A1",
+            "algorithmName": "get-image-error3",
+            "input": [
+                "@flowInput.rateLimit2"
+            ],
+            "stateType": "stateless"
+        },
+        {
+            "nodeName": "B1",
+            "algorithmName": "get-image-error1",
+            "input": [
+                "@flowInput.rateLimit1"
+            ],
+            "stateType": "stateless"
+        },
+        {
+            "nodeName": "C1",
+            "algorithmName": "get-image-error2",
+            "input": [
+                "@flowInput.rateLimit"
+            ],
+            "stateType": "stateless"
+        },
+        {
+            "nodeName": "get-all",
+            "algorithmName": "get-all",
+            "stateType": "stateful",
+            "input": []
+        },
+        {
+            "nodeName": "get-all2",
+            "algorithmName": "get-all",
+            "stateType": "stateful",
+            "input": []
+        }
+    ],
+    "streaming": {
+        "flows": {
+            "analyze": "image>> A1 >> B1 >> C 1>> get-all",
+            "master": "image >>A >> B >> C >> get-all2"
+        },
+        "defaultFlow": "master"
+    },
+    "flowInput": {
+        "inp": [
+            {
+                "totalMsg": 100000,
+                "rng": 20,
+                "burst": 2,
+                "burstDuration": 30,
+                "burstTime": 240,
+                "sleepTime": [
+                    10,
+                    60
+                ],
+                "error": false,
+                "size": 0,
+                "ping": 30
+            }
+        ],
+        "rateLimit": {
+            "rate": 2,
+            "crash": false
+        },
+        "rateLimit1": {
+            "rate": 5,
+            "crash": false
+        },
+        "rateLimit2": {
+            "rate": 30,
+            "crash": false
+        }
+    },
+    "experimentName": "main",
+    "options": {
+        "ttl": 720000,
+        "batchTolerance": 80,
+        "progressVerbosityLevel": "info"
+    },
+    "priority": 3
+}

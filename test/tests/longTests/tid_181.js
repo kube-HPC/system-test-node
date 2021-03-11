@@ -4,7 +4,7 @@ const chaiHttp = require('chai-http');
 const path = require('path')
 const delay = require('delay')
 
-
+const {generateRandomJson }= require(path.join(process.cwd(), 'utils/generateRandomJson'))
 const {
     testData1
 } = require(path.join(process.cwd(), 'config/index')).tid_161
@@ -71,7 +71,49 @@ const executeJob = async (batch ,time,threads)=>{
     return jobResults;
 
 }
+describe('big flowinput',()=>{
+    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+=~';
+    var charactersLength = characters.length;
+    var result           = '';
+    for ( var i = 0; i < 250000; i++ ) {
+       result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
 
+    const simple = {   
+        name: "test-input",
+        flowInput: {
+            files:{ link: "",
+            link1:""}
+           
+          }
+    }
+
+    const largeData = {   
+        name: "large-data",
+        flowInput: {
+            "size": 100000,
+            "batch": 2
+        },
+    }
+
+    it("start test-input",async ()=>{
+        const hh = generateRandomJson(5)
+        //console.log(hh)
+        simple.flowInput.files.link= hh
+        simple.flowInput.files.link1 = {"jnk":result}
+        const jnk = await runStored(simple)
+        console.log(jnk.text)
+    }).timeout(1000 * 60 * 60);
+
+    it("start largeData",async ()=>{
+        const hh = generateRandomJson(5)
+        //console.log(hh)
+     
+        const jnk = await runStored(largeData)
+        console.log(jnk.text)
+    }).timeout(1000 * 60 * 60);
+
+})
 
 describe('TID-181- increasing batch sizes and parallel requests', () => {
     it('100 batch 1 thread 15 seconds', async () => {
@@ -110,7 +152,7 @@ describe('TID-181- increasing batch sizes and parallel requests', () => {
 
     it('1000 batch 4 thread 15 seconds', async () => {
        
-        await executeJob(1000,15000,4)
+        await executeJob(1000,15000,10)
         
     }).timeout(1000 * 60 * 60);
 

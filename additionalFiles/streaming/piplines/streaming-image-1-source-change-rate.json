@@ -1,0 +1,119 @@
+{
+    "modified": 1610275549399,
+    "name": "streaming-image-1-source-change-rate",
+    "kind": "stream",
+    "nodes": [
+        {
+            "nodeName": "image",
+            "algorithmName": "stream-image",
+            "input": [
+                "#@flowInput.inp"
+            ],
+            "stateType": "stateful"
+        },
+        {
+            "nodeName": "A",
+            "algorithmName": "get-image-error",
+            "input": [
+                "@flowInput.rateLimit"
+            ],
+            "stateType": "stateless"
+        },
+        {
+            "nodeName": "B",
+            "algorithmName": "get-image-error1",
+            "input": [
+                "@flowInput.rateLimit1"
+            ],
+            "stateType": "stateless"
+        },
+        {
+            "nodeName": "C",
+            "algorithmName": "get-image-error2",
+            "input": [
+                "@flowInput.rateLimit2"
+            ],
+            "stateType": "stateless"
+        },
+        {
+            "nodeName": "rateChageA",
+            "algorithmName": "get-image-change-rate",
+            "input": [
+                "@flowInput.rateLimit3"
+            ],
+            "stateType": "stateless"
+        },
+        {
+            "nodeName": "rateChageC",
+            "algorithmName": "get-image-change-rate",
+            "input": [
+                "@flowInput.rateLimit3"
+            ],
+            "stateType": "stateless"
+        },
+        {
+            "nodeName": "get-all",
+            "algorithmName": "get-all",
+            "stateType": "stateful",
+            "input": []
+        },
+        {
+            "nodeName": "get-all2",
+            "algorithmName": "get-all",
+            "stateType": "stateful",
+            "input": []
+        }
+    ],
+    "streaming": {
+        "flows": {
+            "analyze": "image>>get-all",
+            "master": "image >> rateChageA>>A >> B >> C >>rateChageC>> get-all2"
+        },
+        "defaultFlow": "master"
+    },
+    "flowInput": {
+        "inp": [
+            {
+                "totalMsg": 100000,
+                "rng": 30,
+                "burst": 1,
+                "burstDuration": 30,
+                "burstTime": 240,
+                "sleepTime": [
+                    20,
+                    60
+                ],
+                "error": false,
+                "size": 0,
+                "ping": 30
+            }
+        ],
+        "rateAll": {
+            "rate": 100000,
+            "crash": false
+        },
+        "rateLimit": {
+            "rate": 2,
+            "crash": false
+        },
+        "rateLimit1": {
+            "rate": 5,
+            "crash": false
+        },
+        "rateLimit2": {
+            "rate": 30,
+            "crash": false
+        },
+        "rateLimit3": {
+            "rate": 20,
+            "crash": false
+        }
+    },
+    "experimentName": "main",
+    "options": {
+        "ttl": 720000,
+        "batchTolerance": 80,
+        "progressVerbosityLevel": "info"
+    },
+    "priority": 3
+}

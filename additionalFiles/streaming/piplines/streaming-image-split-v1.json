@@ -1,0 +1,113 @@
+{
+    "modified": 1612081980244,
+    "name": "streaming-image-split-v1",
+    "kind": "stream",
+    "nodes": [
+        {
+            "nodeName": "image",
+            "algorithmName": "stream-image",
+            "input": [
+                "#@flowInput.inp"
+            ],
+            "stateType": "stateful"
+        },
+        {
+            "nodeName": "A",
+            "algorithmName": "get-image-error",
+            "input": [
+                "@flowInput.rateAll"
+            ],
+            "stateType": "stateless"
+        },
+        {
+            "nodeName": "B",
+            "algorithmName": "get-image-error",
+            "input": [
+                "@flowInput.rateAll"
+            ],
+            "stateType": "stateless"
+        },
+        {
+            "nodeName": "SPLIT",
+            "algorithmName": "get-image-split",
+            "input": [
+                "@flowInput.rateAll"
+            ],
+            "stateType": "stateless"
+        },
+        {
+            "nodeName": "C",
+            "algorithmName": "get-image-error",
+            "input": [
+                "@flowInput.rateAll"
+            ],
+            "stateType": "stateless"
+        },
+        {
+            "nodeName": "D",
+            "algorithmName": "get-image-error",
+            "input": [
+                "@flowInput.rateAll"
+            ],
+            "stateType": "stateless"
+        },
+        {
+            "nodeName": "C1",
+            "algorithmName": "get-image-error",
+            "input": [
+                "@flowInput.rateAll"
+            ],
+            "stateType": "stateless"
+        },
+        {
+            "nodeName": "D1",
+            "algorithmName": "get-image-error",
+            "input": [
+                "@flowInput.rateAll"
+            ],
+            "stateType": "stateless"
+        },
+        {
+            "nodeName": "get-all",
+            "algorithmName": "get-all",
+            "stateType": "stateful",
+            "input": []
+        }
+    ],
+    "streaming": {
+        "flows": {
+            "master": "image >> A >> B >>SPLIT",
+            "analyze": "SPLIT>> C1>>D1>> get-all",
+            "ContinuMaster": "SPLIT>> C>>D>> get-all"
+        },
+        "defaultFlow": "master"
+    },
+    "flowInput": {
+        "inp": [
+            {
+                "totalMsg": 100000,
+                "rng": 10,
+                "burst": 2,
+                "burstDuration": 120,
+                "burstTime": 240,
+                "sleepTime": [
+                    7,
+                    180
+                ],
+                "error": false,
+                "size": 1
+            }
+        ],
+        "rateAll": {
+            "rate": 10000,
+            "crash": false
+        }
+    },
+    "experimentName": "main",
+    "options": {
+        "ttl": 17200,
+        "batchTolerance": 80,
+        "progressVerbosityLevel": "info"
+    },
+    "priority": 3
+}
