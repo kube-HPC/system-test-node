@@ -1,0 +1,25 @@
+{
+    "name": "get-image-split",
+    "cpu": 1,
+    "created": 1612340586746,
+    "entryPoint": "getImageRoutV1",
+    "env": "python",
+    "fileInfo": {
+        "fileExt": "zip",
+        "checksum": "9722c6c48c705de881df6246957879d67b06e8d8",
+        "fileSize": 1090,
+        "path": "test-hkube-builds/get-image-split-qgjjhx"
+    },
+    "gpu": 0,
+    "mem": "2Gi",
+    "minHotWorkers": 0,
+    "modified": 1615381547494,
+    "options": {
+        "debug": false,
+        "pending": false
+    },
+    "reservedMemory": "512Mi",
+    "type": "Code",
+    "algorithmImage": "docker.io/hkubedevtest/stream-image:vywpntipo",
+    "version": "n6d30pkql9"
+}

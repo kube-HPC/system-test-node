@@ -1,0 +1,19 @@
+{
+    "name": "get-image-error2",
+    "algorithmImage": "docker.io/hkubedevtest/stream-image:vywpntipo",
+    "cpu": 0.3,
+    "created": 1613034221488,
+    "entryPoint": "getImageRout",
+    "env": "python",
+    "gpu": 0,
+    "mem": "1Gi",
+    "minHotWorkers": 0,
+    "modified": 1615381535625,
+    "options": {
+        "debug": false,
+        "pending": false
+    },
+    "reservedMemory": "512Mi",
+    "type": "Code",
+    "version": "22qvfs09wj"
+}

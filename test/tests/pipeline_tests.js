@@ -257,7 +257,7 @@ describe('pipeline Tests 673', () => {
 
     it('type = raw tensor (git 652)',async ()=>{
         const algorithmName = "tensor1"
-        const tensorAlgPath = "docker.io/hkubedev/tensor1:v1.0.1"
+        const tensorAlgPath = "docker.io/hkubedevtest/tensor11:v1.0.0"//"docker.io/hkubedev/tensor1:v1.0.1"
         const tensorAlg = algJson(algorithmName,tensorAlgPath)
         tensorAlg.mem = "5Gi"                  
         await storeAlgorithmApplay(tensorAlg);

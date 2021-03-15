@@ -1,0 +1,25 @@
+{
+    "name": "stream-image",
+    "cpu": 1,
+    "created": 1613466730202,
+    "entryPoint": "imageToByteArrayLocal",
+    "env": "python",
+    "fileInfo": {
+        "fileExt": "zip",
+        "checksum": "c9ccdbef86f476236d7b8058b865f7bf0d3f5291",
+        "fileSize": 1900706,
+        "path": "test-hkube-builds/stream-image-4s2os0"
+    },
+    "gpu": 0,
+    "mem": "1Gi",
+    "minHotWorkers": 0,
+    "modified": 1615381531359,
+    "options": {
+        "debug": false,
+        "pending": false
+    },
+    "reservedMemory": "512Mi",
+    "type": "Code",
+    "algorithmImage": "docker.io/hkubedevtest/stream-image:vywpntipo",
+    "version": "2y8ohmlcaq"
+}

@@ -1,0 +1,25 @@
+{
+    "name": "get-all",
+    "cpu": 1,
+    "gpu": 0,
+    "mem": "1Gi",
+    "reservedMemory": "512Mi",
+    "minHotWorkers": 0,
+    "env": "python",
+    "entryPoint": "getAll",
+    "type": "Code",
+    "options": {
+        "debug": false,
+        "pending": false
+    },
+    "fileInfo": {
+        "fileExt": "zip",
+        "checksum": "b50456ff635d39b8e585f64c21eb0159835adc57",
+        "fileSize": 963,
+        "path": "test-hkube-builds/get-all-fpxiut"
+    },
+    "algorithmImage": "docker.io/hkubedevtest/stream-image:vywpntipo",
+    "version": "scsorygrta",
+    "created": 1608556094977,
+    "modified": 1615381544620
+}

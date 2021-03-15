@@ -1,0 +1,25 @@
+{
+    "name": "get-image-change-rate",
+    "cpu": 0.3,
+    "created": 1615196146036,
+    "entryPoint": "getImageRateChange",
+    "env": "python",
+    "fileInfo": {
+        "fileExt": "zip",
+        "checksum": "e1bde820d1eae5b5b4904aee3c29cc42ccd9376b",
+        "fileSize": 1012,
+        "path": "test-hkube-builds/get-image-change-rate-m5oa1i"
+    },
+    "gpu": 0,
+    "mem": "1Gi",
+    "minHotWorkers": 0,
+    "modified": 1615381540297,
+    "options": {
+        "debug": false,
+        "pending": false
+    },
+    "reservedMemory": "512Mi",
+    "type": "Code",
+    "algorithmImage": "docker.io/hkubedevtest/stream-image:vywpntipo",
+    "version": "eeojdxmgkn"
+}

@@ -93,7 +93,7 @@ describe('Algorithm build test', () => {
             expect(result.data[0].result.sysVersion.toString()).to.be.equal("2")  
         }).timeout(1000 * 60 * 20)
 
-        it(`python 3.5`, async () => {
+        it.skip(`python 3.5`, async () => {
             const entry = 'main35'
             const algName= pipelineRandomName(8).toLowerCase()    
             const pythonVersion = "python:3.5"                    
@@ -115,7 +115,7 @@ describe('Algorithm build test', () => {
             expect(buildStatusAlg.status).to.be.equal("completed") 
             const result = await runAlgGetResult(algName,[4])
             await deleteAlgorithm(algName,true)    
-            expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,6,12,final,0")  
+            expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,6,13,final,0")  
         }).timeout(1000 * 60 * 20)
 
         it(`python 3.7`, async () => {
@@ -127,7 +127,7 @@ describe('Algorithm build test', () => {
             expect(buildStatusAlg.status).to.be.equal("completed") 
             const result = await runAlgGetResult(algName,[4])
             await deleteAlgorithm(algName,true)    
-            expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,7,9,final,0")  
+            expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,7,10,final,0")  
         }).timeout(1000 * 60 * 20)
 
         it(`python 3.7-slim`, async () => {
@@ -139,7 +139,7 @@ describe('Algorithm build test', () => {
             expect(buildStatusAlg.status).to.be.equal("completed") 
             const result = await runAlgGetResult(algName,[4])
             await deleteAlgorithm(algName,true)    
-            expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,7,9,final,0")   
+            expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,7,10,final,0")   
         }).timeout(1000 * 60 * 20)
 
         const getBuildStates = async (jobId) => {
