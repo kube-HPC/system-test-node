@@ -66,7 +66,7 @@ const descriptor = {
 const input = {   
     flowInput: {
         range: 50,
-        inputs:3000}
+        inputs:10000}
 }
 
 

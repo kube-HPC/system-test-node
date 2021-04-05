@@ -1,0 +1,72 @@
+{
+    "modified": 1615975395526,
+    "name": "streaming-diffrent-types",
+    "kind": "stream",
+    "nodes": [
+        {
+            "nodeName": "typs",
+            "algorithmName": "stream-create-types",
+            "input": [
+                "#@flowInput.inp"
+            ],
+            "stateType": "stateful"
+        },
+        {
+            "nodeName": "A",
+            "algorithmName": "get-send-msg",
+            "input": [
+                "@flowInput.rateLimit"
+            ],
+            "stateType": "stateless"
+        },
+        {
+            "nodeName": "B",
+            "algorithmName": "get-send-msg",
+            "input": [
+                "@flowInput.rateLimit1"
+            ],
+            "stateType": "stateless"
+        },
+        {
+            "nodeName": "get-all",
+            "algorithmName": "get-all-msg",
+            "stateType": "stateful",
+            "input": []
+        },
+        {
+            "nodeName": "get-all2",
+            "algorithmName": "get-all-msg",
+            "stateType": "stateful",
+            "input": []
+        }
+    ],
+    "streaming": {
+        "flows": {
+            "analyze": "typs>>get-all",
+            "master": "typs >> A >> B >> get-all2"
+        },
+        "defaultFlow": "master"
+    },
+    "flowInput": {
+        "inp": [
+            {
+                "totalMsg": 20,
+                "rng": 30
+            }
+        ],
+        "rateLimit": {
+            "rate": 2
+        },
+        "rateLimit1": {
+            "rate": 5,
+            "crash": false
+        }
+    },
+    "experimentName": "main",
+    "options": {
+        "ttl": 720000,
+        "batchTolerance": 80,
+        "progressVerbosityLevel": "info"
+    },
+    "priority": 3
+}

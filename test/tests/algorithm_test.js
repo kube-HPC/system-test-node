@@ -543,7 +543,7 @@ describe('Alrogithm Tests', () => {
             const res = await runAlgorithm(algRun)
             const jobId = res.body.jobId
             const result = await  getResult(jobId,200)
-            expect(result.data[0].result.EnvironmentVariables).to.be.equal(alg.algorithmEnv.FOO)
+            expect(result.data[0].result).to.be.equal(alg.algorithmEnv.FOO)
         }).timeout(1000 * 5*60)
 
         it('algorithm Environment Variables secretKeyRef',async ()=>{

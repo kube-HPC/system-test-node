@@ -1,0 +1,25 @@
+{
+    "name": "get-all-msg",
+    "algorithmImage": "docker.io/hkubedevtest/get-all-msg:vn5iyhi06",
+    "cpu": 1,
+    "created": 1615975096267,
+    "entryPoint": "getAllMSG",
+    "env": "python",
+    "gpu": 0,
+    "mem": "512Mi",
+    "minHotWorkers": 0,
+    "modified": 1615986040156,
+    "options": {
+        "debug": false,
+        "pending": false
+    },
+    "reservedMemory": "512Mi",
+    "type": "Code",
+    "version": "lf4glsq3zh",
+    "fileInfo": {
+        "fileExt": "zip",
+        "checksum": "8a37b09995ecd6974b742aeb122df6a8c1b93f6e",
+        "fileSize": 566,
+        "path": "test-hkube-builds/get-all-msg-qzldsr"
+    }
+}

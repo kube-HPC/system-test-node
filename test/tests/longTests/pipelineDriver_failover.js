@@ -101,7 +101,7 @@ describe('pipeline driver fail over', () => {
          await delay(25000)
          
          const newdriver = await getDriverIdByJobId(jobId)
-         console.log("mew driver ="+ newdriver)
+         console.log("new driver ="+ newdriver)
      
         await delay(3000)
     
@@ -130,7 +130,7 @@ describe('pipeline driver fail over', () => {
        write_log('podName-' + podName)
         await delay(10000)
         const newdriver = await getDriverIdByJobId(jobId)
-        console.log("mew driver ="+ newdriver)
+        console.log("new driver ="+ newdriver)
         const result = await getResult(jobId,200)                        
     }).timeout(1000 * 60 * 10);
     
@@ -155,7 +155,7 @@ describe('pipeline driver fail over', () => {
        write_log('podName-' + podName)
         await delay(10000)
         const newdriver = await getDriverIdByJobId(jobId)
-        console.log("mew driver ="+ newdriver)
+        console.log("new driver ="+ newdriver)
         const result = await getResult(jobId,200)                        
     }).timeout(1000 * 60 * 10);
 

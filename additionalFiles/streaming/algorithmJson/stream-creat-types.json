@@ -1,0 +1,25 @@
+{
+    "name": "stream-create-types",
+    "cpu": 1,
+    "created": 1615974840831,
+    "entryPoint": "GenerateRandomData",
+    "env": "python",
+    "fileInfo": {
+        "fileExt": "zip",
+        "checksum": "c9c3375bd76be23731e318d85640b8ba40c00747",
+        "fileSize": 1903294,
+        "path": "test-hkube-builds/stream-create-types-s9zu0x"
+    },
+    "gpu": 0,
+    "mem": "512Mi",
+    "minHotWorkers": 0,
+    "modified": 1615985202697,
+    "options": {
+        "debug": false,
+        "pending": false
+    },
+    "reservedMemory": "512Mi",
+    "type": "Code",
+    "algorithmImage": "docker.io/hkubedevtest/stream-create-types:vgbsux1s9",
+    "version": "dtd44i96mp"
+}
