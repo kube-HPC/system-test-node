@@ -88,6 +88,13 @@ describe('big flowinput',()=>{
           }
     }
 
+    const java = {   
+        name: "java-batch",
+        flowInput: { inp :""
+          
+           
+          }
+    }
     const largeData = {   
         name: "large-data",
         flowInput: {
@@ -113,6 +120,16 @@ describe('big flowinput',()=>{
         console.log(jnk.text)
     }).timeout(1000 * 60 * 60);
 
+
+
+    it("start java-batch",async ()=>{
+        const hh = generateRandomJson(5)
+        java.flowInput.inp= result
+      
+        const jnk = await runStored(java)
+        console.log(jnk.text)
+       
+    }).timeout(1000 * 60 * 60);
 })
 
 describe('TID-181- increasing batch sizes and parallel requests', () => {

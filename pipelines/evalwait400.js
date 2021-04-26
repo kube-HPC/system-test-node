@@ -30,11 +30,25 @@ const descriptor = {
             extraData: {
                 code: [
                     "(input,require)=> {",
-                        "return new Promise((resolve,reject)=>{setTimeout(()=>resolve(4),input[1])});}"
+                        "return new Promise((resolve,reject)=>{setTimeout(()=>resolve(30),input[1])});}"
                 ]
             }
         }
     ]
+    ,
+    "options": {
+      
+        "concurrentPipelines": {
+            "amount": 15,
+            "rejectOnFailure": false
+        },
+        "progressVerbosityLevel": "info",
+        "ttl": 600
+    },
+    "webhooks": {
+        "progress": "http://63.32.210.130:3000/webhook/testWebhook",
+        "result": "http://63.32.210.130:3000/webhook/testWebhook"
+    }
 }
 
 const input = {   

@@ -188,6 +188,21 @@ describe('code api tests ', () => {
 
         }).timeout(1000 * 60 * 10)
 
+        it("Java sart algorithm binary",async ()=>{
+            //await createAlg();
+            const startAlg = [{
+                action:"startAlgBinary",
+                algName:"tamir",
+                alginput:["4"]
+            }]
+            const result = await runAlgGetResult("java-api",startAlg) //await runAlgGetResult(algName,startAlg)
+            console.log(result)
+            expect(result.data[0].result.response).to.be.equal(42)
+            const graph = await getRawGraph(result.jobId)
+            expect(graph.body.nodes.length).to.be.equal(2)
+           
+
+        }).timeout(1000 * 60 * 10)
         it("Java sart stored pipeline",async ()=>{
                 await createAlg();
                 const startPipe = [{

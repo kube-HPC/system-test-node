@@ -248,13 +248,13 @@ const  execSyncReturenJSON = async  (command)=>{
 
             it('pipeline get',async ()=>{
 
-                const get = "hkubectl pipeline get simple"
+                const get = "hkubectl pipeline get simple  --json"
                 const output = await exceSyncString(get);
             
-                const expected = ["name","simple"]
-                const result = output.split("\n")
+              //  const expected = ["name","simple"]
+                const result = JSON.parse(output)
                 
-                expect(expected.filter(a=>result[1].includes(a)).length).to.be.equal(2)
+                expect(result.result.name).to.be.equal('simple')
             }).timeout(1000 * 60 * 6)
 
             it('pipeline store from file',async ()=>{
@@ -366,13 +366,18 @@ const  execSyncReturenJSON = async  (command)=>{
 
             it('exec get pipe ', async () => {
                 
-                const get = "hkubectl pipeline get simple"
+                const get = "hkubectl pipeline get simple --json"
+                //const output = await exceSyncString(get);
+                //const expected = ["name","simple"]
+                //const result = output.split("\n")
+                
+                //expect(expected.filter(a=>result[1].includes(a)).length).to.be.equal(2)
                 const output = await exceSyncString(get);
-                const expected = ["name","simple"]
-                const result = output.split("\n")
-                
-                expect(expected.filter(a=>result[1].includes(a)).length).to.be.equal(2)
-                
+            
+                //  const expected = ["name","simple"]
+                  const result = JSON.parse(output)
+                  
+                  expect(result.result.name).to.be.equal('simple')
             }).timeout(1000 * 60 * 6)
 
             it('exec results pipe ', async () => {
