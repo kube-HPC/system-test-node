@@ -192,7 +192,7 @@ describe('code api tests ', () => {
             //await createAlg();
             const startAlg = [{
                 action:"startAlgBinary",
-                algName:"tamir",
+                algName:"green-alg",
                 alginput:["4"]
             }]
             const result = await runAlgGetResult("java-api",startAlg) //await runAlgGetResult(algName,startAlg)

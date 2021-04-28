@@ -278,7 +278,7 @@ describe('Algorithm requirements repository (git 387)', () => {
         const res = await chai.request(config.apiServerUrl)
             .post('/store/algorithms/apply')
             .field('payload', JSON.stringify(data))
-            .attach('file', fse.readFileSync(aldCode), )
+            .attach('file', fse.readFileSync(aldCode),"main" )
  
         expect(res.status).to.eql(200)
         const buildIdAlg = res.body.buildId
@@ -554,7 +554,7 @@ describe('git hub and git lab algorithm builds (git 506)', () => {
         const gitKind = "github"
         const commit  = "null"
         const tag = "null"
-        const token ="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"//config.githubToken
+        const token =config.githubToken
         const language = 'python'
         const failBuild =   await buildGitAlgorithm({algName,gitUrl,gitKind ,entry , branch ,language ,commit,tag,algorithmArray:algLIst}) 
         expect(JSON.parse(failBuild.text).error.message).to.be.equal(`Not Found (${gitUrl.slice(0,-4)})`)
