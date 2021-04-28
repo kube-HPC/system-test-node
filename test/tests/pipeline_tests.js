@@ -82,6 +82,32 @@ const algJson = (algName,imageName) =>{
     return alg
 }
 
+const getJobId = (array)=>{
+                
+    for(i=0;i<array.length;i++){
+        if(typeof array[i].body.jobId != "undefined"){
+            return array[i].body.jobId;
+            break;
+        }
+    }
+    console.log("fail to get jobId")
+   return null
+}
+
+const printJobId = (array)=>{
+                
+    for(i=0;i<array.length-1;i++){
+        if(typeof array[i].body.jobId != "undefined"){
+            console.log(array[i].body.jobId) ;
+            
+        }
+    }
+    console.log("fail to get jobId")
+   return null
+}
+const  timeout = (ms)=> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 describe('pipeline Tests 673', () => {
    
     describe('pipeline includeInResults (git 673)' , () => {
@@ -761,6 +787,43 @@ describe('pipeline Defaults (git 754)', () => {
        
 
 
+        it(' concurrentPipelines - continu to complete pending   pipeline', async () => {
+                   
+           
+             //run the pipeline evalwait  20 times validate that all the 20 executed
+
+            //set test data to testData1
+            const d = deconstructTestData(testData12)
+            await deletePipeline(d.name)
+            d.pipeline.options = {concurrentPipelines:{
+                amount :4,
+                rejectOnFailure:false
+            }}
+            //store pipeline evalwait
+            await storePipeline(d)
+           let pipe3JobId =''
+            for(i=0;i<5;i++){
+                var parents = await Promise.all([
+                    runStored(d),
+                    runStored(d),
+                    runStored(d),
+                    runStored(d),    
+                    timeout(900)
+                  
+                ]);
+                pipe3JobId  = parents
+            }
+            
+            const result2 = await  getResult(getJobId(pipe3JobId), 200)
+           
+            expect(result2.status).to.be.equal("completed")
+            await deletePipeline(d.name)
+           
+    
+        }).timeout(1000 * 60 * 5);
+       
+
+
 
     } )
 
@@ -872,22 +935,15 @@ describe('pipeline Defaults (git 754)', () => {
     describe("TID-440 Pipeline priority tests (git 58)~",()=>{
    
         it('pipeline queue priority test',async()=>{
-            function timeout(ms) {
-                return new Promise(resolve => setTimeout(resolve, ms));
-            }
+            
 
-            function getJobId(array){
-                
-                for(i=0;i<array.length;i++){
-                    if(typeof array[i].body.jobId != "undefined"){
-                        return array[i].body.jobId;
-                        break;
-                    }
-                }
-                console.log("fail to get jobId")
-               return null
+           
+            var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+=~';
+            var charactersLength = characters.length;
+            var result           = '';
+            for ( var i = 0; i < 250000; i++ ) {
+               result += characters.charAt(Math.floor(Math.random() * charactersLength));
             }
-
 
             const d = deconstructTestData(testData11)
             const priority3 = "pipe-priority3"
@@ -900,7 +956,8 @@ describe('pipeline Defaults (git 754)', () => {
                 name: priority1,
                 flowInput: {
                     range:20,
-                    inputs:2000               
+                    inputs:5000,
+                    jnk:result               
                 }
             }
             
@@ -908,18 +965,19 @@ describe('pipeline Defaults (git 754)', () => {
                 name: priority3,
                 flowInput: {
                     range:20,
-                    inputs:2000               
+                    inputs:5000,
+                    jnk:result                 
                 }
             }
             await deletePipeline(d)
-            await storePipeline(d)
+            const a = await storePipeline(d)
 
             d.pipeline.name = d.name = priority1
             d.pipeline.priority =1
             await deletePipeline(d)
-            await storePipeline(d)
+            const ab = await storePipeline(d)
 
-            for(i=0;i<10;i++){
+            for(i=0;i<20;i++){
                 var parents = await Promise.all([
                     runStored(pipe3),
                     runStored(pipe3),
@@ -928,10 +986,11 @@ describe('pipeline Defaults (git 754)', () => {
                     timeout(900)
                   
                 ]);
+                printJobId(parents)
                 pipe3JobId  = parents
             }
             
-            for(i=0;i<10;i++){
+            for(i=0;i<20;i++){
                 var parents = await Promise.all([
                     runStored(pipe1),
                     runStored(pipe1),

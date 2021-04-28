@@ -39,11 +39,11 @@ const descriptor = {
     "options": {
       
         "concurrentPipelines": {
-            "amount": 15,
+            "amount": 25,
             "rejectOnFailure": false
         },
         "progressVerbosityLevel": "info",
-        "ttl": 600
+        "ttl": 3600
     },
     "webhooks": {
         "progress": "http://63.32.210.130:3000/webhook/testWebhook",

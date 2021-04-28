@@ -1,0 +1,11 @@
+name: alg-deps
+env: python 
+baseImage: python:3.7
+resources:
+  cpu: 0.5
+  gpu: 0 # if not needed just remove it from the file
+  mem: 2Gi
+code:
+  path: .
+  entryPoint: main.py
+dependencyInstallCmd: './installDeps.sh'

@@ -256,6 +256,41 @@ describe('Algorithm requirements repository (git 387)', () => {
     }).timeout(1000 * 60 * 20)
 
 
+    it('dependency installed from sh file',async()=>{
+        // buil algorithm use  the  installDeps.sh scripts that installed numpy and create folder with files 
+        // the algorithm use numpy and read the files that the script created.  
+        const aldCode = path.join(process.cwd(), 'additionalFiles/depsInstallCmd/depsInstallCmd.zip');
+
+        const algName= pipelineRandomName(8).toLowerCase()    
+       
+        const data = {
+            name: algName,
+            env: 'python',
+            cpu: 1,
+            gpu: 0,
+            mem: '1Gi',
+            entryPoint: 'main',
+            minHotWorkers: 0,
+            dependencyInstallCmd: "installDeps.sh"
+            
+        }
+    
+        const res = await chai.request(config.apiServerUrl)
+            .post('/store/algorithms/apply')
+            .field('payload', JSON.stringify(data))
+            .attach('file', fse.readFileSync(aldCode), )
+ 
+        expect(res.status).to.eql(200)
+        const buildIdAlg = res.body.buildId
+        const buildStatusAlg = await getStatusall(buildIdAlg, `/builds/status/`, 200, "completed", 1000 * 60 * 10)
+
+        expect(buildStatusAlg.status).to.be.equal("completed") 
+        const result = await runAlgGetResult(algName,[4])
+        await deleteAlgorithm(algName,true)      
+        expect(result.data[0].result).to.be.equal(10)  
+
+    
+    }).timeout(1000 * 60 * 20)
 
 })
 
