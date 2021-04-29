@@ -23,7 +23,7 @@ const {
 const {
         runAlgGetResult,
         getAlgorithm, 
-        
+        storeAlgorithmApplay,
         deleteAlgorithm,  
         getBuildList} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 
@@ -154,6 +154,10 @@ const  execSyncReturenJSON = async  (command)=>{
                 expect(alg.status).to.be.equal(404)                  
             }).timeout(1000 * 60 * 10)
             
+
+
+          
+
             it('hkube algorithm apply alg version',async ()=>{
                 const algName = pipelineRandomName(8).toLowerCase()
                 algLIst.push(algName)
@@ -492,7 +496,81 @@ const  execSyncReturenJSON = async  (command)=>{
                 console.log(result)
                 deleteAlgorithm(algName)
                 }).timeout(1000 * 60 * 10)
-        })
+       
+
+
+        it('sync python alg ignor files',async ()=>{
+            //the folder containg hkubeignore that has one line to ignore *.txt
+            const folderPath = path.join(process.cwd(), 'additionalFiles/pythonIgnoreFile');
+            
+            const algName = pipelineRandomName(8).toLowerCase()
+            algLIst.push(algName)
+            console.log("alg-name-"+algName)
+            var fs = require('fs');
+        
+            const command = ` hkubectl sync create`+
+                            ` --entryPoint ${algName}.py`+
+                            ` --algorithmName ${algName}`+
+                            ` --folder ${folderPath}`+
+                            ` --env python`
+                        
+            console.log(command)
+            await exceSyncString(command)
+            const watch = `hkubectl sync watch`+
+            ` -a ${algName}`+
+            ` -f ${folderPath}`
+            console.log("watch-"+watch)
+            execShellCommand(watch)
+            var filePath = `${folderPath}/main.py`
+           
+            var data = fs.readFileSync(filePath, 'utf8');
+            fs.writeFileSync(`${folderPath}/${algName}.py`, data, {encoding:'utf8',flag:'w'} )
+
+            await delay(20*1000)
+        
+            const result = await runAlgGetResult(algName,[4])
+            console.log(result)
+            //when running from local there are 6 txt file
+            expect(result.data[0].result).to.be.equal(6)
+
+            const alg = await getAlgorithm(algName)
+                const image  = alg.body.algorithmImage
+
+
+                const newName = algName+"-new"
+                const alg1  = {
+                    name: newName,
+                    cpu: 1,
+                    gpu: 0,
+                    mem: "256Mi",
+                    minHotWorkers: 0,
+                    algorithmImage: image,
+                    type: "Image",
+                    options: {
+                        debug: false,
+                        pending: false
+                        }  
+
+                    }
+        
+                const res =    await storeAlgorithmApplay(alg1);
+                algLIst.push(newName)
+                const result1 = await runAlgGetResult(newName,[4])
+                console.log(result)
+                 //when running the builed algorith the  there are 0 txt file as exepected from the hkubeignore file
+                expect(result1.data[0].result).to.be.equal(0)
+          
+            }).timeout(1000 * 60 * 10)
+
+
+
+
+    
+            })
+
+
+     
+    
 
 });
 
