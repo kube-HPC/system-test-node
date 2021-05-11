@@ -178,13 +178,66 @@ describe('Alrogithm Tests', () => {
         }).timeout(1000 * 60 * 10);
 
 
-        it('update algorithm nodeSelector',async () =>{
+        it(' algorithm lablels does not overwrite defaults',async () =>{
             const nodes = await getNodes();
            
             const algName= pipelineRandomName(8).toLowerCase()    
             const algV1 = algJson(algName,algorithmImageV1)
             const algV2 = algJson(algName,algorithmImageV2)
             algV1.nodeSelector = {"kubernetes.io/hostname": nodes[2] }
+            algV1.minHotWorkers = 1;
+            algV1.labels = {"group":"test"}
+
+            let v1 = await storeAlgorithmApplay(algV1); 
+            await delay(2000)
+            const podName = await filterPodsByName(algName);
+            expect(podName[0].metadata.labels["group"]).to.be.eqls("hkube")
+            deleteAlgorithm(algName)
+        }).timeout(1000 * 60 * 10);
+
+
+
+        it(' algorithm labels   ',async () =>{
+            const nodes = await getNodes();
+           
+            const algName= pipelineRandomName(8).toLowerCase()    
+            const algV1 = algJson(algName,algorithmImageV1)
+            const algV2 = algJson(algName,algorithmImageV2)
+            algV1.nodeSelector = {"kubernetes.io/hostname": nodes[2] }
+            algV1.minHotWorkers = 1;
+            algV1.labels = {"group":"test"}
+
+            let v1 = await storeAlgorithmApplay(algV1); 
+            await delay(2000)
+            const podName = await filterPodsByName(algName);
+            expect(podName[0].metadata.labels["created-by"]).to.be.eqls("test")
+            deleteAlgorithm(algName)
+        }).timeout(1000 * 60 * 10);
+        
+        
+        it(' algorithm annotations ',async () =>{
+            const nodes = await getNodes();
+           
+            const algName= pipelineRandomName(8).toLowerCase()    
+            const algV1 = algJson(algName,algorithmImageV1)
+            const algV2 = algJson(algName,algorithmImageV2)
+            algV1.nodeSelector = {"kubernetes.io/hostname": nodes[2] }
+            algV1.minHotWorkers = 1;
+            algV1.annotations = {"annotations-by":"test"}
+
+            let v1 = await storeAlgorithmApplay(algV1); 
+            await delay(2000)
+            const podName = await filterPodsByName(algName);
+            expect(podName[0].metadata.annotations["annotations-by"]).to.be.eqls("test")
+            deleteAlgorithm(algName)
+        }).timeout(1000 * 60 * 10);
+
+        it(' update algorithm nodeSelector',async () =>{
+            const nodes = await getNodes();
+           
+            const algName= pipelineRandomName(8).toLowerCase()    
+            const algV1 = algJson(algName,algorithmImageV1)
+          
             algV1.minHotWorkers = 1;
             let v1 = await storeAlgorithmApplay(algV1); 
             await delay(2000)
@@ -211,7 +264,6 @@ describe('Alrogithm Tests', () => {
             expect(podNode1).to.be.equal(nodes[1])
             deleteAlgorithm(algName)
         }).timeout(1000 * 60 * 10);
-    
         it(`change baseImage trigger new Build`, async () => {
              const code1 = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
              const entry = 'main27'
