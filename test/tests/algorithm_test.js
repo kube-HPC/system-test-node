@@ -56,10 +56,10 @@
 describe('Alrogithm Tests', () => {
      
 
-     it("~~~~~~~~~~~~get nodes~~~~~~~~~~~~~~",async ()=>{
-        console.log("get nodes")
+     it("get nodes",async ()=>{
+        console.log("~~~~~~~~~~~~get nodes~~~~~~~~~~~~")
         console.log("K8S_CONFIG_PATH - " + process.env.K8S_CONFIG_PATH)
-        console.log("BASE_URL - " + BASE_URL )
+        console.log("BASE_URL - " + process.env.BASE_URL )
         const nodes = await getNodes();
         console.log("node 0 - " + nodes[0])
 
