@@ -55,6 +55,15 @@
  const {getWebSocketData} = require(path.join(process.cwd(), 'utils/socketGet'))
 describe('Alrogithm Tests', () => {
      
+
+     it("~~~~~~~~~~~~get nodes~~~~~~~~~~~~~~",async ()=>{
+        console.log("get nodes")
+        console.log("K8S_CONFIG_PATH - " + process.env.K8S_CONFIG_PATH)
+        console.log("BASE_URL - " + BASE_URL )
+        const nodes = await getNodes();
+        console.log("node 0 - " + nodes[0])
+
+     }).timeout(1000 * 60 * 5);
     let algLIst = []
     
     after(async function() {
@@ -189,7 +198,7 @@ describe('Alrogithm Tests', () => {
             algV1.labels = {"group":"test"}
 
             let v1 = await storeAlgorithmApplay(algV1); 
-            await delay(2000)
+            await delay(5000)
             const podName = await filterPodsByName(algName);
             expect(podName[0].metadata.labels["group"]).to.be.eqls("hkube")
             deleteAlgorithm(algName)
@@ -202,13 +211,13 @@ describe('Alrogithm Tests', () => {
            
             const algName= pipelineRandomName(8).toLowerCase()    
             const algV1 = algJson(algName,algorithmImageV1)
-            const algV2 = algJson(algName,algorithmImageV2)
+
             algV1.nodeSelector = {"kubernetes.io/hostname": nodes[2] }
             algV1.minHotWorkers = 1;
-            algV1.labels = {"group":"test"}
+            algV1.labels = {"created-by":"test"}
 
             let v1 = await storeAlgorithmApplay(algV1); 
-            await delay(2000)
+            await delay(5000)
             const podName = await filterPodsByName(algName);
             expect(podName[0].metadata.labels["created-by"]).to.be.eqls("test")
             deleteAlgorithm(algName)
@@ -226,7 +235,7 @@ describe('Alrogithm Tests', () => {
             algV1.annotations = {"annotations-by":"test"}
 
             let v1 = await storeAlgorithmApplay(algV1); 
-            await delay(2000)
+            await delay(5000)
             const podName = await filterPodsByName(algName);
             expect(podName[0].metadata.annotations["annotations-by"]).to.be.eqls("test")
             deleteAlgorithm(algName)
@@ -237,8 +246,9 @@ describe('Alrogithm Tests', () => {
            
             const algName= pipelineRandomName(8).toLowerCase()    
             const algV1 = algJson(algName,algorithmImageV1)
-          
+            const algV2 = algJson(algName,algorithmImageV1)
             algV1.minHotWorkers = 1;
+            algV1.nodeSelector = {"kubernetes.io/hostname": nodes[2] }
             let v1 = await storeAlgorithmApplay(algV1); 
             await delay(2000)
             const podName = await filterPodsByName(algName);
