@@ -193,7 +193,7 @@ describe('Alrogithm Tests', () => {
             const algName= pipelineRandomName(8).toLowerCase()    
             const algV1 = algJson(algName,algorithmImageV1)
             const algV2 = algJson(algName,algorithmImageV2)
-            algV1.nodeSelector = {"kubernetes.io/hostname": nodes[2] }
+           // algV1.nodeSelector = {"kubernetes.io/hostname": nodes[2] }
             algV1.minHotWorkers = 1;
             algV1.labels = {"group":"test"}
 
@@ -207,12 +207,12 @@ describe('Alrogithm Tests', () => {
 
 
         it(' algorithm labels   ',async () =>{
-            const nodes = await getNodes();
+           // const nodes = await getNodes();
            
             const algName= pipelineRandomName(8).toLowerCase()    
             const algV1 = algJson(algName,algorithmImageV1)
 
-            algV1.nodeSelector = {"kubernetes.io/hostname": nodes[2] }
+            //algV1.nodeSelector = {"kubernetes.io/hostname": nodes[2] }
             algV1.minHotWorkers = 1;
             algV1.labels = {"created-by":"test"}
 
@@ -225,12 +225,12 @@ describe('Alrogithm Tests', () => {
         
         
         it(' algorithm annotations ',async () =>{
-            const nodes = await getNodes();
+           // const nodes = await getNodes();
            
             const algName= pipelineRandomName(8).toLowerCase()    
             const algV1 = algJson(algName,algorithmImageV1)
-            const algV2 = algJson(algName,algorithmImageV2)
-            algV1.nodeSelector = {"kubernetes.io/hostname": nodes[2] }
+          //  const algV2 = algJson(algName,algorithmImageV2)
+          //  algV1.nodeSelector = {"kubernetes.io/hostname": nodes[2] }
             algV1.minHotWorkers = 1;
             algV1.annotations = {"annotations-by":"test"}
 

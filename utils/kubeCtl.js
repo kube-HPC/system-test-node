@@ -61,7 +61,8 @@ const deletePod = async (podName, namespace='default') => {
 const getNodes = async (namespace='default')=>{
 
     const res = await client.api.v1.nodes.get()//await client.api.v1.namespaces(namespace).getNodes();
-    return res.body.items.map((n)=>{return n.metadata.name})
+    let nodes =  res.body.items.filter(z => z.metadata.labels["kubernetes.io/role"]=="node")
+    return nodes.map((n)=>{return n.metadata.name})
 }
 
 const filterjobsByName = async (name,namespace='default') => {
