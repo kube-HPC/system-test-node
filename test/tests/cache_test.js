@@ -45,7 +45,7 @@ chai.use(chaiHttp);
 describe('Test worker cache 576', () => {
 
     //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/576
-    it('storage get amount  ', async () => {
+    it.skip('storage get amount old do not run ', async () => {
        
 
         const alg =  await storeAlgorithm("lonstringv1");

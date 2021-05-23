@@ -71,10 +71,10 @@ describe('jagear', () => {
 })
 
 
-describe('Test worker cache 576', () => {
+describe.skip('Test worker cache 576', () => {
 
     //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/576
-    it('storage get amount  ', async () => {
+    it('storage get amount ', async () => {
        
 
         const alg =  await storeAlgorithm("lonstringv1");

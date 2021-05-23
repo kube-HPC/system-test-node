@@ -108,6 +108,7 @@ const index = {
     nodeTest:{
         testData1: require('../pipelines/singel-on-bach'),
         testData2: require('../pipelines/eval-error'),
+        testData3: require('../pipelines/simple-batch'),
         testData401: require('../pipelines/bytes'),
         testData402: require('../pipelines/addmult'),
         testData403: require('../pipelines/bool'),

@@ -35,6 +35,7 @@ const {
 const {   
       testData1,
       testData2,
+      testData3,
       testData401,
       testData402,
       testData403,
@@ -67,7 +68,9 @@ chai.use(chaiHttp);
 
 
 describe('Node Tests git 660', () => {
+
   
+
     describe('singel node batch input' , () => {
         const pipe ={
             name: "Athos-Cartesian",
@@ -603,6 +606,21 @@ describe('Node Tests git 660', () => {
 
 
   describe("some test",()=>{
+
+
+    it('spkip batch node if input is null',async ()=>{
+
+      const testData = testData3
+      const d = deconstructTestData(testData)
+      await deletePipeline(d)
+      await storePipeline(d)
+      const jobId = await runStoredAndWaitForResults(d)
+
+      const graph = await getRawGraph(jobId)
+     
+      expect(graph.body.nodes[1].batch[0].status).to.be.equal('skipped')
+    })
+
     it("node get data from batch after batch was killed",async ()=>{    
      
          const testData = testData1
