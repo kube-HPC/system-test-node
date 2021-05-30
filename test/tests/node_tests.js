@@ -608,7 +608,7 @@ describe('Node Tests git 660', () => {
   describe("some test",()=>{
 
 
-    it('spkip batch node if input is null',async ()=>{
+    it('skip batch node if input is null',async ()=>{
 
       const testData = testData3
       const d = deconstructTestData(testData)
@@ -619,7 +619,7 @@ describe('Node Tests git 660', () => {
       const graph = await getRawGraph(jobId)
      
       expect(graph.body.nodes[1].batch[0].status).to.be.equal('skipped')
-    })
+    }).timeout(1000 * 60 * 3)
 
     it("node get data from batch after batch was killed",async ()=>{    
      
