@@ -40,5 +40,5 @@ jaeger:
 algorithm_operator:
   env: # +doc-gen:ignore
     algorithm_queue_concurrency_limit: 5
-    pipeline_drivers_amount: 5
-    pipeline_drivers_concurrency_limit: 5
+    pipeline_drivers_amount: 1
+    pipeline_drivers_concurrency_limit: 60
