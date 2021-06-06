@@ -654,7 +654,7 @@ describe('pipeline Defaults (git 754)', () => {
            
             const res = await runStored(e)        
             const jobId = res.body.jobId
-            await delay(8000)
+            await delay(3000)
            
             const pause = await pausePipeline(jobId);
             await delay(60000)

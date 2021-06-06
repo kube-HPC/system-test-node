@@ -120,30 +120,7 @@ jobs:
         env:
           BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
-  algorithmTest:
-    runs-on: ubuntu-latest
-    needs: [jagearTest,nodeTest,pipelineTest,codeApiTest]
-    if: ${{ always() }}
-    steps:
-      - uses: actions/checkout@v2
-      - run: npm ci
-      - name: create kubeconfig
-        run: |
-          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
-          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
-        env:
-          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
-      - name: test
-        run:  |
-          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
-          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
-          npm run algorithmtest
-        env:
-          BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
-          WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
-          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
-          K8S_VERSION: 1.13
-          K8S_CONFIG_PATH: /tmp/config
+ 
   algorithmBuild:
     runs-on: ubuntu-latest
     needs: [jagearTest,nodeTest,pipelineTest,codeApiTest]
@@ -199,48 +176,33 @@ jobs:
           KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
           K8S_VERSION: 1.13
           K8S_CONFIG_PATH: /tmp/config
-  WindowsCli:
-    runs-on: windows-latest
-    needs: [jagearTest,nodeTest,pipelineTest,codeApiTest]
-    timeout-minutes: 60
+  algorithmTest:
+    runs-on: ubuntu-latest
+    needs: [HkubeCliTest,algorithmBuild]
     if: ${{ always() }}
     steps:
       - uses: actions/checkout@v2
       - run: npm ci
       - name: create kubeconfig
         run: |
-          mkdir  d:\tmp 
-          echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          echo "$KUBE_CONFIG_DATA" >> d:\tmp\config64.b64
-          certutil -decode d:\tmp\config64.b64 d:\tmp\config
-          echo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          echo KUBECONFIG=d:/tmp/config >> $GITHUB_ENV
+          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
+          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
         env:
           KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
-          HKUBE_URL: ${{ secrets.HKUBE }}
-      - name: create hkubectl
-        run: |
-          $version = node ./additionalFiles/getLatestVersion.js
-          echo $version
-          $downloadFile = "https://github.com/kube-HPC/hkubectl/releases/download/"+$version+"/hkubectl-win.exe"
-          echo downloadFIle file from $downloadFile
-          Invoke-WebRequest -OutFile d:\tmp\hkubectl.exe -Uri $downloadFile
-          d:\tmp\hkubectl.exe config set endpoint https://test.hkube.io
-          d:\tmp\hkubectl.exe config set rejectUnauthorized false
-          echo ~~~~~~~~~~~~~
-          d:\tmp\hkubectl --version
-          d:\tmp\hkubectl algorithm get green-alg --json
-          echo ~~~===========
-          $env:Path += ";d:\tmp" 
-          hkubectl --version
-          npm run cliTests
+      - name: test
+        run:  |
+          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
+          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
+          npm run algorithmtest
         env:
-          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
-          HKUBE_URL: ${{ secrets.HKUBE }}
           BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
+          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
+          K8S_VERSION: 1.13
+          K8S_CONFIG_PATH: /tmp/config
   HighAvailability:
     runs-on: ubuntu-latest
-    needs: [HkubeCliTest,algorithmBuild,algorithmTest,WindowsCli]
+    needs: [algorithmTest]
     if: ${{ always() }}
     steps:
       - uses: actions/checkout@v2
