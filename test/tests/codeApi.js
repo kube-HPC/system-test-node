@@ -195,7 +195,7 @@ describe('code api tests ', () => {
                 algName:"green-alg",
                 alginput:["4"]
             }]
-            const result = await runAlgGetResult("java-api",startAlg) //await runAlgGetResult(algName,startAlg)
+            const result = await runAlgGetResult(algName,startAlg) //await runAlgGetResult(algName,startAlg)
             console.log(result)
             expect(result.data[0].result.response).to.be.equal(42)
             const graph = await getRawGraph(result.jobId)
