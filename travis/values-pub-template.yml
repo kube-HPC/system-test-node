@@ -31,6 +31,7 @@ task_executor:
 monitor_server:
   env:
     elasticsearch_service_url: 'http://elasticsearch-ingest.logging.svc.test:9200'
+    show_streaming_metrics: true
 storage_cleaner:
   pattern: "0 5 * * * "
 etcd_cleaner:
