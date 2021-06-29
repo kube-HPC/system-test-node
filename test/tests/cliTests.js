@@ -439,23 +439,26 @@ const  execSyncReturenJSON = async  (command)=>{
                                 ` --folder ${folderPath}`+
                                 ` --env python`
                 console.log(command)
+                console.log("2") 
                 await exceSyncString(command)
-                
+                console.log("3") 
                 const watch = `hkubectl sync watch`+
                             ` -a ${algName}`+
                             ` -f ${folderPath}`
 
                 execShellCommand(watch)
-
+                console.log("4") 
                 await delay(20*1000)
+                console.log("5") 
                 const result = await runAlgGetResult(algName,[4])
                 
             //  await deleteAlgorithm(algName,true)    
                 expect(result.data[0].result.version.toString()).to.be.equal("1")  
 
                 const newmain = data.replace(`"version":"1"`,`"version":"2"`)
-
+                console.log("6") 
                 fs.writeFileSync(`${folderPath}/main.py`, newmain, {encoding:'utf8',flag:'w'} )
+                console.log("7")    
                 await delay(20*1000)
              
                 const result2 = await runAlgGetResult(algName,[4])

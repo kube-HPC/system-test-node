@@ -148,6 +148,12 @@ const runStored = async (descriptor) => {
     return res
 }
 
+const loadRunStored = async (data)=>{
+    const res = await chai.request(config.apiServerUrl)
+        .post('/exec/stored')
+        .send(data)
+    return res
+}
 const runRaw = async (body) => {
     const res = await chai.request(config.apiServerUrl)
         .post('/exec/raw')
@@ -317,6 +323,7 @@ module.exports = {
     exceCachPipeline,
     getPipelineResultsByName,
     getPipelinestatusByName,
-    getPipelineTriggerTree
+    getPipelineTriggerTree,
+    loadRunStored
 
 }

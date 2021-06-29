@@ -176,6 +176,35 @@ jobs:
           KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
           K8S_VERSION: 1.13
           K8S_CONFIG_PATH: /tmp/config
+  DataSourceTest:
+    runs-on: ubuntu-latest
+    needs: [jagearTest,nodeTest,pipelineTest,codeApiTest]
+    if: ${{ always() }}
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm ci
+      - name: create kubeconfig
+        run: |
+          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
+          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
+      - name: create hkubectl
+        run: |
+          ./travis/cli.sh
+          echo $PWD >> $GITHUB_PATH 
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
+          HKUBE_URL: ${{ secrets.HKUBE }}
+      - name: test
+        run:  |       
+          npm run cliTests
+        env:
+          BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
+          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
+          K8S_VERSION: 1.13
+          K8S_CONFIG_PATH: /tmp/config
   algorithmTest:
     runs-on: ubuntu-latest
     needs: [HkubeCliTest,algorithmBuild]

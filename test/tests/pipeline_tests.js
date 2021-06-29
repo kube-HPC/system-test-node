@@ -4,7 +4,7 @@ const chaiHttp = require('chai-http');
 const path = require('path')
 const delay = require('delay')
 var diff = require('deep-diff').diff
-
+const axios = require('axios')
 const { runAlgorithm,
         deleteAlgorithm,
         storeAlgorithm,
@@ -46,6 +46,7 @@ const {
 
 // const KubernetesClient = require('@hkube/kubernetes-client').Client;
 const {
+    loadRunStored,
     getPipelineTriggerTree,
     getExecPipeline,
     runRaw,
@@ -335,7 +336,7 @@ describe('pipeline Tests 673', () => {
     }).timeout(1000 * 60 * 7);
 
 
-    it("type = Debug ", async () => {
+    it.skip("type = Debug ", async () => {
         
         const algName= pipelineRandomName(8).toLowerCase()
         
@@ -1010,6 +1011,71 @@ describe('pipeline Defaults (git 754)', () => {
 
 
         }).timeout(1000 * 60 * 25)
+
+
+        it.skip('fast load ',async()=>{
+            const load = {   
+                //name: "pipe-priority3",
+                name:"pipe-priority12",//"load",
+                flowInput: {
+                    range:4,
+                    inputs:30000//,
+                   // jnk:result                 
+                }
+            }
+          
+            for(i=0;i<500;i++){
+
+                    loadRunStored(load )
+            
+            }
+        })
+
+        it.skip('load test ',async()=>{
+            
+        
+
+            const pipe3 = {   
+                //name: "pipe-priority3",
+                name:"load",
+                flowInput: {
+                    range:20,
+                    inputs:10000//,
+                   // jnk:result                 
+                }
+            }
+           for(min=0;min<1;min++){
+            const pipesForSec = 100 ;
+            const delay = 1000/pipesForSec
+            console.log("start - loop")
+            for(i=0;i<50;i++){
+
+               for(z=0;z<pipesForSec;z++){
+                    loadRunStored(pipe3)
+                   //await timeout(delay)
+               }
+               let date_ob = new Date();
+               console.log(i + " "+ date_ob.getSeconds())
+            }
+
+            const pipesForSecBurst = 20 ;
+            const delayBurst = 1000/pipesForSecBurst
+            console.log("start buresr loop ")
+            for(i=0;i<10;i++){
+
+               for(z=0;z<pipesForSec;z++){
+                    loadRunStored(pipe3)
+                   await timeout(delayBurst)
+               }
+               let date_ob = new Date();
+               console.log(i + " "+ date_ob.getSeconds())
+            }            
+            console.log("end - minute-"+min)
+           }
+           
+        }).timeout(1000 * 60 * 25)
+
+      
         it('Different priority same Pipeline ', async () => {
             const d = deconstructTestData(testData11)
             const pipe = {   
