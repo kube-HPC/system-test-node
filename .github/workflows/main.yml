@@ -176,7 +176,7 @@ jobs:
           KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
           K8S_VERSION: 1.13
           K8S_CONFIG_PATH: /tmp/config
-  DataSourceTest:
+  datsourceTest:
     runs-on: ubuntu-latest
     needs: [jagearTest,nodeTest,pipelineTest,codeApiTest]
     if: ${{ always() }}
@@ -189,22 +189,19 @@ jobs:
           echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
         env:
           KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
-      - name: create hkubectl
-        run: |
-          ./travis/cli.sh
-          echo $PWD >> $GITHUB_PATH 
-        env:
-          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
-          HKUBE_URL: ${{ secrets.HKUBE }}
       - name: test
-        run:  |       
-          npm run cliTests
+        run:  |
+          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
+          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
+          npm run dataSourceTest
         env:
           BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
           KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
           K8S_VERSION: 1.13
           K8S_CONFIG_PATH: /tmp/config
+          GitHub_Token:  ${{ secrets.GIT_TOKEN }} 
+          Gitlab_Token: ${{ secrets.GITLAB_TOKEN }}
   algorithmTest:
     runs-on: ubuntu-latest
     needs: [HkubeCliTest,algorithmBuild]
