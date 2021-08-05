@@ -395,7 +395,7 @@ describe('Alrogithm Tests', () => {
             await storePipeline(d)
             const res = await runStored(pipe)        
             const jobId = res.body.jobId
-            await delay(10000)
+            await delay(15000)
             const update = await updateAlgorithmVersion(algorithmName,v2.body.algorithm.version,true);
             expect(update.status).to.be.equal(201);
             await delay(5000);

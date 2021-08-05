@@ -173,6 +173,7 @@ describe('code api tests ', () => {
         // }
 
         it("Java sart algorithm",async ()=>{
+
             await createAlg();
             const startAlg = [{
                 action:"startAlg",
@@ -214,7 +215,7 @@ describe('code api tests ', () => {
                 console.log(result)
                
                
-                expect(result.data[0].result.response[0].result).to.be.equal(42)
+                expect(result.data[0].result[0].result).to.be.equal(42)
         }).timeout(1000 * 60 * 10)
 
         it("Java sart raw pipelien",async ()=>{
@@ -229,7 +230,7 @@ describe('code api tests ', () => {
             console.log(result)
                
                
-            expect(result.data[0].result.response[0].result).to.be.equal(42)
+            expect(result.data[0].result[0].result).to.be.equal(42)
 
             //const path = result.data[0].result.result.storageInfo.path
            // const res = await getResultFromStorage(path)
