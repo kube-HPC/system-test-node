@@ -258,6 +258,18 @@ const stopPipeline = async (jobid) => {
     return res
 }
 
+const exceRerun = async (jobId)=>{
+    const data = {
+        jobId: jobId,
+       
+    }
+
+    const res = await chai.request(config.apiServerUrl)
+        .post('/exec/rerun')
+        .send(data)
+    logResult(res, 'PipelineUtils exceRerun')
+    return res
+}
 const exceCachPipeline = async (jobId,nodeName)=>{
     const data = {
         jobId: jobId,
@@ -303,6 +315,7 @@ const pipelineRandomName = (length)=>{
 
 
 module.exports = {
+    exceRerun,
     pipelineRandomName,
     putStorePipelineWithDescriptor,
     getExecPipeline,

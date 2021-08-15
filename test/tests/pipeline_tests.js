@@ -48,7 +48,7 @@ const {
 
 // const KubernetesClient = require('@hkube/kubernetes-client').Client;
 const {
-  execRerun,
+  exceRerun,
   loadRunStored,
   getPipelineTriggerTree,
   getExecPipeline,
@@ -377,7 +377,7 @@ describe("pipeline Tests 673", () => {
         }
       };
       const res = await runStoredAndWaitForResults(pipe);
-      const reRun = await execRerun(res)
+      const reRun = await exceRerun(res)
       const rePipe = await getExecPipeline(reRun.body.jobId)
       expect(rePipe.body.flowInput.files.link).to.be.equal(pipe.flowInput.files.link)
     }).timeout(1000 * 60 * 7);
