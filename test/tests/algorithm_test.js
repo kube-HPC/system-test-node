@@ -287,7 +287,7 @@ describe('Alrogithm Tests', () => {
 
              let algJson = JSON.parse(alg.text);
              alg  = await getAlgorithm(algName)
-             algJson.baseImage = "python:3.5"
+             algJson.baseImage = "python:3.8"
              let v2 = await storeAlgorithmApplay(algJson);
              //expect(v2.algorithmImage).to.contain(v2.imageTag)
              expect(v2.imageTag).to.not.be.equal(buildStatusAlg.imageTag)

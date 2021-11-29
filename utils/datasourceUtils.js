@@ -34,19 +34,38 @@ const uploadFileToDataSource = async (dataSourceName,FilePath,CommitMessage)=>{
         formData.append( "versionDescription",CommitMessage)
         if (Array.isArray(FilePath)){
             FilePath.forEach(element => {
-                formData.append('files', fs.createReadStream(element));
-                
+                const t = fs.createReadStream(element)
+                formData.append('files', fs.createReadStream(element) );
+               
             });
         }
         else{
             formData.append('files', fs.createReadStream(FilePath));
-        }
-        
+        }       
         const url = config.DsServerUrl+"/"+dataSourceName;
         const res = await axios.post(url, formData, {  headers: formData.getHeaders()});
         return res;
         
     }
+
+
+const changeFolder = async (DSname,folderName,fileName)=>{
+    const dataSourceName =DSname
+    const ds = await getDatasourceByName(DSname)
+    const file = ds.data.files.find(o=>o.name===fileName)
+    file.path = `/${folderName}`
+    const formData = new FormData();
+    formData.append("name",dataSourceName)
+    formData.append( "versionDescription","Change folder CommitMessage")
+    const  mapping = file
+    formData.append( "mapping", JSON.stringify(mapping))
+    const url = config.DsServerUrl+"/"+dataSourceName;
+    const res = await axios.post(url, formData, {  headers: formData.getHeaders()});
+    return res;
+}
+
+
+
 
 const deleteDataSource = async (dataSourceName)=>{
     const url = config.DsServerUrl+"/"+dataSourceName;
@@ -100,6 +119,7 @@ module.exports = {
     createSnapshot,
     createSnapshotOnId,
     getSnapshot,
-    getDsSnapshots
+    getDsSnapshots,
+    changeFolder
     
 }

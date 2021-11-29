@@ -23,7 +23,7 @@ const generateRandomJson = (maxDepth)=> {
         return generateRandomArray();
     }
     if (choice == "object") {
-        return generateRandomObject();
+        return generateRandomObject(maxDepth);
     }
 
     function generateRandomNumber () {
@@ -67,9 +67,9 @@ const generateRandomJson = (maxDepth)=> {
         return array;
     }
 
-    function generateRandomObject () {
+    function generateRandomObject (maxDepth) {
         var maxObjectKeys = 10;
-        var keyCount = parseInt(Math.random()*maxObjectKeys);
+        var keyCount = parseInt(Math.random()*maxObjectKeys)+1;
 
         var object = {};  
         for (var i = 0; i < keyCount; i++) {

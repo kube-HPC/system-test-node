@@ -75,7 +75,7 @@ describe('big flowinput',()=>{
     var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+=~';
     var charactersLength = characters.length;
     var result           = '';
-    for ( var i = 0; i < 250000; i++ ) {
+    for ( var i = 0; i < 2000000; i++ ) {
        result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
 
@@ -88,6 +88,14 @@ describe('big flowinput',()=>{
           }
     }
 
+    const simple1 = {   
+        name: "simple",
+        flowInput: {
+            files:{ link: "",
+            link1:""}
+           
+          }
+    }
     const java = {   
         name: "java-batch",
         flowInput: { inp :""
@@ -104,11 +112,14 @@ describe('big flowinput',()=>{
     }
 
     it("start test-input",async ()=>{
-        const hh = generateRandomJson(5)
+        const hh = generateRandomJson(8)
         //console.log(hh)
-        simple.flowInput.files.link= hh
-        simple.flowInput.files.link1 = {"jnk":result}
-        const jnk = await runStored(simple)
+        simple1.flowInput.files.link=hh
+        simple1.flowInput.files.link1 =1//{"jnk":result}
+
+        console.log(`flowInput length - ${JSON.stringify(simple1.flowInput).length}`);
+
+        const jnk = await runStored(simple1)
         console.log(jnk.text)
     }).timeout(1000 * 60 * 60);
 

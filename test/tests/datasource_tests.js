@@ -6,7 +6,8 @@ const delay = require('delay')
 const fs = require('fs');
 
 
-const { createInternalDS,
+const {changeFolder, 
+    createInternalDS,
         uploadFileToDataSource,  
         getDatasource,
         deleteDataSource,
@@ -50,6 +51,20 @@ const UploadFilesToDs = async (DsName,filesPath = './additionalFiles/dataset',co
                 const ds =await getDatasourceByName(DsName)               
                 expect(ds.data.files.length).to.be.equal(7)
                 await deleteDataSource(DsName);
+            }).timeout(1000 * 60 * 5);
+
+
+            it("upload files change folder", async () =>{
+
+                const DsName = pipelineRandomName(8).toLowerCase();
+                const data = await createInternalDS(DsName)   
+                const commit  = await UploadFilesToDs(DsName)
+              //  const ds =await getDatasourceByName(DsName)       
+                const res = await changeFolder(DsName,"jnk","file_6.txt");
+                const newDs =await getDatasourceByName(DsName)
+                const file = newDs.data.files.find(o=>o.name=="file_6.txt")
+                expect(file.path).to.be.contain("jnk")
+                await deleteDataSource(DsName)
             }).timeout(1000 * 60 * 5);
 
             it("snapshots ", async () =>{

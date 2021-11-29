@@ -106,7 +106,46 @@ describe('code api tests ', () => {
             
 
         }).timeout(1000 * 60 * 10)
+    
+            //error alg code:
+            // def start(args, hkubeapi):
+            //     if (len(args['input']) and args['input'][0].get('mem_fail')):
+            //         print('allocate large memory')
+            //         large_mem = b'\xdd'*1000*1000*1000
+            //         print('after alloc')
+            //     if (len(args['input']) and args['input'][0].get('error_fail')):
+            //         print('error fail')
+            //         raise ValueError('A very specific bad thing happened.')
+            //         print('after alloc')
 
+
+        it("start algorithm with mem error",async ()=>{
+            await createAlg();
+            const startAlg = [{
+                action:"start_alg",
+                name:"error-alg",
+                input:[{
+                    "mem_fail":true
+                    }]
+            }]
+            const result = await runAlgGetResult(algName,startAlg)
+            console.log(result)
+           
+        }).timeout(1000 * 60 * 10)
+
+        it("start algorithm with alg error",async ()=>{
+            
+            const startAlg = [{
+                action:"start_alg",
+                name:"error-alg",
+                input:[{
+                    "error_fail":true
+                    }]
+            }]
+            const result = await runAlgGetResult("python-code-api",startAlg)
+            console.log(result)
+           
+        }).timeout(1000 * 60 * 10)
         it("sart stored pipeline",async ()=>{
                 await createAlg();
                 const startPipe = [{
