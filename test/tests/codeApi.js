@@ -51,6 +51,16 @@ const  execSyncReturenJSON = async  (command)=>{
     return jsonResult
 }
 
+const createErrorAlg = async ()=>{
+    if(!errorExsis){
+        const code = path.join(process.cwd(), 'additionalFiles/pythonAlg/erroralg.zip');//pythonApi.tar.gz
+        const entry = 'main'                     
+        const pythonVersion = "python:3.7"                                    
+        const buildStatusAlg = await buildAlgorithmAndWait({code:code, algName:"error-alg",entry:entry,baseVersion:pythonVersion})
+        expect(buildStatusAlg.status).to.be.equal("completed") 
+        errorExsis = true;
+    }                        
+}
 describe('code api tests ', () => {
     
     after(async()=>{
@@ -80,11 +90,10 @@ describe('code api tests ', () => {
                 expect(buildStatusAlg.status).to.be.equal("completed") 
                 algExsis = true;
                 algLIst.push(algName)
-            }
-            
-            
-
+            }                        
         }
+
+       
         const getResultFromStorage = async (storagePath)=>{
             const res = await chai.request(config.apiServerUrl)
                     .get(`/storage/values/${storagePath}`)
@@ -96,7 +105,7 @@ describe('code api tests ', () => {
             const startAlg = [{
                 action:"start_alg",
                 name:"green-alg",
-                input:["4"]
+                input:["42"]
             }]
             const result = await runAlgGetResult(algName,startAlg)
             console.log(result)
@@ -149,9 +158,9 @@ describe('code api tests ', () => {
         it("sart stored pipeline",async ()=>{
                 await createAlg();
                 const startPipe = [{
-                    action:"start_stored_subpipeline",
-                    name:"simple",
-                    flowInput: {
+                    "action":"start_stored_subpipeline",
+                    "name":"simple",
+                    "flowInput": {
                         "files": {
                             "link": "links-1"
                         }
@@ -161,7 +170,15 @@ describe('code api tests ', () => {
                 
                 expect(result.data[0].result.result).to.be.equal(42)
         }).timeout(1000 * 60 * 10)
-
+const y = {
+    "action":"start_stored_subpipeline",
+    "name":"simple",
+    "flowInput": {
+        "files": {
+            "link": "links-1"
+        }
+    }
+}
         it("sart raw pipelien",async ()=>{
             await createAlg();
             const startRaw = [{
@@ -210,7 +227,11 @@ describe('code api tests ', () => {
         //             .get(`/storage/values/${storagePath}`)
         //     return res
         // }
-
+const r = {
+    "action":"startAlg",
+    "algName":"green-alg",
+    "alginput":["4"]
+}
         it("Java sart algorithm",async ()=>{
 
             await createAlg();

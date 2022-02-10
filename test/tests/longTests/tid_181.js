@@ -159,7 +159,7 @@ describe('TID-181- increasing batch sizes and parallel requests', () => {
 
     it('1000 batch 1 thread 15 seconds', async () => {
        
-        await executeJob(1000,15000,1)
+        await executeJob(10000,5000,1)
         
     }).timeout(1000 * 60 * 60);
 

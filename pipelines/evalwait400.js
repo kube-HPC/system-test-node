@@ -46,8 +46,8 @@ const descriptor = {
         "ttl": 3600
     },
     "webhooks": {
-        "progress": "http://63.32.210.130:3000/webhook/testWebhook",
-        "result": "http://63.32.210.130:3000/webhook/testWebhook"
+        "progress": "http://54.195.234.52:3000/webhook/testWebhook",
+        "result": "http://54.195.234.52:3000/webhook/testWebhook"
     }
 }
 

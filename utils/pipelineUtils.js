@@ -313,6 +313,17 @@ const pipelineRandomName = (length)=>{
     return result;
 }
 
+const getPending = async ()=>{
+    const res = await chai.request(config.apiServerUrl) 
+    .get('/exec/jobs?status=pending&raw=true')
+    return res
+}
+
+const getActive = async ()=>{
+    const res = await chai.request(config.apiServerUrl) 
+    .get('/exec/jobs?status=active&raw=true')
+    return res
+}
 
 module.exports = {
     exceRerun,
@@ -337,6 +348,8 @@ module.exports = {
     getPipelineResultsByName,
     getPipelinestatusByName,
     getPipelineTriggerTree,
-    loadRunStored
+    loadRunStored,
+    getPending,
+    getActive
 
 }

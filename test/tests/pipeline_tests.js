@@ -328,25 +328,25 @@ describe("pipeline Tests 673", () => {
       expect(a.length).to.be.equal(3);
     }).timeout(1000 * 60 * 7);
 
-    it("pipe in pipe", async () => {
+    it.skip("pipe in pipe", async () => {
       const pipe_in_pipe = {
         name: "pipe_in_pipe",
         nodes: [
           {
             nodeName: "A",
             pipelineName: "simple",
-            input: ["7"],
+            input: ["7"]
           },
           {
             nodeName: "B",
             pipelineName: "simple",
-            input: ["@A"],
-          },
+            input: ["@A"]
+          }
         ],
         flowInput: {
           range: 50,
-          inputs: 4000,
-        },
+          inputs: 4000
+        }
       };
 
       const res = await runRaw(pipe_in_pipe);

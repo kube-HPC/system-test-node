@@ -3,7 +3,15 @@ const path = require("path");
 const config = require(path.join(process.cwd(), 'config/config'))
 const chai = require("chai");
 const delay = require('delay');
-
+const {
+    getPending,
+    stopPipeline,
+    storePipeline,
+    runStored,
+    deconstructTestData,
+    runStoredAndWaitForResults,
+    deletePipeline
+} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
 const expect = chai.expect;
 const timeout = (ms) => {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -11,6 +19,128 @@ const timeout = (ms) => {
 const {generateRandomJson }= require(path.join(process.cwd(), 'utils/generateRandomJson'))
 describe("stress tests " , ()=>{
 
+    describe("run bundel",()=>{
+
+
+        const pipe1 = {
+            "name": "bundel-1",
+            "flowInput": {
+                "inp": {
+                    "sleep": 1
+                }
+            },
+            "webhooks": {
+                "progress": "http://54.195.234.52:3000/webhook/bundelProgress",
+                "result": "http://54.195.234.52:3000/webhook/bundelresult"
+            },
+            "options": {
+                "batchTolerance": 100,
+                "concurrentPipelines": {
+                    "amount": 6,
+                    "rejectOnFailure": false
+                },
+                "progressVerbosityLevel": "info",
+                "ttl": 144000,
+                "activeTtl": 900
+            },
+            "priority": 3
+        }
+
+        it("closure",()=>{
+          
+
+            const secureBooking = function (){
+                let passengerCount=0
+
+                return function(){
+                    passengerCount ++
+                    console.log(`${passengerCount}- passengerCount`)
+                }
+            }
+
+                const booker= secureBooking()
+                booker()
+                booker()
+                booker()
+                const booker1= secureBooking()
+                booker1()
+                booker1()
+                booker1()
+
+        })
+        it("get pending",async ()=>{
+
+            const jnk = "11*3+8/9"
+            const val = jnk.split(/[^0-9]/)
+            const operator = jnk.split(/[0-9]/).join('').split('')
+            let jnk2 = []
+            for (i=0 ;i<val.length-1;i++) {
+
+                jnk2.push(val[i])
+                jnk2.push(operator[i])
+
+            }
+            const last = val.length 
+            jnk2.push(val[last-1])
+            let total=0
+            while (jnk2.length) {
+                total += parseFloat(jnk2.shift());
+              }
+            const res = await getPending()
+            const size = res.body.length
+
+        })
+        it("run with big flowInput ",async ()=>{
+            const data = generateRandomJson(4)
+            pipe1.flowInput.data=data;
+            pipe1.name="bundel-1"
+         for(j=0 ; j<3 ;j++){
+            pipe1.name="bundel-1"
+                for(i=0 ; i<30 ; i++ ){
+                    await runStored(pipe1)
+                    //console.log(jnk)
+                }
+                pipe1.name="bundel-2"
+                
+                for(i=0 ; i<70 ; i++ ){
+                   // await runStored(pipe1)
+                    // await delay(3*1000)
+                }
+                console.log(`j=${j}`)
+                await delay(2*1000)
+             }
+        }).timeout(1000 * 70 * 60);
+
+        it("run stired ",async ()=>{
+            pipe1.name="bundel-1"
+         for(j=0 ; j<1 ;j++){
+            pipe1.name="bundel-1"
+                for(i=0 ; i<10 ; i++ ){
+                    const jnk =   await runStored(pipe1)
+                   // console.log(jnk)
+                }
+                pipe1.name="bundel-2"
+
+                for(i=0 ; i<10 ; i++ ){
+                    await runStored(pipe1)
+                    // await delay(3*1000)
+                }
+                await delay(7*1000)
+             }
+        }).timeout(1000 * 70 * 60);
+
+        it("stop",async ()=>{
+            const pipes = ["main:bundel-1:ht134bcb",
+                            "main:bundel-1:el7ysvnh",
+                            "main:bundel-1:falxdnz5",
+                            "main:bundel-1:keuh7p4k",
+                            "main:bundel-1:juv06j1i"]
+            for(const pipe of pipes){ 
+                console.log(pipe)
+                stopPipeline(pipe)
+            }
+        })
+    })
     describe("streaming test", ()=>{
         const bigSring = (size)=>{
             let result=""
@@ -104,8 +234,8 @@ describe("stress tests " , ()=>{
             "data10":1,
             "data11":1}
         
-            for(i=0;i<200;i++){
-                const jnk = axios.post("https://test.hkube.io/hkube/gateway/raw-image-gateway/streaming/message", data)
+            for(i=0;i<2000;i++){
+                const jnk = axios.post("https://test.hkube.io/hkube/gateway/gateway/streaming/message", data)
                 await timeout(10)
                 console.log(i);
             }

@@ -55,7 +55,7 @@ describe('all swagger calls test ', () => {
 
         it('test the /exec/algorithm ',async ()=>{
             const alg = {name: 'green-alg',
-                            input:[1]}
+                            input:[42]}
             const res = await runAlgorithm(alg)
             const jobId = res.body.jobId
             const result = await  getResult(jobId,200)

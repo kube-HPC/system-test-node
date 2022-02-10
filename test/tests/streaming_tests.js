@@ -35,7 +35,8 @@ const {
     getExecPipeline,
     loadRunStored,
     getPipelineTriggerTree,
-    
+    getPending,
+    getActive,
     runRaw,
     deletePipeline,
     pipelineRandomName,
@@ -98,6 +99,8 @@ describe('streaming pipeline test', () => {
             "priority": 3
         }
         
+
+       
         it("send message to gateway", async () =>{
             const res = await runRaw(pipe)
             const jobId = res.body.jobId
@@ -165,6 +168,21 @@ describe('streaming pipeline test', () => {
             return jnk ;
         }
 
+
+        it("jnk",()=>{
+
+            const jjjj= {a: 1,
+                            b:["a","b","c","d","a","b"]}
+            
+            const h = new Set(jjjj.b)
+            
+            for (const [i,jj] of jjjj.b.entries()){
+                console.log(i)
+                console.log(jj)
+            }
+
+
+        })
         it("",async()=>{
 
             const interval =  setInterval(() => {

@@ -8,7 +8,7 @@ global:
       pvc: 
          name: 'hkube-storage'
          capacity: '50Gi'
-         nfs_server: '172.20.46.223'
+         nfs_server: '172.20.45.142'
          nfs_root: '/nfs/storageclass/test-spot'
       base_directory: '/hkubedata'
   ingress:

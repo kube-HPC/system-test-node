@@ -287,7 +287,7 @@ const  execSyncReturenJSON = async  (command)=>{
                 const runSimple = "hkubectl exec stored simple "
                 
                 const jsonResult = await execSyncReturenJSON(runSimple);
-                expect(jsonResult.jobResult[0].result).to.be.equal(42)
+                expect(jsonResult.jobResult[0].result).to.be.equal('links-1')
             }).timeout(1000 * 60 * 6)
 
 
@@ -299,7 +299,7 @@ const  execSyncReturenJSON = async  (command)=>{
                 console.log(jsonResult)
                 const result = await getResult(jsonResult.jobId,200)
                 console.log(result)
-                expect(result.data[0].result).to.be.equal(42)
+                expect(result.data[0].result).to.be.equal('links-1')
             }).timeout(1000 * 60 * 6)
 
             it('exec raw pipe ', async () => {
@@ -313,7 +313,7 @@ const  execSyncReturenJSON = async  (command)=>{
                 console.log("jobId ="+ js.jobId)
                 const result = await getResult(js.jobId,200)
                 console.log(result)
-                expect(result.data[0].result).to.be.equal(42)
+                expect(result.data[0].result).to.be.equal('links-1')
             }).timeout(1000 * 60 * 6)
 
 
@@ -335,7 +335,7 @@ const  execSyncReturenJSON = async  (command)=>{
                 console.log(jsonResult)
                 const result = await getResult(jsonResult.jobId,200)
                 console.log(result)
-                expect(result.data[0].result).to.be.equal(42)
+                expect(result.data[0].result).to.be.equal(null)
             }).timeout(1000 * 60 * 6)
 
             it('exec stop pipe ', async () => {
