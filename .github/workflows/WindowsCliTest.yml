@@ -30,7 +30,7 @@ jobs:
         run: |
           $downloadFIle = "https://github.com/kube-HPC/hkubectl/releases/latest/download/hkubectl-win.exe"
           echo downloadFIle file from $downloadFIle
-          Invoke-WebRequest -OutFile d:\tmp\hkubectl.exe -Uri "https://github.com/kube-HPC/hkubectl/releases/latest/download/hkubectl-win.exe"
+          Invoke-WebRequest  'https://github.com/kube-HPC/hkubectl/releases/latest/download/hkubectl-win.exe' -OutFile 'd:\tmp\hkubectl.exe'
           d:\tmp\hkubectl.exe config set endpoint https://test.hkube.io
           d:\tmp\hkubectl.exe config set rejectUnauthorized false
           echo ~~~~~~~~~~~~~
