@@ -105,7 +105,7 @@ describe('code api tests ', () => {
             const startAlg = [{
                 action:"start_alg",
                 name:"green-alg",
-                input:["42"]
+                input:[42]
             }]
             const result = await runAlgGetResult(algName,startAlg)
             console.log(result)
@@ -151,7 +151,7 @@ describe('code api tests ', () => {
                     "error_fail":true
                     }]
             }]
-            const result = await runAlgGetResult("python-code-api",startAlg)
+            const result = await runAlgGetResult(algName,startAlg)
             console.log(result)
            
         }).timeout(1000 * 60 * 10)
@@ -168,7 +168,7 @@ describe('code api tests ', () => {
                 }]
                 const result = await runAlgGetResult(algName,startPipe)
                 
-                expect(result.data[0].result.result).to.be.equal(42)
+                expect(result.data[0].result.result).to.be.equal('links-1' )
         }).timeout(1000 * 60 * 10)
 const y = {
     "action":"start_stored_subpipeline",
@@ -187,7 +187,7 @@ const y = {
                 nodes:[  {
                     "nodeName": "one",
                     "algorithmName": "green-alg",
-                    "input": []
+                    "input": [42]
                 }
                 
             ],
@@ -238,7 +238,7 @@ const r = {
             const startAlg = [{
                 action:"startAlg",
                 algName:"green-alg",
-                alginput:["4"]
+                alginput:[42]
             }]
             const result = await runAlgGetResult(algName,startAlg)
             console.log(result)
@@ -250,15 +250,15 @@ const r = {
         }).timeout(1000 * 60 * 10)
 
         it("Java sart algorithm binary",async ()=>{
-            //await createAlg();
+            await createAlg();
             const startAlg = [{
                 action:"startAlgBinary",
                 algName:"green-alg",
-                alginput:["4"]
+                alginput:[42]
             }]
             const result = await runAlgGetResult(algName,startAlg) //await runAlgGetResult(algName,startAlg)
             console.log(result)
-            expect(result.data[0].result.response).to.be.equal(42)
+            expect(result.data[0].info.size).to.be.greaterThan(300000) // should returen an image size (337 kB)  
             const graph = await getRawGraph(result.jobId)
             expect(graph.body.nodes.length).to.be.equal(2)
            
@@ -269,13 +269,13 @@ const r = {
                 const startPipe = [{
                     action:"startStored",
                     PipeName:"simple",
-                    PipeInput: ["4"]
+                    PipeInput: [42]
                 }]
                 const result = await runAlgGetResult(algName,startPipe)
                 console.log(result)
                
                
-                expect(result.data[0].result[0].result).to.be.equal(42)
+                expect(result.data[0].result[0].result).to.be.equal('links-1')
         }).timeout(1000 * 60 * 10)
 
         it("Java sart raw pipelien",async ()=>{
@@ -290,7 +290,7 @@ const r = {
             console.log(result)
                
                
-            expect(result.data[0].result[0].result).to.be.equal(42)
+            expect(result.data[0].result[0].result.empty).to.be.equal(false)
 
             //const path = result.data[0].result.result.storageInfo.path
            // const res = await getResultFromStorage(path)
@@ -325,7 +325,7 @@ const r = {
 
         it("Node sart algorithm",async ()=>{
             await createAlg();
-            const startAlg = [{"action":"startAlg","algName":"green-alg","input":[1]}]
+            const startAlg = [{"action":"startAlg","algName":"green-alg","input":[42]}]
             const result = await runAlgGetResult(algName,startAlg)
             console.log(result)
             expect(result.data[0].result).to.be.equal(42)
@@ -337,12 +337,12 @@ const r = {
 
         it("Node sart stored pipeline",async ()=>{
                 await createAlg();
-                const startPipe = [{"action":"startStored","pipeName":"simple","input":{"inp":"5"}}]
+                const startPipe = [{"action":"startStored","pipeName":"simple","input":{"inp":42}}]
                 const result = await runAlgGetResult(algName,startPipe)
                 console.log(result)
                
                
-                expect(result.data[0].result[0].result).to.be.equal(42)
+                expect(result.data[0].result[0].result).to.be.equal('links-1')
         }).timeout(1000 * 60 * 10)
 
         it("node sart raw pipelien",async ()=>{
@@ -353,10 +353,10 @@ const r = {
             ]
             const result = await runAlgGetResult(algName,startRaw)
 
-            console.log(result)
+            console.log(result.data[0])
                
                
-            expect(result.data[0].result[0].result).to.be.equal(42)
+            expect(result.data[0].result[0].result.size).to.be.equal("3")
          
         }).timeout(1000 * 60 * 10)
     })

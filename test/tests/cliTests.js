@@ -324,7 +324,7 @@ const  execSyncReturenJSON = async  (command)=>{
                 
                 const jsonResult = await execSyncReturenJSON(runSimple);
                 console.log(jsonResult)
-                expect(jsonResult.jobResult[0].result).to.be.equal(42)
+                expect(jsonResult.jobResult[0].nodeName).to.be.equal('green-alg')
             }).timeout(1000 * 60 * 6)
 
 
@@ -344,7 +344,7 @@ const  execSyncReturenJSON = async  (command)=>{
 
                 console.log(jsonResult)
 
-                const stop = "hkubectl exec stop --jobId = "+jsonResult.jobId
+                const stop = `hkubectl exec stop ${jsonResult.jobId} "stop by test"`
 
                 const stopResult = await execSyncReturenJSON(stop)
                 console.log(stopResult)
@@ -356,10 +356,11 @@ const  execSyncReturenJSON = async  (command)=>{
 
             it('exec status pipe ', async () => {
                 const runSimple = "hkubectl exec stored simple --noWait"
-                const jsonResult = await execSyncReturenJSON(runSimple)
-
+                const jsonResult =  await execSyncReturenJSON(runSimple)
+                console.log("=======================")
                 console.log(jsonResult)
-                const status = "hkubectl exec status --jobId = "+jsonResult.jobId
+                console.log("=======================")
+                const status = `hkubectl exec status ${jsonResult.jobId}`
                 const array = []
                 array.push(execSyncReturenJSON(status))
                 array.push(getJobIdStatus(jsonResult.jobId))

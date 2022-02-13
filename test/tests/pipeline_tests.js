@@ -328,21 +328,31 @@ describe("pipeline Tests 673", () => {
       expect(a.length).to.be.equal(3);
     }).timeout(1000 * 60 * 7);
 
-    it.skip("pipe in pipe", async () => {
+    it("pipe in pipe", async () => {
       const pipe_in_pipe = {
         name: "pipe_in_pipe",
-        nodes: [
+        nodes:[
           {
-            nodeName: "A",
-            pipelineName: "simple",
-            input: ["7"]
+              "nodeName": "A",
+              "input": [
+                  "7"
+              ],
+              "kind": "pipeline",
+              "spec":{
+                  "name": "simple"
+              }
           },
           {
-            nodeName: "B",
-            pipelineName: "simple",
-            input: ["@A"]
+              "nodeName": "B",
+              "input": [
+                  "@A"
+              ],
+              "kind": "pipeline",
+              "spec":{
+                  "name": "simple"
+              }
           }
-        ],
+      ],
         flowInput: {
           range: 50,
           inputs: 4000
