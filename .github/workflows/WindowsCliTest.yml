@@ -34,8 +34,8 @@ jobs:
           d:\tmp\hkubectl.exe config set endpoint https://test.hkube.io
           d:\tmp\hkubectl.exe config set rejectUnauthorized false
           echo ~~~~~~~~~~~~~
-          d:\tmp\hkubectl --version
-          d:\tmp\hkubectl algorithm get green-alg --json
+          d:\tmp\hkubectl.exe --version
+          d:\tmp\hkubectl.exe algorithm get green-alg --json
           echo ~~~===========
           $env:Path += ";d:\tmp" 
           hkubectl --version
