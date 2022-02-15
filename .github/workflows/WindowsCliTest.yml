@@ -28,14 +28,14 @@ jobs:
           HKUBE_URL: ${{ secrets.HKUBE }}
       - name: create hkubectl
         run: |
-          $downloadFIle = "hkubectl https://github.com/kube-HPC/hkubectl/releases/latest/download/hkubectl-win.exe"
+          $downloadFIle = "https://github.com/kube-HPC/hkubectl/releases/latest/download/hkubectl-win.exe"
           echo downloadFIle file from $downloadFIle
-          Invoke-WebRequest -OutFile d:\tmp\hkubectl.exe -Uri $downloadFIle
+          Invoke-WebRequest  'https://github.com/kube-HPC/hkubectl/releases/latest/download/hkubectl-win.exe' -OutFile 'd:\tmp\hkubectl.exe'
           d:\tmp\hkubectl.exe config set endpoint https://test.hkube.io
           d:\tmp\hkubectl.exe config set rejectUnauthorized false
           echo ~~~~~~~~~~~~~
-          d:\tmp\hkubectl --version
-          d:\tmp\hkubectl algorithm get green-alg --json
+          d:\tmp\hkubectl.exe --version
+          d:\tmp\hkubectl.exe algorithm get green-alg --json
           echo ~~~===========
           $env:Path += ";d:\tmp" 
           hkubectl --version
