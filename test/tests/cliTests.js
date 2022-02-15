@@ -401,7 +401,7 @@ const  execSyncReturenJSON = async  (command)=>{
 
                 console.log(result)
 
-                expect(output).to.contain("result:        42")
+                expect(output.replace(/^\s+|\s+$/gm,'').trim()).to.contain("result:        links-1")
             }).timeout(1000 * 60 * 6)
 
         });

@@ -18,6 +18,7 @@ const {
   getAlgorithim,
 } = require(path.join(process.cwd(), "utils/algorithmUtils"));
 
+const { celeanPipeLines } = require(path.join(process.cwd(), "utils/gc"));
 const {
   getWebSocketJobs,
   getWebSocketlogs,
@@ -37,6 +38,7 @@ const {
   testData10,
   testData11,
   testData12,
+  ttlPipe,
 } = require(path.join(process.cwd(), "config/index")).pipelineTest;
 
 const {
@@ -331,32 +333,28 @@ describe("pipeline Tests 673", () => {
     it("pipe in pipe", async () => {
       const pipe_in_pipe = {
         name: "pipe_in_pipe",
-        nodes:[
+        nodes: [
           {
-              "nodeName": "A",
-              "input": [
-                  "7"
-              ],
-              "kind": "pipeline",
-              "spec":{
-                  "name": "simple"
-              }
+            nodeName: "A",
+            input: ["7"],
+            kind: "pipeline",
+            spec: {
+              name: "simple",
+            },
           },
           {
-              "nodeName": "B",
-              "input": [
-                  "@A"
-              ],
-              "kind": "pipeline",
-              "spec":{
-                  "name": "simple"
-              }
-          }
-      ],
+            nodeName: "B",
+            input: ["@A"],
+            kind: "pipeline",
+            spec: {
+              name: "simple",
+            },
+          },
+        ],
         flowInput: {
           range: 50,
-          inputs: 4000
-        }
+          inputs: 4000,
+        },
       };
 
       const res = await runRaw(pipe_in_pipe);
@@ -381,15 +379,17 @@ describe("pipeline Tests 673", () => {
       const pipe = {
         name: "simple",
         flowInput: {
-            files: {
-                link: "inputSimple"
-          }
-        }
+          files: {
+            link: "inputSimple",
+          },
+        },
       };
       const res = await runStoredAndWaitForResults(pipe);
-      const reRun = await exceRerun(res)
-      const rePipe = await getExecPipeline(reRun.body.jobId)
-      expect(rePipe.body.flowInput.files.link).to.be.equal(pipe.flowInput.files.link)
+      const reRun = await exceRerun(res);
+      const rePipe = await getExecPipeline(reRun.body.jobId);
+      expect(rePipe.body.flowInput.files.link).to.be.equal(
+        pipe.flowInput.files.link
+      );
     }).timeout(1000 * 60 * 7);
   });
 
@@ -784,64 +784,113 @@ describe("pipeline Tests 673", () => {
       expect(firstAfter.body.status).to.be.equal("stopped");
       expect(lastAfter.body.status).to.be.equal("stopped");
     }).timeout(1000 * 60 * 25);
+    describe("pipeline options", async () => {
+      const d = deconstructTestData(ttlPipe);
 
-    it(" concurrentPipelines - pending  pipeline", async () => {
-      //set test data to testData1
-      const d = deconstructTestData(testData12);
-      await deletePipeline(d.name);
-      d.pipeline.options = {
-        concurrentPipelines: {
-          amount: 1,
-          rejectOnFailure: false,
-        },
-      };
-      //store pipeline evalwait
-      await storePipeline(d);
-      //run the pipeline evalwait  twice the second time will be pending till the first exection completed
-      await runStored(d);
+      it("pipeline ttl ", async () => {
+        await deletePipeline(d);
+        await storePipeline(d);
+        const ttl = {
+          name: d.name,
+          flowInput: {
+            inputs: [20000],
+          },
+          options: {
+            ttl: 25,
+            activeTtl: 130,
+          },
+        };
 
-      const res = await runStored(d);
-      const jobId = res.body.jobId;
-      const currentStatus = await getPipelineStatus(jobId);
+        const jobId = await runStored(ttl);
+        const jobId2 = await runStored(ttl); //should be stoped  due to ttl
+        await timeout(25000);
+        const cealn = await celeanPipeLines();
+        const currentStatus = await getPipelineStatus(jobId2.body.jobId);
+        expect(currentStatus.body.status).to.be.equal("stopped");
+        expect(currentStatus.body.reason).to.be.equal("pipeline expired");
+      }).timeout(1000 * 60 * 5);
 
-      expect(currentStatus.body.status).to.have.equal("pending");
+      it("pipeline active ttl", async () => {
+        await deletePipeline(d);
+        await storePipeline(d);
+        const ttl = {
+          name: d.name,
+          flowInput: {
+            inputs: [25000]
+          },
+          options: {
+            ttl: 25,
+            activeTtl: 15,
+          },
+        };
 
-      await deletePipeline(d.name);
-    }).timeout(1000 * 60 * 5);
+        const jobId = await runStored(ttl);
 
-    it(" concurrentPipelines - continu to complete pending   pipeline", async () => {
-      //run the pipeline evalwait  20 times validate that all the 20 executed
+        await timeout(20000);
+        const cealn = await celeanPipeLines();
+        const currentStatus = await getPipelineStatus(jobId.body.jobId);
+        expect(currentStatus.body.status).to.be.equal("stopped");
+        expect(currentStatus.body.reason).to.be.equal(
+          "pipeline active TTL expired"
+        );
+      }).timeout(1000 * 60 * 5);
+      it(" concurrentPipelines - pending  pipeline", async () => {
+        //set test data to testData1
+        const d = deconstructTestData(testData12);
+        await deletePipeline(d.name);
+        d.pipeline.options = {
+          concurrentPipelines: {
+            amount: 1,
+            rejectOnFailure: false,
+          },
+        };
+        //store pipeline evalwait
+        await storePipeline(d);
+        //run the pipeline evalwait  twice the second time will be pending till the first exection completed
+        await runStored(d);
 
-      //set test data to testData1
-      const d = deconstructTestData(testData12);
-      await deletePipeline(d.name);
-      d.pipeline.options = {
-        concurrentPipelines: {
-          amount: 4,
-          rejectOnFailure: false,
-        },
-      };
-      //store pipeline evalwait
-      await storePipeline(d);
-      let pipe3JobId = "";
-      for (i = 0; i < 5; i++) {
-        var parents = await Promise.all([
-          runStored(d),
-          runStored(d),
-          runStored(d),
-          runStored(d),
-          timeout(900),
-        ]);
-        pipe3JobId = parents;
-      }
+        const res = await runStored(d);
+        const jobId = res.body.jobId;
+        const currentStatus = await getPipelineStatus(jobId);
 
-      const result2 = await getResult(getJobId(pipe3JobId), 200);
+        expect(currentStatus.body.status).to.have.equal("pending");
 
-      expect(result2.status).to.be.equal("completed");
-      await deletePipeline(d.name);
-    }).timeout(1000 * 60 * 5);
+        await deletePipeline(d.name);
+      }).timeout(1000 * 60 * 5);
+
+      it(" concurrentPipelines - continu to complete pending   pipeline", async () => {
+        //run the pipeline evalwait  20 times validate that all the 20 executed
+
+        //set test data to testData1
+        const d = deconstructTestData(testData12);
+        await deletePipeline(d.name);
+        d.pipeline.options = {
+          concurrentPipelines: {
+            amount: 4,
+            rejectOnFailure: false,
+          },
+        };
+        //store pipeline evalwait
+        await storePipeline(d);
+        let pipe3JobId = "";
+        for (i = 0; i < 5; i++) {
+          var parents = await Promise.all([
+            runStored(d),
+            runStored(d),
+            runStored(d),
+            runStored(d),
+            timeout(900),
+          ]);
+          pipe3JobId = parents;
+        }
+
+        const result2 = await getResult(getJobId(pipe3JobId), 200);
+
+        expect(result2.status).to.be.equal("completed");
+        await deletePipeline(d.name);
+      }).timeout(1000 * 60 * 5);
+    });
   });
-
   describe("Trigger pipeline ", () => {
     it("Trigger tree", async () => {
       const testData = testData2;

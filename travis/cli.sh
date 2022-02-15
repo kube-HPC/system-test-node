@@ -1,7 +1,7 @@
 echo Running tests
 echo start download hkubectl
 
-curl -Lo hkubectl https://github.com/kube-HPC/hkubectl/releases/download/$(curl -s https://api.github.com/repos/kube-HPC/hkubectl/releases/latest | grep -oP '"tag_name": "\K(.*)(?=")')/hkubectl-linux \
+curl -Lo hkubectl https://github.com/kube-HPC/hkubectl/releases/latest/download/hkubectl-linux \
 && chmod +x hkubectl 
 
 mkdir -p ~/.hkube

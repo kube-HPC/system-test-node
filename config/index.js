@@ -94,7 +94,8 @@ const index = {
         testData9: require('../pipelines/triggered'),
         testData10: require('../pipelines/evalwait161'),
         testData11: require('../pipelines/evalwait400'),
-        testData12: require('../pipelines/evalwait')
+        testData12: require('../pipelines/evalwait'),
+        ttlPipe: require('../pipelines/ttlPipe')
 
     },
     jagearTest: {
@@ -117,7 +118,8 @@ const index = {
         testData405: require('../pipelines/stringReplace'),
         testData406: require('../pipelines/evalcron1minutes'),
         testData407: require('../pipelines/evalwait'),
-        testData408: require('../pipelines/evalerror')
+        testData408: require('../pipelines/evalerror'),
+        outputPipe: require('../pipelines/outputPipe')
     }
     
 }
