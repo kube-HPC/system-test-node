@@ -198,10 +198,10 @@ describe("pipeline Tests 673", () => {
       const triggeredPipe = pipelineRandomName(8);
       testData.descriptor.name = triggeredPipe;
       testData.descriptor.triggers.pipelines = [simpleName];
-      testData.descriptor.nodes[0].input[0] = "flowInput.inp";
+      testData.descriptor.nodes[0].input[0] = "jnk";
       const d = deconstructTestData(testData);
       await deletePipeline(d);
-      await storePipeline(d);
+      const y = await storePipeline(d);
       await runStoredAndWaitForResults(simple);
       await delay(3 * 1000);
       await deletePipeline(d);

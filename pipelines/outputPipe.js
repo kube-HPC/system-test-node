@@ -4,7 +4,7 @@ const tos = require('../utils/results').toString
 
 
 const descriptor = {
-    name: "output-piprline",
+    name: "output-pipeline",
     nodes: [
         {
             nodeName: "green",

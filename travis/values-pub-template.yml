@@ -40,10 +40,15 @@ jaeger:
   enable: true  
 algorithm_operator:
   env: # +doc-gen:ignore
-    algorithm_queue_concurrency_limit: 50
-    pipeline_drivers_amount: 1
-    pipeline_drivers_concurrency_limit: 25
+    algorithm_queue_concurrency_limit: 100
+    algorithm_queue_memory: 1000
+    algorithm_queue_cpu: 0.75
+    pipeline_drivers_amount: 2
+    resources_enable: true
+    pipeline_drivers_concurrency_limit: 30
 api_server:
   env:
-    rate_limit_max: 1000
+    rate_limit_max: 5000
     rate_limit_ms: 60000
+    pipeline_driver_cpu: '0.6'
+    pipeline_driver_mem: '850'
