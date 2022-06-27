@@ -570,7 +570,7 @@ describe("Node Tests git 660", () => {
     const alg15cpu = {
       name: `${algName}`,
       algorithmImage: "hkube/algorunner",
-      cpu: 14,
+      cpu: 8,
       mem: "1Gi",
       options: {
         debug: false,

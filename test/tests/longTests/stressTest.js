@@ -230,9 +230,15 @@ describe("stress tests ", () => {
       );
     }).timeout(1000 * 70 * 60);
 
+    it("run one pipe big flowInput ", async () => {
+      const data = generateRandomJson(7)
+      pipe1.flowInput.data=data;
+      pipe1.name = "bundel1";
+      await runStored(pipe1);
+    }).timeout(1000 * 70 * 60);
     it("run with big flowInput ", async () => {
-      //const data = generateRandomJson(4)
-      //pipe1.flowInput.data=data;
+      const data = generateRandomJson(4)
+      pipe1.flowInput.data=data;
       pipe1.name = "bundel1";
       for (j = 0; j < 20; j++) {
         pipe1.name = "bundel1";
