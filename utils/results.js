@@ -5,11 +5,12 @@ const path = require('path')
 const config = require(path.join(process.cwd(), 'config/config'))
 
 const logger = require(path.join(process.cwd(), 'utils/logger'))
+const { getWebSocketData } = require(path.join(process.cwd(), 'utils/socketGet'))
 
 // chai.use(chaiHttp);
-const getJobResult = async (jobId)=>{
+const getJobResult = async (jobId) => {
     const res = await chai.request(config.apiServerUrl)
-            .get(`/exec/results/${jobId}`);
+        .get(`/exec/results/${jobId}`);
     logger.info(`${res.status}, ${JSON.stringify(res.body)}`)
     return res
 }
@@ -31,12 +32,12 @@ const getResult = async (jobId, expectedStatus, timeout = 60 * 1000 * 10, interv
     } while (Date.now() - start < timeout);
     expect.fail(`timeout exceeded trying to get ${expectedStatus} status in result for jobId ${jobId}`);
 };
- const getJobIdStatus = async (jobId) =>{
+const getJobIdStatus = async (jobId) => {
     const res = await chai.request(config.apiServerUrl)
-    .get(`/exec/status/${jobId}`);
+        .get(`/exec/status/${jobId}`);
     return res
 
- }
+}
 const getStatus = async (jobId, expectedCode, expectedStatus, timeout = 60 * 1000, interval = 1000) => {
     const start = Date.now();
     do {
@@ -70,12 +71,15 @@ const getJobIdsTree = async (jobId) => {
 }
 
 const getPodsRunning = async (jobId) => {
-    const res = await chai.request(config.baseUrl)
-        .get(`/hkube/monitor-server/pods/${jobId}`)
-    logger.info(`${res.status}, ${JSON.stringify(res.body)}`)
 
-    return res
+    const data = await getWebSocketData()
+    const worker = data.discovery.worker.filter(w => w.jobId === jobId).map(w => w.podName);
+    logger.info(`worker : ,${jobId}, ${JSON.stringify(worker)}`)
+
+    return worker
 }
+
+
 
 const toString = (fun) => {
     return "" + fun
@@ -140,7 +144,7 @@ const idGen = (MaxLen = 5) => {
     return arr.join('.')
 }
 
-const  getRawGraph = async (jobId)=>{
+const getRawGraph = async (jobId) => {
     const res = await chai.request(config.apiServerUrl)
         .get(`/graph/raw/${jobId}`)
     logger.info(`${res.status}, ${JSON.stringify(res.body)}`)
@@ -148,7 +152,7 @@ const  getRawGraph = async (jobId)=>{
     return res
 }
 
-const  getParsedGraph = async (jobId)=>{
+const getParsedGraph = async (jobId) => {
     const res = await chai.request(config.apiServerUrl)
         .get(`/graph/parsed/${jobId}`)
     logger.info(`${res.status}, ${JSON.stringify(res.body)}`)
@@ -156,12 +160,12 @@ const  getParsedGraph = async (jobId)=>{
     return res
 }
 
-const getCronResult = async(jobId,limit,experimentName="main") =>{
+const getCronResult = async (jobId, limit, experimentName = "main") => {
     const res = await chai.request(config.apiServerUrl)
-    .get(`/cron/results/?name=${jobId}&experimentName=${experimentName}&limit=${limit}`)
-logger.info(`${res.status}, ${JSON.stringify(res.body)}`)
+        .get(`/cron/results/?name=${jobId}&experimentName=${experimentName}&limit=${limit}`)
+    logger.info(`${res.status}, ${JSON.stringify(res.body)}`)
 
-return res
+    return res
 }
 module.exports = {
     getResult,

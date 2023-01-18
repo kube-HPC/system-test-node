@@ -33,13 +33,13 @@ const {
 const {
     runAlgorithm,
     getAlgorithm,
-    deleteAlgorithm,    
+    deleteAlgorithm,
     getAlgorithmVersion,
     updateAlgorithmVersion,
     storeAlgorithmApplay,
     deleteAlgorithmVersion,
-    buildAlgorithmAndWait,    
-    getAlgorithim} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
+    buildAlgorithmAndWait,
+    getAlgorithim } = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 const tos = require(path.join(process.cwd(), 'utils/results'.toString()))
 // const testData2 = require ('../../pipelines/multadd')
 chai.use(chaiHttp);
@@ -53,28 +53,30 @@ describe('all swagger calls test ', () => {
     describe('Execution 647', () => {
         //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/647
 
-        it('test the /exec/algorithm ',async ()=>{
-            const alg = {name: 'green-alg',
-                            input:[42]}
+        it('test the /exec/algorithm ', async () => {
+            const alg = {
+                name: 'green-alg',
+                input: [42]
+            }
             const res = await runAlgorithm(alg)
             const jobId = res.body.jobId
-            const result = await  getResult(jobId,200)
-             expect(result.data[0].result).to.be.equal(42)
+            const result = await getResult(jobId, 200)
+            expect(result.data[0].result).to.be.equal(42)
         }).timeout(1000 * 60 * 2)
 
         it('test the POST exec/raw rest call', async () => {
             const rawPipe = {
                 name: "rawPipe",
                 nodes: [{
-                        nodeName: "node1",
-                        algorithmName: "green-alg",
-                        input: [1, 2, 3]
-                    },
-                    {
-                        nodeName: "node2",
-                        algorithmName: "yellow-alg",
-                        input: ["@node1"]
-                    }
+                    nodeName: "node1",
+                    algorithmName: "green-alg",
+                    input: [1, 2, 3]
+                },
+                {
+                    nodeName: "node2",
+                    algorithmName: "yellow-alg",
+                    input: ["@node1"]
+                }
                 ]
             }
 
@@ -293,30 +295,31 @@ describe('all swagger calls test ', () => {
                         extraData: {
                             code: [
                                 "(input,require)=> {",
-                                    "return new Promise((resolve,reject)=>{setTimeout(()=>resolve(input[0][1]),input[0][0])});}"
+                                "return new Promise((resolve,reject)=>{setTimeout(()=>resolve(input[0][1]),input[0][0])});}"
                             ]
                         }
                     }
                 ],
                 flowInput: {
-                    inputs:[
-                        [15000,1]
-                    ]}
+                    inputs: [
+                        [15000, 1]
+                    ]
+                }
             }
             const tt = await storePipeline(pausePipe)
 
-            const res =await runStored("pausePipe")
+            const res = await runStored("pausePipe")
             const jobId = res.body.jobId
 
             await delay(1000 * 3)
-           
+
             const pause = await pausePipeline(jobId);
             await delay(2000)
             let pipelineStatus = await getPipelineStatus(jobId)
             expect(pipelineStatus.body.status).to.be.equal("paused")
             const resume = await resumePipeline(jobId);
             expect(resume.status).to.be.equal(200)
-            const result = await getResult(jobId,200)
+            const result = await getResult(jobId, 200)
 
 
         }).timeout(1000 * 60 * 5)
@@ -325,18 +328,18 @@ describe('all swagger calls test ', () => {
             await deletePipeline('pipe1')
             await deletePipeline('pipe2')
             await delay(1000);
-            const a= await storePipeline('origPipeline')
+            const a = await storePipeline('origPipeline')
             await delay(1000);
-            const ab= await storePipeline('sonPipeline')
-            
-            expect(ab).to.have.status(201,"fail to create pipeline")
+            const ab = await storePipeline('sonPipeline')
+
+            expect(ab).to.have.status(201, "fail to create pipeline")
             const run = await runStored('pipe1')
             const jobId = run.body.jobId
 
             const result = await getResult(jobId, 200);
             await delay(1000);
             const res = await chai.request(config.apiServerUrl)
-                 .get(`/exec/tree/${jobId}`)
+                .get(`/exec/tree/${jobId}`)
 
             expect(res).to.have.status(200)
             await delay(1000);
@@ -351,19 +354,19 @@ describe('all swagger calls test ', () => {
 
     })
 
-    describe('graph api (git 545)',()=>{
+    describe('graph api (git 545)', () => {
         const pipe = {
-                name: "simple",
-                flowInput: {
-                    files: {
-                        link: "link1"
-                    }
-                },
-                priority: 4
-            }
+            name: "simple",
+            flowInput: {
+                files: {
+                    link: "link1"
+                }
+            },
+            priority: 4
+        }
 
         it('Get /graph/raw/{jobId} and rest call', async () => {
-            
+
             const res = await chai.request(config.apiServerUrl)
                 .post('/exec/stored')
                 .send(pipe)
@@ -373,12 +376,12 @@ describe('all swagger calls test ', () => {
             //await delay(1000);
             const rawGraph = await getRawGraph(jobId)
             expect(rawGraph.body.edges.length).to.be.equal(2)
-            
-        
+
+
         }).timeout(1000 * 60 * 2)
 
-         it('Get /graph/parsed/{jobId} and rest call', async () => {
-            
+        it('Get /graph/parsed/{jobId} and rest call', async () => {
+
             const res = await chai.request(config.apiServerUrl)
                 .post('/exec/stored')
                 .send(pipe)
@@ -388,7 +391,7 @@ describe('all swagger calls test ', () => {
             const ParsedGraph = await getParsedGraph(jobId)
             expect(ParsedGraph.body.nodes.length).to.be.equal(3)
         }).timeout(1000 * 60 * 2)
-           
+
 
 
 
@@ -398,28 +401,28 @@ describe('all swagger calls test ', () => {
 
 
         it(' GET /storage/infol', async () => {
-            
+
 
             const res = await chai.request(config.apiServerUrl)
                 .get(`/storage/info`)
 
             expect(res).to.have.status(200)
 
-        }).timeout(1000 * 60*3)
+        }).timeout(1000 * 60 * 3)
 
         it(' GET /storage/prefix/types', async () => {
-            
+
 
             const res = await chai.request(config.apiServerUrl)
                 .get(`/storage/prefix/types`)
 
             expect(res).to.have.status(200)
 
-        }).timeout(1000 * 60*3)
+        }).timeout(1000 * 60 * 3)
 
 
         it(' GET keys by path /storage/prefixes/{path}', async () => {
-           
+
 
             const res = await chai.request(config.apiServerUrl)
                 .get(`/storage/prefix/types`)
@@ -433,12 +436,12 @@ describe('all swagger calls test ', () => {
 
 
 
-        }).timeout(1000 * 60*3)
+        }).timeout(1000 * 60 * 3)
 
 
 
         it(' GET keys by path /storage/keys/{path}', async () => {
-           
+
 
             const res = await chai.request(config.apiServerUrl)
                 .get(`/storage/prefix/types`)
@@ -452,11 +455,11 @@ describe('all swagger calls test ', () => {
 
 
 
-        }).timeout(1000 * 60*3)
+        }).timeout(1000 * 60 * 3)
 
 
         it(' GET storage data /storage/values/{path}', async () => {
-            
+
 
             const res = await chai.request(config.apiServerUrl)
                 .get(`/storage/prefix/types`)
@@ -470,16 +473,16 @@ describe('all swagger calls test ', () => {
 
             const res2 = await chai.request(config.apiServerUrl)
                 .get(`/storage/values/${storagePath}`)
-            
+
             expect(res2).to.have.status(200)
 
 
 
-        }).timeout(1000 * 60*10)
+        }).timeout(1000 * 60 * 10)
 
 
         it(' GET stream data /storage/stream/{path}', async () => {
-            
+
 
             const res = await chai.request(config.apiServerUrl)
                 .get(`/storage/prefix/types`)
@@ -493,7 +496,7 @@ describe('all swagger calls test ', () => {
 
             const res2 = await chai.request(config.apiServerUrl)
                 .get(`/storage/stream/${storagePath}`)
-            
+
             expect(res2).to.have.status(200)
 
 
@@ -503,7 +506,7 @@ describe('all swagger calls test ', () => {
 
 
         it(' GET stream data to file /storage/download/{path}', async () => {
-           
+
 
             const res = await chai.request(config.apiServerUrl)
                 .get(`/storage/prefix/types`)
@@ -517,13 +520,13 @@ describe('all swagger calls test ', () => {
 
             const res2 = await chai.request(config.apiServerUrl)
                 .get(`/storage/download/${storagePath}`)
-            
+
             expect(res2).to.have.status(200)
 
 
 
-        }).timeout(1000 * 60*3)
-        
+        }).timeout(1000 * 60 * 3)
+
 
     })
     describe('Pipelines', () => {
@@ -543,7 +546,7 @@ describe('all swagger calls test ', () => {
             expect(res2).to.have.status(200)
             expect(res2.body).to.have.lengthOf(5)
 
-        }).timeout(1000 * 60*3)
+        }).timeout(1000 * 60 * 3)
 
 
         it('test the GET /pipelines/status/{name} rest call', async () => {
@@ -560,7 +563,7 @@ describe('all swagger calls test ', () => {
             expect(res2).to.have.status(200)
             expect(res2.body).to.have.lengthOf(5)
 
-        }).timeout(1000 * 60*3)
+        }).timeout(1000 * 60 * 3)
 
 
 
@@ -578,7 +581,7 @@ describe('all swagger calls test ', () => {
             expect(res2).to.have.status(200)
             expect(res2.body).to.have.lengthOf(5)
 
-        }).timeout(1000 * 60*3)
+        }).timeout(1000 * 60 * 3)
 
 
         it.skip('test the GET /pipelines/status/stored/{name} rest call', async () => {
@@ -595,7 +598,7 @@ describe('all swagger calls test ', () => {
             expect(res2).to.have.status(200)
             expect(res2.body).to.have.lengthOf(5)
 
-        }).timeout(1000 * 60*3)
+        }).timeout(1000 * 60 * 3)
 
     })
 
@@ -604,78 +607,78 @@ describe('all swagger calls test ', () => {
         it('TBD')
     })
 
-    describe(' Algorithms version' , () => {
+    describe(' Algorithms version', () => {
         const algorithmName = "swagrer-algorithm"
         const algorithmImageV1 = "tamir321/algoversion:v1"
         const algorithmImageV2 = "tamir321/algoversion:v2"
-        const algJson = (algName,imageName) =>{ 
-        let alg = {
-            name: algName,
-            cpu: 1,
-            gpu: 0,
-            mem: "256Mi",
-            minHotWorkers: 0,
-            algorithmImage: imageName,
-            type: "Image",
-            options: {
-                debug: false,
-                pending: false
-                }       
+        const algJson = (algName, imageName) => {
+            let alg = {
+                name: algName,
+                cpu: 1,
+                gpu: 0,
+                mem: "256Mi",
+                minHotWorkers: 0,
+                algorithmImage: imageName,
+                type: "Image",
+                options: {
+                    debug: false,
+                    pending: false
+                }
             }
             return alg
-        }   
-        
-    const algorithmV1 = algJson(algorithmName,algorithmImageV1)
-    const algorithmV2 = algJson(algorithmName,algorithmImageV2)  
-    it('Get   /versions/algorithms/{name}', async () => {
-        await  deleteAlgorithm(algorithmName,true)
-         await storeAlgorithmApplay(algorithmV1);
-         const algVersion = await getAlgorithmVersion(algorithmName);
-         const  versionAmount = algVersion.body.length
-         expect(versionAmount).to.be.greaterThan(0)
-         await storeAlgorithmApplay(algorithmV2);
-        //validate there are two images
-        const algVersion2 = await getAlgorithmVersion(algorithmName);
-        
-        expect(algVersion2.body.length).to.be.equal(versionAmount+1)
-        await  deleteAlgorithm(algorithmName,true)
-       
-    }).timeout(1000 * 60 * 5);
+        }
 
-    it('Delete /versions/algorithms/{name}', async () => {
-        await  deleteAlgorithm(algorithmName,true)
-        let v1= await storeAlgorithmApplay(algorithmV1);         
-        let v2= await storeAlgorithmApplay(algorithmV2);
-        //validate there are two images
-        
-        let algVersion = await getAlgorithmVersion(algorithmName);
-        expect(algVersion.body.length).to.be.equal(2)
-        const del = await deleteAlgorithmVersion(algorithmName,v2.body.algorithm.version)
-        await delay(2000)
-        algVersion = await getAlgorithmVersion(algorithmName);
-        expect(algVersion.body.length).to.be.equal(1)
-        await  deleteAlgorithm(algorithmName,true)
-       
-    }).timeout(1000 * 60 * 5);
+        const algorithmV1 = algJson(algorithmName, algorithmImageV1)
+        const algorithmV2 = algJson(algorithmName, algorithmImageV2)
+        it('Get   /versions/algorithms/{name}', async () => {
+            await deleteAlgorithm(algorithmName, true)
+            await storeAlgorithmApplay(algorithmV1);
+            const algVersion = await getAlgorithmVersion(algorithmName);
+            const versionAmount = algVersion.body.length
+            expect(versionAmount).to.be.greaterThan(0)
+            await storeAlgorithmApplay(algorithmV2);
+            //validate there are two images
+            const algVersion2 = await getAlgorithmVersion(algorithmName);
+
+            expect(algVersion2.body.length).to.be.equal(versionAmount + 1)
+            await deleteAlgorithm(algorithmName, true)
+
+        }).timeout(1000 * 60 * 5);
+
+        it('Delete /versions/algorithms/{name}', async () => {
+            await deleteAlgorithm(algorithmName, true)
+            let v1 = await storeAlgorithmApplay(algorithmV1);
+            let v2 = await storeAlgorithmApplay(algorithmV2);
+            //validate there are two images
+
+            let algVersion = await getAlgorithmVersion(algorithmName);
+            expect(algVersion.body.length).to.be.equal(2)
+            const del = await deleteAlgorithmVersion(algorithmName, v2.body.algorithm.version)
+            await delay(2000)
+            algVersion = await getAlgorithmVersion(algorithmName);
+            expect(algVersion.body.length).to.be.equal(1)
+            await deleteAlgorithm(algorithmName, true)
+
+        }).timeout(1000 * 60 * 5);
 
 
-    it('Post Apply algorithm version', async () => {
-        await  deleteAlgorithm(algorithmName,true)
-         await storeAlgorithmApplay(algorithmV1);         
-         let v2= await storeAlgorithmApplay(algorithmV2);
-         let alg= await getAlgorithm(algorithmName)
-         expect(alg.body.algorithmImage).to.be.equal("tamir321/algoversion:v1")
-        
-        let jnk = await updateAlgorithmVersion(algorithmName,v2.body.algorithm.version,true)
-        alg= await getAlgorithm(algorithmName)
-        
-        expect(alg.body.algorithmImage).to.be.equal("tamir321/algoversion:v2")
-        await  deleteAlgorithm(algorithmName,true)
-    }).timeout(1000 * 60 * 5);
-   
+        it('Post Apply algorithm version', async () => {
+            await deleteAlgorithm(algorithmName, true)
+            await storeAlgorithmApplay(algorithmV1);
+            let v2 = await storeAlgorithmApplay(algorithmV2);
+            let alg = await getAlgorithm(algorithmName)
+            expect(alg.body.algorithmImage).to.be.equal("tamir321/algoversion:v1")
+
+            let jnk = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, true)
+            alg = await getAlgorithm(algorithmName)
+
+            expect(alg.body.algorithmImage).to.be.equal("tamir321/algoversion:v2")
+            await deleteAlgorithm(algorithmName, true)
+        }).timeout(1000 * 60 * 5);
+
     })
 
-    
+
     describe('ReadMe file ', () => {
 
         const readMeFile = {
@@ -701,14 +704,14 @@ describe('all swagger calls test ', () => {
                 const readme = await chai.request(config.apiServerUrl)
                     .get(`/readme/pipelines/${pipelineName}`)
 
-               // readme.body.readme.startsWith(readMeFile.startWith).should.be.true;
-                const text = readme.body.readme.startsWith(readMeFile.startWith)               
+                // readme.body.readme.startsWith(readMeFile.startWith).should.be.true;
+                const text = readme.body.readme.startsWith(readMeFile.startWith)
                 expect(text).to.be.true
 
                 await chai.request(config.apiServerUrl)
                     .delete(`/readme/pipelines/${pipelineName}`)
 
-            }).timeout(1000 * 60*3)
+            }).timeout(1000 * 60 * 3)
 
             it('test the Get /readme/pipline', async () => {
 
@@ -723,13 +726,13 @@ describe('all swagger calls test ', () => {
 
                 //res.body.readme.startsWith(readMeFile.startWith).should.be.true;
 
-                const text = res.body.readme.startsWith(readMeFile.startWith)               
+                const text = res.body.readme.startsWith(readMeFile.startWith)
                 expect(text).to.be.true
 
                 await chai.request(config.apiServerUrl)
                     .delete(`/readme/pipelines/${pipelineName}`)
 
-            }).timeout(1000 * 60*3)
+            }).timeout(1000 * 60 * 3)
 
 
 
@@ -752,13 +755,13 @@ describe('all swagger calls test ', () => {
                     .get(`/readme/pipelines/${pipelineName}`)
 
                 //readme.body.readme.startsWith(readMeSecondFile.startWith).should.be.true;
-                const text = readme.body.readme.startsWith(readMeSecondFile.startWith)               
+                const text = readme.body.readme.startsWith(readMeSecondFile.startWith)
                 expect(text).to.be.true
 
                 await chai.request(config.apiServerUrl)
                     .delete(`/readme/pipelines/${pipelineName}`)
 
-            }).timeout(1000 * 60*3)
+            }).timeout(1000 * 60 * 3)
 
 
 
@@ -779,7 +782,7 @@ describe('all swagger calls test ', () => {
                 expect(readme).to.have.status(404)
 
 
-            }).timeout(1000 * 60*3)
+            }).timeout(1000 * 60 * 3)
 
         })
 
@@ -791,21 +794,21 @@ describe('all swagger calls test ', () => {
                 const res = await chai.request(config.apiServerUrl)
                     .post(`/readme/algorithms/${algName}`)
                     .attach("README.md", fs.readFileSync(readMeFile.FilePath), "README.md");
-               
+
                 expect(res).to.have.status(201)
                 const timeout = await delay(1000 * 3);
                 const readme = await chai.request(config.apiServerUrl)
                     .get(`/readme/algorithms/${algName}`)
 
                 //readme.body.readme.startsWith(readMeFile.startWith).should.be.true;
-                const text = readme.body.readme.startsWith(readMeFile.startWith)               
+                const text = readme.body.readme.startsWith(readMeFile.startWith)
                 expect(text).to.be.true
 
                 const del = await chai.request(config.apiServerUrl)
                     .delete(`/readme/algorithms/${algName}`)
 
 
-            }).timeout(1000 * 60*3)
+            }).timeout(1000 * 60 * 3)
 
             it('test the Get /readme/algorithms', async () => {
 
@@ -814,16 +817,16 @@ describe('all swagger calls test ', () => {
                     .attach("README.md", fs.readFileSync(readMeFile.FilePath), "README.md");
                 const timeout = await delay(1000 * 2);
                 const res = await chai.request(config.apiServerUrl)
-                            .get(`/readme/algorithms/${algName}`)
-                
+                    .get(`/readme/algorithms/${algName}`)
+
                 expect(res).to.have.status(200)
 
-                const text = res.body.readme.startsWith(readMeFile.startWith)               
+                const text = res.body.readme.startsWith(readMeFile.startWith)
                 expect(text).to.be.true
                 const del = await chai.request(config.apiServerUrl)
                     .delete(`/readme/algorithms/${algName}`)
 
-            }).timeout(1000 * 60*3)
+            }).timeout(1000 * 60 * 3)
 
 
 
@@ -843,7 +846,7 @@ describe('all swagger calls test ', () => {
                 const readme = await chai.request(config.apiServerUrl)
                     .get(`/readme/algorithms/${algName}`)
 
-                const text = readme.body.readme.startsWith(readMeSecondFile.startWith)               
+                const text = readme.body.readme.startsWith(readMeSecondFile.startWith)
                 expect(text).to.be.true
                 //readme.body.readme.startsWith(readMeSecondFile.startWith).should.be.true;
 
@@ -851,7 +854,7 @@ describe('all swagger calls test ', () => {
                     .delete(`/readme/algorithms/${algName}`)
 
 
-            }).timeout(1000 * 60*3)
+            }).timeout(1000 * 60 * 3)
 
 
 
@@ -872,7 +875,7 @@ describe('all swagger calls test ', () => {
 
 
 
-            }).timeout(1000 * 60*3)
+            }).timeout(1000 * 60 * 3)
 
         })
     })
@@ -891,7 +894,7 @@ describe('all swagger calls test ', () => {
                 .get(`/webhooks/status/${jobId}`)
             expect(res).to.have.status(200)
 
-        }).timeout(1000 * 60*3)
+        }).timeout(1000 * 60 * 3)
 
         it('test the Get webhooks/results/{jobId}', async () => {
 
@@ -904,7 +907,7 @@ describe('all swagger calls test ', () => {
             expect(res).to.have.status(200)
 
 
-        }).timeout(1000 * 60*3)
+        }).timeout(1000 * 60 * 3)
 
         it('test the Get webhooks/list/{jobId}', async () => {
             const jobId = await runStoredAndWaitForResults(pipe)
@@ -914,7 +917,7 @@ describe('all swagger calls test ', () => {
             expect(res).to.have.status(200)
 
 
-        }).timeout(1000 * 60*3)
+        }).timeout(1000 * 60 * 3)
     })
 
     describe('Store Pipelines', () => {
@@ -937,44 +940,44 @@ describe('all swagger calls test ', () => {
             const res = await chai.request(config.apiServerUrl)
                 .get(`/store/pipelines/${name}`)
 
-                expect(res).to.have.status(200)
+            expect(res).to.have.status(200)
 
-        }).timeout(1000 * 60*3)
+        }).timeout(1000 * 60 * 3)
 
         it('test the POST /store/pipelines', async () => {
 
             const pipe = {
                 name: 'addmultForTest',
-                description : 'addmultForTest pipeline description',
+                description: 'addmultForTest pipeline description',
                 nodes: [{
-                        nodeName: 'evaladd',
-                        algorithmName: 'eval-alg',
-                        input: [
-                            '@flowInput.addInput'
-                        ],
-                        extraData: {
-                            code: [
-                                '(input,require)=> {',
-                                'const result = input[0][0]+input[0][1]',
-                                'return result;}'
-                            ]
-                        }
-                    },
-                    {
-                        nodeName: 'evalmul',
-                        algorithmName: 'eval-alg',
-                        input: [
-                            '@evaladd',
-                            '@flowInput.multInput'
-                        ],
-                        extraData: {
-                            code: [
-                                '(input,require)=> {',
-                                'const result = input[0] * input[1][0]',
-                                'return result;}'
-                            ]
-                        }
+                    nodeName: 'evaladd',
+                    algorithmName: 'eval-alg',
+                    input: [
+                        '@flowInput.addInput'
+                    ],
+                    extraData: {
+                        code: [
+                            '(input,require)=> {',
+                            'const result = input[0][0]+input[0][1]',
+                            'return result;}'
+                        ]
                     }
+                },
+                {
+                    nodeName: 'evalmul',
+                    algorithmName: 'eval-alg',
+                    input: [
+                        '@evaladd',
+                        '@flowInput.multInput'
+                    ],
+                    extraData: {
+                        code: [
+                            '(input,require)=> {',
+                            'const result = input[0] * input[1][0]',
+                            'return result;}'
+                        ]
+                    }
+                }
                 ]
             }
 
@@ -982,7 +985,7 @@ describe('all swagger calls test ', () => {
                 .post('/store/pipelines')
                 .send(pipe)
 
-                expect(res).to.have.status(201)
+            expect(res).to.have.status(201)
         })
 
 
@@ -993,7 +996,7 @@ describe('all swagger calls test ', () => {
             const res = await chai.request(config.apiServerUrl)
                 .delete(`/store/pipelines/${name}`)
 
-                expect(res).to.have.status(200)
+            expect(res).to.have.status(200)
 
         })
 
@@ -1008,7 +1011,7 @@ describe('all swagger calls test ', () => {
     })
 
     describe('Experiment', () => {
-        const experiment ={
+        const experiment = {
             name: "new-experiment",
             description: "string description"
         }
@@ -1020,39 +1023,39 @@ describe('all swagger calls test ', () => {
 
             expect(res).to.have.status(200)
             expect(res.body.name).to.be.equal(name)
-          
+
         }).timeout(1000 * 60 * 2)
 
 
         it('test  POST Delete /experiment', async () => {
-           
-          
+
+
             const res = await chai.request(config.apiServerUrl)
                 .post(`/experiment`)
                 .send(experiment)
 
             expect(res).to.have.status(200)
             const ResDelete = await chai.request(config.apiServerUrl)
-            .delete(`/experiment/${experiment.name}`)
+                .delete(`/experiment/${experiment.name}`)
             expect(ResDelete).to.have.status(200)
             const resGet = await chai.request(config.apiServerUrl)
                 .get(`/experiment/${experiment.name}`)
-            
+
             expect(resGet).to.have.status(404)
 
-          
+
         }).timeout(1000 * 60 * 2)
 
 
 
 
         it('test /experiment​ list', async () => {
-          
-            const res = await chai.request(config.apiServerUrl)
-            .get(`/experiment`)
 
-            expect(res).to.have.status(200)         
-          
+            const res = await chai.request(config.apiServerUrl)
+                .get(`/experiment`)
+
+            expect(res).to.have.status(200)
+
         }).timeout(1000 * 60 * 2)
 
 
@@ -1062,18 +1065,18 @@ describe('all swagger calls test ', () => {
 
 
     describe('Build algorithm', () => {
-       
-        
-    
+
+
+
         it(`build python algorithm from tra.gz`, async () => {
             const testalg = 'pyeyemat'
-            const algName= pipelineRandomName(8).toLowerCase()                        
+            const algName = pipelineRandomName(8).toLowerCase()
             const code1 = path.join(process.cwd(), 'additionalFiles/eyeMat.tar.gz');
-            const buildStatusAlg = await buildAlgorithmAndWait({code:code1,algName:algName,entry:testalg} )
-            expect(buildStatusAlg.status).to.be.equal("completed") 
-            await deleteAlgorithm(algName,true)    
+            const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: testalg })
+            expect(buildStatusAlg.status).to.be.equal("completed")
+            await deleteAlgorithm(algName, true)
         }).timeout(1000 * 60 * 20)
-    
+
     })
 
 })

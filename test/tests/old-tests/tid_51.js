@@ -43,11 +43,11 @@ describe('tid_51 run pipelines in a queue~ (git 54)', () => {
 
         const jobId = res.body.jobId;
 
-        await delay(20*1000)
+        await delay(20 * 1000)
 
         let runningPods = await getPodsRunning(jobId)
         logger.info(`getting running pods on id ${jobId}`)
-        assert.isAtLeast(runningPods.body.length, 8, `the job ${jobId} expected to have at least 15 running pods while got ${runningPods.body.length}`)
+        assert.isAtLeast(runningPods.length, 8, `the job ${jobId} expected to have at least 15 running pods while got ${runningPods.length}`)
 
         const result = await getResult(jobId, 200);
         if ('error' in result) {
@@ -62,7 +62,7 @@ describe('tid_51 run pipelines in a queue~ (git 54)', () => {
         logger.info(`getting results from execution`)
         logger.info(`${res.status} ${JSON.stringify(res.body)}`)
 
-    }).timeout(1000*60*5);
+    }).timeout(1000 * 60 * 5);
 
 
     it('should run the primes pipeline', async () => {
@@ -76,12 +76,12 @@ describe('tid_51 run pipelines in a queue~ (git 54)', () => {
         const jobId = res.body.jobId;
 
 
-         //await delay(10 * 1000)
+        //await delay(10 * 1000)
 
         let runningPods = await getPodsRunning(jobId)
         logger.info(`getting running pods on id ${jobId}`)
         const expectedPods = 5
-        assert.isAtLeast(runningPods.body.length, expectedPods, `the job ${jobId} expected to have at least ${expectedPods} running pods while got ${runningPods.body.length}`)
+        assert.isAtLeast(runningPods.length, expectedPods, `the job ${jobId} expected to have at least ${expectedPods} running pods while got ${runningPods.length}`)
 
 
         const result = await getResult(jobId, 200);
@@ -95,6 +95,6 @@ describe('tid_51 run pipelines in a queue~ (git 54)', () => {
         logger.info(`getting results from execution`)
         logger.info(`${res.status} ${JSON.stringify(res.body)}`)
 
-    }).timeout(1000*60*5);
+    }).timeout(1000 * 60 * 5);
 
 });

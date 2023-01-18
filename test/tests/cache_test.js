@@ -4,7 +4,7 @@ const chaiHttp = require('chai-http');
 const path = require('path')
 const delay = require('delay')
 
-const {storeAlgorithm } = require(path.join(process.cwd(), 'utils/algorithmUtils'))
+const { storeAlgorithm } = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 const {
     getSpansByJodid
 } = require(path.join(process.cwd(), 'utils/jaeger'))
@@ -18,7 +18,7 @@ const {
 } = require(path.join(process.cwd(), 'utils/socketGet'))
 
 const {
-    body,    
+    body,
     deletePod,
     filterPodsByName,
     getPodNode
@@ -31,7 +31,6 @@ const {
 // const KubernetesClient = require('@hkube/kubernetes-client').Client;
 const {
     deletePipeline,
-    getPiplineNodes,
     storePipeline,
     runStored,
     deconstructTestData,
@@ -46,9 +45,9 @@ describe('Test worker cache 576', () => {
 
     //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/576
     it.skip('storage get amount old do not run ', async () => {
-       
 
-        const alg =  await storeAlgorithm("lonstringv1");
+
+        const alg = await storeAlgorithm("lonstringv1");
         //set test data to testData1
         const d = deconstructTestData(testData1)
         await deletePipeline(d)
@@ -57,21 +56,21 @@ describe('Test worker cache 576', () => {
 
         //run the pipeline 
 
-       const jobId = await runStoredAndWaitForResults(d)
+        const jobId = await runStoredAndWaitForResults(d)
 
         const pods = await filterPodsByName("eval-alg")
 
         const data = await getSpansByJodid(jobId)
         let setJobResult = data.filter(obj => obj.operationName.includes("set job result"))
-        let storageGet = data.filter(obj => obj.operationName == "storage-get").filter(obj => obj.references.length>0)
+        let storageGet = data.filter(obj => obj.operationName == "storage-get").filter(obj => obj.references.length > 0)
 
         let wz = storageGet.filter(obj => obj.references[0].spanID != setJobResult[0].spanID)
-        
-        const a = Math.abs(pods.length-wz.length/2)
+
+        const a = Math.abs(pods.length - wz.length / 2)
         expect(a).to.be.lessThan(30)
     }).timeout(1000 * 60 * 5);
 
 
-   
+
 
 });

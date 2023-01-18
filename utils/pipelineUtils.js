@@ -1,5 +1,7 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
+const { getWebSocketData } = require(path.join(process.cwd(), 'utils/socketGet'))
+
 const expect = chai.expect;
 
 chai.use(chaiHttp);
@@ -19,9 +21,13 @@ const {
 } = require(path.join(process.cwd(), 'utils/algorithmUtils'))
 
 const getPiplineNodes = async (id) => {
-    const res = await chai.request(config.podsApiUrl)
-        .get(`/${id}`)
+
+    const data = await getWebSocketData()
+    const res = data.discovery.worker.filter(w => w.jobId === jobId).map(w => w.podName);
+    logger.info(`worker : ,${jobId}, ${JSON.stringify(worker)}`)
+
     logResult(res, 'PipelineUtils getPipeline')
+
     return res
 }
 
@@ -148,7 +154,7 @@ const runStored = async (descriptor) => {
     return res
 }
 
-const loadRunStored = async (data)=>{
+const loadRunStored = async (data) => {
     const res = await chai.request(config.apiServerUrl)
         .post('/exec/stored')
         .send(data)
@@ -158,7 +164,7 @@ const runRaw = async (body) => {
     const res = await chai.request(config.apiServerUrl)
         .post('/exec/raw')
         .send(body)
-    logResult(res, 'PipelineUtils runRaw')   
+    logResult(res, 'PipelineUtils runRaw')
     return res
 }
 
@@ -173,11 +179,11 @@ const resumePipeline = async (jobid) => {
     logResult(res, 'PipelineUtils resumePipeline')
     return res
 }
-const getExecPipeline = async (jobId)=>{
+const getExecPipeline = async (jobId) => {
     const res = await chai.request(config.apiServerUrl)
-    .get(`/exec/pipelines/${jobId}`)
+        .get(`/exec/pipelines/${jobId}`)
     logResult(res, 'PipelineUtils getExecPipeline')
-return res
+    return res
 }
 
 const pausePipeline = async (jobid) => {
@@ -223,7 +229,7 @@ const checkResults = async (res, expectedStatusCode, expectedStatus, testData, s
 
 
     const result = await getResult(jobId, expectedStatusCode);
-    if (result.error ) {
+    if (result.error) {
         process.stdout.write(result.error)
     }
 
@@ -258,10 +264,10 @@ const stopPipeline = async (jobid) => {
     return res
 }
 
-const exceRerun = async (jobId)=>{
+const exceRerun = async (jobId) => {
     const data = {
         jobId: jobId,
-       
+
     }
 
     const res = await chai.request(config.apiServerUrl)
@@ -270,7 +276,7 @@ const exceRerun = async (jobId)=>{
     logResult(res, 'PipelineUtils exceRerun')
     return res
 }
-const exceCachPipeline = async (jobId,nodeName)=>{
+const exceCachPipeline = async (jobId, nodeName) => {
     const data = {
         jobId: jobId,
         nodeName: nodeName
@@ -283,45 +289,45 @@ const exceCachPipeline = async (jobId,nodeName)=>{
     return res
 }
 
-const getPipelineResultsByName = async (name,limit=5)=>{
+const getPipelineResultsByName = async (name, limit = 5) => {
 
     const res = await chai.request(config.apiServerUrl)
-    .get(`/pipelines/results?name=${name}&limit=${limit}`)
+        .get(`/pipelines/results?name=${name}&limit=${limit}`)
 
     return res
 
 }
 
-const getPipelinestatusByName = async (name,limit=5)=>{
+const getPipelinestatusByName = async (name, limit = 5) => {
 
     const res = await chai.request(config.apiServerUrl)
-    .get(`/pipelines/status?name=${name}&limit=${limit}`)
+        .get(`/pipelines/status?name=${name}&limit=${limit}`)
 
     return res
 
 }
-const pipelineRandomName = (length)=>{
-    
-        
-    var result           = '';
-    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+const pipelineRandomName = (length) => {
+
+
+    var result = '';
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     var charactersLength = characters.length;
-    for ( var i = 0; i < length; i++ ) {
-       result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    for (var i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
-    
+
     return result;
 }
 
-const getPending = async ()=>{
-    const res = await chai.request(config.apiServerUrl) 
-    .get('/exec/jobs?status=pending&raw=true')
+const getPending = async () => {
+    const res = await chai.request(config.apiServerUrl)
+        .get('/exec/jobs?status=pending&raw=true')
     return res
 }
 
-const getActive = async ()=>{
-    const res = await chai.request(config.apiServerUrl) 
-    .get('/exec/jobs?status=active&raw=true')
+const getActive = async () => {
+    const res = await chai.request(config.apiServerUrl)
+        .get('/exec/jobs?status=active&raw=true')
     return res
 }
 
