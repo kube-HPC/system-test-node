@@ -16,14 +16,14 @@ const {
   storeAlgorithmApplay,
   deleteAlgorithmVersion,
   getAlgorithim,
-} = require(path.join(process.cwd(), "utils/algorithmUtils"));
+} = require("../utils/algorithmUtils");
 
-const { celeanPipeLines } = require(path.join(process.cwd(), "utils/gc"));
+const { celeanPipeLines } = require("../utils/gc");
 const {
   getWebSocketJobs,
   getWebSocketlogs,
   getDriverIdByJobId,
-} = require(path.join(process.cwd(), "utils/socketGet"));
+} = require("../utils/socketGet");
 
 const {
   testData1,
@@ -39,14 +39,14 @@ const {
   testData11,
   testData12,
   ttlPipe,
-} = require(path.join(process.cwd(), "config/index")).pipelineTest;
+} = require("../config/index").pipelineTest;
 
 const {
   getJobIdsTree,
   getResult,
   getCronResult,
   getRawGraph,
-} = require(path.join(process.cwd(), "utils/results"));
+} = require("../utils/results");
 
 // const KubernetesClient = require('@hkube/kubernetes-client').Client;
 const {
@@ -67,7 +67,7 @@ const {
   stopPipeline,
   exceCachPipeline,
   getPipelinestatusByName,
-} = require(path.join(process.cwd(), "utils/pipelineUtils"));
+} = require("../utils/pipelineUtils");
 
 chai.use(chaiHttp);
 

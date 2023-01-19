@@ -5,7 +5,7 @@ const config = require('../config/config')
 const path = require('path');
 const {
     write_log
-} = require(path.join(process.cwd(), 'utils/misc_utils'))
+} = require('../utils/misc_utils')
 
 const {
     idGen
@@ -66,20 +66,20 @@ const deleteAlg = (algo) => {
 const main = () => {
 
     const algos = [{
-            path: `additionalFiles/addpy.tar.gz`,
-            name: 'addpy',
-            entry: 'addpy.py'
-        },
-        {
-            path: `additionalFiles/subpy.tar.gz`,
-            name: 'subpy',
-            entry: 'subpy.py'
-        },
-        {
-            path: `additionalFiles/multpy.tar.gz`,
-            name: 'multpy',
-            entry: 'multpy.py'
-        }
+        path: `additionalFiles/addpy.tar.gz`,
+        name: 'addpy',
+        entry: 'addpy.py'
+    },
+    {
+        path: `additionalFiles/subpy.tar.gz`,
+        name: 'subpy',
+        entry: 'subpy.py'
+    },
+    {
+        path: `additionalFiles/multpy.tar.gz`,
+        name: 'multpy',
+        entry: 'multpy.py'
+    }
     ]
 
     for (let alg of algos) {

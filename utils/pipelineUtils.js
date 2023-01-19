@@ -1,6 +1,6 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const { getWebSocketData } = require('./../utils/socketGet')
+const { getWebSocketData } = require('../utils/socketGet')
 
 const expect = chai.expect;
 
@@ -9,16 +9,16 @@ const path = require('path')
 const config = require(path.join(process.cwd(), 'config/config'))
 const {
     write_log
-} = require(path.join(process.cwd(), 'utils/misc_utils'))
+} = require('../utils/misc_utils')
 
 const {
     getResult
-} = require(path.join(process.cwd(), 'utils/results'))
+} = require('../utils/results')
 
 const {
     storeAlgorithm,
     logResult
-} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
+} = require('../utils/algorithmUtils')
 
 const getPiplineNodes = async (id) => {
 

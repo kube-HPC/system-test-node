@@ -6,40 +6,40 @@
 
 // const {
 //     getPodsRunning
-// } = require(path.join(process.cwd(), 'utils/results'))
+// } = require('../utils/results')
 // const {
 //     testData2
 // } = require(path.join(process.cwd(), 'config/index')).tid_70
-// const logger = require(path.join(process.cwd(), 'utils/logger'))
+// const logger = require('../utils/logger')
 // const {
 //     getDriverIdByJobId
-// } = require(path.join(process.cwd(), 'utils/socketGet'))
+// } = require('../utils/socketGet')
 
 // const {
 //     client
-// } = require(path.join(process.cwd(), 'utils/kubeCtl'))
+// } = require('../utils/kubeCtl')
 
 // const {
 //     getResult
-// } = require(path.join(process.cwd(), 'utils/results'))
+// } = require('../utils/results')
 // const {
 //     getPiplineNodes,
 //     storePipeline,
 //     runStored,
 //     deconstructTestData,
 //     runStoredAndWaitForResults
-// } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+// } = require('../utils/pipelineUtils')
 // chai.use(chaiHttp);
 
 
 // const {
 //     write_log
-// } = require(path.join(process.cwd(), 'utils/misc_utils'))
+// } = require('../utils/misc_utils')
 
 // const {
 //     getLogByJobId,
 //     waitForLog
-// } = require(path.join(process.cwd(), 'utils/elasticsearch'))
+// } = require('../utils/elasticsearch')
 
 // function sleep(ms) {
 //     return new Promise(resolve => setTimeout(resolve, ms));

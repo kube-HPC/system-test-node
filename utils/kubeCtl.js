@@ -16,14 +16,14 @@ const {
     runStored,
     deconstructTestData,
     runStoredAndWaitForResults
-} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+} = require('../utils/pipelineUtils')
 const chai = require('chai');
 const expect = chai.expect;
 const delay = require('delay')
 const Request = require('kubernetes-client/backends/request')
 const {
     getResult
-} = require(path.join(process.cwd(), 'utils/results'))
+} = require('../utils/results')
 const backend = new Request({
     kubeconfig
 })
@@ -35,7 +35,7 @@ kubeconfig.setCurrentContext(process.env.K8S_CONTEXT)
 
 const {
     write_log
-} = require(path.join(process.cwd(), 'utils/misc_utils'))
+} = require('../utils/misc_utils')
 
 const deleteJob = async (jobName, namespace = 'default') => {
     write_log("start delete job- " + deleteJob)

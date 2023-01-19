@@ -4,7 +4,7 @@ const chaiHttp = require('chai-http');
 const path = require('path');
 const {
     getResult
-} = require(path.join(process.cwd(), 'utils/results'))
+} = require('../../../utils/results')
 const {
     testData1
 } = require(path.join(process.cwd(), 'config/index')).buildAlgPipe
@@ -14,17 +14,17 @@ const {
     runStored,
     storePipeline,
     deletePipeline
-} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+} = require('../../../utils/pipelineUtils')
 
 const {
     buildAlgorithmAndWait,
     deleteAlgorithm
-} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
-const logger = require(path.join(process.cwd(), 'utils/logger'))
+} = require('../../../utils/algorithmUtils')
+const logger = require('../../../utils/logger')
 chai.use(chaiHttp);
 const {
     write_log
-} = require(path.join(process.cwd(), 'utils/misc_utils'))
+} = require('../../../utils/misc_utils')
 
 
 describe('Store algorithm', () => {

@@ -4,29 +4,29 @@ const chaiHttp = require('chai-http');
 const path = require('path')
 const delay = require('delay')
 
-const { storeAlgorithm } = require(path.join(process.cwd(), 'utils/algorithmUtils'))
+const { storeAlgorithm } = require('../../utils/algorithmUtils')
 const {
     getSpansByJodid
-} = require(path.join(process.cwd(), 'utils/jaeger'))
+} = require('../../utils/jaeger')
 
 const {
     testData1
-} = require(path.join(process.cwd(), 'config/index')).cacheTest
+} = require('../../config/index').cacheTest
 
 const {
     getDriverIdByJobId
-} = require(path.join(process.cwd(), 'utils/socketGet'))
+} = require('../../utils/socketGet')
 
 const {
     body,
     deletePod,
     filterPodsByName,
     getPodNode
-} = require(path.join(process.cwd(), 'utils/kubeCtl'))
+} = require('../../utils/kubeCtl')
 
 const {
     getResult
-} = require(path.join(process.cwd(), 'utils/results'))
+} = require('../../utils/results')
 
 // const KubernetesClient = require('@hkube/kubernetes-client').Client;
 const {
@@ -35,10 +35,10 @@ const {
     runStored,
     deconstructTestData,
     runStoredAndWaitForResults
-} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+} = require('../../utils/pipelineUtils')
 const {
     write_log
-} = require(path.join(process.cwd(), 'utils/misc_utils'))
+} = require('../../utils/misc_utils')
 chai.use(chaiHttp);
 
 describe('Test worker cache 576', () => {

@@ -1,5 +1,5 @@
 const path = require('path');
-const tos = require(path.join(process.cwd(), 'utils/results')).toString
+const tos = require('../utils/results').toString
 
 
 const func = {

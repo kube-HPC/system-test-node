@@ -4,8 +4,8 @@ const delay = require('delay');
 const path = require('path')
 const config = require(path.join(process.cwd(), 'config/config'))
 
-const logger = require(path.join(process.cwd(), 'utils/logger'))
-const { getWebSocketData } = require(path.join(process.cwd(), 'utils/socketGet'))
+const logger = require('../utils/logger')
+const { getWebSocketData } = require('../utils/socketGet')
 
 // chai.use(chaiHttp);
 const getJobResult = async (jobId) => {

@@ -19,7 +19,7 @@ const {
     runStored,
     deconstructTestData,
     checkResults
-} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+} = require('../../../utils/pipelineUtils')
 
 
 

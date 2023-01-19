@@ -1,6 +1,6 @@
 const path = require('path');
 
-const logger = require(path.join(process.cwd(), 'utils/logger'))
+const logger = require('../utils/logger')
 
 
 
@@ -9,7 +9,7 @@ const write_log = (st, sv = 'info') => {
     logger.level = sv
     logger[logger.level](st)
     logger.level = 'info'
-   
+
 }
 
 

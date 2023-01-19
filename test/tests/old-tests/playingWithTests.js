@@ -7,13 +7,13 @@ const {
     runStored,
     runStoredAndWaitForResults,
     deletePipeline
-} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+} = require('../../../utils/pipelineUtils')
 const {
     getSpansByJodid
-} = require(path.join(process.cwd(), 'utils/jaeger'))
+} = require('../../../utils/jaeger')
 chai.use(chaiHttp);
 chai.use(assertArrays);
-const logger = require(path.join(process.cwd(), 'utils/logger'));
+const logger = require('../../../utils/logger');
 
 
 describe('playing wiht tests', () => {

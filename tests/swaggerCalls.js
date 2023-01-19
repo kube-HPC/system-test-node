@@ -7,7 +7,7 @@ const assertArrays = require('chai-arrays');
 const fs = require('fs');
 const {
     write_log
-} = require(path.join(process.cwd(), 'utils/misc_utils'))
+} = require('../utils/misc_utils')
 
 
 
@@ -19,7 +19,7 @@ const {
     runRaw,
     getRawGraph,
     getParsedGraph
-} = require(path.join(process.cwd(), 'utils/results'))
+} = require('../utils/results')
 const {
     pipelineRandomName,
     runStoredAndWaitForResults,
@@ -29,7 +29,7 @@ const {
     resumePipeline,
     pausePipeline,
     getPipelineStatus
-} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+} = require('../utils/pipelineUtils')
 const {
     runAlgorithm,
     getAlgorithm,
@@ -39,8 +39,8 @@ const {
     storeAlgorithmApplay,
     deleteAlgorithmVersion,
     buildAlgorithmAndWait,
-    getAlgorithim } = require(path.join(process.cwd(), 'utils/algorithmUtils'))
-const tos = require(path.join(process.cwd(), 'utils/results'.toString()))
+    getAlgorithim } = require('../utils/algorithmUtils')
+const tos = require('../utils/results'.toString())
 // const testData2 = require ('../../pipelines/multadd')
 chai.use(chaiHttp);
 

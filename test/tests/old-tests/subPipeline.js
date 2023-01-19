@@ -6,7 +6,7 @@
 // const path = require('path');
 // const {
 //     getResult
-// } = require(path.join(process.cwd(), 'utils/results'))
+// } = require('../utils/results')
 // const {
 //     testData1,
 //     testData2
@@ -18,11 +18,11 @@
 //     deconstructTestData,
 //     checkResults,
 //     deletePipeline
-// } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+// } = require('../utils/pipelineUtils')
 
 // const fse = require('fs-extra')
 
-// const logger = require(path.join(process.cwd(), 'utils/logger'))
+// const logger = require('../utils/logger')
 // chai.use(chaiHttp);
 
 // describe('sub pipeline', () => {

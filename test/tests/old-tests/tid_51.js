@@ -5,7 +5,7 @@ const chaiHttp = require('chai-http');
 const {
     getResult,
     getPodsRunning
-} = require(path.join(process.cwd(), 'utils/results'))
+} = require('../../../utils/results')
 const {
     testData1,
     testData2
@@ -16,8 +16,8 @@ const {
     runStored,
     deconstructTestData,
     deletePipeline
-} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
-const logger = require(path.join(process.cwd(), 'utils/logger'))
+} = require('../../../utils/pipelineUtils')
+const logger = require('../../../utils/logger')
 const delay = require('delay');
 
 chai.use(chaiHttp);

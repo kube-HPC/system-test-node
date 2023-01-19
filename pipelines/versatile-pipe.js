@@ -2,7 +2,7 @@ const path = require('path');
 const tos = require('../utils/results').toString
 const {
     write_log
-} = require(path.join(process.cwd(), 'utils/misc_utils'))
+} = require('../utils/misc_utils')
 
 
 
@@ -22,7 +22,7 @@ const input = {
         inp: [{
             type: "algorithm",
             name: "black-alg",
-            input:["a"]
+            input: ["a"]
         }]
     }
 }

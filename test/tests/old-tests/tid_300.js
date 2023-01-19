@@ -9,17 +9,17 @@ const config = require(path.join(process.cwd(), 'config/config'))
 const {
     testData1
 } = require(path.join(process.cwd(), 'config/index')).tid_300
-const logger = require(path.join(process.cwd(), 'utils/logger'))
+const logger = require('../../../utils/logger')
 
 const {
     getResult
-} = require(path.join(process.cwd(), 'utils/results'))
+} = require('../../../utils/results')
 
 const {
     storePipeline,
     runStored,
     deconstructTestData,
-} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+} = require('../../../utils/pipelineUtils')
 chai.use(chaiHttp);
 
 const input = (a, b) => {
@@ -76,18 +76,18 @@ describe('TID-300 (git 27 )', () => {
         const result = await getResult(jobId, 200)
         // let diff = []
         result.data.forEach(element => {
-           
+
             if (isFinite(element.result)) {
 
-                const dif= expected[element.batchIndex - 1] - element.result
+                const dif = expected[element.batchIndex - 1] - element.result
                 if (isFinite(dif)) {
-                    
+
                     expect(dif).to.be.equal(0)
                 }
-                
-                
-              ///  diff.push(expected[element.batchIndex - 1] - element.result)
-              //  expect(diff).to.be.equal(0)
+
+
+                ///  diff.push(expected[element.batchIndex - 1] - element.result)
+                //  expect(diff).to.be.equal(0)
             }
 
         });

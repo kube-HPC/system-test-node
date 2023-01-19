@@ -10,20 +10,20 @@ const {
     runStored,
     deconstructTestData,
     runStoredAndWaitForResults
-} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+} = require('../utils/pipelineUtils')
 
 
 
-const { getWebSocketData } = require(path.join(process.cwd(), 'utils/socketGet'))
-const { storeAlgorithm } = require(path.join(process.cwd(), 'utils/algorithmUtils'))
+const { getWebSocketData } = require('../utils/socketGet')
+const { storeAlgorithm } = require('../utils/algorithmUtils')
 
 const {
     getSpansByJodid
-} = require(path.join(process.cwd(), 'utils/jaeger'))
+} = require('../utils/jaeger')
 chai.use(chaiHttp);
 chai.use(assertArrays);
 const { deleteAlgorithm,
-    storeAlgorithmApplay } = require(path.join(process.cwd(), 'utils/algorithmUtils'))
+    storeAlgorithmApplay } = require('../utils/algorithmUtils')
 const {
     testData1,
     testData2

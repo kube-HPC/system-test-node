@@ -6,27 +6,27 @@ const delay = require('delay')
 const {
     testData1,
     testData2
-} = require(path.join(process.cwd(), 'config/index')).batchOnBatch
+} = require('../../config/index').batchOnBatch
 
 const {
 
     deletePod,
 
-} = require(path.join(process.cwd(), 'utils/kubeCtl'))
+} = require('../../utils/kubeCtl')
 const {
     getDriverIdByJobId
-} = require(path.join(process.cwd(), 'utils/socketGet'))
+} = require('../../utils/socketGet')
 
 
 const {
     getResult,
     getRawGraph,
 
-} = require(path.join(process.cwd(), 'utils/results'))
+} = require('../../utils/results')
 
 const {
     getLogByJobId
-} = require(path.join(process.cwd(), 'utils/elasticsearch'))
+} = require('../../utils/elasticsearch')
 
 const {
     getPiplineNodes,
@@ -36,10 +36,10 @@ const {
     runStored,
     deconstructTestData
 
-} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+} = require('../../utils/pipelineUtils')
 const {
     client
-} = require(path.join(process.cwd(), 'utils/kubeCtl'))
+} = require('../../utils/kubeCtl')
 
 chai.use(chaiHttp);
 describe('TID-115- the maximum retries for execution of failed algorithm exceeded, (git 62 64) ~', () => {

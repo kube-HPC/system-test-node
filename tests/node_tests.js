@@ -12,7 +12,7 @@ const {
   filterPodsByName,
   deleteJob,
   filterjobsByName,
-} = require(path.join(process.cwd(), "utils/kubeCtl"));
+} = require("../utils/kubeCtl");
 
 const {
   runAlgorithm,
@@ -24,13 +24,13 @@ const {
   storeAlgorithmApplay,
   deleteAlgorithmVersion,
   getAlgorithim,
-} = require(path.join(process.cwd(), "utils/algorithmUtils"));
+} = require("../utils/algorithmUtils");
 
 const {
   getWebSocketJobs,
   getWebSocketlogs,
   getDriverIdByJobId,
-} = require(path.join(process.cwd(), "utils/socketGet"));
+} = require("../utils/socketGet");
 
 const {
   testData1,
@@ -46,12 +46,9 @@ const {
   testData407,
   testData408,
   outputPipe,
-} = require(path.join(process.cwd(), "config/index")).nodeTest;
+} = require("../config/index").nodeTest;
 
-const { getRawGraph, getResult } = require(path.join(
-  process.cwd(),
-  "utils/results"
-));
+const { getRawGraph, getResult } = require("../utils/results");
 
 // const KubernetesClient = require('@hkube/kubernetes-client').Client;
 const {
@@ -64,7 +61,7 @@ const {
   runStoredAndWaitForResults,
   checkResults,
   exceCachPipeline,
-} = require(path.join(process.cwd(), "utils/pipelineUtils"));
+} = require("../utils/pipelineUtils");
 
 chai.use(chaiHttp);
 

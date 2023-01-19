@@ -3,26 +3,26 @@ const chaiHttp = require('chai-http');
 const path = require('path')
 const {
     getPodsRunning
-} = require(path.join(process.cwd(), 'utils/results'));
+} = require('../../utils/results');
 const {
     testData1,
     testData2
-} = require(path.join(process.cwd(), 'config/index')).gpu_tests
+} = require("../../config/index").gpu_tests
 const delay = require('delay');
 const assert = chai.assert;
-const logger = require(path.join(process.cwd(), 'utils/logger'));
+const logger = require('../../utils/logger');
 const {
     storePipeline,
     runStored,
     deconstructTestData,
     runStoredAndWaitForResults,
     deletePipeline
-} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+} = require('../../utils/pipelineUtils')
 
 
 const {
-    storeAlgorithmApplay 
-} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
+    storeAlgorithmApplay
+} = require('../../utils/algorithmUtils')
 chai.use(chaiHttp);
 
 
@@ -42,12 +42,12 @@ const gpuAlg = {
 }
 describe('test gpu algs', () => {
 
-    it.skip('soter gpu algorithm',async ()=>{
+    it.skip('soter gpu algorithm', async () => {
         await storeAlgorithmApplay(gpuAlg);
         gpuAlg.name = "gpu-alg-2"
         await storeAlgorithmApplay(gpuAlg);
     })
-    
+
     it('should run the pipeline gpu-demo and after 2 seconds run the gpuDemo-1 pipeline', async () => {
 
         const d1 = deconstructTestData(testData1)
@@ -69,7 +69,7 @@ describe('test gpu algs', () => {
 
 
 
-       // await deletePipeline(d1.name)
-       // await deletePipeline(d2.name)
+        // await deletePipeline(d1.name)
+        // await deletePipeline(d2.name)
     }).timeout(5000000);
 })

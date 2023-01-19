@@ -12,18 +12,18 @@ const {
 
 const {
     getDriverIdByJobId
-} = require(path.join(process.cwd(), 'utils/socketGet'))
+} = require('../../../utils/socketGet')
 
 const {
     body,
     deletePod,
     filterPodsByName,
     getPodNode
-} = require(path.join(process.cwd(), 'utils/kubeCtl'))
+} = require('../../../utils/kubeCtl')
 
 const {
     getResult
-} = require(path.join(process.cwd(), 'utils/results'))
+} = require('../../../utils/results')
 
 // const KubernetesClient = require('@hkube/kubernetes-client').Client;
 const {
@@ -32,16 +32,16 @@ const {
     runStored,
     deconstructTestData,
     runStoredAndWaitForResults
-} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+} = require('../../../utils/pipelineUtils')
 const {
     write_log
-} = require(path.join(process.cwd(), 'utils/misc_utils'))
+} = require('../../../utils/misc_utils')
 chai.use(chaiHttp);
 
 const {
     getLogByJobId,
     getLogByPodName
-} = require(path.join(process.cwd(), 'utils/elasticsearch'))
+} = require('../../../utils/elasticsearch')
 
 const FailSingelPod = async (podName, namespace = 'default') => {
     //set test data to testData1

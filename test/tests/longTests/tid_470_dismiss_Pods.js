@@ -16,7 +16,7 @@ const {
     getJobResult,
     getResult,
     getCronResult
-} = require(path.join(process.cwd(), 'utils/results'))
+} = require('../../../utils/results')
 
 const {
     getPiplineNodes,
@@ -24,10 +24,10 @@ const {
     storePipeline,
     runStored,
     deconstructTestData,
-} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+} = require('../../../utils/pipelineUtils')
 chai.use(chaiHttp);
 
-const { filterPodsByName } = require(path.join(process.cwd(), 'utils/kubeCtl'))
+const { filterPodsByName } = require('../../../utils/kubeCtl')
 
 
 describe('TID-470 ~', () => {

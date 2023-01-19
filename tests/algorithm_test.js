@@ -15,12 +15,12 @@ const { runAlgorithm,
     buildAlgorithmAndWait,
     tagAlgorithmVersion,
     getAlgVersion
-} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
+} = require('../utils/algorithmUtils')
 
 const { filterPodsByName,
     getNodes,
     getPodNode
-} = require(path.join(process.cwd(), 'utils/kubeCtl'))
+} = require('../utils/kubeCtl')
 
 const {
     testData1,
@@ -33,7 +33,7 @@ const {
     getResult,
     getRawGraph,
     getParsedGraph
-} = require(path.join(process.cwd(), 'utils/results'))
+} = require('../utils/results')
 
 // // const KubernetesClient = require('@hkube/kubernetes-client').Client;
 const {
@@ -45,15 +45,15 @@ const {
     runStored,
     deconstructTestData,
     runStoredAndWaitForResults
-} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+} = require('../utils/pipelineUtils')
 
 const {
-    pipelineRandomName } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+    pipelineRandomName } = require('../utils/pipelineUtils')
 
 chai.use(chaiHttp);
 
 
-const { getWebSocketData } = require(path.join(process.cwd(), 'utils/socketGet'))
+const { getWebSocketData } = require('../utils/socketGet')
 describe('Alrogithm Tests', () => {
 
 
