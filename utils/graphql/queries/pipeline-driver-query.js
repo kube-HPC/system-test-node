@@ -1,4 +1,4 @@
-const { default: gql } = require('graphql-tag');
+const { gql } = require('graphql-request')
 
 const PIPELINE_DRIVER_QUERY = gql`
 query PipelineDriver {

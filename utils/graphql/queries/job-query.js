@@ -1,5 +1,5 @@
-import { gql } from '@apollo/client';
 
+const { gql } = require('graphql-request')
 const JOB_QUERY = gql`
   query jobsAggregatedList(
     $experimentName: String

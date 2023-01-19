@@ -1,6 +1,6 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const { getWebSocketData } = require(path.join(process.cwd(), 'utils/socketGet'))
+const { getWebSocketData } = require('./../utils/socketGet')
 
 const expect = chai.expect;
 

@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+const { gql } = require('graphql-request')
 
 const ERROR_LOG_QUERY = gql`
   query ErrorLogs {

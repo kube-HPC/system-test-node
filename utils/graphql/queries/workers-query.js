@@ -1,4 +1,4 @@
-const { default: gql } = require('graphql-tag');
+const { gql } = require('graphql-request')
 
 const WORKERS_ALL_QUERY = gql`
   query Worker {
