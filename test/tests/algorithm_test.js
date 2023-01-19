@@ -676,7 +676,7 @@ describe('Alrogithm Tests', () => {
 
 
 
-        it.only('algorithm hot workers', async () => {
+        it('algorithm hot workers', async () => {
             let alg = {
                 name: "hot-worker-alg",
                 cpu: 1,
@@ -694,7 +694,7 @@ describe('Alrogithm Tests', () => {
 
             await deleteAlgorithm(alg.name, true)
             await storeAlgorithmApplay(alg);
-            await delay(20000)
+            await delay(40000)
             const data = await getWebSocketData()
             const workers = data.discovery.worker.filter(worker => worker.algorithmName == alg.name)
             // const workers = await filterPodsByName(alg.name)
