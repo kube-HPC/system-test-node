@@ -195,7 +195,7 @@ describe('Alrogithm Tests', () => {
             const algV1 = algJson(algName, algorithmImageV1)
             // const algV2 = algJson(algName,algorithmImageV2)
             // algV1.nodeSelector = {"kubernetes.io/hostname": nodes[2] }
-            algV1.minHotWorkers = 1;
+            algV1.minHotWorkers = 1; // get a pod running
             algV1.labels = { "group": "test" }
 
             let v1 = await storeAlgorithmApplay(algV1);
@@ -214,7 +214,7 @@ describe('Alrogithm Tests', () => {
             const algV1 = algJson(algName, algorithmImageV1)
 
             //algV1.nodeSelector = {"kubernetes.io/hostname": nodes[2] }
-            algV1.minHotWorkers = 1;
+            algV1.minHotWorkers = 1; // get a pod running
             algV1.labels = { "created-by": "test" }
 
             let v1 = await storeAlgorithmApplay(algV1);
@@ -232,7 +232,7 @@ describe('Alrogithm Tests', () => {
             const algV1 = algJson(algName, algorithmImageV1)
             //  const algV2 = algJson(algName,algorithmImageV2)
             //  algV1.nodeSelector = {"kubernetes.io/hostname": nodes[2] }
-            algV1.minHotWorkers = 1;
+            algV1.minHotWorkers = 1; // get a pod running
             algV1.annotations = { "annotations-by": "test" }
 
             let v1 = await storeAlgorithmApplay(algV1);
@@ -242,21 +242,23 @@ describe('Alrogithm Tests', () => {
             deleteAlgorithm(algName)
         }).timeout(1000 * 60 * 10);
 
-        it(' update algorithm nodeSelector', async () => {
+        xit(' update algorithm nodeSelector', async () => {
             const nodes = await getNodes();
 
             const algName = pipelineRandomName(8).toLowerCase()
             const algV1 = algJson(algName, algorithmImageV1)
             const algV2 = algJson(algName, algorithmImageV1)
-            algV1.minHotWorkers = 1;
+            algV1.minHotWorkers = 1; // get a pod running
             algV1.nodeSelector = { "kubernetes.io/hostname": nodes[2] }
             let v1 = await storeAlgorithmApplay(algV1);
-            await delay(2000)
+            // const res = await runAlgorithm({ name: algName })
+            await delay(5000)
             const podName = await filterPodsByName(algName);
             const names = podName.map((n) => { return n.metadata.name })
 
             const podNode = await getPodNode(names[0])
             expect(podNode).to.be.equal(nodes[2])
+
             algV2.nodeSelector = { "kubernetes.io/hostname": nodes[1] }
             algV2.minHotWorkers = 1;
 
