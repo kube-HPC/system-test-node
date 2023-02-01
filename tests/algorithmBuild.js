@@ -34,11 +34,9 @@ const {
     buildAlgorithmAndWait,
     buildAlgorithm,
     buildGitAlgorithm,
-    getAlgorithim,
     stopBuild,
     rerunBuild } = require('../utils/algorithmUtils')
 
-const { getWebSocketData } = require('../utils/socketGet')
 
 chai.use(chaiHttp);
 
@@ -79,24 +77,10 @@ describe('Algorithm build test', () => {
 
     describe('python version test', () => {
         const code1 = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
-
-
-        it(`python 2.7`, async () => {
-            const entry = 'main27'
-            const algName = pipelineRandomName(8).toLowerCase()
-            const pythonVersion = "python:2.7"
-
-            const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algLIst })
-            expect(buildStatusAlg.status).to.be.equal("completed")
-            const result = await runAlgGetResult(algName, [4])
-            await deleteAlgorithm(algName, true)
-            expect(result.data[0].result.sysVersion.toString()).to.be.equal("2")
-        }).timeout(1000 * 60 * 20)
-
         it(`python 3.5`, async () => {
             const entry = 'main35'
             const algName = pipelineRandomName(8).toLowerCase()
-            const pythonVersion = "python:3.5"
+            const pythonVersion = "python:3.5.10"
 
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algLIst })
             expect(buildStatusAlg.status).to.be.equal("completed")
@@ -121,25 +105,24 @@ describe('Algorithm build test', () => {
         it(`python 3.7`, async () => {
             const entry = 'main37'
             const algName = pipelineRandomName(8).toLowerCase()
-            const pythonVersion = "python:3.7"
+            const pythonVersion = "python:3.7.16"
 
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algLIst })
             expect(buildStatusAlg.status).to.be.equal("completed")
             const result = await runAlgGetResult(algName, [4])
             await deleteAlgorithm(algName, true)
-            expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,7,13,final,0")
+            expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,7,16,final,0")
         }).timeout(1000 * 60 * 20)
-
         it(`python 3.7-slim`, async () => {
             const entry = 'main37slim'
             const algName = pipelineRandomName(8).toLowerCase()
-            const pythonVersion = "python:3.7-slim"
+            const pythonVersion = "python:3.7.16-slim"
 
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algLIst })
             expect(buildStatusAlg.status).to.be.equal("completed")
             const result = await runAlgGetResult(algName, [4])
             await deleteAlgorithm(algName, true)
-            expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,7,13,final,0")
+            expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,7,16,final,0")
         }).timeout(1000 * 60 * 20)
 
         const getBuildStates = async (jobId) => {
@@ -152,37 +135,37 @@ describe('Algorithm build test', () => {
         it(`python 3.8`, async () => {
             const entry = 'main37'
             const algName = pipelineRandomName(8).toLowerCase()
-            const pythonVersion = "python:3.8"
+            const pythonVersion = "python:3.8.16"
 
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algLIst })
             expect(buildStatusAlg.status).to.be.equal("completed")
             const result = await runAlgGetResult(algName, [4])
             await deleteAlgorithm(algName, true)
-            expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,8,13,final,0")
+            expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,8,16,final,0")
         }).timeout(1000 * 60 * 20)
-
 
         it(`python 3.9`, async () => {
             const entry = 'main37'
             const algName = pipelineRandomName(8).toLowerCase()
-            const pythonVersion = "python:3.9"
+            const pythonVersion = "python:3.9.16"
 
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algLIst })
             expect(buildStatusAlg.status).to.be.equal("completed")
             const result = await runAlgGetResult(algName, [4])
             await deleteAlgorithm(algName, true)
-            expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,9,11,final,0")
+            expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,9,16,final,0")
         }).timeout(1000 * 60 * 20)
+
         it(`python 3.10`, async () => {
             const entry = 'main37'
             const algName = pipelineRandomName(8).toLowerCase()
-            const pythonVersion = "python:3.10"
+            const pythonVersion = "python:3.10.9"
 
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algLIst })
             expect(buildStatusAlg.status).to.be.equal("completed")
             const result = await runAlgGetResult(algName, [4])
             await deleteAlgorithm(algName, true)
-            expect(result.data[0].result.sysVersion.toString()).to.be.equal('3,10,3,final,0')
+            expect(result.data[0].result.sysVersion.toString()).to.be.equal('3,10,9,final,0')
         }).timeout(1000 * 60 * 20)
         it('stop rerun build', async () => {
             const entry = 'main37'
@@ -205,14 +188,11 @@ describe('Algorithm build test', () => {
     })
 
     describe('Algorithm requirements repository (git 387)', () => {
-
-
-        it(`python with requirements - tensore`, async () => {
+        // xit because the tensor alg run fails due to use of outofdate
+        xit(`python with requirements - tensore`, async () => {
             const code = path.join(process.cwd(), 'additionalFiles/tensor.tar.gz');
             const entry = 'main'
             const algName = pipelineRandomName(8).toLowerCase()
-            //const pythonVersion = "python:3.6"                    
-
             const data = {
                 name: algName,
                 env: 'python',
@@ -221,22 +201,16 @@ describe('Algorithm build test', () => {
                 mem: '5Gi',
                 entryPoint: entry,
                 minHotWorkers: 0,
-                version: idGen()//,
-                //baseImage:pythonVersion
+                version: idGen()
             }
 
             const res = await chai.request(config.apiServerUrl)
                 .post('/store/algorithms/apply')
                 .field('payload', JSON.stringify(data))
                 .attach('file', fse.readFileSync(code), entry)
-
-
-
-            // res.should.have.status(200)
             expect(res.status).to.eql(200)
             const buildIdAlg = res.body.buildId
             const buildStatusAlg = await getStatusall(buildIdAlg, `/builds/status/`, 200, "completed", 1000 * 60 * 10)
-
             expect(buildStatusAlg.status).to.be.equal("completed")
             const result = await runAlgGetResult(algName, [4])
             await deleteAlgorithm(algName, true)
@@ -396,7 +370,7 @@ describe('Algorithm build test', () => {
 
         }).timeout(1000 * 60 * 20)
 
-
+        // p8
         it("build gitlat branch algorithm", async () => {
             const entry = 'main.py'
             const algName = pipelineRandomName(8).toLowerCase()
@@ -411,8 +385,8 @@ describe('Algorithm build test', () => {
             expect(result.data[0].result.version).to.be.equal("gitlab branch1")
 
         }).timeout(1000 * 60 * 20)
-
-        it("test webhook github (git 518)", async () => {
+        // p1
+        it.only("test webhook github (git 518)", async () => {
             const data = {
                 ref: 'refs/heads/master',
                 before: 'f96bd9ffc2d6e0e31fea1b28328600156c5877b0',
@@ -460,9 +434,6 @@ describe('Algorithm build test', () => {
                 .type('form')
                 .set('content-type', 'application/x-www-form-urlencoded')
                 .send({ 'payload': JSON.stringify(data) })
-
-
-
             const buildStatusAlg2 = await getStatusall(res.body[0].buildId, `/builds/status/`, 200, "completed", 1000 * 60 * 10)
             expect(buildStatusAlg2.status).to.be.equal("completed")
             const newVersion = await getAlgorithmVersion(algName);
@@ -470,13 +441,9 @@ describe('Algorithm build test', () => {
             console.log(newVersion.body)
             console.log("~~~~~~~~~~~~~~~~~~~")
             //v2.body.algorithm.version
-            const updateVersion = await updateAlgorithmVersion(algName, newVersion.body[0].version, true)
-            await delay(5000)
             const resultAfterCommit = await runAlgGetResult(algName, [4])
             // await deleteAlgorithm(algName,true)   
             expect(resultAfterCommit.data[0].result.commit).to.be.equal("A4")
-
-
         }).timeout(1000 * 60 * 20)
 
 

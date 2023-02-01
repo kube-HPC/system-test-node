@@ -76,7 +76,7 @@ const storeAlgorithmApplay = async (alg) => {
     return res
 }
 
-const buildAlgorithm = async ({ code, algName, entry, baseVersion = 'python:3.7', algorithmArray = [] }) => {
+const buildAlgorithm = async ({ code, algName, entry, baseVersion = 'python:3.7.16', algorithmArray = [] }) => {
     const data = {
         name: algName,
         env: 'python',

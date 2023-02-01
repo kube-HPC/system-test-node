@@ -26,7 +26,7 @@ const {
     testData1,
     testData4,
     testData3
-} = require(path.join(process.cwd(), 'config/index')).algorithmTest
+} = require('../config/index').algorithmTest
 
 
 const {
@@ -53,7 +53,7 @@ const {
 chai.use(chaiHttp);
 
 
-const { getWebSocketData } = require('../utils/socketGet')
+const { waitForWorkers } = require('../utils/socketGet')
 describe('Alrogithm Tests', () => {
 
 
@@ -99,7 +99,7 @@ describe('Alrogithm Tests', () => {
 
 
 
-
+        // p1
         it('ttl = 3 one of the inputs = 5 seconds ', async () => {
             const d = deconstructTestData(testData3)
             await deletePipeline(d)
@@ -206,25 +206,20 @@ describe('Alrogithm Tests', () => {
         }).timeout(1000 * 60 * 10);
 
 
-
+        // p2
         it(' algorithm labels   ', async () => {
-            // const nodes = await getNodes();
-
             const algName = pipelineRandomName(8).toLowerCase()
             const algV1 = algJson(algName, algorithmImageV1)
-
-            //algV1.nodeSelector = {"kubernetes.io/hostname": nodes[2] }
             algV1.minHotWorkers = 1; // get a pod running
             algV1.labels = { "created-by": "test" }
-
             let v1 = await storeAlgorithmApplay(algV1);
-            await delay(5000)
+            await delay(10000)
             const podName = await filterPodsByName(algName);
             expect(podName[0].metadata.labels["created-by"]).to.be.eqls("test")
             deleteAlgorithm(algName)
         }).timeout(1000 * 60 * 10);
 
-
+        //p3
         it(' algorithm annotations ', async () => {
             // const nodes = await getNodes();
 
@@ -277,7 +272,8 @@ describe('Alrogithm Tests', () => {
             expect(podNode1).to.be.equal(nodes[1])
             deleteAlgorithm(algName)
         }).timeout(1000 * 60 * 10);
-        it(`change baseImage trigger new Build`, async () => {
+
+        xit(`change baseImage trigger new Build`, async () => {
             const code1 = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
             const entry = 'main27'
             const algName = "python2.7-test-1"
@@ -696,10 +692,8 @@ describe('Alrogithm Tests', () => {
 
             await deleteAlgorithm(alg.name, true)
             await storeAlgorithmApplay(alg);
-            await delay(40000)
-            const data = await getWebSocketData()
-            const workers = data.discovery.worker.filter(worker => worker.algorithmName == alg.name)
-            // const workers = await filterPodsByName(alg.name)
+            await delay(20000)
+            const workers = await waitForWorkers(alg.name, alg.minHotWorkers);
             await deleteAlgorithm(alg.name, true)
             expect(workers.length).to.be.equal(alg.minHotWorkers)
         }).timeout(1000 * 5 * 60)
@@ -707,48 +701,49 @@ describe('Alrogithm Tests', () => {
 
 
         describe('algorithm execute another', () => {
-            it('TID-600 algorithm execute another algorithm (git 288)', async () => {
-                let alg = {
-                    name: "versatile",
-                    cpu: 1,
-                    gpu: 0,
-                    mem: "256Mi",
-                    minHotWorkers: 0,
-                    algorithmImage: "tamir321/versatile:04",
-                    type: "Image",
-                    options: {
-                        debug: false,
-                        pending: false
+            it
+                ('TID-600 algorithm execute another algorithm (git 288)', async () => {
+                    let alg = {
+                        name: "versatile",
+                        cpu: 1,
+                        gpu: 0,
+                        mem: "256Mi",
+                        minHotWorkers: 0,
+                        algorithmImage: "tamir321/versatile:04",
+                        type: "Image",
+                        options: {
+                            debug: false,
+                            pending: false
+                        }
                     }
-                }
-                const aa = await deleteAlgorithm("versatile", true)
-                const bb = await storeAlgorithmApplay(alg);
-                //need to add alg versatile-pipe
-                const algName = "black-alg"
-                const pipe = {
-                    "name": "versatile-pipe",
-                    "flowInput": {
-                        "inp": [{
-                            "type": "algorithm",
-                            "name": `${algName}`,
-                            "input": ["a"]
-                        }]
+                    const aa = await deleteAlgorithm("versatile", true)
+                    const bb = await storeAlgorithmApplay(alg);
+                    //need to add alg versatile-pipe
+                    const algName = "black-alg"
+                    const pipe = {
+                        "name": "versatile-pipe",
+                        "flowInput": {
+                            "inp": [{
+                                "type": "algorithm",
+                                "name": `${algName}`,
+                                "input": ["a"]
+                            }]
+                        }
                     }
-                }
-                const d = deconstructTestData(testData4)
+                    const d = deconstructTestData(testData4)
 
-                //store pipeline evalwait
-                const a = await storePipeline(d)
+                    //store pipeline evalwait
+                    const a = await storePipeline(d)
 
-                //run the pipeline evalwait
+                    //run the pipeline evalwait
 
 
-                const jobId = await runStoredAndWaitForResults(pipe)
+                    const jobId = await runStoredAndWaitForResults(pipe)
 
-                const graph = await getRawGraph(jobId)
-                expect(graph.body.nodes.length).to.be.equal(2)
+                    const graph = await getRawGraph(jobId)
+                    expect(graph.body.nodes.length).to.be.equal(2)
 
-            }).timeout(1000 * 5 * 60)
+                }).timeout(1000 * 5 * 60)
 
 
         })

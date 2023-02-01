@@ -5,7 +5,7 @@ const path = require('path')
 const config = require(path.join(process.cwd(), 'config/config'))
 
 const logger = require('../utils/logger')
-const { getWebSocketData } = require('../utils/socketGet')
+const { getWorkers } = require('../utils/socketGet')
 
 // chai.use(chaiHttp);
 const getJobResult = async (jobId) => {
@@ -72,7 +72,7 @@ const getJobIdsTree = async (jobId) => {
 
 const getPodsRunning = async (jobId) => {
 
-    const data = await getWebSocketData()
+    const data = await getWorkers()
     const worker = data.discovery.worker.filter(w => w.jobId === jobId).map(w => w.podName);
     logger.info(`worker : ,${jobId}, ${JSON.stringify(worker)}`)
 
@@ -85,6 +85,7 @@ const toString = (fun) => {
     return "" + fun
 }
 
+// p6
 const getStatusall = async (id, url, expectedCode, expectedStatus, timeout = 60 * 1000, interval = 1000) => {
     const start = Date.now();
     do {

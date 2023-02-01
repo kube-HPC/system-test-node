@@ -218,15 +218,7 @@ describe('code api tests ', () => {
                 algExsis = true;
                 algLIst.push(algName)
             }
-
-
-
         }
-        // const getResultFromStorage = async (storagePath)=>{
-        //     const res = await chai.request(config.apiServerUrl)
-        //             .get(`/storage/values/${storagePath}`)
-        //     return res
-        // }
         const r = {
             "action": "startAlg",
             "algName": "green-alg",

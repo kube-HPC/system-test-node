@@ -71,6 +71,7 @@ const JOB_QUERY = gql`
           priority
           startTime
           types
+          triggers{cron{enabled}}
         }
       }
       cursor

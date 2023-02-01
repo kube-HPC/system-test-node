@@ -1,6 +1,6 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const { getWebSocketData } = require('../utils/socketGet')
+const { getWorkers } = require('../utils/socketGet')
 
 const expect = chai.expect;
 
@@ -22,7 +22,7 @@ const {
 
 const getPiplineNodes = async (id) => {
 
-    const data = await getWebSocketData()
+    const data = await getWorkers()
     const res = data.discovery.worker.filter(w => w.jobId === jobId).map(w => w.podName);
     logger.info(`worker : ,${jobId}, ${JSON.stringify(worker)}`)
 

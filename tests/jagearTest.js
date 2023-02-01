@@ -87,7 +87,7 @@ describe.skip('Test worker cache 576', () => {
 
         const jobId = await runStoredAndWaitForResults(d)
 
-        const WSdata = await getWebSocketData()
+        const WSdata = await getWorkers()
         const pods = WSdata.discovery.worker.filter(worker => worker.algorithmName == "eval-alg")
 
 
