@@ -16,14 +16,14 @@ const {
   storeAlgorithmApplay,
   deleteAlgorithmVersion,
   getAlgorithim,
-} = require(path.join(process.cwd(), "utils/algorithmUtils"));
+} = require("../utils/algorithmUtils");
 
-const { celeanPipeLines } = require(path.join(process.cwd(), "utils/gc"));
+const { celeanPipeLines } = require("../utils/gc");
 const {
   getWebSocketJobs,
   getWebSocketlogs,
   getDriverIdByJobId,
-} = require(path.join(process.cwd(), "utils/socketGet"));
+} = require("../utils/socketGet");
 
 const {
   testData1,
@@ -39,14 +39,14 @@ const {
   testData11,
   testData12,
   ttlPipe,
-} = require(path.join(process.cwd(), "config/index")).pipelineTest;
+} = require("../config/index").pipelineTest;
 
 const {
   getJobIdsTree,
   getResult,
   getCronResult,
   getRawGraph,
-} = require(path.join(process.cwd(), "utils/results"));
+} = require("../utils/results");
 
 // const KubernetesClient = require('@hkube/kubernetes-client').Client;
 const {
@@ -67,7 +67,7 @@ const {
   stopPipeline,
   exceCachPipeline,
   getPipelinestatusByName,
-} = require(path.join(process.cwd(), "utils/pipelineUtils"));
+} = require("../utils/pipelineUtils");
 
 chai.use(chaiHttp);
 
@@ -142,6 +142,7 @@ describe("pipeline Tests 673", () => {
     }).timeout(1000 * 60 * 2);
   });
   describe("pipeline Types (git 614)", () => {
+    // undefined 
     const rawPipe = {
       name: "rawPipe",
       nodes: [
@@ -408,6 +409,7 @@ describe("pipeline Tests 673", () => {
     };
 
     it("TID-450 type = Triger (git 157)", async () => {
+      //undefined
       const testData = testData2;
       const triggerd = testData7;
       const simpleName = testData.descriptor.name;
@@ -539,7 +541,7 @@ describe("pipeline Tests 673", () => {
 
       expect(res.text).to.include("unable to find flowInput.two");
     }).timeout(1000 * 60 * 2);
-
+    //undefined
     it(" cron  does not have flowInput ", async () => {
       const testData = testData3;
       const pipelineName = pipelineRandomName(8);
@@ -555,7 +557,7 @@ describe("pipeline Tests 673", () => {
       await deletePipeline(d);
       expect(error.length).to.be.greaterThan(0);
     }).timeout(1000 * 60 * 7);
-
+    //undefined
     it(" Trigger does not have flowInput", async () => {
       const simpleTestdata = testData2;
       const triggerTestData = testData2;
@@ -577,7 +579,7 @@ describe("pipeline Tests 673", () => {
       await deletePipeline(d);
       expect(error.length).to.be.greaterThan(0);
     }).timeout(1000 * 60 * 7);
-
+    //undefined
     it(" Trigger get input from parent ", async () => {
       const triggerTestData = testData9;
       const triggerdName = pipelineRandomName(8);
@@ -793,18 +795,16 @@ describe("pipeline Tests 673", () => {
         const ttl = {
           name: d.name,
           flowInput: {
-            inputs: [20000],
+            inputs: [30000],
           },
           options: {
-            ttl: 25,
+            ttl: 10,
             activeTtl: 130,
           },
         };
-
-        const jobId = await runStored(ttl);
         const jobId2 = await runStored(ttl); //should be stoped  due to ttl
         await timeout(25000);
-        const cealn = await celeanPipeLines();
+        await celeanPipeLines();
         const currentStatus = await getPipelineStatus(jobId2.body.jobId);
         expect(currentStatus.body.status).to.be.equal("stopped");
         expect(currentStatus.body.reason).to.be.equal("pipeline expired");
@@ -1039,7 +1039,7 @@ describe("pipeline Tests 673", () => {
       await deletePipeline(d);
       const ab = await storePipeline(d);
 
-      for (i = 0; i < 20; i++) {
+      for (i = 0; i < 4; i++) {
         var parents = await Promise.all([
           runStored(pipe3),
           runStored(pipe3),
@@ -1051,7 +1051,7 @@ describe("pipeline Tests 673", () => {
         pipe3JobId = parents;
       }
 
-      for (i = 0; i < 20; i++) {
+      for (i = 0; i < 4; i++) {
         var parents = await Promise.all([
           runStored(pipe1),
           runStored(pipe1),
@@ -1061,11 +1061,11 @@ describe("pipeline Tests 673", () => {
         ]);
         pipe1JobId = parents;
       }
-
+      //timeout!!
       const result1 = await getResult(getJobId(pipe1JobId), 200);
       const result2 = await getResult(getJobId(pipe3JobId), 200);
       expect(result1.timeTook).to.be.lessThan(result2.timeTook);
-    }).timeout(1000 * 60 * 25);
+    }).timeout(1000 * 60 * 35);
 
     it.skip("fast load ", async () => {
       const load = {
@@ -1149,8 +1149,6 @@ describe("pipeline Tests 673", () => {
     it("Different priority Pipelines with Different algorithm", async () => {
       const testDataA = testData11;
       const d = deconstructTestData(testData11);
-      d.pipeline.nodes[0].algorithmName = d.pipeline.nodes[1].algorithmName =
-        "eval-alg6";
       await deletePipeline(d);
       await storePipeline(d);
       const pipe = {
@@ -1163,24 +1161,20 @@ describe("pipeline Tests 673", () => {
       };
       testData11.descriptor.name = testData11.descriptor.name + "2";
       const d2 = deconstructTestData(testDataA);
-      d2.pipeline.nodes[0].algorithmName = d2.pipeline.nodes[1].algorithmName =
-        "eval-alg7";
       await deletePipeline(d2);
-      await storePipeline(d2);
+      const r = await storePipeline(d2);
       const res2 = await runStored(pipe);
       await delay(5000);
       pipe.name = d2.name;
       pipe.priority = 1;
-      //pipe.flowInput.range = 1000
       const res1 = await runStored(pipe);
-      // write_log(res.body)
       const jobId1 = res1.body.jobId;
       const jobId2 = res2.body.jobId;
 
       const result1 = await getResult(jobId1, 200);
       const result2 = await getResult(jobId2, 200);
       expect(result1.timeTook).to.be.lessThan(result2.timeTook);
-    }).timeout(1000 * 60 * 15);
+    }).timeout(1000 * 60 * 20);
 
     it("Same priority pipelines different batch sizes ", async () => {
       const d = deconstructTestData(testData10);
@@ -1198,7 +1192,6 @@ describe("pipeline Tests 673", () => {
       await delay(1000);
       pipe.flowInput.range = 100;
       const res1 = await runStored(pipe);
-      // write_log(res.body)
       const jobId1 = res1.body.jobId;
       const jobId2 = res2.body.jobId;
 

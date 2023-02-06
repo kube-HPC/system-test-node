@@ -7,18 +7,18 @@
 // const config = require(path.join(process.cwd(), 'config/config'));
 // const {
 //   getResult
-// } = require(path.join(process.cwd(), 'utils/results'))
+// } = require('../utils/results')
 // const {
 //   testData1
 // } = require(path.join(process.cwd(), 'config/index')).tid_110
-// const logger = require(path.join(process.cwd(), 'utils/logger'))
+// const logger = require('../utils/logger')
 // const delay = require('delay');
 // const {
 //   storePipeline,
 //   runStored,
 //   checkResults,
 //   deletePipeline
-// } = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+// } = require('../utils/pipelineUtils')
 // chai.use(chaiHttp);
 
 

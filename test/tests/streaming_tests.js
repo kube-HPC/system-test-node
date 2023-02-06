@@ -6,21 +6,21 @@ const path = require('path')
 
 const axios = require('axios')
 const { runAlgorithm,
-        deleteAlgorithm,
-        storeAlgorithm,
-        StoreDebugAlgorithm,
-        getAlgorithm,    
-        getAlgorithmVersion,
-        updateAlgorithmVersion,
-        storeAlgorithmApplay,
-        deleteAlgorithmVersion,
-        getAlgorithim} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
+    deleteAlgorithm,
+    storeAlgorithm,
+    StoreDebugAlgorithm,
+    getAlgorithm,
+    getAlgorithmVersion,
+    updateAlgorithmVersion,
+    storeAlgorithmApplay,
+    deleteAlgorithmVersion,
+    getAlgorithim } = require('../../utils/algorithmUtils')
 
-const { 
+const {
     getWebSocketJobs,
     getWebSocketlogs,
     getDriverIdByJobId
-        } = require(path.join(process.cwd(), 'utils/socketGet'))
+} = require('../../utils/socketGet')
 
 
 const {
@@ -28,7 +28,7 @@ const {
     getResult,
     getCronResult,
     getRawGraph
-  } = require(path.join(process.cwd(), 'utils/results'))
+} = require('../../utils/results')
 
 // const KubernetesClient = require('@hkube/kubernetes-client').Client;
 const {
@@ -50,14 +50,14 @@ const {
     stopPipeline,
     exceCachPipeline,
     getPipelinestatusByName
-} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+} = require('../../utils/pipelineUtils')
 
 
 describe('streaming pipeline test', () => {
-   
+
     describe('gateway api tests', () => {
-        const pipe ={
-          
+        const pipe = {
+
             "name": "raw-gateway-test",
             "kind": "stream",
             "nodes": [
@@ -98,14 +98,14 @@ describe('streaming pipeline test', () => {
             },
             "priority": 3
         }
-        
 
-       
-        it("send message to gateway", async () =>{
+
+
+        it("send message to gateway", async () => {
             const res = await runRaw(pipe)
             const jobId = res.body.jobId
-           
-            
+
+
             const exec = await getExecPipeline(jobId)
             const url = exec.body.streaming.gateways[0].url
             console.log(`url = https://test.hkube.io/${url}/streaming/info`);
@@ -113,94 +113,96 @@ describe('streaming pipeline test', () => {
             const status = await axios.get(`https://test.hkube.io/${url}/streaming/info`)
             //const res = await axios.post(`${config.DsServerUrl}/${DsName}/snapshot`,snap)
 
-            const data = {"test":1}
+            const data = { "test": 1 }
             console.log("starts loop")
-            for (i=0;i<15;i++){
-                const message = await axios.post(`https://test.hkube.io/${url}/streaming/message`,data)  
+            for (i = 0; i < 15; i++) {
+                const message = await axios.post(`https://test.hkube.io/${url}/streaming/message`, data)
                 console.log(message.data)
             }
-            
-           
+
+
             await delay(80000)
             const graph = await getRawGraph(jobId)
 
-            const q= JSON.parse(graph.text).edges[0].value.metrics.totalRequests
-            
+            const q = JSON.parse(graph.text).edges[0].value.metrics.totalRequests
+
             const t = JSON.parse(graph.text).edges[0].value.metrics.totalResponses
             console.log(`send ${q} recieved ${t}`)
-           // const stop = await stopPipeline(jobId)
+            // const stop = await stopPipeline(jobId)
             console.log("stop")
             expect(t).to.be.equal(q)
         }).timeout(1000 * 60 * 7);
-   
-        
-        it("send message to gateway jobid", async () =>{
-            
-          
-            const url="hkube/gateway/gateway"//"hkube/gateway/raw-image-gateway"
+
+
+        it("send message to gateway jobid", async () => {
+
+
+            const url = "hkube/gateway/gateway"//"hkube/gateway/raw-image-gateway"
             const status = await axios.get(`https://test.hkube.io/${url}/streaming/info`)
             //const res = await axios.post(`${config.DsServerUrl}/${DsName}/snapshot`,snap)
 
-            const data = {"test":1}
-            let jnk = await axios.post(`https://test.hkube.io/${url}/streaming/message`,data)  
+            const data = { "test": 1 }
+            let jnk = await axios.post(`https://test.hkube.io/${url}/streaming/message`, data)
             console.log("starts loop")
-            for (i=0;i<1;i++){
-                const message = await axios.post(`https://test.hkube.io/${url}/streaming/message`,data)  
+            for (i = 0; i < 1; i++) {
+                const message = await axios.post(`https://test.hkube.io/${url}/streaming/message`, data)
                 console.log(message.data)
             }
-            
-           //https://test.hkube.io/hkube/gateway/raw-images-gateway/swagger-ui/
-            //await delay(80000)
-        //     const graph = await getRawGraph(jobId)
 
-        //     const q= JSON.parse(graph.text).edges[0].value.metrics.totalRequests
-            
-        //     const t = JSON.parse(graph.text).edges[0].value.metrics.totalResponses
-        //     console.log(`send ${q} recieved ${t}`)
-        //    // const stop = await stopPipeline(jobId)
+            //https://test.hkube.io/hkube/gateway/raw-images-gateway/swagger-ui/
+            //await delay(80000)
+            //     const graph = await getRawGraph(jobId)
+
+            //     const q= JSON.parse(graph.text).edges[0].value.metrics.totalRequests
+
+            //     const t = JSON.parse(graph.text).edges[0].value.metrics.totalResponses
+            //     console.log(`send ${q} recieved ${t}`)
+            //    // const stop = await stopPipeline(jobId)
             console.log("stop")
             //expect(t).to.be.equal(q)
         }).timeout(1000 * 60 * 7);
 
-        const sendMessage = async (data)=> {
-            const url="hkube/gateway/raw-image-gateway"
-            const jnk=  await axios.post(`https://test.hkube.io/${url}/streaming/message`,data)  
-            return jnk ;
+        const sendMessage = async (data) => {
+            const url = "hkube/gateway/raw-image-gateway"
+            const jnk = await axios.post(`https://test.hkube.io/${url}/streaming/message`, data)
+            return jnk;
         }
 
 
-        it("jnk",()=>{
+        it("jnk", () => {
 
-            const jjjj= {a: 1,
-                            b:["a","b","c","d","a","b"]}
-            
+            const jjjj = {
+                a: 1,
+                b: ["a", "b", "c", "d", "a", "b"]
+            }
+
             const h = new Set(jjjj.b)
-            
-            for (const [i,jj] of jjjj.b.entries()){
+
+            for (const [i, jj] of jjjj.b.entries()) {
                 console.log(i)
                 console.log(jj)
             }
 
 
         })
-        it("",async()=>{
+        it("", async () => {
 
-            const interval =  setInterval(() => {
-                [...Array(5).keys()].forEach(k=>{
-                    
-                    let message = {"data" :1}
-                              
-                 sendMessage(message)
-                } )
+            const interval = setInterval(() => {
+                [...Array(5).keys()].forEach(k => {
+
+                    let message = { "data": 1 }
+
+                    sendMessage(message)
+                })
             }, 1000);
             console.log(`start sleep - interval= ${interval}`);
-            await delay(120*1000)
+            await delay(120 * 1000)
 
             clearInterval(interval)
             console.log(`stop  - interval= ${interval}`);
-            }).timeout(1000*60*60)
+        }).timeout(1000 * 60 * 60)
 
     });
-    
+
 
 });

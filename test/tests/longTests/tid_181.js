@@ -4,66 +4,66 @@ const chaiHttp = require('chai-http');
 const path = require('path')
 const delay = require('delay')
 
-const {generateRandomJson }= require(path.join(process.cwd(), 'utils/generateRandomJson'))
+const { generateRandomJson } = require('../../../utils/generateRandomJson')
 const {
     testData1
 } = require(path.join(process.cwd(), 'config/index')).tid_161
 
 const {
     getDriverIdByJobId
-} = require(path.join(process.cwd(), 'utils/socketGet'))
+} = require('../../../utils/socketGet')
 
 const {
-    body,    
+    body,
     deletePod,
     filterPodsByName,
     getPodNode
-} = require(path.join(process.cwd(), 'utils/kubeCtl'))
+} = require('../../../utils/kubeCtl')
 
 const {
     getStates,
     getResult
-} = require(path.join(process.cwd(), 'utils/results'))
+} = require('../../../utils/results')
 
 // const KubernetesClient = require('@hkube/kubernetes-client').Client;
 const {
-    getPiplineNodes,
     storePipeline,
     runStored,
     deconstructTestData,
     runStoredAndWaitForResults
-} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+} = require('../../../utils/pipelineUtils')
 const {
     write_log
-} = require(path.join(process.cwd(), 'utils/misc_utils'))
+} = require('../../../utils/misc_utils')
 chai.use(chaiHttp);
 
 const {
     getLogByJobId,
     getLogByPodName
-} = require(path.join(process.cwd(), 'utils/elasticsearch'))
+} = require('../../../utils/elasticsearch')
 
 
-const executeJob = async (batch ,time,threads)=>{
+const executeJob = async (batch, time, threads) => {
 
     const d = deconstructTestData(testData1)
     await storePipeline(d)
-    const pipe = {   
+    const pipe = {
         name: "eval-dynamic-160",
         flowInput: {
             range: batch,
-            inputs:time}
+            inputs: time
+        }
     }
-//   await runStoredAndWaitForResults(pipe)
+    //   await runStoredAndWaitForResults(pipe)
     const runStoreArray = []
-    for(i=0;i<threads;i++){
-        runStoreArray.push( runStoredAndWaitForResults(pipe))
+    for (i = 0; i < threads; i++) {
+        runStoreArray.push(runStoredAndWaitForResults(pipe))
     }
-   
+
     const results = await Promise.all(runStoreArray);
-   // const j = await getResult(results[0])
-   const validResults  = results.map(async (element) => {
-        const a = await getResult(element,200);
+    // const j = await getResult(results[0])
+    const validResults = results.map(async (element) => {
+        const a = await getResult(element, 200);
         expect(a.status).to.be.equal('completed');
         return a;
     })
@@ -71,39 +71,44 @@ const executeJob = async (batch ,time,threads)=>{
     return jobResults;
 
 }
-describe('big flowinput',()=>{
-    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+=~';
+describe('big flowinput', () => {
+    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+=~';
     var charactersLength = characters.length;
-    var result           = '';
-    for ( var i = 0; i < 2000000; i++ ) {
-       result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    var result = '';
+    for (var i = 0; i < 2000000; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
 
-    const simple = {   
+    const simple = {
         name: "test-input",
         flowInput: {
-            files:{ link: "",
-            link1:""}
-           
-          }
+            files: {
+                link: "",
+                link1: ""
+            }
+
+        }
     }
 
-    const simple1 = {   
+    const simple1 = {
         name: "simple",
         flowInput: {
-            files:{ link: "",
-            link1:""}
-           
-          }
+            files: {
+                link: "",
+                link1: ""
+            }
+
+        }
     }
-    const java = {   
+    const java = {
         name: "java-batch",
-        flowInput: { inp :""
-          
-           
-          }
+        flowInput: {
+            inp: ""
+
+
+        }
     }
-    const largeData = {   
+    const largeData = {
         name: "large-data",
         flowInput: {
             "size": 100000,
@@ -111,11 +116,11 @@ describe('big flowinput',()=>{
         },
     }
 
-    it("start test-input",async ()=>{
+    it("start test-input", async () => {
         const hh = generateRandomJson(8)
         //console.log(hh)
-        simple1.flowInput.files.link=hh
-        simple1.flowInput.files.link1 =1//{"jnk":result}
+        simple1.flowInput.files.link = hh
+        simple1.flowInput.files.link1 = 1//{"jnk":result}
 
         console.log(`flowInput length - ${JSON.stringify(simple1.flowInput).length}`);
 
@@ -123,68 +128,68 @@ describe('big flowinput',()=>{
         console.log(jnk.text)
     }).timeout(1000 * 60 * 60);
 
-    it("start largeData",async ()=>{
+    it("start largeData", async () => {
         const hh = generateRandomJson(5)
         //console.log(hh)
-     
+
         const jnk = await runStored(largeData)
         console.log(jnk.text)
     }).timeout(1000 * 60 * 60);
 
 
 
-    it("start java-batch",async ()=>{
+    it("start java-batch", async () => {
         const hh = generateRandomJson(5)
-        java.flowInput.inp= result
-      
+        java.flowInput.inp = result
+
         const jnk = await runStored(java)
         console.log(jnk.text)
-       
+
     }).timeout(1000 * 60 * 60);
 })
 
 describe('TID-181- increasing batch sizes and parallel requests', () => {
     it('100 batch 1 thread 15 seconds', async () => {
-       
-        await executeJob(100,15000,1)
-        
+
+        await executeJob(100, 15000, 1)
+
     }).timeout(1000 * 60 * 60);
 
     it('500 batch 1 thread 15 seconds', async () => {
-       
-        await executeJob(500,15000,1)
-        
+
+        await executeJob(500, 15000, 1)
+
     }).timeout(1000 * 60 * 60);
 
 
     it('1000 batch 1 thread 15 seconds', async () => {
-       
-        await executeJob(10000,5000,1)
-        
+
+        await executeJob(10000, 5000, 1)
+
     }).timeout(1000 * 60 * 60);
 
 
 
     it('100 batch 4 thread 15 seconds', async () => {
-       
-        await executeJob(100,15000,4)
-        
+
+        await executeJob(100, 15000, 4)
+
     }).timeout(1000 * 60 * 60);
 
     it('500 batch 4 thread 15 seconds', async () => {
-       
-        await executeJob(500,15000,4)
-        
+
+        await executeJob(500, 15000, 4)
+
     }).timeout(1000 * 60 * 60);
 
 
     it('1000 batch 4 thread 15 seconds', async () => {
-       
-        await executeJob(1000,15000,10)
-        
+
+        await executeJob(1000, 15000, 10)
+
     }).timeout(1000 * 60 * 60);
 
-   
+
 
 
 

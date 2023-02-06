@@ -6,20 +6,20 @@ const chaiHttp = require('chai-http');
 const delay = require('delay');
 const {
     getDriverIdByJobId
-} = require(path.join(process.cwd(), 'utils/socketGet'))
+} = require('../../../utils/socketGet')
 
 const {
     client
-} = require(path.join(process.cwd(), 'utils/kubeCtl'))
+} = require('../../../utils/kubeCtl')
 
 const {
     getResult
-} = require(path.join(process.cwd(), 'utils/results'))
+} = require('../../../utils/results')
 const {
     write_log
-} = require(path.join(process.cwd(), 'utils/misc_utils'))
+} = require('../../../utils/misc_utils')
 
-const tos = require(path.join(process.cwd(), 'utils/results'.toString()))
+const tos = require('../../../utils/results'.toString())
 chai.use(chaiHttp);
 
 describe('HA tests', () => {

@@ -8,7 +8,6 @@ const config = {
     apiServerUrl: process.env.API_URL || `${baseUrl}/hkube/api-server/api/v1`,
     elasticsearchUrl: process.env.ELASTICSEARCH_URL || `${baseUrl}/system/elasticsearch/`,
     jagearApiUrl: process.env.API_URL || `${httpUrl}:30086`,
-    podsApiUrl: process.env.API_URL || `${baseUrl}/hkube/monitor-server/pods/`,
     reject_selfSigned: false,
     baseUrl,
     webhookUrl,

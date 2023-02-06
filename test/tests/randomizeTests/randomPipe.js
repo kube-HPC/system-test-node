@@ -4,21 +4,21 @@ const path = require('path')
 const chaiHttp = require('chai-http')
 const {
     getResult,
-} = require(path.join(process.cwd(), 'utils/results'))
+} = require('../../../utils/results')
 
 const {
     randomize
-} = require(path.join(process.cwd(), 'utils/createPipeline'))
+} = require('../../../utils/createPipeline')
 
 chai.use(chaiHttp);
 const {
     runStored,
     storePipeline,
     runRaw
-} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+} = require('../../../utils/pipelineUtils')
 const {
     write_log
-} = require(path.join(process.cwd(), 'utils/misc_utils'))
+} = require('../../../utils/misc_utils')
 
 describe('randomize tests', () => {
     //TODO: need to create eval-alg algrorithms
@@ -37,32 +37,32 @@ describe('randomize tests', () => {
         function timeout(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
-       
-            const randPipe10 = randomize(10)
-            randPipe10.name="ranpipe10"
-            await storePipeline(randPipe10)
-            const randPipe15 = randomize(15)
-            randPipe15.name="ranpipe15"
-            await storePipeline(randPipe15)
-            const randPipe20 = randomize(20)
-            randPipe20.name="ranpipe20" 
-            await storePipeline(randPipe20)
-            const randPipe25 = randomize(25)
-            randPipe25.name="ranpipe25"
-            await storePipeline(randPipe25)
 
-            for (i=0;i<200;i++){
-                var parents = await Promise.all([
-                    runStored({name:"ranpipe10"}),
-                    runStored({name:"ranpipe15"}),
-                    runStored({name:"ranpipe20"}),
-                    runStored({name:"ranpipe25"}),    
-                    timeout(900)
-                  
-                ]);
-            }
-            
-        
+        const randPipe10 = randomize(10)
+        randPipe10.name = "ranpipe10"
+        await storePipeline(randPipe10)
+        const randPipe15 = randomize(15)
+        randPipe15.name = "ranpipe15"
+        await storePipeline(randPipe15)
+        const randPipe20 = randomize(20)
+        randPipe20.name = "ranpipe20"
+        await storePipeline(randPipe20)
+        const randPipe25 = randomize(25)
+        randPipe25.name = "ranpipe25"
+        await storePipeline(randPipe25)
+
+        for (i = 0; i < 200; i++) {
+            var parents = await Promise.all([
+                runStored({ name: "ranpipe10" }),
+                runStored({ name: "ranpipe15" }),
+                runStored({ name: "ranpipe20" }),
+                runStored({ name: "ranpipe25" }),
+                timeout(900)
+
+            ]);
+        }
+
+
 
     }).timeout(1000 * 60 * 5)
 

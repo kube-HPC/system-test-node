@@ -1,6 +1,6 @@
 const axios = require("axios").default;
 const path = require("path");
-const config = require(path.join(process.cwd(), "config/config"));
+const config = require("../../../config/config");
 const chai = require("chai");
 const delay = require("delay");
 const {
@@ -11,7 +11,7 @@ const {
   deconstructTestData,
   runStoredAndWaitForResults,
   deletePipeline,
-} = require(path.join(process.cwd(), "utils/pipelineUtils"));
+} = require("../../../utils/pipelineUtils");
 const expect = chai.expect;
 const timeout = (ms) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -25,7 +25,7 @@ const {
   queueLast,
   queueDeleteByTag,
   deletePreferred,
-} = require(path.join(process.cwd(), "utils/preferredUtils"));
+} = require("../../../utils/preferredUtils");
 
 const { generateRandomJson } = require(path.join(
   process.cwd(),
@@ -84,7 +84,7 @@ describe("stress tests ", () => {
       const body = {
         jobs: pre.slice(0, 2500),
       };
-         await deletePreferred(body)
+      await deletePreferred(body)
     }).timeout(1000 * 70 * 60);
 
     it("queue first", async () => {
@@ -101,14 +101,14 @@ describe("stress tests ", () => {
       const data = generateRandomJson(4);
       pipe1.flowInput.data = data;
       pipe1.name = "bundel1";
-    //  jnk = await runStored(pipe1);
-    //  console.log(`jnk= ${jnk.text}`)
+      //  jnk = await runStored(pipe1);
+      //  console.log(`jnk= ${jnk.text}`)
       //04fhg4bjzcsr ,allt1fkoya5u
       for (j = 0; j < 10; j++) {
         pipe1.name = "bundel1";
         pipe1.tags = [`Bundel${j}`];
         for (i = 0; i < 10; i++) {
-          
+
           await runStored(pipe1);
           bundel1++;
         }
@@ -116,7 +116,7 @@ describe("stress tests ", () => {
         pipe1.name = "bundel2";
 
         for (i = 0; i < 10; i++) {
-        
+
           await runStored(pipe1);
           bundel2++;
           // await delay(3*1000)
@@ -126,33 +126,32 @@ describe("stress tests ", () => {
         //  await delay(2*1000)
       }
       console.log(
-        `bundel2 - ${bundel2} , bundel1 - ${bundel1} - total ${
-          bundel1 + bundel2
+        `bundel2 - ${bundel2} , bundel1 - ${bundel1} - total ${bundel1 + bundel2
         }`
       );
     }).timeout(1000 * 70 * 60);;
 
     it("Manage No Tag", async () => {
-     
+
       const data = generateRandomJson(4);
       pipe1.flowInput.data = data;
       pipe1.name = "bundel1";
       delete pipe1.tags
-        pipe1.name = "bundel1";
-        
-        for (i = 0; i < 40; i++) {
-          
-          await runStored(pipe1);
-          
-        }
+      pipe1.name = "bundel1";
 
-        pipe1.name = "bundel2";
+      for (i = 0; i < 40; i++) {
 
-        for (i = 0; i < 80; i++) {
-        
-          await runStored(pipe1);
-         
-        }
+        await runStored(pipe1);
+
+      }
+
+      pipe1.name = "bundel2";
+
+      for (i = 0; i < 80; i++) {
+
+        await runStored(pipe1);
+
+      }
 
     }).timeout(1000 * 70 * 60);;
 
@@ -224,21 +223,20 @@ describe("stress tests ", () => {
       //queueDeleteByTag(`bundel16`);
       //queueDeleteByTag(`bundel28`);
       console.log(
-        `bundel2 - ${bundel2} , bundel1 - ${bundel1} - total ${
-          bundel1 + bundel2
+        `bundel2 - ${bundel2} , bundel1 - ${bundel1} - total ${bundel1 + bundel2
         }`
       );
     }).timeout(1000 * 70 * 60);
 
     it("run one pipe big flowInput ", async () => {
       const data = generateRandomJson(7)
-      pipe1.flowInput.data=data;
+      pipe1.flowInput.data = data;
       pipe1.name = "bundel1";
       await runStored(pipe1);
     }).timeout(1000 * 70 * 60);
     it("run with big flowInput ", async () => {
       const data = generateRandomJson(4)
-      pipe1.flowInput.data=data;
+      pipe1.flowInput.data = data;
       pipe1.name = "bundel1";
       for (j = 0; j < 20; j++) {
         pipe1.name = "bundel1";

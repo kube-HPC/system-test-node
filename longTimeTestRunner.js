@@ -5,7 +5,7 @@ const {
 const path = require('path');
 const {
     write_log
-} = require(path.join(process.cwd(), 'utils/misc_utils'))
+} = require('./utils/misc_utils')
 
 
 const req = async () => {

@@ -5,14 +5,14 @@ const path = require('path')
 require(path.join(process.cwd(), 'config/config'));
 const {
     getResult
-} = require(path.join(process.cwd(), 'utils/results'));
-const logger = require(path.join(process.cwd(), 'utils/logger'));
+} = require('../../../utils/results');
+const logger = require('../../../utils/logger');
 const delay = require('delay')
 
 const config = require(path.join(process.cwd(), 'config/config'))
 const {
     storePipeline,
-} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+} = require('../../../utils/pipelineUtils')
 
 
 chai.use(chaiHttp);

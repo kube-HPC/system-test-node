@@ -1,5 +1,5 @@
 const path = require('path')
-const tos = require(path.join(process.cwd(), 'utils/results')).toString
+const tos = require('../../../utils/results').toString
 
 
 const arr = (input) => {
@@ -17,30 +17,30 @@ const wait = (input) => {
 const pipe = {
     name: 'eval-dynamic',
     nodes: [{
-            nodeName: 'eval1',
-            algorithmName: 'eval-alg',
-            input: [
-                '@flowInput.range'
-            ],
-            extraData: {
-                code: [
-                    tos(arr)
-                ]
-            }
-        },
-        {
-            nodeName: 'evalsleep',
-            algorithmName: 'eval-alg2',
-            input: [
-                '#@eval1',
-                '@flowInput.time'
-            ],
-            extraData: {
-                code: [
-                    tos(wait)
-                ]
-            }
+        nodeName: 'eval1',
+        algorithmName: 'eval-alg',
+        input: [
+            '@flowInput.range'
+        ],
+        extraData: {
+            code: [
+                tos(arr)
+            ]
         }
+    },
+    {
+        nodeName: 'evalsleep',
+        algorithmName: 'eval-alg2',
+        input: [
+            '#@eval1',
+            '@flowInput.time'
+        ],
+        extraData: {
+            code: [
+                tos(wait)
+            ]
+        }
+    }
     ],
     options: {
         batchTolerance: 100,

@@ -1,173 +1,57 @@
 require('dotenv').config()
+const { request } = require('graphql-request')
+const { WORKERS_ALL_QUERY } = require('../utils/graphql/queries/workers-query');
+const JOB_QUERY = require('../utils/graphql/queries/job-query');
+const ERROR_LOG_QUERY = require('../utils/graphql/queries/error-log-query');
+const PIPELINE_DRIVER_QUERY = require('./graphql/queries/pipeline-driver-query');
+
+const { setDefaultEncoding } = require('winston-daily-rotate-file');
+
+const Graphql_URL = process.env.BASE_URL + "/hkube/api-server/graphql";
 
 
-const getDriverIdByJobId = async (jobId,experimentName = 'main') => {
-
-    return (new Promise((resolve, reject) => {
-        const url = process.env.BASE_URL
-
-        var socket = require('socket.io-client')(url, {
-            transports: ['websocket'],
-            // secure: true,
-            path: '/hkube/monitor-server/socket.io',  
-            reconnect: true,
-            rejectUnauthorized: false
-        })
-
-        socket.on('connect', function () {
-            socket.emit('experiment-register', { name: `experiment:${experimentName}`, lastRoom: null });
-        });
-        socket.on('PROGRESS', async function (data) {
-            // fs.writeFileSync('data.json', JSON.stringify(data))
-            const d = (JSON.stringify(data))
-
-            const drivers = data.discovery['pipeline-driver']
-            const result = drivers.filter(driver => driver.jobId === jobId)
-            socket.disconnect()
-
-            resolve(result)
-        });
-
-
-
-        socket.on('reconnect', function () {
-            console.log('disconnected')
-        });
-
-        socket.on('connect_error', (err) => {
-            console.log(err)
-        })
-
-    }))
+const getDriverIdByJobId = async (jobId, experimentName = 'main') => {
+    data = await request(Graphql_URL, PIPELINE_DRIVER_QUERY);
+    return data.discovery.pipelineDriver.filter((driver) => driver.jobs.some(job => job.jobId === jobId));
 }
 
 
 const getWebSocketlogs = async (experimentName = 'main') => {
-
-    return (new Promise((resolve, reject) => {
-        const url = process.env.BASE_URL
-
-        var socket = require('socket.io-client')(url, {
-            transports: ['websocket'],
-            // secure: true,
-            path: '/hkube/monitor-server/socket.io',  
-            reconnect: true,
-            rejectUnauthorized: false
-        })
-
-        socket.on('connect', function () {
-            socket.emit('experiment-register', { name: `experiment:${experimentName}`, lastRoom: null });
-        });
-        socket.on('PROGRESS', async function (data) {
-            // fs.writeFileSync('data.json', JSON.stringify(data))
-            const d = (JSON.stringify(data))
-
-            const logs = data.logs
-            
-            socket.disconnect()
-
-            resolve(logs)
-        });
-
-
-
-        socket.on('reconnect', function () {
-            console.log('disconnected')
-        });
-
-        socket.on('connect_error', (err) => {
-            console.log(err)
-        })
-
-    }))
+    const data = await request(Graphql_URL, ERROR_LOG_QUERY);
+    return data.errorLogs;
 }
 
 const getWebSocketJobs = async (experimentName = 'main') => {
-
-    return (new Promise((resolve, reject) => {
-        const url = process.env.BASE_URL
-
-        var socket = require('socket.io-client')(url, {
-            transports: ['websocket'],
-            // secure: true,
-            path: '/hkube/monitor-server/socket.io',  
-            reconnect: true,
-            rejectUnauthorized: false
-        })
-
-        socket.on('connect', function () {
-            socket.emit('experiment-register', { name: `experiment:${experimentName}`, lastRoom: null });
-        });
-        socket.on('PROGRESS', async function (data) {
-            // fs.writeFileSync('data.json', JSON.stringify(data))
-            const d = (JSON.stringify(data))
-
-            const jobs = data.jobs
-            
-            socket.disconnect()
-
-            resolve(jobs)
-        });
+    const data = await request(Graphql_URL, JOB_QUERY);
+    return data.jobsAggregated.jobs
+};
 
 
 
-        socket.on('reconnect', function () {
-            console.log('disconnected')
-        });
 
-        socket.on('connect_error', (err) => {
-            console.log(err)
-        })
+const getWorkers = async (experimentName = 'main') => {
 
-    }))
+    return await request(Graphql_URL, WORKERS_ALL_QUERY);
 }
 
-
-
-const getWebSocketData = async (experimentName = 'main') => {
-
-    return (new Promise((resolve, reject) => {
-        const url = process.env.BASE_URL
-
-        var socket = require('socket.io-client')(url, {
-            transports: ['websocket'],
-            // secure: true,
-            path: '/hkube/monitor-server/socket.io',  
-            reconnect: true,
-            rejectUnauthorized: false
-        })
-
-        socket.on('connect', function () {
-            socket.emit('experiment-register', { name: `experiment:${experimentName}`, lastRoom: null });
-        });
-        socket.on('PROGRESS', async function (data) {
-            // fs.writeFileSync('data.json', JSON.stringify(data))
-            //const d = (JSON.stringify(data))
-
-            //const jobs = data.jobs
-            
-            socket.disconnect()
-
-            resolve(data)
-        });
-
-
-
-        socket.on('reconnect', function () {
-            console.log('disconnected')
-        });
-
-        socket.on('connect_error', (err) => {
-            console.log(err)
-        })
-
-    }))
+const waitForWorkers = async (algName, count, waitCycles = 10) => {
+    let found = false;
+    let workers = [];
+    for (let i = 0; i < waitCycles; i++) {
+        const data = await getWorkers()
+        workers = data.discovery.worker.filter(worker => worker.algorithmName == algName);
+        if (workers.length == count) {
+            return workers;
+        }
+        await delay(5000)
+    }
+    return workers;
 }
-
 
 module.exports = {
-    getWebSocketData,
+    getWorkers,
     getWebSocketJobs,
     getWebSocketlogs,
-    getDriverIdByJobId
+    getDriverIdByJobId,
+    waitForWorkers
 }

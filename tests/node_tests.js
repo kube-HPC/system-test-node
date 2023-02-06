@@ -7,14 +7,12 @@ const { pipe } = require("winston-daily-rotate-file");
 var diff = require("deep-diff").diff;
 
 const {
-  FailSingelPod,
-  body,
+
   deletePod,
   filterPodsByName,
   deleteJob,
-  getPodNode,
   filterjobsByName,
-} = require(path.join(process.cwd(), "utils/kubeCtl"));
+} = require("../utils/kubeCtl");
 
 const {
   runAlgorithm,
@@ -26,13 +24,13 @@ const {
   storeAlgorithmApplay,
   deleteAlgorithmVersion,
   getAlgorithim,
-} = require(path.join(process.cwd(), "utils/algorithmUtils"));
+} = require("../utils/algorithmUtils");
 
 const {
   getWebSocketJobs,
   getWebSocketlogs,
   getDriverIdByJobId,
-} = require(path.join(process.cwd(), "utils/socketGet"));
+} = require("../utils/socketGet");
 
 const {
   testData1,
@@ -48,12 +46,9 @@ const {
   testData407,
   testData408,
   outputPipe,
-} = require(path.join(process.cwd(), "config/index")).nodeTest;
+} = require("../config/index").nodeTest;
 
-const { getRawGraph, getResult } = require(path.join(
-  process.cwd(),
-  "utils/results"
-));
+const { getRawGraph, getResult } = require("../utils/results");
 
 // const KubernetesClient = require('@hkube/kubernetes-client').Client;
 const {
@@ -66,7 +61,7 @@ const {
   runStoredAndWaitForResults,
   checkResults,
   exceCachPipeline,
-} = require(path.join(process.cwd(), "utils/pipelineUtils"));
+} = require("../utils/pipelineUtils");
 
 chai.use(chaiHttp);
 
@@ -933,16 +928,16 @@ describe("Node Tests git 660", () => {
     }).timeout(5000000);
   });
 
-  it("output node",async () => {
+  it("output node", async () => {
     const testData = outputPipe;
-      const d = deconstructTestData(testData);
-      await deletePipeline(d);
-      await storePipeline(d);
+    const d = deconstructTestData(testData);
+    await deletePipeline(d);
+    await storePipeline(d);
 
-      const jobId = await runStoredAndWaitForResults(d);
-      const result = await getResult(jobId, 200);
-      expect(result.data[1].result[0]).to.be.equal('yellow-input')
-      expect(result.data[1].result[1]).to.be.equal(42)
-      expect(result.data[0].nodeName).to.be.equal('black')
+    const jobId = await runStoredAndWaitForResults(d);
+    const result = await getResult(jobId, 200);
+    expect(result.data[1].result[0]).to.be.equal('yellow-input')
+    expect(result.data[1].result[1]).to.be.equal(42)
+    expect(result.data[0].nodeName).to.be.equal('black')
   }).timeout(5000000);
 });

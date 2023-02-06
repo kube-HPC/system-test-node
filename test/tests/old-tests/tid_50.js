@@ -5,7 +5,7 @@ const path = require('path')
 const config = require(path.join(process.cwd(), 'config/config'))
 const {
     getResult
-} = require(path.join(process.cwd(), 'utils/results'))
+} = require('../../../utils/results')
 const {
     testData1
 } = require(path.join(process.cwd(), 'config/index')).tid_50
@@ -17,9 +17,9 @@ const {
     deconstructTestData,
     deletePipeline,
     checkResults
-} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+} = require('../../../utils/pipelineUtils')
 
-const logger = require(path.join(process.cwd(), 'utils/logger'))
+const logger = require('../../../utils/logger')
 const delay = require('delay');
 
 chai.use(chaiHttp);
@@ -41,7 +41,7 @@ describe('stop pipeline while its runing', () => {
         const jobId = res.body.jobId
 
         await delay(10000)
-       
+
 
         const stop = await stopPipeline(jobId)
         logger.info(JSON.stringify(stop))

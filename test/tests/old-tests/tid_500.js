@@ -18,7 +18,7 @@ const {
     getCronResult,
     getRawGraph,
     getParsedGraph
-} = require(path.join(process.cwd(), 'utils/results'))
+} = require('../../../utils/results')
 
 const {
     runStoredAndWaitForResults,
@@ -27,12 +27,12 @@ const {
     storePipeline,
     runStored,
     deconstructTestData,
-} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+} = require('../../../utils/pipelineUtils')
 chai.use(chaiHttp);
 
-const { 
-    storeAlgorithmApplay    
-} = require(path.join(process.cwd(), 'utils/algorithmUtils'))
+const {
+    storeAlgorithmApplay
+} = require('../../../utils/algorithmUtils')
 
 describe('TID-500 ', () => {
 
@@ -55,10 +55,10 @@ describe('TID-500 ', () => {
                 }
             }]
         }
-        
+
 
         //store pipeline addmuldiv
-        const res =  await storePipeline(pipeline)
+        const res = await storePipeline(pipeline)
         expect(res.text).includes("algorithm notsuchalgo Not Found");
 
     }).timeout(1000 * 60 * 5);
@@ -70,17 +70,17 @@ describe('TID-500 ', () => {
             nodes: [{
                 nodeName: "notsuchalgo",
                 algorithmName: "green-alg"
-        }]
-    }
+            }]
+        }
 
         //store pipeline addmuldiv
         await deletePipeline(pipeline.name)
-        const res =  await storePipeline(pipeline)
+        const res = await storePipeline(pipeline)
         const jobId = await runStoredAndWaitForResults(pipeline.name)
         const result = await getJobResult(jobId)
         expect(result.body.data[0].result).to.be.equal(42)
     }).timeout(1000 * 60 * 5);
-   
+
     describe('TID-520 different chars in algorithm and pipeline names ', () => {
         it("pipeline abc-A#", async () => {
             //set test data to testData1
@@ -89,11 +89,11 @@ describe('TID-500 ', () => {
                 nodes: [{
                     nodeName: "notsuchalgo",
                     algorithmName: "green-alg"
-            }]
+                }]
             }
-    
-            const res =  await storePipeline(pipeline)
-           expect(res.text).includes("pipeline name must contain only alphanumeric, dash, dot or underscore")
+
+            const res = await storePipeline(pipeline)
+            expect(res.text).includes("pipeline name must contain only alphanumeric, dash, dot or underscore")
         }).timeout(1000 * 60 * 5);
 
         it("pipeline AA$A", async () => {
@@ -103,11 +103,11 @@ describe('TID-500 ', () => {
                 nodes: [{
                     nodeName: "notsuchalgo",
                     algorithmName: "green-alg"
-            }]
+                }]
             }
-    
-            const res =  await storePipeline(pipeline)
-           expect(res.text).includes("pipeline name must contain only alphanumeric, dash, dot or underscore")
+
+            const res = await storePipeline(pipeline)
+            expect(res.text).includes("pipeline name must contain only alphanumeric, dash, dot or underscore")
         }).timeout(1000 * 60 * 5);
 
 
@@ -118,19 +118,19 @@ describe('TID-500 ', () => {
                 nodes: [{
                     nodeName: "notsuchalgo",
                     algorithmName: "A"
-            }]
+                }]
             }
-    
-            const res =  await storePipeline(pipeline)
-           expect(res.text).includes("algorithm name must contain only lower-case alphanumeric, dash or dot")
+
+            const res = await storePipeline(pipeline)
+            expect(res.text).includes("algorithm name must contain only lower-case alphanumeric, dash or dot")
         }).timeout(1000 * 60 * 5);
 
-        
 
-        
+
+
         it("Algorithim A", async () => {
             //set test data to testData1
-            const alg  = {
+            const alg = {
                 name: "A",
                 cpu: 1,
                 gpu: 0,
@@ -141,11 +141,11 @@ describe('TID-500 ', () => {
                 options: {
                     debug: false,
                     pending: false
-                    }       
                 }
-    
-            const res =  await  await storeAlgorithmApplay(alg);
-           expect(res.text).includes("algorithm name must contain only lower-case alphanumeric, dash or dot")
+            }
+
+            const res = await await storeAlgorithmApplay(alg);
+            expect(res.text).includes("algorithm name must contain only lower-case alphanumeric, dash or dot")
         }).timeout(1000 * 60 * 5);
 
     })
@@ -159,30 +159,31 @@ describe('TID-500 ', () => {
             nodes: [{
                 nodeName: "notsuchalgo",
                 algorithmName: "eval-alg",
-                input: [                   
+                input: [
                     "#@flowInput.inputs"
                 ],
                 extraData: {
                     code: [
                         "(input,require)=> {",
-                            "return new Promise((resolve,reject)=>{setTimeout(()=>resolve(input[0]),10000)});}"
+                        "return new Promise((resolve,reject)=>{setTimeout(()=>resolve(input[0]),10000)});}"
                     ]
                 }
-        }]
+            }]
         }
 
-        const pipe = {   
+        const pipe = {
             name: "batchInput",
             flowInput: {
-               
-                inputs:[]}
+
+                inputs: []
+            }
         }
         await deletePipeline(pipeline.name)
-         await storePipeline(pipeline)
+        await storePipeline(pipeline)
         const jobId = await runStoredAndWaitForResults(pipe)
-        const res= await getParsedGraph(jobId)
+        const res = await getParsedGraph(jobId)
 
-       expect(res.body.nodes[0].batch[0].status).to.be.equal("skipped")
+        expect(res.body.nodes[0].batch[0].status).to.be.equal("skipped")
     }).timeout(1000 * 60 * 5);
 
 });

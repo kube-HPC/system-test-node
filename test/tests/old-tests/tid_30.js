@@ -13,15 +13,15 @@ const {
     deletePipeline,
     deconstructTestData,
     checkResults
-} = require(path.join(process.cwd(), 'utils/pipelineUtils'))
+} = require('../../../utils/pipelineUtils')
 
-const logger = require(path.join(process.cwd(), 'utils/logger'))
+const logger = require('../../../utils/logger')
 chai.use(chaiHttp);
 
 
 
 describe('pipelines will be executed using their name (git 35)', () => {
-    
+
     it('should return result 24', async () => {
         const name = "pipelineName"
 

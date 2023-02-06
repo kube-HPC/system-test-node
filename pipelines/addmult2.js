@@ -1,7 +1,7 @@
 const path = require('path')
 
 // const tos = require('../utils/results').toString
-const tos = require(path.join(process.cwd(), 'utils/results')).toString
+const tos = require('../utils/results').toString
 
 
 const add = (input) => {
@@ -16,30 +16,30 @@ const mult = (input) => {
 const descriptor = {
     name: "addmult",
     nodes: [{
-            nodeName: "evaladd",
-            algorithmName: "eval-alg",
-            input: [
-                "@flowInput.addInput"
-            ],
-            extraData: {
-                code: [
-                    tos(add)
-                ]
-            }
-        },
-        {
-            nodeName: "evalmul",
-            algorithmName: "eval-alg",
-            input: [
-                "@evaladd",
-                "@flowInput.multInput"
-            ],
-            extraData: {
-                code: [
-                    tos(mult)
-                ]
-            }
+        nodeName: "evaladd",
+        algorithmName: "eval-alg",
+        input: [
+            "@flowInput.addInput"
+        ],
+        extraData: {
+            code: [
+                tos(add)
+            ]
         }
+    },
+    {
+        nodeName: "evalmul",
+        algorithmName: "eval-alg",
+        input: [
+            "@evaladd",
+            "@flowInput.multInput"
+        ],
+        extraData: {
+            code: [
+                tos(mult)
+            ]
+        }
+    }
     ]
 }
 

@@ -1,5 +1,5 @@
 const path = require('path')
-const tos = require(path.join(process.cwd(), 'utils/results')).toString
+const tos = require('./../../../utils/results').toString
 
 
 
@@ -15,30 +15,30 @@ const mult = (input) => {
 const pipe = {
     name: "pipe1",
     nodes: [{
-            nodeName: "evaladd",
-            algorithmName: "eval-alg",
-            input: [
-                "@flowInput.addInput"
-            ],
-            extraData: {
-                code: [
-                    tos(add)
-                ]
-            }
-        },
-        {
-            nodeName: "evalmul",
-            algorithmName: "eval-alg",
-            input: [
-                "@evaladd",
-                "@flowInput.multInput"
-            ],
-            extraData: {
-                code: [
-                    tos(mult)
-                ]
-            }
+        nodeName: "evaladd",
+        algorithmName: "eval-alg",
+        input: [
+            "@flowInput.addInput"
+        ],
+        extraData: {
+            code: [
+                tos(add)
+            ]
         }
+    },
+    {
+        nodeName: "evalmul",
+        algorithmName: "eval-alg",
+        input: [
+            "@evaladd",
+            "@flowInput.multInput"
+        ],
+        extraData: {
+            code: [
+                tos(mult)
+            ]
+        }
+    }
     ],
     flowInput: {
         addInput: [5, 3],
