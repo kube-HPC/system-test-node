@@ -62,6 +62,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
             const res = await runStored(d)
             const jobId = res.body.jobId
             console.log("jobId = " + jobId);
+            await delay(500);
             const driver = await getDriverIdByJobId(jobId)
             console.log("driver = " + driver);
             const podName = driver[0].podName
@@ -216,6 +217,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
         //run the pipeline evalwait
         const res = await runStored(d)
         const jobId = res.body.jobId
+        await delay(500);
         const driver = await getDriverIdByJobId(jobId)
 
         const pilelineDriverPod = driver[0].podName

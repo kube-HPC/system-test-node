@@ -15,32 +15,33 @@ const descriptor = {
             extraData: {
                 code: [
                     "(input,require)=> {",
-                        "return new Promise((resolve,reject)=>{setTimeout(()=>resolve(42),input[0])});}"
+                    "return new Promise((resolve,reject)=>{setTimeout(()=>resolve(42),input[0])});}"
                 ]
             }
         }
     ],
     options: {
-       
+
         concurrentPipelines: {
             amount: 1,
             rejectOnFailure: false
         },
         ttl: 30,
-        activeTtl : 25
+        activeTtl: 25
     }
-    
+
 }
 
 const input = {
-   // name : "evalwait",
+    // name : "evalwait",
     flowInput: {
-        inputs:[
-           25000
-        ]},
-    options:{
+        inputs: [
+            100000
+        ]
+    },
+    options: {
         ttl: 30,
-        activeTtl : 25
+        activeTtl: 25
     }
 }
 

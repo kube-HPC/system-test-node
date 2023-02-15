@@ -179,10 +179,10 @@ describe('Hkubectl Tests', () => {
                 `--codePath ./additionalFiles/${trgzFile2} `
             console.log("start build 1")
             const buildResult = await exceSyncString(runBulid);
-
+            await delay(1000 * 60)
             console.log("start build 2")
             const buildResult2 = await exceSyncString(runBulidV2);
-
+            await delay(1000 * 60)
             const result = await runAlgGetResult(algName, [4])
 
             expect(result.data[0].result.version.toString()).to.be.equal("1")

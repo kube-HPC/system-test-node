@@ -99,9 +99,11 @@ describe('code api tests ', () => {
                 .get(`/storage/values/${storagePath}`)
             return res
         }
-
-        it("start algorithm", async () => {
+        before(async function () {
+            this.timeout(1000 * 60 * 10);
             await createAlg();
+        });
+        it("start algorithm", async () => {
             const startAlg = [{
                 action: "start_alg",
                 name: "green-alg",
@@ -129,7 +131,6 @@ describe('code api tests ', () => {
 
 
         it("start algorithm with mem error", async () => {
-            await createAlg();
             const startAlg = [{
                 action: "start_alg",
                 name: "error-alg",
@@ -155,8 +156,7 @@ describe('code api tests ', () => {
             console.log(result)
 
         }).timeout(1000 * 60 * 10)
-        it("sart stored pipeline", async () => {
-            await createAlg();
+        it("start stored pipeline", async () => {
             const startPipe = [{
                 "action": "start_stored_subpipeline",
                 "name": "simple",
@@ -179,8 +179,7 @@ describe('code api tests ', () => {
                 }
             }
         }
-        it("sart raw pipelien", async () => {
-            await createAlg();
+        it("start raw pipelien", async () => {
             const startRaw = [{
                 action: "start_raw_subpipeline",
                 name: "raw-simple",
@@ -224,9 +223,11 @@ describe('code api tests ', () => {
             "algName": "green-alg",
             "alginput": ["4"]
         }
-        it("Java sart algorithm", async () => {
-
+        before(async function () {
+            this.timeout(1000 * 60 * 10);
             await createAlg();
+        });
+        it("Java start algorithm", async () => {
             const startAlg = [{
                 action: "startAlg",
                 algName: "green-alg",
@@ -241,8 +242,7 @@ describe('code api tests ', () => {
 
         }).timeout(1000 * 60 * 10)
 
-        it("Java sart algorithm binary", async () => {
-            await createAlg();
+        it("Java start algorithm binary", async () => {
             const startAlg = [{
                 action: "startAlgBinary",
                 algName: "green-alg",
@@ -256,8 +256,7 @@ describe('code api tests ', () => {
 
 
         }).timeout(1000 * 60 * 10)
-        it("Java sart stored pipeline", async () => {
-            await createAlg();
+        it("Java start stored pipeline", async () => {
             const startPipe = [{
                 action: "startStored",
                 PipeName: "simple",
@@ -270,23 +269,17 @@ describe('code api tests ', () => {
             expect(result.data[0].result[0].result).to.be.equal('links-1')
         }).timeout(1000 * 60 * 10)
 
-        it("Java sart raw pipelien", async () => {
-            await createAlg();
+        it("Java start raw pipelien", async () => {
             const startRaw = [{
                 action: "startRaw",
                 PipeName: "raw-simple"
             }
             ]
             const result = await runAlgGetResult(algName, startRaw)
-
             console.log(result)
-
-
             expect(result.data[0].result[0].result.empty).to.be.equal(false)
-
             //const path = result.data[0].result.result.storageInfo.path
             // const res = await getResultFromStorage(path)
-
             // expect(res.body[0].result).to.be.equal(42)
         }).timeout(1000 * 60 * 10)
     })
@@ -309,36 +302,29 @@ describe('code api tests ', () => {
                 algExsis = true;
                 algLIst.push(algName)
             }
-
-
-
         }
 
-
-        it("Node sart algorithm", async () => {
+        before(async function () {
+            this.timeout(1000 * 60 * 10);
             await createAlg();
+        });
+        it("Node start algorithm", async () => {
             const startAlg = [{ "action": "startAlg", "algName": "green-alg", "input": [42] }]
             const result = await runAlgGetResult(algName, startAlg)
             console.log(result)
             expect(result.data[0].result).to.be.equal(42)
             const graph = await getRawGraph(result.jobId)
             expect(graph.body.nodes.length).to.be.equal(2)
-
-
         }).timeout(1000 * 60 * 10)
 
-        it("Node sart stored pipeline", async () => {
-            await createAlg();
+        it("Node start stored pipeline", async () => {
             const startPipe = [{ "action": "startStored", "pipeName": "simple", "input": { "inp": 42 } }]
             const result = await runAlgGetResult(algName, startPipe)
             console.log(result)
-
-
             expect(result.data[0].result[0].result).to.be.equal('links-1')
         }).timeout(1000 * 60 * 10)
 
-        it("node sart raw pipelien", async () => {
-            await createAlg();
+        it("node start raw pipelien", async () => {
             const startRaw = [{
                 "action": "startRaw", "pipeName": "raw",
                 "pipNodes": "[{\"algorithmName\": \"green-alg\",\"input\": [\"@flowInput.bar\"],\"nodeName\": \"a\"},{\"algorithmName\": \"yellow-alg\",\"input\": [\"@a\"], \"nodeName\": \"b\"}]"
@@ -346,15 +332,8 @@ describe('code api tests ', () => {
             }
             ]
             const result = await runAlgGetResult(algName, startRaw)
-
             console.log(result.data[0])
-
-
             expect(result.data[0].result[0].result.size).to.be.equal("3")
-
         }).timeout(1000 * 60 * 10)
     })
-
-
-
 });

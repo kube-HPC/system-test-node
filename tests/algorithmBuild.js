@@ -386,7 +386,7 @@ describe('Algorithm build test', () => {
 
         }).timeout(1000 * 60 * 20)
         // p1
-        it.only("test webhook github (git 518)", async () => {
+        it("test webhook github (git 518)", async () => {
             const data = {
                 ref: 'refs/heads/master',
                 before: 'f96bd9ffc2d6e0e31fea1b28328600156c5877b0',
