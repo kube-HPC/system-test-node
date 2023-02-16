@@ -209,34 +209,31 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
 
     it('Fail jaeger   ', async () => {
         const d = deconstructTestData(testData1)
-
         //store pipeline evalwait
         await deletePipeline(d)
         const a = await storePipeline(d)
-
         //run the pipeline evalwait
         const res = await runStored(d)
         const jobId = res.body.jobId
-        await delay(500);
-        const driver = await getDriverIdByJobId(jobId)
-
-        const pilelineDriverPod = driver[0].podName
-
-        const currentNode = await getPodNode(pilelineDriverPod)
-
-        const jaegerPods = await filterPodsByName("jaeger") //[0].metadata.name
-
-        // find the jaeger that run on the same node as the pipeline driver. 
-        const jaegrPod = jaegerPods.filter(obj => obj.spec.nodeName == currentNode)
-
-        const deleted = await deletePod(jaegrPod[0].metadata.name)
-
+        let driver = undefined
+        while (!driver) {
+            const drivers = await getDriverIdByJobId(jobId)
+            driver = drivers[0];
+            if (driver) {
+                const pilelineDriverPod = driver.podName
+                const currentNode = await getPodNode(pilelineDriverPod)
+                const jaegerPods = await filterPodsByName("jaeger") //[0].metadata.name
+                // find the jaeger that run on the same node as the pipeline driver. 
+                const jaegrPod = jaegerPods.filter(obj => obj.spec.nodeName == currentNode)
+                await deletePod(jaegrPod[0].metadata.name)
+            }
+            else {
+                await delay(1000)
+            }
+        }
         await delay(20000)
-
         const result = await getResult(jobId, 200)
-
         expect(result.status).to.be.equal('completed');
-
     }).timeout(1000 * 60 * 60);
 
     it('Fail API server  ', async () => {

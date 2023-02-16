@@ -231,9 +231,9 @@ describe('Alrogithm Tests', () => {
             algV1.annotations = { "annotations-by": "test" }
 
             let v1 = await storeAlgorithmApplay(algV1);
-            await delay(5000)
-            const podName = await filterPodsByName(algName);
-            expect(podName[0].metadata.annotations["annotations-by"]).to.be.eqls("test")
+            await delay(8000)
+            const pods = await filterPodsByName(algName);
+            expect(pods[0].metadata.annotations["annotations-by"]).to.be.eqls("test")
             deleteAlgorithm(algName)
         }).timeout(1000 * 60 * 10);
 
