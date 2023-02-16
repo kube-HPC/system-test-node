@@ -186,8 +186,6 @@ describe('Hkubectl Tests', () => {
             const result = await runAlgGetResult(algName, [4])
 
             expect(result.data[0].result.version.toString()).to.be.equal("1")
-
-
         }).timeout(1000 * 60 * 10)
 
         it('hkube algorithm apply alg version setCurrent', async () => {

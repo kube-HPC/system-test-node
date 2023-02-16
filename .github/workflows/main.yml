@@ -204,7 +204,7 @@ jobs:
           Gitlab_Token: ${{ secrets.GITLAB_TOKEN }}
   algorithmTest:
     runs-on: ubuntu-latest
-    needs: [HkubeCliTest,algorithmBuild]
+    needs: [HkubeCliTest]
     if: ${{ always() }}
     steps:
       - uses: actions/checkout@v2
