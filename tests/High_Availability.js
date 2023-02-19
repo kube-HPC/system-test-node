@@ -62,13 +62,11 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
             const res = await runStored(d)
             const jobId = res.body.jobId
             console.log("jobId = " + jobId);
-            await delay(500);
+            await delay(2000);
             const driver = await getDriverIdByJobId(jobId)
             console.log("driver = " + driver);
             const podName = driver[0].podName
             write_log('podName-' + podName)
-            await delay(2000)
-
             const pod = await deletePod(podName)
             await delay(2000)
             //get result
