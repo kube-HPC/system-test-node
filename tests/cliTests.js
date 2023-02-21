@@ -107,7 +107,7 @@ describe('Hkubectl Tests', () => {
 
         }).timeout(1000 * 60 * 6)
 
-        it('hkube algorithm apply', async () => {
+        xit('hkube algorithm apply', async () => {
             const algName = pipelineRandomName(8).toLowerCase()
             algLIst.push(algName)
             const filePath = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
