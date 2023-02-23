@@ -1,6 +1,6 @@
 const alg = {
     name: "tensorboard",
-    cpu: 1,
+    cpu: 0.1,
     gpu: 0,
     mem: "5Gi",
     minHotWorkers: 0,
@@ -13,4 +13,4 @@ const alg = {
 }
 
 
-module.exports = {alg}
+module.exports = { alg }

@@ -67,8 +67,8 @@ describe('streaming pipeline test', () => {
                     "spec": {
                         "name": "raw-image-gateway",
                         "description": "images streaming source",
-                        "cpu": 1,
-                        "mem": "1Gi"
+                        "cpu": 0.1,
+                        "mem": "512Mi"
                     },
                     "input": [],
                     "stateType": "stateful"

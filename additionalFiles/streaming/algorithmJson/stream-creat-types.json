@@ -1,6 +1,6 @@
 {
     "name": "stream-create-types",
-    "cpu": 1,
+    "cpu": 0.1,
     "created": 1615974840831,
     "entryPoint": "GenerateRandomData",
     "env": "python",

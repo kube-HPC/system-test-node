@@ -1,6 +1,6 @@
 {
     "name": "stream-image",
-    "cpu": 1,
+    "cpu": 0.1,
     "created": 1613466730202,
     "entryPoint": "imageToByteArrayLocal",
     "env": "python",
@@ -11,7 +11,7 @@
         "path": "test-hkube-builds/stream-image-4s2os0"
     },
     "gpu": 0,
-    "mem": "1Gi",
+    "mem": "512Mi",
     "minHotWorkers": 0,
     "modified": 1615381531359,
     "options": {
