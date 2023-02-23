@@ -6,7 +6,7 @@
     "entryPoint": "getImageRout",
     "env": "python",
     "gpu": 0,
-    "mem": "1Gi",
+    "mem": "512Mi",
     "minHotWorkers": 0,
     "modified": 1615381535625,
     "options": {

@@ -1,6 +1,6 @@
 {
     "name": "get-image-split",
-    "cpu": 1,
+    "cpu": 0.1,
     "created": 1612340586746,
     "entryPoint": "getImageRoutV1",
     "env": "python",

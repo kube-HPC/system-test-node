@@ -1,262 +1,248 @@
 {
-"pipeline":{
-    "name": "mix-gpu",
-    "description": "",
-    "nodes": [
-        {
-            "algorithmName": "egl-alg-gpu01",
-            "input": [
-                "#@flowInput.inp"
-            ],
-            "nodeName": "gpu"
-        },
-        {
-            "algorithmName": "egl-alg-gpu1",
-            "input": [
-                "@gpu"
-            ],
-            "nodeName": "gpu-1"
-        },
-        {
-            "algorithmName": "convertimagetobinary",
-            "input": [
-                "@gpu-1"
-            ],
-            "nodeName": "python-1"
-        },
-        {
-            "algorithmName": "convertimagetobinary",
-            "input": [
-                "#@gpu"
-            ],
-            "nodeName": "python-2"
-        },
-        {
-            "algorithmName": "convertimagetobinary",
-            "input": [
-                "#@gpu"
-            ],
-            "nodeName": "python"
-        },
-        {
-            "algorithmName": "egl-alg-02-gpu",
-            "input": [
-                "#@python"
-            ],
-            "nodeName": "gpu2"
-        },
-        {
-            "algorithmName": "convertimagetobinary",
-            "input": [
-                "#@gpu"
-            ],
-            "nodeName": "python2"
-        },
-        {
-            "algorithmName": "egl-alg-01-gpu",
-            "input": [
-                "#@python2"
-            ],
-            "nodeName": "gpu3"
-        },
-        {
-            "algorithmName": "egl-alg-01-gpu",
-            "input": [
-                "#@gpu2",
-                "#@gpu3",
-                "#@python-1"
-            ],
-            "nodeName": "gpu4"
-        }
-    ],
-    "flowInput": {
-        "inp": [
-            [
-                1
-            ],
-            [
-                1
-            ],
-            [
-                1
-            ],
-            [
-                1
-            ],
-            [
-                1
-            ],
-            [
-                1
-            ],
-            [
-                1
-            ],
-            [
-                1
-            ],
-            [
-                1
-            ],
-            [
-                1
-            ],
-            [
-                1
-            ],
-            [
-                1
-            ],
-            [
-                1
-            ],
-            [
-                1
-            ],
-            [
-                1
-            ],
-            [
-                1
-            ],
-            [
-                1
-            ],
-            [
-                1
-            ],
-            [
-                1
-            ],
-            [
-                1
-            ],
-            [
-                1
+    "pipeline": {
+        "name": "mix-gpu",
+        "description": "",
+        "nodes": [
+            {
+                "algorithmName": "egl-alg-gpu01",
+                "input": [
+                    "#@flowInput.inp"
+                ],
+                "nodeName": "gpu"
+            },
+            {
+                "algorithmName": "egl-alg-gpu1",
+                "input": [
+                    "@gpu"
+                ],
+                "nodeName": "gpu-1"
+            },
+            {
+                "algorithmName": "convertimagetobinary",
+                "input": [
+                    "@gpu-1"
+                ],
+                "nodeName": "python-1"
+            },
+            {
+                "algorithmName": "convertimagetobinary",
+                "input": [
+                    "#@gpu"
+                ],
+                "nodeName": "python-2"
+            },
+            {
+                "algorithmName": "convertimagetobinary",
+                "input": [
+                    "#@gpu"
+                ],
+                "nodeName": "python"
+            },
+            {
+                "algorithmName": "egl-alg-02-gpu",
+                "input": [
+                    "#@python"
+                ],
+                "nodeName": "gpu2"
+            },
+            {
+                "algorithmName": "convertimagetobinary",
+                "input": [
+                    "#@gpu"
+                ],
+                "nodeName": "python2"
+            },
+            {
+                "algorithmName": "egl-alg-01-gpu",
+                "input": [
+                    "#@python2"
+                ],
+                "nodeName": "gpu3"
+            },
+            {
+                "algorithmName": "egl-alg-01-gpu",
+                "input": [
+                    "#@gpu2",
+                    "#@gpu3",
+                    "#@python-1"
+                ],
+                "nodeName": "gpu4"
+            }
+        ],
+        "flowInput": {
+            "inp": [
+                [
+                    1
+                ],
+                [
+                    1
+                ],
+                [
+                    1
+                ],
+                [
+                    1
+                ],
+                [
+                    1
+                ],
+                [
+                    1
+                ],
+                [
+                    1
+                ],
+                [
+                    1
+                ],
+                [
+                    1
+                ],
+                [
+                    1
+                ],
+                [
+                    1
+                ],
+                [
+                    1
+                ],
+                [
+                    1
+                ],
+                [
+                    1
+                ],
+                [
+                    1
+                ],
+                [
+                    1
+                ],
+                [
+                    1
+                ],
+                [
+                    1
+                ],
+                [
+                    1
+                ],
+                [
+                    1
+                ],
+                [
+                    1
+                ]
             ]
-        ]
-    },
-    "triggers": {
-        "cron": {
-            "pattern": "0 * * * *",
-            "enabled": false
         },
-        "pipelines": []
-    },
-    "options": {
-        "batchTolerance": 100,
-        "concurrentPipelines": {
-            "amount": 10,
-            "rejectOnFailure": true
+        "triggers": {
+            "cron": {
+                "pattern": "0 * * * *",
+                "enabled": false
+            },
+            "pipelines": []
         },
-        "progressVerbosityLevel": "info",
-        "ttl": 3600
+        "options": {
+            "batchTolerance": 100,
+            "concurrentPipelines": {
+                "amount": 10,
+                "rejectOnFailure": true
+            },
+            "progressVerbosityLevel": "info",
+            "ttl": 3600
+        },
+        "priority": 3,
+        "experimentName": "main"
     },
-    "priority": 3,
-    "experimentName": "main"
-}
-
-
-
-,
-
-"alg1":{
-    "name": "egl-alg-01-gpu",
-    "cpu": 0.1,
-    "gpu": 0.4,
-    "mem": "256Mi",
-    "minHotWorkers": 0,
-    "options": {
-        "binary": true,
-        "debug": false,
-        "pending": false
+    "alg1": {
+        "name": "egl-alg-01-gpu",
+        "cpu": 0.1,
+        "gpu": 0.4,
+        "mem": "256Mi",
+        "minHotWorkers": 0,
+        "options": {
+            "binary": true,
+            "debug": false,
+            "pending": false
+        },
+        "algorithmEnv": {
+            "USE_EGL": "true"
+        },
+        "algorithmImage": "yehiyam/opengl-alg:v0.0.3",
+        "type": "Image"
     },
-    "algorithmEnv": {
-        "USE_EGL": "true"
+    "alg2": {
+        "name": "egl-alg-02-gpu",
+        "cpu": 0.2,
+        "gpu": 0.2,
+        "mem": "256Mi",
+        "minHotWorkers": 0,
+        "options": {
+            "binary": true,
+            "debug": false,
+            "pending": false
+        },
+        "algorithmEnv": {
+            "USE_EGL": "true"
+        },
+        "algorithmImage": "yehiyam/opengl-alg:v0.0.3",
+        "type": "Image"
     },
-    "algorithmImage": "yehiyam/opengl-alg:v0.0.3",
-    "type": "Image"
-}
-,
-"alg2":{
-    "name": "egl-alg-02-gpu",
-    "cpu": 0.2,
-    "gpu": 0.2,
-    "mem": "256Mi",
-    "minHotWorkers": 0,
-    "options": {
-        "binary": true,
-        "debug": false,
-        "pending": false
+    "alg3": {
+        "name": "egl-alg-02-gpu",
+        "cpu": 0.2,
+        "gpu": 0.2,
+        "mem": "256Mi",
+        "minHotWorkers": 0,
+        "options": {
+            "binary": true,
+            "debug": false,
+            "pending": false
+        },
+        "algorithmEnv": {
+            "USE_EGL": "true"
+        },
+        "algorithmImage": "yehiyam/opengl-alg:v0.0.3",
+        "type": "Image"
     },
-    "algorithmEnv": {
-        "USE_EGL": "true"
+    "alg4": {
+        "name": "egl-alg-gpu1",
+        "cpu": 0.1,
+        "gpu": 1,
+        "mem": "256Mi",
+        "minHotWorkers": 0,
+        "options": {
+            "binary": true,
+            "debug": false,
+            "pending": false
+        },
+        "algorithmEnv": {
+            "USE_EGL": "true"
+        },
+        "algorithmImage": "yehiyam/opengl-alg:v0.0.3",
+        "type": "Image"
     },
-    "algorithmImage": "yehiyam/opengl-alg:v0.0.3",
-    "type": "Image"
-}
-
-,
-"alg3":{
-    "name": "egl-alg-02-gpu",
-    "cpu": 0.2,
-    "gpu": 0.2,
-    "mem": "256Mi",
-    "minHotWorkers": 0,
-    "options": {
-        "binary": true,
-        "debug": false,
-        "pending": false
+    "alg5": {
+        "name": "egl-alg-gpu1",
+        "cpu": 0.1,
+        "gpu": 1,
+        "mem": "256Mi",
+        "minHotWorkers": 0,
+        "options": {
+            "binary": true,
+            "debug": false,
+            "pending": false
+        },
+        "algorithmEnv": {
+            "USE_EGL": "true"
+        },
+        "algorithmImage": "yehiyam/opengl-alg:v0.0.3",
+        "type": "Image"
     },
-    "algorithmEnv": {
-        "USE_EGL": "true"
-    },
-    "algorithmImage": "yehiyam/opengl-alg:v0.0.3",
-    "type": "Image"
-}
-
-,
-"alg4":{
-    "name": "egl-alg-gpu1",
-    "cpu": 1,
-    "gpu": 1,
-    "mem": "256Mi",
-    "minHotWorkers": 0,
-    "options": {
-        "binary": true,
-        "debug": false,
-        "pending": false
-    },
-    "algorithmEnv": {
-        "USE_EGL": "true"
-    },
-    "algorithmImage": "yehiyam/opengl-alg:v0.0.3",
-    "type": "Image"
-}
-
-,
-
-"alg5":{
-    "name": "egl-alg-gpu1",
-    "cpu": 1,
-    "gpu": 1,
-    "mem": "256Mi",
-    "minHotWorkers": 0,
-    "options": {
-        "binary": true,
-        "debug": false,
-        "pending": false
-    },
-    "algorithmEnv": {
-        "USE_EGL": "true"
-    },
-    "algorithmImage": "yehiyam/opengl-alg:v0.0.3",
-    "type": "Image"
-    },
-
-    "convertAlg":{
+    "convertAlg": {
         "name": "convertimagetobinary",
-        "cpu": 1,
+        "cpu": 0.1,
         "gpu": 0,
         "mem": "256Mi",
         "minHotWorkers": 0,
@@ -271,11 +257,9 @@
             "branchName": "master",
             "webUrl": "https://github.com/tamir321/HkubePythonConvertByteArrayToImage",
             "cloneUrl": "https://github.com/tamir321/HkubePythonConvertByteArrayToImage.git"
-           
         },
         "env": "python",
         "entryPoint": "main-image-to-Bynary.py",
         "type": "Git"
-      
     }
 }

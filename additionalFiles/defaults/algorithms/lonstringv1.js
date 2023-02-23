@@ -1,6 +1,6 @@
 const alg = {
     name: "lonstringv1",
-    cpu: 1,
+    cpu: 0.1,
     gpu: 0,
     mem: "256Mi",
     minHotWorkers: 0,
@@ -12,4 +12,4 @@ const alg = {
     }
 }
 
-module.exports = {alg}
+module.exports = { alg }

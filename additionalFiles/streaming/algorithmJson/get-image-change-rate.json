@@ -11,7 +11,7 @@
         "path": "test-hkube-builds/get-image-change-rate-m5oa1i"
     },
     "gpu": 0,
-    "mem": "1Gi",
+    "mem": "512Mi",
     "minHotWorkers": 0,
     "modified": 1615381540297,
     "options": {

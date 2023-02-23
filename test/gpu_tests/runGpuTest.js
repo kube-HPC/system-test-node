@@ -29,7 +29,7 @@ chai.use(chaiHttp);
 
 const gpuAlg = {
     "name": "gpu-alg-1",
-    "cpu": 1,
+    "cpu": 0.1,
     "gpu": 1,
     "mem": "5Gi",
     "minHotWorkers": 0,
