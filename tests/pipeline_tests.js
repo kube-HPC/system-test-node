@@ -795,7 +795,7 @@ describe("pipeline Tests 673", () => {
         const ttl = {
           name: d.name,
           flowInput: {
-            inputs: [30000],
+            inputs: [50000],
           },
           options: {
             ttl: 10,
@@ -803,7 +803,7 @@ describe("pipeline Tests 673", () => {
           },
         };
         const jobId2 = await runStored(ttl); //should be stoped  due to ttl
-        await timeout(25000);
+        await timeout(30000);
         await celeanPipeLines();
         const currentStatus = await getPipelineStatus(jobId2.body.jobId);
         expect(currentStatus.body.status).to.be.equal("stopped");

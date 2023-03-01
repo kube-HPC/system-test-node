@@ -4,7 +4,7 @@ const { WORKERS_ALL_QUERY } = require('../utils/graphql/queries/workers-query');
 const JOB_QUERY = require('../utils/graphql/queries/job-query');
 const ERROR_LOG_QUERY = require('../utils/graphql/queries/error-log-query');
 const PIPELINE_DRIVER_QUERY = require('./graphql/queries/pipeline-driver-query');
-
+const delay = require('delay')
 const { setDefaultEncoding } = require('winston-daily-rotate-file');
 
 const Graphql_URL = process.env.BASE_URL + "/hkube/api-server/graphql";
@@ -43,7 +43,7 @@ const waitForWorkers = async (algName, count, waitCycles = 10) => {
         if (workers.length == count) {
             return workers;
         }
-        await delay(5000)
+        await delay(3000)
     }
     return workers;
 }

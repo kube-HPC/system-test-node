@@ -141,7 +141,7 @@ describe('Hkubectl Tests', () => {
             const runBulid = `hkubectl algorithm apply ` +
                 `-f ${algFile}`
             const buildResult = await exceSyncString(runBulid);
-
+            delay(5000)
             const result = await runAlgGetResult(algName, [4])
 
             expect(result.data[0].result.version.toString()).to.be.equal("3.5")

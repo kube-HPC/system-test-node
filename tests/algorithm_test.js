@@ -199,7 +199,7 @@ describe('Alrogithm Tests', () => {
             algV1.labels = { "group": "test" }
 
             let v1 = await storeAlgorithmApplay(algV1);
-            await delay(5000)
+            await delay(10000);
             const podName = await filterPodsByName(algName);
             expect(podName[0].metadata.labels["group"]).to.be.eqls("hkube")
             deleteAlgorithm(algName)

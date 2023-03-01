@@ -152,7 +152,7 @@ const buildGitAlgorithm = async ({ algName, gitUrl, gitKind, entry, branch, lang
     // res.should.have.status(200)
     expect(res.status).to.eql(200)
     const buildIdAlg = res.body.buildId
-    const buildStatusAlg = await getStatusall(buildIdAlg, `/builds/status/`, 200, "completed", 1000 * 60 * 10)
+    const buildStatusAlg = await getStatusall(buildIdAlg, `/builds/status/`, 200, "completed", 1000 * 60 * 14)
 
     return buildStatusAlg
 

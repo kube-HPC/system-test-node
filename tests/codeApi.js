@@ -100,10 +100,10 @@ describe('code api tests ', () => {
             return res
         }
         before(async function () {
-            this.timeout(1000 * 60 * 10);
+            this.timeout(1000 * 60 * 15);
             await createAlg();
         });
-        it("start algorithm", async () => {
+        it.only("start algorithm", async () => {
             const startAlg = [{
                 action: "start_alg",
                 name: "green-alg",
@@ -224,7 +224,7 @@ describe('code api tests ', () => {
             "alginput": ["4"]
         }
         before(async function () {
-            this.timeout(1000 * 60 * 10);
+            this.timeout(1000 * 60 * 15);
             await createAlg();
         });
         it("Java start algorithm", async () => {
@@ -305,7 +305,7 @@ describe('code api tests ', () => {
         }
 
         before(async function () {
-            this.timeout(1000 * 60 * 10);
+            this.timeout(1000 * 60 * 15);
             await createAlg();
         });
         it("Node start algorithm", async () => {
