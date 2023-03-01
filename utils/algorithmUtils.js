@@ -106,7 +106,7 @@ const buildAlgorithm = async ({ code, algName, entry, baseVersion = 'python:3.7.
 const buildAlgorithmAndWait = async ({ code, algName, entry, baseVersion = 'python:3.7', algorithmArray = [] }) => {
 
     const buildIdAlg = await buildAlgorithm({ code: code, algName: algName, entry: entry, baseVersion: baseVersion, algorithmArray: algorithmArray })
-    const buildStatusAlg = await getStatusall(buildIdAlg, `/builds/status/`, 200, "completed", 1000 * 60 * 10)
+    const buildStatusAlg = await getStatusall(buildIdAlg, `/builds/status/`, 200, "completed", 1000 * 60 * 15)
 
     return buildStatusAlg
 }

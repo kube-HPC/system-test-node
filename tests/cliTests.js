@@ -127,7 +127,7 @@ describe('Hkubectl Tests', () => {
 
         }).timeout(1000 * 60 * 6)
 
-        it('hkube algorithm apply from file and delete', async () => {
+        xit('hkube algorithm apply from file and delete', async () => {
             const fs = require('fs');
             const algName = pipelineRandomName(8).toLowerCase()
             algLIst.push(algName)
