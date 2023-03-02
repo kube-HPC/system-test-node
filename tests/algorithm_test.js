@@ -199,9 +199,14 @@ describe('Alrogithm Tests', () => {
             algV1.labels = { "group": "test" }
 
             let v1 = await storeAlgorithmApplay(algV1);
-            await delay(10000);
-            const podName = await filterPodsByName(algName);
-            expect(podName[0].metadata.labels["group"]).to.be.eqls("hkube")
+            let times = 0;
+            let pods = [];
+            while (pods.length == 0 && times < 15) {
+                await delay(1000);
+                pods = await filterPodsByName(algName);
+                times++;
+            }
+            expect(pods[0].metadata.labels["group"]).to.be.eqls("hkube")
             deleteAlgorithm(algName)
         }).timeout(1000 * 60 * 10);
 
@@ -214,8 +219,14 @@ describe('Alrogithm Tests', () => {
             algV1.labels = { "created-by": "test" }
             let v1 = await storeAlgorithmApplay(algV1);
             await delay(10000)
-            const podName = await filterPodsByName(algName);
-            expect(podName[0].metadata.labels["created-by"]).to.be.eqls("test")
+            let times = 0;
+            let pods = [];
+            while (pods.length == 0 && times < 15) {
+                await delay(1000);
+                pods = await filterPodsByName(algName);
+                times++;
+            }
+            expect(pods[0].metadata.labels["created-by"]).to.be.eqls("test")
             deleteAlgorithm(algName)
         }).timeout(1000 * 60 * 10);
 
@@ -231,8 +242,13 @@ describe('Alrogithm Tests', () => {
             algV1.annotations = { "annotations-by": "test" }
 
             let v1 = await storeAlgorithmApplay(algV1);
-            await delay(8000)
-            const pods = await filterPodsByName(algName);
+            let times = 0;
+            let pods = [];
+            while (pods.length == 0 && times < 15) {
+                await delay(1000);
+                pods = await filterPodsByName(algName);
+                times++;
+            }
             expect(pods[0].metadata.annotations["annotations-by"]).to.be.eqls("test")
             deleteAlgorithm(algName)
         }).timeout(1000 * 60 * 10);
@@ -247,9 +263,14 @@ describe('Alrogithm Tests', () => {
             algV1.nodeSelector = { "kubernetes.io/hostname": nodes[2] }
             let v1 = await storeAlgorithmApplay(algV1);
             // const res = await runAlgorithm({ name: algName })
-            await delay(5000)
-            const podName = await filterPodsByName(algName);
-            const names = podName.map((n) => { return n.metadata.name })
+            let times = 0;
+            let pods = [];
+            while (pods.length == 0 && times < 15) {
+                await delay(1000);
+                pods = await filterPodsByName(algName);
+                times++;
+            }
+            const names = pods.map((n) => { return n.metadata.name })
 
             const podNode = await getPodNode(names[0])
             expect(podNode).to.be.equal(nodes[2])
@@ -259,9 +280,14 @@ describe('Alrogithm Tests', () => {
 
             let v2 = await storeAlgorithmApplay(algV2);
             const update = await updateAlgorithmVersion(algName, v2.body.algorithm.version, true);
-            await delay(20000)
-            const podName1 = await filterPodsByName(algName);
-            const names1 = podName1.map((n) => { return n.metadata.name })
+            times = 0;
+            pods = [];
+            while (pods.length == 0 && times < 20) {
+                await delay(1000);
+                pods = await filterPodsByName(algName);
+                times++;
+            }
+            const names1 = pods.map((n) => { return n.metadata.name })
             var index = names1.indexOf(names[0]);
             if (index !== -1) {
 

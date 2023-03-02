@@ -183,7 +183,7 @@ describe('Hkubectl Tests', () => {
             const buildResult2 = await exceSyncString(runBulidV2);
             const result = await runAlgGetResult(algName, [4])
             expect(result.data[0].result.version.toString()).to.be.equal("1.1")
-        }).timeout(1000 * 60 * 10)
+        }).timeout(1000 * 60 * 15)
 
         it('hkube algorithm apply alg version setCurrent', async () => {
             const algName = pipelineRandomName(8).toLowerCase()
@@ -490,7 +490,7 @@ describe('Hkubectl Tests', () => {
             var data = fs.readFileSync(filePath, 'utf8');
             fs.writeFileSync(`${folderPath}/${algName}.py`, data, { encoding: 'utf8', flag: 'w' })
 
-            await delay(20 * 1000)
+            await delay(40 * 1000)
 
             const result = await runAlgGetResult(algName, [4])
             console.log(result)
