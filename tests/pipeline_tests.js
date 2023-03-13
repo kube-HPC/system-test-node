@@ -1171,8 +1171,8 @@ describe("pipeline Tests 673", () => {
       const jobId1 = res1.body.jobId;
       const jobId2 = res2.body.jobId;
 
-      const result1 = await getResult(jobId1, 200);
-      const result2 = await getResult(jobId2, 200);
+      const result1 = await getResult(jobId1, 200, 1000 * 60 * 19);
+      const result2 = await getResult(jobId2, 200, 1000 * 60 * 19);
       expect(result1.timeTook).to.be.lessThan(result2.timeTook);
     }).timeout(1000 * 60 * 20);
 
@@ -1195,9 +1195,9 @@ describe("pipeline Tests 673", () => {
       const jobId1 = res1.body.jobId;
       const jobId2 = res2.body.jobId;
 
-      const result1 = await getResult(jobId1, 200);
-      const result2 = await getResult(jobId2, 200);
+      const result1 = await getResult(jobId1, 200, 1000 * 60 * 19);
+      const result2 = await getResult(jobId2, 200, 1000 * 60 * 19);
       expect(result1.timeTook).to.be.lessThan(result2.timeTook);
-    }).timeout(1000 * 60 * 7);
+    }).timeout(1000 * 60 * 20);
   });
 });

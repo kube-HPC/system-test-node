@@ -14,27 +14,42 @@ const descriptor = {
         {
             nodeName: "evalsleep",
             algorithmName: "eval-alg",
-            input: [               
+            input: [
                 "@flowInput.inp"
             ],
             extraData: {
                 code: [
-                    "(input,require)=> {",                    
+                    "(input,require)=> {",
                     "return  new Promise((resolve,reject)=>{setTimeout(()=>resolve(4),input)});}"
-                    
+
                 ]
             }
         },
-        
+        {
+            nodeName: "evalsleep2",
+            algorithmName: "eval-alg",
+            input: [
+                "@flowInput.inp",
+                "@evalsleep"
+            ],
+            extraData: {
+                code: [
+                    "(input,require)=> {",
+                    "return  new Promise((resolve,reject)=>{setTimeout(()=>resolve(4),input)});}"
+
+                ]
+            }
+        },
+
         {
             nodeName: "algo-test",
             algorithmName: "eval-alg",
             input: [
-                "@evalsleep",
+                "@evalsleep2",
                 "@flowInput.inp"
-               
+
             ],
-            
+
             "metrics": {
                 "tensorboard": true
             }
@@ -44,7 +59,7 @@ const descriptor = {
 
 const input = {
     flowInput: {
-        
+
         inp: 2000
     }
 }
