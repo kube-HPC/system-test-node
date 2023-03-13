@@ -53,7 +53,7 @@ const {
 chai.use(chaiHttp);
 
 
-const { waitForWorkers } = require('../utils/socketGet')
+const { waitForWorkers,getJobsByNameAndVersion,getJobById } = require('../utils/socketGet')
 describe('Alrogithm Tests', () => {
 
 
@@ -466,6 +466,7 @@ describe('Alrogithm Tests', () => {
 
 
 
+
         it('Delete  algorithm current version ', async () => {
 
 
@@ -488,6 +489,32 @@ describe('Alrogithm Tests', () => {
 
         }).timeout(1000 * 60 * 5);
 
+        it.only('check save current version algorithem after update and no delete versions after delete algorithm', async () => {
+
+            await deleteAlgorithm(algorithmName, true);
+            let v1 = await storeAlgorithmApplay(algorithmV1);
+
+            const resAlgorithmV1 = await runAlgorithm(
+                    {
+                        "name": v1.body.algorithm.name,
+                        "input": [],
+                        "debug": false
+                    }
+            );
+
+            await delay(2000);
+            let v2 = await storeAlgorithmApplay(algorithmV2);
+
+            const { job } = await getJobById(resAlgorithmV1.body.jobId);
+            const version = await getJobsByNameAndVersion(job.graph.nodes[0].algorithmName, job.graph.nodes[0].algorithmVersion);
+            expect(v1.body.algorithm.algorithmImage).to.be.equal(version.algorithmsByVersion.algorithm.algorithmImage)
+
+            await deleteAlgorithm(algorithmName, true,true)
+            const versionAfterDelete = await getJobsByNameAndVersion(job.graph.nodes[0].algorithmName, job.graph.nodes[0].algorithmVersion);
+            expect(v1.body.algorithm.algorithmImage).to.be.equal(versionAfterDelete.algorithmsByVersion.algorithm.algorithmImage)
+
+             }).timeout(1000 * 60 * 5);
+        
     })
 
 

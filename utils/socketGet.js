@@ -2,6 +2,8 @@ require('dotenv').config()
 const { request } = require('graphql-request')
 const { WORKERS_ALL_QUERY } = require('../utils/graphql/queries/workers-query');
 const JOB_QUERY = require('../utils/graphql/queries/job-query');
+const JOB_BY_ID_QUERY = require('../utils/graphql/queries/job-by-id-query');
+const ALGORITHM_BY_VERSION_QUERY = require('../utils/graphql/queries/algorithm-by-version-query');
 const ERROR_LOG_QUERY = require('../utils/graphql/queries/error-log-query');
 const PIPELINE_DRIVER_QUERY = require('./graphql/queries/pipeline-driver-query');
 const delay = require('delay')
@@ -25,7 +27,22 @@ const getWebSocketJobs = async (experimentName = 'main') => {
     const data = await request(Graphql_URL, JOB_QUERY);
     return data.jobsAggregated.jobs
 };
+const getJobById = async (jobId) => {
+    const variables = {
+        jobId
+    }
+    const data = await request(Graphql_URL, JOB_BY_ID_QUERY,variables);
+    return data;
+};
 
+const getJobsByNameAndVersion = async (name,version) => {
+    const variables = {
+        name,
+        version
+    }
+    const data = await request(Graphql_URL, ALGORITHM_BY_VERSION_QUERY,variables);
+    return data;
+};
 
 
 
@@ -53,5 +70,7 @@ module.exports = {
     getWebSocketJobs,
     getWebSocketlogs,
     getDriverIdByJobId,
-    waitForWorkers
+    waitForWorkers,
+    getJobById,
+    getJobsByNameAndVersion
 }
