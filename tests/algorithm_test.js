@@ -489,7 +489,7 @@ describe('Alrogithm Tests', () => {
 
         }).timeout(1000 * 60 * 5);
 
-        it.only('check save current version algorithem after update and no delete versions after delete algorithm', async () => {
+        it('check save current version algorithem after update and no delete versions after delete algorithm', async () => {
 
             await deleteAlgorithm(algorithmName, true);
             let v1 = await storeAlgorithmApplay(algorithmV1);
