@@ -39,7 +39,7 @@
     "graphql-tag": "^2.12.6",
     "js-yaml": "^3.14.0",
     "kubernetes-client": "^8.3.7",
-    "mocha": "^5.2.0",
+    "mocha": "^10.2.0",
     "nyc": "^14.1.1",
     "querystring": "^0.2.1",
     "request-promise": "^4.2.5",
@@ -51,6 +51,6 @@
     "ws": "^7.5.3"
   },
   "devDependencies": {
-    "mocha": "^5.2.0"
+    "mocha": "^10.2.0"
   }
 }
