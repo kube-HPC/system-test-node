@@ -492,26 +492,26 @@ describe('Alrogithm Tests', () => {
         it('check save current version algorithem after update and no delete versions after delete algorithm', async () => {
 
             await deleteAlgorithm(algorithmName, true);
-            let v1 = await storeAlgorithmApplay(algorithmV1);
+            await storeAlgorithmApplay(algorithmV1);
 
             const resAlgorithmV1 = await runAlgorithm(
                     {
-                        "name": v1.body.algorithm.name,
+                        "name": algorithmV1.name,
                         "input": [],
                         "debug": false
                     }
             );
 
             await delay(2000);
-            let v2 = await storeAlgorithmApplay(algorithmV2);
+            await storeAlgorithmApplay(algorithmV2);
 
             const { job } = await getJobById(resAlgorithmV1.body.jobId);
-            const version = await getJobsByNameAndVersion(job.graph.nodes[0].algorithmName, job.graph.nodes[0].algorithmVersion);
-            expect(v1.body.algorithm.algorithmImage).to.be.equal(version.algorithmsByVersion.algorithm.algorithmImage)
+            const versionranAlgorithm = await getJobsByNameAndVersion(job.graph.nodes[0].algorithmName, job.graph.nodes[0].algorithmVersion);
+            expect(algorithmV1.algorithmImage).to.be.equal(versionranAlgorithm.algorithmsByVersion.algorithm.algorithmImage)
 
             await deleteAlgorithm(algorithmName, true,true)
-            const versionAfterDelete = await getJobsByNameAndVersion(job.graph.nodes[0].algorithmName, job.graph.nodes[0].algorithmVersion);
-            expect(v1.body.algorithm.algorithmImage).to.be.equal(versionAfterDelete.algorithmsByVersion.algorithm.algorithmImage)
+            const ranAlgorithmAfterDelete = await getJobsByNameAndVersion(job.graph.nodes[0].algorithmName, job.graph.nodes[0].algorithmVersion);
+            expect(algorithmV1.algorithmImage).to.be.equal(ranAlgorithmAfterDelete.algorithmsByVersion.algorithm.algorithmImage)
 
              }).timeout(1000 * 60 * 5);
         
