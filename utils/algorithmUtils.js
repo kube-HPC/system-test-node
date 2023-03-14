@@ -220,9 +220,9 @@ const tagAlgorithmVersion = async (algName, algVersion, algTag) => {
 
 }
 
-const deleteAlgorithm = async (name, force = true) => {
+const deleteAlgorithm = async (name, force = true,keepOldVersions=false) => {
     const res = await chai.request(config.apiServerUrl)
-        .delete(`/store/algorithms/${name}?force=${force}`)
+        .delete(`/store/algorithms/${name}?force=${force}&keepOldVersions=${keepOldVersions}`)
     logResult(res, "algorithmUtils deleteAlgorithm")
     return res
 }
