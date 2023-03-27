@@ -10,7 +10,7 @@ const { runAlgorithm,
     getAlgorithm,
     getAlgorithmVersion,
     updateAlgorithmVersion,
-    storeAlgorithmApplay,
+    storeAlgorithmApply,
     deleteAlgorithmVersion,
     buildAlgorithmAndWait,
     tagAlgorithmVersion,
@@ -155,9 +155,9 @@ describe('Alrogithm Tests', () => {
 
         it('algorithm change creates a new version', async () => {
             await deleteAlgorithm(algorithmName, true)
-            let v1 = await storeAlgorithmApplay(algorithmV1);
+            let v1 = await storeAlgorithmApply(algorithmV1);
             algorithmV1.algorithmEnv = { "FOO": "123456" }
-            let v2 = await storeAlgorithmApplay(algorithmV1);
+            let v2 = await storeAlgorithmApply(algorithmV1);
             const algVersion2 = await getAlgorithmVersion(algorithmName);
             expect(algVersion2.body.length).to.be.equal(2)
             let alg = await getAlgorithm(algorithmName)
@@ -172,12 +172,12 @@ describe('Alrogithm Tests', () => {
         it('algorithm version can have tag  ', async () => {
 
             await deleteAlgorithm(algorithmName, true)
-            const v1 = await storeAlgorithmApplay(algorithmV1);
+            const v1 = await storeAlgorithmApply(algorithmV1);
 
             const tag = await tagAlgorithmVersion(algorithmName, v1.body.algorithm.version, "myTag1")
             const v1Tag = await getAlgVersion(algorithmName, v1.body.algorithm.version)
             algorithmV1.cpu = 2
-            const v2 = await storeAlgorithmApplay(algorithmV1);
+            const v2 = await storeAlgorithmApply(algorithmV1);
             const algVersion2 = await getAlgorithmVersion(algorithmName);
             expect(algVersion2.body.length).to.be.equal(2)
             await tagAlgorithmVersion(algorithmName, v2.body.algorithm.version, "myTag2")
@@ -198,7 +198,7 @@ describe('Alrogithm Tests', () => {
             algV1.minHotWorkers = 1; // get a pod running
             algV1.labels = { "group": "test" }
 
-            let v1 = await storeAlgorithmApplay(algV1);
+            let v1 = await storeAlgorithmApply(algV1);
             let times = 0;
             let pods = [];
             while (pods.length == 0 && times < 15) {
@@ -217,7 +217,7 @@ describe('Alrogithm Tests', () => {
             const algV1 = algJson(algName, algorithmImageV1)
             algV1.minHotWorkers = 1; // get a pod running
             algV1.labels = { "created-by": "test" }
-            let v1 = await storeAlgorithmApplay(algV1);
+            let v1 = await storeAlgorithmApply(algV1);
             await delay(10000)
             let times = 0;
             let pods = [];
@@ -241,7 +241,7 @@ describe('Alrogithm Tests', () => {
             algV1.minHotWorkers = 1; // get a pod running
             algV1.annotations = { "annotations-by": "test" }
 
-            let v1 = await storeAlgorithmApplay(algV1);
+            let v1 = await storeAlgorithmApply(algV1);
             let times = 0;
             let pods = [];
             while (pods.length == 0 && times < 15) {
@@ -253,48 +253,54 @@ describe('Alrogithm Tests', () => {
             deleteAlgorithm(algName)
         }).timeout(1000 * 60 * 10);
 
-        xit(' update algorithm nodeSelector', async () => {
+        it.only(' update algorithm nodeSelector', async () => {
             const nodes = await getNodes();
-
+            expect(nodes.length).to.be.above(2,"Received 2 or less nodes.");
+            //create and store an algorithm
             const algName = pipelineRandomName(8).toLowerCase()
-            const algV1 = algJson(algName, algorithmImageV1)
-            const algV2 = algJson(algName, algorithmImageV1)
+            console.log(`Alg name is : ${algName}`);
+            const algV1 = algJson(algName, algorithmImageV1);
             algV1.minHotWorkers = 1; // get a pod running
             algV1.nodeSelector = { "kubernetes.io/hostname": nodes[2] }
-            let v1 = await storeAlgorithmApplay(algV1);
-            // const res = await runAlgorithm({ name: algName })
+            let v1 = await storeAlgorithmApply(algV1);
+            console.log(`Alg stored, selected node : ${nodes[2]}`);
             let times = 0;
             let pods = [];
             while (pods.length == 0 && times < 15) {
                 await delay(1000);
                 pods = await filterPodsByName(algName);
                 times++;
-            }
-            const names = pods.map((n) => { return n.metadata.name })
+            }//awaits hotworker uptime
+            const podNames = pods.map((n) => { return n.metadata.name }) // Should hold only one node - the original selection
+            console.log(`Pod name after first store action : ${podNames}`);
+            const firstPodName = podNames[0]; // Store first pod's name from the pod array
+            const podNode = await getPodNode(firstPodName);
+            expect(podNode).to.be.equal(nodes[2]) // verify worker on selected node nodes[2]
 
-            const podNode = await getPodNode(names[0])
-            expect(podNode).to.be.equal(nodes[2])
-
-            algV2.nodeSelector = { "kubernetes.io/hostname": nodes[1] }
-            algV2.minHotWorkers = 1;
-
-            let v2 = await storeAlgorithmApplay(algV2);
-            const update = await updateAlgorithmVersion(algName, v2.body.algorithm.version, true);
+            algV1.nodeSelector = { "kubernetes.io/hostname": nodes[1] }
+            algV1.minHotWorkers = 1;
+            console.log(`New Selected node : ${nodes[0]}`);
+            //store and update the new algorithm with a new version + a different selected node nodes[1];
+            v1 = await storeAlgorithmApply(algV1);
+            const update = await updateAlgorithmVersion(algName, v1.body.algorithm.version, true);            
+            
             times = 0;
-            pods = [];
-            while (pods.length == 0 && times < 20) {
+            let podsNamesAfter = [];
+            while (podsNamesAfter.length == 0 && times < 20 ) {
                 await delay(1000);
-                pods = await filterPodsByName(algName);
+                podsNamesAfter = await filterPodsByName(algName);
+                podsNamesAfter = podsNamesAfter.filter((n) => { 
+                    if(n.metadata.name !== firstPodName){ //Make sure the old pod is not returned
+                        return n.metadata.name;
+                    }
+                    });
                 times++;
             }
-            const names1 = pods.map((n) => { return n.metadata.name })
-            var index = names1.indexOf(names[0]);
-            if (index !== -1) {
-
-                names1.splice(index, 1);
-            }
+            expect(podsNamesAfter.length).to.not.equal(0,"No new pods found with the new alg after store+update");
+            console.log(`Pod names after new node selection : ${podsNamesAfter}`);
+            //var index = podNamesAfter.indexOf(podNames[0]); //index=0; when fails.
             //var filteredAry = ary.filter(e => e !== 'seven')
-            const podNode1 = await getPodNode(names1[0])
+            const podNode1 = await getPodNode(podsNamesAfter[0])
             expect(podNode1).to.be.equal(nodes[1])
             deleteAlgorithm(algName)
         }).timeout(1000 * 60 * 10);
@@ -313,7 +319,7 @@ describe('Alrogithm Tests', () => {
             let algJson = JSON.parse(alg.text);
             alg = await getAlgorithm(algName)
             algJson.baseImage = "python:3.8"
-            let v2 = await storeAlgorithmApplay(algJson);
+            let v2 = await storeAlgorithmApply(algJson);
             //expect(v2.algorithmImage).to.contain(v2.imageTag)
             expect(v2.imageTag).to.not.be.equal(buildStatusAlg.imageTag)
             expect(v2.body.messages[0].startsWith("a build was triggered due to change in baseImage")).to.be.true
@@ -334,7 +340,7 @@ describe('Alrogithm Tests', () => {
             let algJson = JSON.parse(alg.text);
             alg = await getAlgorithm(algName)
             algJson.env = "nodejs"
-            let v2 = await storeAlgorithmApplay(algJson);
+            let v2 = await storeAlgorithmApply(algJson);
             //expect(v2.algorithmImage).to.contain(v2.imageTag)
             expect(v2.imageTag).to.not.be.equal(buildStatusAlg.imageTag)
             expect(v2.body.messages[0].startsWith("a build was triggered due to change in env")).to.be.true
@@ -342,10 +348,10 @@ describe('Alrogithm Tests', () => {
 
         it('Update  Algorithm version', async () => {
             await deleteAlgorithm(algorithmName, true)
-            await storeAlgorithmApplay(algorithmV1);
+            await storeAlgorithmApply(algorithmV1);
             const algVersion = await getAlgorithmVersion(algorithmName);
             expect(algVersion.body.length).to.be.equal(1)
-            let v2 = await storeAlgorithmApplay(algorithmV2);
+            let v2 = await storeAlgorithmApply(algorithmV2);
             //validate there are two images
             const algVersion2 = await getAlgorithmVersion(algorithmName);
             expect(algVersion2.body.length).to.be.equal(2)
@@ -372,12 +378,12 @@ describe('Alrogithm Tests', () => {
         it('Delete  Algorithm deletes pipeline', async () => {
 
             await deleteAlgorithm(algorithmName, true)
-            await storeAlgorithmApplay(algorithmV1);
+            await storeAlgorithmApply(algorithmV1);
 
             //store pipeline algorithm-version-test
             await storePipeline(d)
             // const jobId = await runStoredAndWaitForResults(d)        
-            await storeAlgorithmApplay(algorithmV2);
+            await storeAlgorithmApply(algorithmV2);
             //const update = await updateAlgorithmVersion(algorithmName,algorithmImageV2,true);
             await delay(2000)
             //const jobId2 = await runStoredAndWaitForResults(d)       
@@ -394,12 +400,12 @@ describe('Alrogithm Tests', () => {
         it('Delete  Algorithm deletes versions', async () => {
             //validate that after delete old algorith, version are deleted.
             await deleteAlgorithm(algorithmName, true)
-            await storeAlgorithmApplay(algorithmV1);
-            await storeAlgorithmApplay(algorithmV2);
+            await storeAlgorithmApply(algorithmV1);
+            await storeAlgorithmApply(algorithmV2);
             await delay(2000)
 
             await deleteAlgorithm(algorithmName, true)
-            await storeAlgorithmApplay(algorithmV1);
+            await storeAlgorithmApply(algorithmV1);
             const algVersion1 = await getAlgorithmVersion(algorithmName);
             expect(algVersion1.body.length).to.be.equal(1)
             await deleteAlgorithm(algorithmName, true)
@@ -414,8 +420,8 @@ describe('Alrogithm Tests', () => {
                 }
             }
             await deleteAlgorithm(algorithmName, true)
-            await storeAlgorithmApplay(algorithmV1);
-            let v2 = await storeAlgorithmApplay(algorithmV2);
+            await storeAlgorithmApply(algorithmV1);
+            let v2 = await storeAlgorithmApply(algorithmV2);
             await delay(2000)
             await storePipeline(d)
             const res = await runStored(pipe)
@@ -444,8 +450,8 @@ describe('Alrogithm Tests', () => {
             }
 
             await deleteAlgorithm(algorithmName, true)
-            await storeAlgorithmApplay(algorithmV1);
-            let v2 = await storeAlgorithmApplay(algorithmV2);
+            await storeAlgorithmApply(algorithmV1);
+            let v2 = await storeAlgorithmApply(algorithmV2);
             await delay(2000)
             await storePipeline(d)
             const res = await runStored(pipe)
@@ -471,8 +477,8 @@ describe('Alrogithm Tests', () => {
 
 
             await deleteAlgorithm(algorithmName, true)
-            let v1 = await storeAlgorithmApplay(algorithmV1);
-            let v2 = await storeAlgorithmApplay(algorithmV2);
+            let v1 = await storeAlgorithmApply(algorithmV1);
+            let v2 = await storeAlgorithmApply(algorithmV2);
             await delay(2000)
 
             const update = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, false);
@@ -492,7 +498,7 @@ describe('Alrogithm Tests', () => {
         it('check save current version algorithem after update and no delete versions after delete algorithm', async () => {
 
             await deleteAlgorithm(algorithmName, true);
-            await storeAlgorithmApplay(algorithmV1);
+            await storeAlgorithmApply(algorithmV1);
 
             const resAlgorithmV1 = await runAlgorithm(
                     {
@@ -503,7 +509,7 @@ describe('Alrogithm Tests', () => {
             );
 
             await delay(2000);
-            await storeAlgorithmApplay(algorithmV2);
+            await storeAlgorithmApply(algorithmV2);
 
             const { job } = await getJobById(resAlgorithmV1.body.jobId);
             const versionranAlgorithm = await getJobsByNameAndVersion(job.graph.nodes[0].algorithmName, job.graph.nodes[0].algorithmVersion);
@@ -572,8 +578,8 @@ describe('Alrogithm Tests', () => {
             }
             await deleteAlgorithm(alg.name, true)
             alg.reservedMemory = "3Gi"
-            await storeAlgorithmApplay(alg);
-            // const jnk = await storeAlgorithmApplay(alg);
+            await storeAlgorithmApply(alg);
+            // const jnk = await storeAlgorithmApply(alg);
             const res = await runRaw(pipe)
             const jobId = res.body.jobId
             const result = await getResult(jobId, 200)
@@ -583,7 +589,7 @@ describe('Alrogithm Tests', () => {
             alg.reservedMemory = "512Mi"
             pipe.nodes[0].algorithmName = "env1"
             await deleteAlgorithm(alg.name, true)
-            await storeAlgorithmApplay(alg);
+            await storeAlgorithmApply(alg);
             const res2 = await runRaw(pipe)
             const jobId2 = res2.body.jobId
             const result2 = await getResult(jobId2, 200)
@@ -646,7 +652,7 @@ describe('Alrogithm Tests', () => {
         const createAlg = async () => {
             if (!algCreated) {
                 await deleteAlgorithm(alg.name, true)
-                await storeAlgorithmApplay(alg);
+                await storeAlgorithmApply(alg);
                 algCreated = true
 
             }
@@ -744,7 +750,7 @@ describe('Alrogithm Tests', () => {
             }
 
             await deleteAlgorithm(alg.name, true)
-            await storeAlgorithmApplay(alg);
+            await storeAlgorithmApply(alg);
             await delay(20000)
             const workers = await waitForWorkers(alg.name, alg.minHotWorkers);
             await deleteAlgorithm(alg.name, true)
@@ -770,7 +776,7 @@ describe('Alrogithm Tests', () => {
                         }
                     }
                     const aa = await deleteAlgorithm("versatile", true)
-                    const bb = await storeAlgorithmApplay(alg);
+                    const bb = await storeAlgorithmApply(alg);
                     //need to add alg versatile-pipe
                     const algName = "black-alg"
                     const pipe = {

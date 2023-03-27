@@ -23,7 +23,7 @@ const {
 const {
     runAlgGetResult,
     getAlgorithm,
-    storeAlgorithmApplay,
+    storeAlgorithmApply,
     deleteAlgorithm,
     getBuildList } = require('../utils/algorithmUtils')
 
@@ -553,7 +553,7 @@ describe('Hkubectl Tests', () => {
 
             }
 
-            const res = await storeAlgorithmApplay(alg1);
+            const res = await storeAlgorithmApply(alg1);
             algLIst.push(newName)
             const result1 = await runAlgGetResult(newName, [4])
             console.log(result)

@@ -29,7 +29,7 @@ const {
     deleteAlgorithm,
     getAlgorithmVersion,
     updateAlgorithmVersion,
-    storeAlgorithmApplay,
+    storeAlgorithmApply,
     deleteAlgorithmVersion,
     buildAlgorithmAndWait,
     buildAlgorithm,
@@ -611,7 +611,7 @@ describe('Algorithm build test', () => {
                         branch: "branch1"
                     }
                 }
-                const jnk = await storeAlgorithmApplay(Alg)
+                const jnk = await storeAlgorithmApply(Alg)
 
             }).timeout(1000 * 60 * 20)
 

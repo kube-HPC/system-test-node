@@ -12,7 +12,7 @@ const { runAlgorithm,
     getAlgorithm,
     getAlgorithmVersion,
     updateAlgorithmVersion,
-    storeAlgorithmApplay,
+    storeAlgorithmApply,
     deleteAlgorithmVersion,
     getAlgorithim } = require('../../utils/algorithmUtils')
 
