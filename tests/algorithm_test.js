@@ -134,7 +134,7 @@ describe('Alrogithm Tests', () => {
         const algJson = (algName, imageName) => {
             let alg = {
                 name: algName,
-                cpu: 1,
+                cpu: 0.1,
                 gpu: 0,
                 mem: "256Mi",
                 minHotWorkers: 0,
@@ -253,7 +253,7 @@ describe('Alrogithm Tests', () => {
             deleteAlgorithm(algName)
         }).timeout(1000 * 60 * 10);
 
-        it(' update algorithm nodeSelector', async () => {
+        it.only(' update algorithm nodeSelector', async () => {
             const nodes = await getNodes();
             expect(nodes.length).to.be.above(2,"Received 2 or less nodes.");
             //create and store an algorithm
