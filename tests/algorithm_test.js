@@ -65,17 +65,17 @@ describe('Alrogithm Tests', () => {
         console.log("node 0 - " + nodes[0])
 
     }).timeout(1000 * 60 * 5);
-    let algLIst = []
+    let algList = []
 
     after(async function () {
         this.timeout(2 * 60 * 1000);
         console.log("sater after")
-        console.log("algList = " + algLIst)
+        console.log("algList = " + algList)
         j = 0
         z = 3
 
-        while (j < algLIst.length) {
-            delAlg = algLIst.slice(j, z)
+        while (j < algList.length) {
+            delAlg = algList.slice(j, z)
             const del = delAlg.map((e) => {
                 return deleteAlgorithm(e)
             })
@@ -253,7 +253,7 @@ describe('Alrogithm Tests', () => {
             deleteAlgorithm(algName)
         }).timeout(1000 * 60 * 10);
 
-        it.only(' update algorithm nodeSelector', async () => {
+        it(' update algorithm nodeSelector', async () => {
             const nodes = await getNodes();
             expect(nodes.length).to.be.above(2,"Received 2 or less nodes.");
             //create and store an algorithm
@@ -263,6 +263,7 @@ describe('Alrogithm Tests', () => {
             algV1.minHotWorkers = 1; // get a pod running
             algV1.nodeSelector = { "kubernetes.io/hostname": nodes[2] }
             let v1 = await storeAlgorithmApply(algV1);
+            algList.push(algName); // List removes algs in .after
             console.log(`Alg stored, selected node : ${nodes[2]}`);
             let times = 0;
             let pods = [];
@@ -277,7 +278,7 @@ describe('Alrogithm Tests', () => {
             const podNode = await getPodNode(firstPodName);
             expect(podNode).to.be.equal(nodes[2]) // verify worker on selected node nodes[2]
 
-            algV1.nodeSelector = { "kubernetes.io/hostname": nodes[1] }
+            algV1.nodeSelector = { "kubernetes.io/hostname": nodes[0] }
             algV1.minHotWorkers = 1;
             console.log(`New Selected node : ${nodes[0]}`);
             //store and update the new algorithm with a new version + a different selected node nodes[1];
@@ -297,21 +298,21 @@ describe('Alrogithm Tests', () => {
                 times++;
             }
             expect(podsNamesAfter.length).to.not.equal(0,"No new pods found with the new alg after store+update");
-            console.log(`Pod names after new node selection : ${podsNamesAfter}`);
+            console.log(`Pod names after new node selection : ${podsNamesAfter[0].metadata.name}`);
             //var index = podNamesAfter.indexOf(podNames[0]); //index=0; when fails.
             //var filteredAry = ary.filter(e => e !== 'seven')
-            const podNode1 = await getPodNode(podsNamesAfter[0])
-            expect(podNode1).to.be.equal(nodes[1])
+            const podNodeAfter = await getPodNode(podsNamesAfter[0].metadata.name)
+            expect(podNodeAfter).to.be.equal(nodes[0])
             deleteAlgorithm(algName)
         }).timeout(1000 * 60 * 10);
 
-        xit(`change baseImage trigger new Build`, async () => {
+        it(`change baseImage trigger new Build`, async () => {
             const code1 = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
             const entry = 'main27'
             const algName = "python2.7-test-1"
             const pythonVersion = "python:2.7"
             await deleteAlgorithm(algName)
-            const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algLIst })
+            const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algList })
             expect(buildStatusAlg.status).to.be.equal("completed")
             expect(buildStatusAlg.algorithmImage).to.contain(buildStatusAlg.imageTag)//.endsWith(buildStatusAlg.imageTag)
             let alg = await getAlgorithm(algName)
@@ -323,6 +324,7 @@ describe('Alrogithm Tests', () => {
             //expect(v2.algorithmImage).to.contain(v2.imageTag)
             expect(v2.imageTag).to.not.be.equal(buildStatusAlg.imageTag)
             expect(v2.body.messages[0].startsWith("a build was triggered due to change in baseImage")).to.be.true
+            algList.push(algName); // List removes algs in .after
         }).timeout(1000 * 60 * 20)
 
 
@@ -332,7 +334,7 @@ describe('Alrogithm Tests', () => {
             const algName = "python2.7-test-1"
             const pythonVersion = "python:2.7"
             await deleteAlgorithm(algName)
-            const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algLIst })
+            const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algList })
             expect(buildStatusAlg.status).to.be.equal("completed")
             expect(buildStatusAlg.algorithmImage).to.contain(buildStatusAlg.imageTag)//.endsWith(buildStatusAlg.imageTag)
             let alg = await getAlgorithm(algName)
