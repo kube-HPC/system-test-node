@@ -6,7 +6,7 @@ const delay = require('delay')
 
 const { deleteAlgorithm,
     runAlgorithm,
-    storeAlgorithmApplay,
+    storeAlgorithmApply,
 } = require('../../../utils/algorithmUtils')
 
 const {
@@ -49,7 +49,7 @@ describe('baseline  version Tests', () => {
             const algpython27 = algJson(algorithmName, python27)
 
             await deleteAlgorithm(algorithmName, true)
-            await storeAlgorithmApplay(algpython27);
+            await storeAlgorithmApply(algpython27);
             const alg = {
                 name: algorithmName,
                 input: [1]
@@ -68,7 +68,7 @@ describe('baseline  version Tests', () => {
             const algpython35 = algJson(algorithmName, python35)
 
             await deleteAlgorithm(algorithmName, true)
-            await storeAlgorithmApplay(algpython35);
+            await storeAlgorithmApply(algpython35);
             const alg = {
                 name: algorithmName,
                 input: [1]
@@ -85,7 +85,7 @@ describe('baseline  version Tests', () => {
             const algpython36 = algJson(algorithmName, python36)
 
             await deleteAlgorithm(algorithmName, true)
-            await storeAlgorithmApplay(algpython36);
+            await storeAlgorithmApply(algpython36);
             const alg = {
                 name: algorithmName,
                 input: [1]
@@ -102,7 +102,7 @@ describe('baseline  version Tests', () => {
             const algpython37 = algJson(algorithmName, python37)
 
             await deleteAlgorithm(algorithmName, true)
-            await storeAlgorithmApplay(algpython37);
+            await storeAlgorithmApply(algpython37);
             const alg = {
                 name: algorithmName,
                 input: [1]
@@ -119,7 +119,7 @@ describe('baseline  version Tests', () => {
             const algpython37 = algJson(algorithmName, python37)
 
             await deleteAlgorithm(algorithmName, true)
-            await storeAlgorithmApplay(algpython37);
+            await storeAlgorithmApply(algpython37);
             const alg = {
                 name: algorithmName,
                 input: [1]

@@ -67,3 +67,4 @@ typings/
 .serverless
 ./logs
 file.txt
+.vscode

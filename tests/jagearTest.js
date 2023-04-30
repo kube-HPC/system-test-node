@@ -23,7 +23,7 @@ const {
 chai.use(chaiHttp);
 chai.use(assertArrays);
 const { deleteAlgorithm,
-    storeAlgorithmApplay } = require('../utils/algorithmUtils')
+    storeAlgorithmApply } = require('../utils/algorithmUtils')
 const {
     testData1,
     testData2

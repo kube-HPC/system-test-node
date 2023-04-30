@@ -54,7 +54,7 @@ const storeAlgorithm = async (algName) => {
             alg
         } = require(path.join(process.cwd(), `additionalFiles/defaults/algorithms/${algName}`))
 
-        const res1 = storeAlgorithmApplay(alg)
+        const res1 = storeAlgorithmApply(alg)
         logResult(res1, "algorithmUtils storeAlgorithm")
         const timeout = await delay(1000 * 3);
         return res1
@@ -63,13 +63,13 @@ const storeAlgorithm = async (algName) => {
 
 const updateAlgorithm = async (algfile) => {
     const { alg } = require(path.join(process.cwd(), `additionalFiles/defaults/algorithms/${algfile}`))
-    const res = storeAlgorithmApplay(alg)
+    const res = storeAlgorithmApply(alg)
     logResult(res, "algorithmUtils updateAlgorithm")
     const timeout = await delay(1000 * 3);
     return res
 }
 
-const storeAlgorithmApplay = async (alg) => {
+const storeAlgorithmApply = async (alg) => {
     const res = await chai.request(config.apiServerUrl)
         .post('/store/algorithms/apply')
         .field('payload', JSON.stringify(alg))
@@ -293,7 +293,7 @@ module.exports = {
     buildAlgorithmAndWait,
     getAlgorithmVersion,
     updateAlgorithmVersion,
-    storeAlgorithmApplay,
+    storeAlgorithmApply,
     buildGitAlgorithm,
     deleteAlgorithmVersion,
     logResult,

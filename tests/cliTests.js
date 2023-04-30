@@ -23,7 +23,7 @@ const {
 const {
     runAlgGetResult,
     getAlgorithm,
-    storeAlgorithmApplay,
+    storeAlgorithmApply,
     deleteAlgorithm,
     getBuildList } = require('../utils/algorithmUtils')
 
@@ -58,17 +58,17 @@ const execSyncReturenJSON = async (command) => {
 
 
 describe('Hkubectl Tests', () => {
-    let algLIst = []
+    let algList = []
 
     after(async function () {
         this.timeout(2 * 60 * 1000);
         console.log("sater after")
-        console.log("algList = " + algLIst)
+        console.log("algList = " + algList)
         j = 0
         z = 3
 
-        while (j < algLIst.length) {
-            delAlg = algLIst.slice(j, z)
+        while (j < algList.length) {
+            delAlg = algList.slice(j, z)
             const del = delAlg.map((e) => {
                 return deleteAlgorithm(e)
             })
@@ -109,7 +109,7 @@ describe('Hkubectl Tests', () => {
 
         xit('hkube algorithm apply', async () => {
             const algName = pipelineRandomName(8).toLowerCase()
-            algLIst.push(algName)
+            algList.push(algName)
             const filePath = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
             const runBulid = `hkubectl algorithm apply ${algName} ` +
                 `--env python ` +
@@ -130,7 +130,7 @@ describe('Hkubectl Tests', () => {
         xit('hkube algorithm apply from file and delete', async () => {
             const fs = require('fs');
             const algName = pipelineRandomName(8).toLowerCase()
-            algLIst.push(algName)
+            algList.push(algName)
             const algFile = path.join(process.cwd(), './additionalFiles/alg.yaml');
             let fileContents = fs.readFileSync(algFile, 'utf8');
             let data = yaml.safeLoad(fileContents);
@@ -160,7 +160,7 @@ describe('Hkubectl Tests', () => {
 
         it('hkube algorithm apply alg version', async () => {
             const algName = pipelineRandomName(8).toLowerCase()
-            algLIst.push(algName)
+            algList.push(algName)
             let trgzFile = 'version1.tar.gz'
             let runBulid = `hkubectl algorithm apply ${algName} ` +
                 `--env python ` +
@@ -187,7 +187,7 @@ describe('Hkubectl Tests', () => {
 
         it('hkube algorithm apply alg version setCurrent', async () => {
             const algName = pipelineRandomName(8).toLowerCase()
-            algLIst.push(algName)
+            algList.push(algName)
             let trgzFile = 'version1.tar.gz'
             let runBulid = `hkubectl algorithm apply ${algName} ` +
                 `--env python ` +
@@ -218,7 +218,7 @@ describe('Hkubectl Tests', () => {
 
         it('hkube algorithm apply nowait', async () => {
             const algName = pipelineRandomName(8).toLowerCase()
-            algLIst.push(algName)
+            algList.push(algName)
             const runBulid = `hkubectl algorithm apply ${algName} ` +
                 `--env python ` +
                 `--codeEntryPoint main35 ` +
@@ -419,7 +419,7 @@ describe('Hkubectl Tests', () => {
         it('sync create watch changes python', async () => {
             const filePath = path.join(process.cwd(), 'additionalFiles/main.py');
             const algName = pipelineRandomName(8).toLowerCase()
-            algLIst.push(algName)
+            algList.push(algName)
             const folderPath = path.join(process.cwd(), algName)
             var fs = require('fs');
 
@@ -468,7 +468,7 @@ describe('Hkubectl Tests', () => {
         it('sync python alg with requirements', async () => {
             const folderPath = path.join(process.cwd(), 'additionalFiles/pythonAlg');
             const algName = pipelineRandomName(8).toLowerCase()
-            algLIst.push(algName)
+            algList.push(algName)
             console.log("alg-name-" + algName)
             var fs = require('fs');
 
@@ -504,7 +504,7 @@ describe('Hkubectl Tests', () => {
             const folderPath = path.join(process.cwd(), 'additionalFiles/pythonIgnoreFile');
 
             const algName = pipelineRandomName(8).toLowerCase()
-            algLIst.push(algName)
+            algList.push(algName)
             console.log("alg-name-" + algName)
             var fs = require('fs');
 
@@ -553,8 +553,8 @@ describe('Hkubectl Tests', () => {
 
             }
 
-            const res = await storeAlgorithmApplay(alg1);
-            algLIst.push(newName)
+            const res = await storeAlgorithmApply(alg1);
+            algList.push(newName)
             const result1 = await runAlgGetResult(newName, [4])
             console.log(result)
             //when running the builed algorith the  there are 0 txt file as exepected from the hkubeignore file

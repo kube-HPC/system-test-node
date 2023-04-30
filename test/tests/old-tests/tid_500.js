@@ -31,7 +31,7 @@ const {
 chai.use(chaiHttp);
 
 const {
-    storeAlgorithmApplay
+    storeAlgorithmApply
 } = require('../../../utils/algorithmUtils')
 
 describe('TID-500 ', () => {
@@ -144,7 +144,7 @@ describe('TID-500 ', () => {
                 }
             }
 
-            const res = await await storeAlgorithmApplay(alg);
+            const res = await await storeAlgorithmApply(alg);
             expect(res.text).includes("algorithm name must contain only lower-case alphanumeric, dash or dot")
         }).timeout(1000 * 60 * 5);
 

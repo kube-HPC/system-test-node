@@ -65,8 +65,8 @@ describe('code api tests ', () => {
 
     after(async () => {
         console.log("sater after")
-        console.log("algList = " + algLIst)
-        const del = algLIst.map((e) => {
+        console.log("algList = " + algList)
+        const del = algList.map((e) => {
             console.log("del" + e)
             return deleteAlgorithm(e)
 
@@ -74,7 +74,7 @@ describe('code api tests ', () => {
         await Promise.all(del)
 
     })
-    let algLIst = []
+    let algList = []
 
 
     describe("python code API", () => {
@@ -89,7 +89,7 @@ describe('code api tests ', () => {
                 const buildStatusAlg = await buildAlgorithmAndWait({ code: code, algName: algName, entry: entry, baseVersion: pythonVersion })
                 expect(buildStatusAlg.status).to.be.equal("completed")
                 algExsis = true;
-                algLIst.push(algName)
+                algList.push(algName)
             }
         }
 
@@ -202,7 +202,7 @@ describe('code api tests ', () => {
 
 
     describe("Java code API", () => {
-        //buildGitAlgorithm({algName,gitUrl,gitKind ,entry , branch,language,  algorithmArray:algLIst})
+        //buildGitAlgorithm({algName,gitUrl,gitKind ,entry , branch,language,  algorithmArray:algList})
         const algName = pipelineRandomName(8).toLowerCase();
         let algExsis = false
         const createAlg = async () => {
@@ -215,7 +215,7 @@ describe('code api tests ', () => {
                 const buildStatusAlg = await buildGitAlgorithm({ algName, gitUrl, gitKind, entry, branch, language })
                 expect(buildStatusAlg.status).to.be.equal("completed")
                 algExsis = true;
-                algLIst.push(algName)
+                algList.push(algName)
             }
         }
         const r = {
@@ -300,7 +300,7 @@ describe('code api tests ', () => {
                 const buildStatusAlg = await buildGitAlgorithm({ algName, gitUrl, gitKind, entry, branch, language })
                 expect(buildStatusAlg.status).to.be.equal("completed")
                 algExsis = true;
-                algLIst.push(algName)
+                algList.push(algName)
             }
         }
 

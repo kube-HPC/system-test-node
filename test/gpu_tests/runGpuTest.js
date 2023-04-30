@@ -21,7 +21,7 @@ const {
 
 
 const {
-    storeAlgorithmApplay
+    storeAlgorithmApply
 } = require('../../utils/algorithmUtils')
 chai.use(chaiHttp);
 
@@ -43,9 +43,9 @@ const gpuAlg = {
 describe('test gpu algs', () => {
 
     it.skip('soter gpu algorithm', async () => {
-        await storeAlgorithmApplay(gpuAlg);
+        await storeAlgorithmApply(gpuAlg);
         gpuAlg.name = "gpu-alg-2"
-        await storeAlgorithmApplay(gpuAlg);
+        await storeAlgorithmApply(gpuAlg);
     })
 
     it('should run the pipeline gpu-demo and after 2 seconds run the gpuDemo-1 pipeline', async () => {

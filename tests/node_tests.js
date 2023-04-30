@@ -21,7 +21,7 @@ const {
   getAlgorithm,
   getAlgorithmVersion,
   updateAlgorithmVersion,
-  storeAlgorithmApplay,
+  storeAlgorithmApply,
   deleteAlgorithmVersion,
   getAlgorithim,
 } = require("../utils/algorithmUtils");
@@ -576,7 +576,7 @@ describe("Node Tests git 660", () => {
     };
 
     it("node Fail schdualing due to lack of resource", async () => {
-      const jnk = await storeAlgorithmApplay(alg15cpu);
+      const jnk = await storeAlgorithmApply(alg15cpu);
       const alg = { name: algName, input: [] };
       const res = await runAlgorithm(alg);
       await delay(90000);
