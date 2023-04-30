@@ -253,18 +253,18 @@ describe('Alrogithm Tests', () => {
             deleteAlgorithm(algName)
         }).timeout(1000 * 60 * 10);
 
-        it.only(' update algorithm nodeSelector', async () => {
+        it(' update algorithm nodeSelector', async () => {
             const nodes = await getNodes();
-            expect(nodes.length).to.be.above(2,"Received 2 or less nodes.");
+            expect(nodes.length).to.be.above(1,"Received 1 or less nodes.");
             //create and store an algorithm
             const algName = pipelineRandomName(8).toLowerCase()
             console.log(`Alg name is : ${algName}`);
             const algV1 = algJson(algName, algorithmImageV1);
             algV1.minHotWorkers = 1; // get a pod running
-            algV1.nodeSelector = { "kubernetes.io/hostname": nodes[2] }
+            algV1.nodeSelector = { "kubernetes.io/hostname": nodes[1] }
             let v1 = await storeAlgorithmApply(algV1);
             algList.push(algName); // List removes algs in .after
-            console.log(`Alg stored, selected node : ${nodes[2]}`);
+            console.log(`Alg stored, selected node : ${nodes[1]}`);
             let times = 0;
             let pods = [];
             while (pods.length == 0 && times < 15) {
@@ -276,7 +276,7 @@ describe('Alrogithm Tests', () => {
             console.log(`Pod name after first store action : ${podNames}`);
             const firstPodName = podNames[0]; // Store first pod's name from the pod array
             const podNode = await getPodNode(firstPodName);
-            expect(podNode).to.be.equal(nodes[2]) // verify worker on selected node nodes[2]
+            expect(podNode).to.be.equal(nodes[1]) // verify worker on selected node nodes[2]
 
             algV1.nodeSelector = { "kubernetes.io/hostname": nodes[0] }
             algV1.minHotWorkers = 1;
