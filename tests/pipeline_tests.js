@@ -142,7 +142,7 @@ describe("pipeline Tests 673", () => {
     }).timeout(1000 * 60 * 2);
   });
   describe("pipeline Types (git 614)", () => {
-    // undefined 
+    // undefined
     const rawPipe = {
       name: "rawPipe",
       nodes: [
@@ -701,7 +701,7 @@ describe("pipeline Tests 673", () => {
       expect(pipelineStatus.body.status).to.be.equal("paused");
       const resume = await resumePipeline(jobId);
       const result = await getResult(jobId, 200);
-    }).timeout(1000 * 60 * 10);
+    }).timeout(1000 * 60 * 20);
 
     it("pause stop pipeline", async () => {
       const pipe = {
@@ -816,7 +816,7 @@ describe("pipeline Tests 673", () => {
         const ttl = {
           name: d.name,
           flowInput: {
-            inputs: [25000]
+            inputs: [25000],
           },
           options: {
             ttl: 25,

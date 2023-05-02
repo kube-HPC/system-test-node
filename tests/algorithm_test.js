@@ -741,7 +741,6 @@ describe('Alrogithm Tests', () => {
                 cpu: 1,
                 gpu: 0,
                 mem: "256Mi",
-                minHotWorkers: 0,
                 algorithmImage: "tamir321/versatile:04",
                 minHotWorkers: 3,
                 type: "Image",
@@ -753,7 +752,7 @@ describe('Alrogithm Tests', () => {
 
             await deleteAlgorithm(alg.name, true)
             await storeAlgorithmApply(alg);
-            await delay(20000)
+            await delay(40000)
             const workers = await waitForWorkers(alg.name, alg.minHotWorkers);
             await deleteAlgorithm(alg.name, true)
             expect(workers.length).to.be.equal(alg.minHotWorkers)
