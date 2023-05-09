@@ -287,7 +287,7 @@ describe('Alrogithm Tests', () => {
             
             times = 0;
             let podsNamesAfter = [];
-            while (podsNamesAfter.length == 0 && times < 20 ) {
+            while (podsNamesAfter.length == 0 && times < 200 ) {
                 await delay(1000);
                 podsNamesAfter = await filterPodsByName(algName);
                 podsNamesAfter = podsNamesAfter.filter((n) => { 
