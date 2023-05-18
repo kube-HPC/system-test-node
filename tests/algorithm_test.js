@@ -155,7 +155,6 @@ describe('Alrogithm Tests', () => {
         });
 
         afterEach(async function() {
-            // this.currentTest.timedOut = false;
             if ((this.currentTest.title === "update algorithm nodeSelector") && (this.currentTest.state === 'failed')) {
                 console.log(`After ${this.currentTest.title} failure - `)
                 if (this.currentTest.timedOut) {
