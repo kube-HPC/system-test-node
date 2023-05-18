@@ -3,6 +3,8 @@ const expect = chai.expect;
 const chaiHttp = require('chai-http');
 const path = require('path')
 const delay = require('delay')
+const etcd = require('../utils/etcd/etcd');
+const config = require('../config/config');
 require('./processEvent')
 
 const { runAlgorithm,
@@ -65,11 +67,11 @@ describe('Alrogithm Tests', () => {
         console.log("node 0 - " + nodes[0])
 
     }).timeout(1000 * 60 * 5);
-    let algList = []
+    let algList = [];
+    let selectedNodeAlgName = "";
 
     after(async function () {
         this.timeout(2 * 60 * 1000);
-        console.log("sater after")
         console.log("algList = " + algList)
         j = 0
         z = 3
@@ -147,6 +149,28 @@ describe('Alrogithm Tests', () => {
             }
             return alg
         }
+
+        before(async function() {
+            await etcd.init(config);
+        });
+
+        afterEach(async function() {
+            // this.currentTest.timedOut = false;
+            if ((this.currentTest.title === "update algorithm nodeSelector") && (this.currentTest.state === 'failed')) {
+                console.log(`After ${this.currentTest.title} failure - `)
+                if (this.currentTest.timedOut) {
+                    console.log(`failed due to test total timeout`);
+                }
+                const discovery = await etcd._getDiscoveryType('task-executor');
+                const unscheduledAlgs = { ...discovery[0].unScheduledAlgorithms, ...discovery[0].ignoredUnscheduledAlgorithms };
+                if(unscheduledAlgs[selectedNodeAlgName]){
+                    console.log(`Reason for unschedualing of alg after node selector : ${unscheduledAlgs[selectedNodeAlgName].warnings[0]}`);
+                }
+                else{
+                    console.log(`Both unScheduledAlgorithms and ignoredUnscheduledAlgorithms didn't contain algorithm ${selectedNodeAlgName}`);
+                }
+            }
+        });
 
         const algorithmV1 = algJson(algorithmName, algorithmImageV1)
         const algorithmV2 = algJson(algorithmName, algorithmImageV2)
@@ -253,11 +277,12 @@ describe('Alrogithm Tests', () => {
             deleteAlgorithm(algName)
         }).timeout(1000 * 60 * 10);
 
-        it(' update algorithm nodeSelector', async () => {
+        it('update algorithm nodeSelector', async () => {
             const nodes = await getNodes();
             expect(nodes.length).to.be.above(1,"Received 1 or less nodes.");
             //create and store an algorithm
             const algName = pipelineRandomName(8).toLowerCase()
+            selectedNodeAlgName = algName;
             console.log(`Alg name is : ${algName}`);
             const algV1 = algJson(algName, algorithmImageV1);
             algV1.minHotWorkers = 1; // get a pod running
@@ -287,7 +312,7 @@ describe('Alrogithm Tests', () => {
             
             times = 0;
             let podsNamesAfter = [];
-            while (podsNamesAfter.length == 0 && times < 200 ) {
+            while (podsNamesAfter.length == 0 && times < 45 ) { 
                 await delay(1000);
                 podsNamesAfter = await filterPodsByName(algName);
                 podsNamesAfter = podsNamesAfter.filter((n) => { 
