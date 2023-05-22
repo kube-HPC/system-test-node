@@ -3,7 +3,6 @@ const expect = chai.expect;
 const chaiHttp = require('chai-http');
 const path = require('path')
 const delay = require('delay')
-const etcd = require('../utils/etcd/etcd');
 const config = require('../config/config');
 require('./processEvent')
 
@@ -150,23 +149,29 @@ describe('Alrogithm Tests', () => {
             return alg
         }
 
-        before(async function() {
-            await etcd.init(config);
-        });
-
         afterEach(async function() {
             if ((this.currentTest.title === "update algorithm nodeSelector") && (this.currentTest.state === 'failed')) {
                 console.log(`After ${this.currentTest.title} failure - `)
                 if (this.currentTest.timedOut) {
                     console.log(`failed due to test total timeout`);
                 }
-                const discovery = await etcd._getDiscoveryType('task-executor');
-                const unscheduledAlgs = { ...discovery[0].unScheduledAlgorithms, ...discovery[0].ignoredUnscheduledAlgorithms };
-                if(unscheduledAlgs[selectedNodeAlgName]){
-                    console.log(`Reason for unschedualing of alg after node selector : ${unscheduledAlgs[selectedNodeAlgName].warnings[0]}`);
-                }
-                else{
-                    console.log(`Both unScheduledAlgorithms and ignoredUnscheduledAlgorithms didn't contain algorithm ${selectedNodeAlgName}`);
+                try {
+                    const discovery = await chai.request(config.apiServerUrl)
+                    .get(`/resources/unscheduledalgorithms/${selectedNodeAlgName}`);
+                    if(discovery.status === 200){
+                        console.log(`Reason for the unschedualing of alg after node selector : ${discovery.body[selectedNodeAlgName].message}\n`);
+                        const amountMissing = discovery.body[selectedNodeAlgName].complexResourceDescriptor.nodes[0].amountsMissing;
+                        let resourceMissingMEssage ='';
+                        Object.entries(amountMissing).forEach(([k, v]) => {
+                            resourceMissingMEssage += `${k} : ${v},`
+                        });
+                        console.log(`Missing resources : ${resourceMissingMEssage}`);
+                    }
+                    else{
+                        console.log(`Api server response ${discovery.status} ${discovery.body}`);`);
+                    }
+                } catch (error) {
+                    console.log(error);
                 }
             }
         });
@@ -276,7 +281,7 @@ describe('Alrogithm Tests', () => {
             deleteAlgorithm(algName)
         }).timeout(1000 * 60 * 10);
 
-        it('update algorithm nodeSelector', async () => {
+        it.only('update algorithm nodeSelector', async () => {
             const nodes = await getNodes();
             expect(nodes.length).to.be.above(1,"Received 1 or less nodes.");
             //create and store an algorithm
@@ -311,7 +316,7 @@ describe('Alrogithm Tests', () => {
             
             times = 0;
             let podsNamesAfter = [];
-            while (podsNamesAfter.length == 0 && times < 45 ) { 
+            while (podsNamesAfter.length == 0 && times < 1 ) { 
                 await delay(1000);
                 podsNamesAfter = await filterPodsByName(algName);
                 podsNamesAfter = podsNamesAfter.filter((n) => { 
