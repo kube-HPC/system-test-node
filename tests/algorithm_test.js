@@ -160,7 +160,7 @@ describe('Alrogithm Tests', () => {
                     .get(`/resources/unscheduledalgorithms/${selectedNodeAlgName}`);
                     if(discovery.status === 200){
                         console.log(`Reason for the unschedualing of alg after node selector : ${discovery.body[selectedNodeAlgName].message}\n`);
-                        const amountMissing = discovery.body[selectedNodeAlgName].complexResourceDescriptor.nodes[0].amountsMissing;
+                        const amountMissing = discovery.body[selec].complexResourceDescriptor.nodes[0].amountsMissing;
                         let resourceMissingMEssage ='';
                         Object.entries(amountMissing).forEach(([k, v]) => {
                             resourceMissingMEssage += `${k} : ${v},`
@@ -168,7 +168,7 @@ describe('Alrogithm Tests', () => {
                         console.log(`Missing resources : ${resourceMissingMEssage}`);
                     }
                     else{
-                        console.log(`Api server response ${discovery.status} ${discovery.body}`);`);
+                        console.log(`Api server response ${discovery.status} ${discovery.body}`);
                     }
                 } catch (error) {
                     console.log(error);
@@ -281,7 +281,7 @@ describe('Alrogithm Tests', () => {
             deleteAlgorithm(algName)
         }).timeout(1000 * 60 * 10);
 
-        it.only('update algorithm nodeSelector', async () => {
+        it('update algorithm nodeSelector', async () => {
             const nodes = await getNodes();
             expect(nodes.length).to.be.above(1,"Received 1 or less nodes.");
             //create and store an algorithm
@@ -316,7 +316,7 @@ describe('Alrogithm Tests', () => {
             
             times = 0;
             let podsNamesAfter = [];
-            while (podsNamesAfter.length == 0 && times < 1 ) { 
+            while (podsNamesAfter.length == 0 && times < 45 ) { 
                 await delay(1000);
                 podsNamesAfter = await filterPodsByName(algName);
                 podsNamesAfter = podsNamesAfter.filter((n) => { 
