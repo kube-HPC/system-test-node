@@ -159,13 +159,13 @@ describe('Alrogithm Tests', () => {
                     const discovery = await chai.request(config.apiServerUrl)
                     .get(`/resources/unscheduledalgorithms/${selectedNodeAlgName}`);
                     if(discovery.status === 200){
-                        console.log(`Reason for the unschedualing of alg after node selector : ${discovery.body[selectedNodeAlgName].message}\n`);
-                        const amountMissing = discovery.body[selec].complexResourceDescriptor.nodes[0].amountsMissing;
-                        let resourceMissingMEssage ='';
+                        console.log(`Reason for the unschedualing of alg after node selector : ${discovery.body.message}\n`);
+                        const amountMissing = discovery.body.complexResourceDescriptor.nodes[0].amountsMissing;
+                        let resourceMissingMessage ='';
                         Object.entries(amountMissing).forEach(([k, v]) => {
-                            resourceMissingMEssage += `${k} : ${v},`
+                            resourceMissingMessage += `${k} : ${v}, `
                         });
-                        console.log(`Missing resources : ${resourceMissingMEssage}`);
+                        console.log(`Missing resources : ${resourceMissingMessage}`);
                     }
                     else{
                         console.log(`Api server response ${discovery.status} ${discovery.body}`);
