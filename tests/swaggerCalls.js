@@ -302,7 +302,7 @@ describe('all swagger calls test ', () => {
                 ],
                 flowInput: {
                     inputs: [
-                        [15000, 1]
+                        [4500, 1]
                     ]
                 }
             }
