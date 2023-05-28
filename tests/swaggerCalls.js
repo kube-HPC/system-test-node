@@ -302,10 +302,11 @@ describe('all swagger calls test ', () => {
                 ],
                 flowInput: {
                     inputs: [
-                        [45000, 1]
+                        [15000, 1]
                     ]
                 }
             }
+            await deletePipeline("pausePipe")
             const tt = await storePipeline(pausePipe)
 
             const res = await runStored("pausePipe")
