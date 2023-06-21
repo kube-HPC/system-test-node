@@ -135,7 +135,7 @@ describe('Alrogithm Tests', () => {
         const algJson = (algName, imageName) => {
             let alg = {
                 name: algName,
-                cpu: 0.01,
+                cpu: 0.05,
                 gpu: 0,
                 mem: "256Mi",
                 minHotWorkers: 0,
