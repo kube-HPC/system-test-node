@@ -130,7 +130,6 @@ describe('Alrogithm Tests', () => {
     describe('Test Algorithm Version (git 560 487 998)', () => {
         //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/560
         const algorithmName = "algorithm-version-test"
-        const algorithmForVersionTest = "two-versions-test";
         const algorithmImageV1 = "tamir321/algoversion:v1"
         const algorithmImageV2 = "tamir321/algoversion:v2"
         const algJson = (algName, imageName) => {
@@ -179,21 +178,20 @@ describe('Alrogithm Tests', () => {
 
         const algorithmV1 = algJson(algorithmName, algorithmImageV1)
         const algorithmV2 = algJson(algorithmName, algorithmImageV2)
-        const algV1Version = algJson(algorithmForVersionTest, algorithmImageV1);
         const d = deconstructTestData(testData1)
         //store pipeline
 
         it('algorithm change creates a new version', async () => {
-            await deleteAlgorithm(algorithmForVersionTest, true)
-            let v1 = await storeAlgorithmApply(algV1Version);
-            algV1Version.algorithmEnv = { "FOO": "123456" }
-            let v2 = await storeAlgorithmApply(algV1Version);
-            const algVersion2 = await getAlgorithmVersion(algorithmForVersionTest);
+            await deleteAlgorithm(algorithmName, true)
+            let v1 = await storeAlgorithmApply(algorithmV1);
+            algorithmV1.algorithmEnv = { "FOO": "123456" }
+            let v2 = await storeAlgorithmApply(algorithmV1);
+            const algVersion2 = await getAlgorithmVersion(algorithmName);
             expect(algVersion2.body.length).to.be.equal(2)
-            let alg = await getAlgorithm(algorithmForVersionTest)
+            let alg = await getAlgorithm(algorithmName)
             expect(JSON.parse(alg.text).version).to.be.equal(v1.body.algorithm.version)
-            const update = await updateAlgorithmVersion(algorithmForVersionTest, v2.body.algorithm.version, true);
-            alg = await getAlgorithm(algorithmForVersionTest)
+            const update = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, true);
+            alg = await getAlgorithm(algorithmName)
             expect(JSON.parse(alg.text).algorithmEnv.FOO).to.be.equal('123456')
 
         }).timeout(1000 * 60 * 10);
@@ -551,7 +549,9 @@ describe('Alrogithm Tests', () => {
             await deleteAlgorithm(algorithmName, true,true)
             const ranAlgorithmAfterDelete = await getJobsByNameAndVersion(job.graph.nodes[0].algorithmName, job.graph.nodes[0].algorithmVersion);
             expect(algorithmV1.algorithmImage).to.be.equal(ranAlgorithmAfterDelete.algorithmsByVersion.algorithm.algorithmImage)
-
+            
+            await storeAlgorithmApply(algorithmV1);
+            await deleteAlgorithm(algorithmName, true);
              }).timeout(1000 * 60 * 5);
         
     })
@@ -771,7 +771,7 @@ describe('Alrogithm Tests', () => {
                 name: "hot-worker-alg",
                 cpu: 0.1,
                 gpu: 0,
-                mem: "256Mi",
+                mem: "32Mi",
                 algorithmImage: "tamir321/versatile:04",
                 minHotWorkers: 3,
                 type: "Image",
@@ -780,7 +780,6 @@ describe('Alrogithm Tests', () => {
                     pending: false
                 }
             }
-            await delay(10000);
             await deleteAlgorithm(alg.name, true);
             await storeAlgorithmApply(alg);
             await delay(40000);
