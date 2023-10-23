@@ -137,7 +137,7 @@ describe('Alrogithm Tests', () => {
                 name: algName,
                 cpu: 0.05,
                 gpu: 0,
-                mem: "256Mi",
+                mem: "32Mi",
                 minHotWorkers: 0,
                 algorithmImage: imageName,
                 type: "Image",
