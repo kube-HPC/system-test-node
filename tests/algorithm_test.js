@@ -137,7 +137,7 @@ describe('Alrogithm Tests', () => {
                 name: algName,
                 cpu: 0.05,
                 gpu: 0,
-                mem: "256Mi",
+                mem: "32Mi",
                 minHotWorkers: 0,
                 algorithmImage: imageName,
                 type: "Image",
@@ -549,7 +549,9 @@ describe('Alrogithm Tests', () => {
             await deleteAlgorithm(algorithmName, true,true)
             const ranAlgorithmAfterDelete = await getJobsByNameAndVersion(job.graph.nodes[0].algorithmName, job.graph.nodes[0].algorithmVersion);
             expect(algorithmV1.algorithmImage).to.be.equal(ranAlgorithmAfterDelete.algorithmsByVersion.algorithm.algorithmImage)
-
+            
+            await storeAlgorithmApply(algorithmV1);
+            await deleteAlgorithm(algorithmName, true);
              }).timeout(1000 * 60 * 5);
         
     })
@@ -767,9 +769,9 @@ describe('Alrogithm Tests', () => {
         it('algorithm hot workers', async () => {
             let alg = {
                 name: "hot-worker-alg",
-                cpu: 1,
+                cpu: 0.1,
                 gpu: 0,
-                mem: "256Mi",
+                mem: "32Mi",
                 algorithmImage: "tamir321/versatile:04",
                 minHotWorkers: 3,
                 type: "Image",
@@ -778,10 +780,9 @@ describe('Alrogithm Tests', () => {
                     pending: false
                 }
             }
-
-            await deleteAlgorithm(alg.name, true)
+            await deleteAlgorithm(alg.name, true);
             await storeAlgorithmApply(alg);
-            await delay(40000)
+            await delay(40000);
             const workers = await waitForWorkers(alg.name, alg.minHotWorkers);
             await deleteAlgorithm(alg.name, true)
             expect(workers.length).to.be.equal(alg.minHotWorkers)
