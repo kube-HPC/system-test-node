@@ -810,9 +810,28 @@ describe("pipeline Tests 673", () => {
         expect(currentStatus.body.reason).to.be.equal("pipeline expired");
       }).timeout(1000 * 60 * 5);
 
-      it("pipeline active ttl", async () => {
+      it.only("pipeline active ttl", async () => {
+        const algorithmName = "algoNotImage";
+        
         await deletePipeline(d);
+        await deleteAlgorithm(algorithmName, true);
+  
+        const testAlgPath = "docker.io/hkubedevtest/test"; 
+        const testAlg = algJson(algorithmName, testAlgPath);
+        await storeAlgorithmApply(testAlg);
+        await delay(2000);
+
+        d.nodes = [
+          {
+              "kind": "algorithm",
+              "nodeName": "node1",
+              "algorithmName": "algoNotImage",
+              
+          }
+        ]
+
         await storePipeline(d);
+
         const ttl = {
           name: d.name,
           flowInput: {
@@ -833,6 +852,8 @@ describe("pipeline Tests 673", () => {
         expect(currentStatus.body.reason).to.be.equal(
           "pipeline active TTL expired"
         );
+
+        
       }).timeout(1000 * 60 * 5);
       it(" concurrentPipelines - pending  pipeline", async () => {
         //set test data to testData1
