@@ -810,7 +810,7 @@ describe("pipeline Tests 673", () => {
         expect(currentStatus.body.reason).to.be.equal("pipeline expired");
       }).timeout(1000 * 60 * 5);
 
-      it.only("pipeline active ttl", async () => {
+      it("pipeline active ttl", async () => {
         const algorithmName = "algoNotImage";
         
         await deletePipeline(d);
