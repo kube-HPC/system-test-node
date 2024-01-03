@@ -835,10 +835,10 @@ describe("pipeline Tests 673", () => {
         const ttl = {
           name: d.name,
           flowInput: {
-            inputs: [25000],
+            inputs: [30000],
           },
           options: {
-            ttl: 25,
+            ttl: 10,
             activeTtl: 15,
           },
         };
