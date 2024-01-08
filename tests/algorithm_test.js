@@ -877,7 +877,7 @@ describe('Alrogithm Tests', () => {
                 }).timeout(1000 * 60 * 5);
 
                 // NEEDS FIXING
-                it.only('create an algorithm array containing a 409 Conflict status and error message for existing algorithms', async () => {
+                it('create an algorithm array containing a 409 Conflict status and error message for existing algorithms', async () => {
                     let existingAlg = {
                         name: "alg1",
                         cpu: 0.1,
