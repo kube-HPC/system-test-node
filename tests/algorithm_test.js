@@ -15,7 +15,8 @@ const { runAlgorithm,
     deleteAlgorithmVersion,
     buildAlgorithmAndWait,
     tagAlgorithmVersion,
-    getAlgVersion
+    getAlgVersion,
+    storeAlgorithm
 } = require('../utils/algorithmUtils')
 
 const { filterPodsByName,
@@ -838,6 +839,127 @@ describe('Alrogithm Tests', () => {
 
         })
 
+        describe('insert algorithm array', () =>{
+            it('should succeed to store an array of algorithms', async () => {
+                    let algList = [
+                        {
+                            name: "alg1",
+                            cpu: 0.1,
+                            gpu: 0,
+                            mem: "256Mi",
+                            minHotWorkers: 0,
+                            algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                            type: "Image",
+                            options: {
+                                debug: false,
+                                pending: false
+                            }
+                        },
+                        {
+                            name: "alg2",
+                            cpu: 0.1,
+                            gpu: 0,
+                            mem: "256Mi",
+                            minHotWorkers: 0,
+                            algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                            type: "Image",
+                            options: {
+                                debug: false,
+                                pending: false
+                            }
+                        }
+                    ];
+    
+                    const storedAlgList = await storeAlgorithm(algList);
+                    expect(storedAlgList).to.be.an('array');
+                    expect(storedAlgList[0].statusCode).to.be.equal(200, 'Expected status code to be CREATED');
+                    expect(storedAlgList[1].statusCode).to.be.equal(200, 'Expected status code to be CREATED');
+                }).timeout(1000 * 60 * 5);
 
+                // NEEDS FIXING
+                it.only('create an algorithm array containing a 409 Conflict status and error message for existing algorithms', async () => {
+                    let existingAlg = {
+                        name: "alg1",
+                        cpu: 0.1,
+                        gpu: 0,
+                        mem: "256Mi",
+                        minHotWorkers: 0,
+                        algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                        type: "Image",
+                        options: {
+                            debug: false,
+                            pending: false
+                        }
+                    }
+                    const deleteAlg1= await deleteAlgorithm("alg1", true)
+                    const deleteAlg2 = await deleteAlgorithm("alg2", true)
+                    const responseOfExists = await storeAlgorithmApply (existingAlg)
+                
+                    let algList = [
+                        {
+                            "name": "alg1",
+                            "cpu": 0.1,
+                            "gpu": 0,
+                            "mem": "256Mi",
+                            "minHotWorkers": 0,
+                            "algorithmImage": "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                            "type": "Image",
+                            "options": {
+                                "debug": false,
+                                "pending": false
+                            }
+                        },
+                        {
+                            name: "alg2",
+                            cpu: 0.1,
+                            gpu: 0,
+                            mem: "256Mi",
+                            minHotWorkers: 0,
+                            algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                            type: "Image",
+                            options: {
+                                debug: false,
+                                pending: false
+                            }
+                        }
+                    ];
+                    const storedAlgList = await storeAlgorithm(algList)
+                    expect(storedAlgList).to.be.an('array');
+                    expect(storedAlgList[0].statusCode).to.be.equal(409, 'Expected status code to be CONFLICT');
+                    expect(storedAlgList[1].statusCode).to.be.equal(200, 'Expected status code to be CREATED');
+                }).timeout(1000 * 60 * 5);
+
+
+                it('should secceed creating an array containing a 400 Bad Request status and error message for invalid data', async () => {
+                const invalidAlgorithmData = [
+                    {
+                        name: 'Invalid Algorithm NAME-',
+                        algorithmImage: 'image',
+                        mem: '50Mi',
+                        cpu: 1,
+                        type: 'Image',
+                    },
+                    {
+                        name: "alg1",
+                            cpu: 0.1,
+                            gpu: 0,
+                            mem: "256Mi",
+                            minHotWorkers: 0,
+                            algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                            type: "Image",
+                            options: {
+                                debug: false,
+                                pending: false
+                        }
+                    },
+                ];
+                const deleteAlg1= await deleteAlgorithm("alg1", true)
+                const storedAlgList = await storeAlgorithm(invalidAlgorithmData)
+                expect(storedAlgList).to.be.an('array');
+                expect(storedAlgList[1].statusCode).to.be.equal(200, 'Expected status code to be CREATED');
+                expect(storedAlgList[0].statusCode).to.be.equal(400, 'Expected status code to be BAD_REQUEST');
+                expect(storedAlgList[0].text).to.include('algorithm name must contain only lower-case alphanumeric, dash or dot');
+            });
+            })
+        })
     })
-})

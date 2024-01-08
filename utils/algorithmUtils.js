@@ -45,21 +45,37 @@ const getAlgorithm = async (name) => {
 }
 
 
-const storeAlgorithm = async (algName) => {
-
-    const res = await getAlgorithm(algName)
-    write_log(res.status + " " + algName)
+const processSingleAlgorithm = async (singleAlg, listAlg = false) => {
+    const singleAlgName = singleAlg.name || '';
+    const res = await getAlgorithm(singleAlgName);
+    write_log(res.status + " " + singleAlgName);
+    let res1;
     if (res.status === 404) {
-        const {
-            alg
-        } = require(path.join(process.cwd(), `additionalFiles/defaults/algorithms/${algName}`))
-
-        const res1 = storeAlgorithmApply(alg)
-        logResult(res1, "algorithmUtils storeAlgorithm")
-        const timeout = await delay(1000 * 3);
-        return res1
+        if (listAlg === false) {
+            const { alg } = require(path.join(process.cwd(), `additionalFiles/defaults/algorithms/${singleAlgName}`));
+            res1 = await storeAlgorithmApply(alg);
+        } else {
+            const { algList } = require(path.join(process.cwd(), `additionalFiles/defaults/algorithms/algorithmList.js`));
+            for (const singleAlgo of algList) {
+                res1 = await storeAlgorithmApply(singleAlgo);
+            }
+        }
+    } else {
+        res1 = await insertAlgorithm(singleAlg);
     }
-}
+
+    logResult(res1, "algorithmUtils storeAlgorithm");
+    return res1;
+};
+
+const storeAlgorithm = async (alg) => {
+    if (Array.isArray(alg)) {
+        return await Promise.all(alg.map(singleAlg => processSingleAlgorithm(singleAlg, true)));    
+    } else {
+        return await processSingleAlgorithm(alg);
+    }
+};
+
 
 const updateAlgorithm = async (algfile) => {
     const { alg } = require(path.join(process.cwd(), `additionalFiles/defaults/algorithms/${algfile}`))
@@ -75,6 +91,16 @@ const storeAlgorithmApply = async (alg) => {
         .field('payload', JSON.stringify(alg))
     return res
 }
+
+const insertAlgorithm = async (alg) => {
+    const res = await chai.request(config.apiServerUrl)
+        .post('/store/algorithms')
+        .send(alg)
+        .set('Content-Type', 'application/json');
+    return res;
+};
+
+
 
 const buildAlgorithm = async ({ code, algName, entry, baseVersion = 'python:3.7.16', algorithmArray = [] }) => {
     const data = {
