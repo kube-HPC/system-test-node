@@ -1221,4 +1221,80 @@ describe("pipeline Tests 673", () => {
       expect(result1.timeTook).to.be.lessThan(result2.timeTook);
     }).timeout(1000 * 60 * 20);
   });
+  describe('insert pipeline array', () =>{
+    it.only('should succeed to store an array of pipelines', async () => {
+        const p = deconstructTestData(testData11);
+        const d = deconstructTestData(testData10);
+        await deletePipeline(d.name);
+        await deletePipeline(p.name);
+        let pipelineList = [
+          {
+            name: d.name,
+            nodes: d.pipeline.nodes
+          },
+          {
+          name: p.name,
+          nodes: d.pipeline.nodes
+          }
+        ];         
+            const storedpipelineList = await storePipeline(pipelineList);
+            expect(storedpipelineList).to.be.an('array');
+            expect(storedpipelineList[0].statusCode).to.be.equal(201, 'Expected status code to be CREATED');
+            expect(storedpipelineList[1].statusCode).to.be.equal(201, 'Expected status code to be CREATED');
+        }).timeout(1000 * 60 * 5);
+
+      it.only('should succeed creating an array containing a 409 Conflict status & 200 Created', async () => {
+          const p = deconstructTestData(testData11);
+          const d = deconstructTestData(testData10);
+          await deletePipeline(d.name);
+          await storePipeline(p)
+          let pipelineList = [
+            {
+              name: d.name,
+              nodes: d.pipeline.nodes
+            },
+            {
+            name: p.name,
+            nodes: d.pipeline.nodes
+            }
+          ];        
+              const storedpipelineList = await storePipeline(pipelineList);
+              expect(storedpipelineList).to.be.an('array');
+              expect(storedpipelineList[0].statusCode).to.be.equal(201, 'Expected status code to be CREATED');
+              expect(storedpipelineList[1].statusCode).to.be.equal(409, 'Expected status code to be CONFLICT');
+              expect(storedpipelineList[1].text).to.include('pipeline eval-dynamic-400 already exists');
+          })
+
+          it.only('should succeed creating an array containing a pipeline with a 404 algorithm Not Found status', async () => {
+            const d = deconstructTestData(testData10);
+            await deletePipeline(d.name);
+            let pipelineList = [
+              {
+                name: d.name,
+                nodes: d.pipeline.nodes
+              },
+              {
+                name: "jnk",
+                nodes: [
+                  {
+                    nodeName: "one",
+                    algorithmName: "func1-complex",
+                    input: ["@flowInput.inp"],
+                  },
+                  {
+                    nodeName: "two",
+                    algorithmName: "eval-alg",
+                    input: ["@flowInput.two"],
+                  },
+                ],
+                flowInput: { inp: 0 }
+              }
+            ];   
+            const storedpipelineList = await storePipeline(pipelineList);
+              expect(storedpipelineList).to.be.an('array');
+              expect(storedpipelineList[0].statusCode).to.be.equal(201, 'Expected status code to be CREATED');
+              expect(storedpipelineList[1].statusCode).to.be.equal(404, 'Expected status code to be CONFLICT');
+              expect(storedpipelineList[1].text).to.include('algorithm func1-complex Not Found');
+          })
+      })
 });

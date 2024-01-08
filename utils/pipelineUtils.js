@@ -61,20 +61,38 @@ const getPipelineTriggerTree = async (pielineName) => {
     return res
 }
 const storePipeline = async (pipeObj) => {
+    if (Array.isArray(pipeObj)) {
+        const array = pipeObj.map(async (pipeline) => {
+            let res;
+            if (typeof pipeline != 'string') {
+                if ('pipeline' in pipeline) {
+                    pipeline = pipeline.pipeline;
+                }
+                res = await storePipelineWithDescriptor(pipeline);
+            } else {
+                res = await storeNewPipeLine(pipeline);
+            }
+            logResult(res, 'PipelineUtils storePipeline');
+            return res;
+        });
 
-    let pipeline = pipeObj
-    let res
-    if (typeof pipeline != 'string') {
-        if ('pipeline' in pipeline) {
-            pipeline = pipeline.pipeline
-        }
-        res = await storePipelineWithDescriptor(pipeline)
+        const results = await Promise.all(array);
+        return results;
     } else {
-        res = await storeNewPipeLine(pipeline)
+        let pipeline = pipeObj;
+        let res;
+        if (typeof pipeline != 'string') {
+            if ('pipeline' in pipeline) {
+                pipeline = pipeline.pipeline;
+            }
+            res = await storePipelineWithDescriptor(pipeline);
+        } else {
+            res = await storeNewPipeLine(pipeline);
+        }
+        logResult(res, 'PipelineUtils storePipeline');
+        return res;
     }
-    logResult(res, 'PipelineUtils storePipeline')
-    return res
-}
+};
 const putStorePipelineWithDescriptor = async (descriptor) => {
     const res = await chai.request(config.apiServerUrl)
         .put('/store/pipelines')
