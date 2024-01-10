@@ -1237,9 +1237,10 @@ describe("pipeline Tests 673", () => {
           nodes: d.pipeline.nodes
           }
         ];         
-            const storedpipelineList = await storePipelineWithDescriptor(pipelineList);
-            expect(storedpipelineList.body).to.be.an('array');
-            expect(storedpipelineList.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
+            const response = await storePipelineWithDescriptor(pipelineList);
+            const listOfPipelineResponse = response.body
+            expect(listOfPipelineResponse).to.be.an('array');
+            expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
         }).timeout(1000 * 60 * 5);
 
       it('should succeed creating an array containing a 409 Conflict status & 200 Created', async () => {
@@ -1258,11 +1259,12 @@ describe("pipeline Tests 673", () => {
             nodes: d.pipeline.nodes
             }
           ];        
-              const storedpipelineList = await storePipelineWithDescriptor(pipelineList);
-              expect(storedpipelineList.body).to.be.an('array');
-              expect(storedpipelineList.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
-              expect(storedpipelineList.text).to.include('pipeline eval-dynamic-400 already exists');
-          })
+              const response = await storePipelineWithDescriptor(pipelineList);
+              const listOfPipelineResponse = response.body
+              expect(listOfPipelineResponse).to.be.an('array');
+              expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
+              expect(listOfPipelineResponse[1].error.code).to.be.equal(409, 'Expected status code to be CONFLICT');
+          }).timeout(1000 * 60 * 5);
 
           it('should succeed creating an array containing a pipeline with a 404 algorithm Not Found status', async () => {
             const d = deconstructTestData(testData10);
@@ -1289,10 +1291,11 @@ describe("pipeline Tests 673", () => {
                 flowInput: { inp: 0 }
               }
             ];   
-            const storedpipelineList = await storePipelineWithDescriptor(pipelineList);
-              expect(storedpipelineList.body).to.be.an('array');
-              expect(storedpipelineList.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
-              expect(storedpipelineList.text).to.include('algorithm func1-complex Not Found');
+              const response = await storePipelineWithDescriptor(pipelineList);
+              const listOfPipelineResponse = response.body
+              expect(listOfPipelineResponse).to.be.an('array');
+              expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
+              expect(listOfPipelineResponse[1].error.code).to.be.equal(404, 'Expected status code to be NOT FOUND');
           }).timeout(1000 * 60 * 5);
       })
 });

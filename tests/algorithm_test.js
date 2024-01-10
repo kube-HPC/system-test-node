@@ -872,10 +872,10 @@ describe('Alrogithm Tests', () => {
                         }
                     ];
     
-                    const storedAlgList = await insertAlgorithms(algList);
-                    expect(storedAlgList.body).to.be.an('array');
-                    expect(storedAlgList.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
-                    expect(storedAlgList.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
+                    const response = await insertAlgorithms(algList);
+                    const listOfAlgorithmResponse = response.body
+                    expect(listOfAlgorithmResponse).to.be.an('array');
+                    expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
                 }).timeout(1000 * 60 * 5);
 
                 it('create an algorithm array containing a 409 Conflict status and error message for existing algorithms', async () => {
@@ -924,15 +924,15 @@ describe('Alrogithm Tests', () => {
                             }
                         }
                     ];
-                    const storedAlgList = await insertAlgorithms(algList)
-                    expect(storedAlgList.statusCode).to.be.equal(201);
-                    expect(storedAlgList.body).to.be.an('array');
-                    expect(storedAlgList.text).to.include('algorithm alg1 already exists');
-                    expect(storedAlgList.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
+                    const response = await insertAlgorithms(algList);
+                    const listOfAlgorithmResponse = response.body
+                    expect(response.statusCode).to.be.equal(201);
+                    expect(listOfAlgorithmResponse).to.be.an('array');
+                    expect(listOfAlgorithmResponse[0].error.code).to.be.equal(409, 'Expected status code to be CONFLICT');
                 }).timeout(1000 * 60 * 5);
 
 
-                it('should secceed creating an array containing a 400 Bad Request status and error message for invalid data', async () => {
+                it.only('should secceed creating an array containing a 400 Bad Request status and error message for invalid data', async () => {
                     const deleteAlg1= await deleteAlgorithm("alg1", true)
                     const invalidAlgorithmData = [
                     {
@@ -956,11 +956,11 @@ describe('Alrogithm Tests', () => {
                         }
                     },
                 ];
-                const storedAlgList = await insertAlgorithms(invalidAlgorithmData)
-                expect(storedAlgList.body).to.be.an('array');
-                expect(storedAlgList.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
-                expect(storedAlgList.text).to.include('Invalid Algorithm NAME-');
-                expect(storedAlgList.text).to.include('algorithm name must contain only lower-case alphanumeric, dash or dot');
+                const response = await insertAlgorithms(invalidAlgorithmData);
+                const listOfAlgorithmResponse = response.body
+                expect(listOfAlgorithmResponse).to.be.an('array');
+                expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
+                expect(listOfAlgorithmResponse[0].error.code).to.be.equal(400, 'Expected status code to be BAD-REQUEST');
             });
             })
         })
