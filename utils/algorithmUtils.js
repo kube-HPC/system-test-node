@@ -45,36 +45,21 @@ const getAlgorithm = async (name) => {
 }
 
 
-const processSingleAlgorithm = async (singleAlg, listAlg = false) => {
-    const singleAlgName = singleAlg.name || '';
-    const res = await getAlgorithm(singleAlgName);
-    write_log(res.status + " " + singleAlgName);
-    let res1;
+const storeAlgorithm = async (algName) => {
+
+    const res = await getAlgorithm(algName)
+    write_log(res.status + " " + algName)
     if (res.status === 404) {
-        if (listAlg === false) {
-            const { alg } = require(path.join(process.cwd(), `additionalFiles/defaults/algorithms/${singleAlgName}`));
-            res1 = await storeAlgorithmApply(alg);
-        } else {
-            const { algList } = require(path.join(process.cwd(), `additionalFiles/defaults/algorithms/algorithmList.js`));
-            for (const singleAlgo of algList) {
-                res1 = await storeAlgorithmApply(singleAlgo);
-            }
-        }
-    } else {
-        res1 = await insertAlgorithm(singleAlg);
-    }
+        const {
+            alg
+        } = require(path.join(process.cwd(), `additionalFiles/defaults/algorithms/${algName}`))
 
-    logResult(res1, "algorithmUtils storeAlgorithm");
-    return res1;
-};
-
-const storeAlgorithm = async (alg) => {
-    if (Array.isArray(alg)) {
-        return await Promise.all(alg.map(singleAlg => processSingleAlgorithm(singleAlg, true)));    
-    } else {
-        return await processSingleAlgorithm(alg);
+        const res1 = storeAlgorithmApply(alg)
+        logResult(res1, "algorithmUtils storeAlgorithm")
+        const timeout = await delay(1000 * 3);
+        return res1
     }
-};
+}
 
 
 const updateAlgorithm = async (algfile) => {
@@ -92,7 +77,7 @@ const storeAlgorithmApply = async (alg) => {
     return res
 }
 
-const insertAlgorithm = async (alg) => {
+const insertAlgorithms = async (alg) => {
     const res = await chai.request(config.apiServerUrl)
         .post('/store/algorithms')
         .send(alg)
@@ -320,6 +305,7 @@ module.exports = {
     getAlgorithmVersion,
     updateAlgorithmVersion,
     storeAlgorithmApply,
+    insertAlgorithms,
     buildGitAlgorithm,
     deleteAlgorithmVersion,
     logResult,

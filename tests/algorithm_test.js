@@ -16,7 +16,7 @@ const { runAlgorithm,
     buildAlgorithmAndWait,
     tagAlgorithmVersion,
     getAlgVersion,
-    storeAlgorithm
+    insertAlgorithms,
 } = require('../utils/algorithmUtils')
 
 const { filterPodsByName,
@@ -841,6 +841,8 @@ describe('Alrogithm Tests', () => {
 
         describe('insert algorithm array', () =>{
             it('should succeed to store an array of algorithms', async () => {
+                const deletedAlg1 = await deleteAlgorithm("alg1", true)
+                const deletedAlg2 = await deleteAlgorithm("alg2", true)
                     let algList = [
                         {
                             name: "alg1",
@@ -870,14 +872,15 @@ describe('Alrogithm Tests', () => {
                         }
                     ];
     
-                    const storedAlgList = await storeAlgorithm(algList);
-                    expect(storedAlgList).to.be.an('array');
-                    expect(storedAlgList[0].statusCode).to.be.equal(200, 'Expected status code to be CREATED');
-                    expect(storedAlgList[1].statusCode).to.be.equal(200, 'Expected status code to be CREATED');
+                    const storedAlgList = await insertAlgorithms(algList);
+                    expect(storedAlgList.body).to.be.an('array');
+                    expect(storedAlgList.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
+                    expect(storedAlgList.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
                 }).timeout(1000 * 60 * 5);
 
-                // NEEDS FIXING
                 it('create an algorithm array containing a 409 Conflict status and error message for existing algorithms', async () => {
+                    const deleteAlg1= await deleteAlgorithm("alg1", true)
+                    const deleteAlg2 = await deleteAlgorithm("alg2", true)
                     let existingAlg = {
                         name: "alg1",
                         cpu: 0.1,
@@ -891,9 +894,7 @@ describe('Alrogithm Tests', () => {
                             pending: false
                         }
                     }
-                    const deleteAlg1= await deleteAlgorithm("alg1", true)
-                    const deleteAlg2 = await deleteAlgorithm("alg2", true)
-                    const responseOfExists = await storeAlgorithmApply (existingAlg)
+                    const responseOfExists = await insertAlgorithms(existingAlg)
                 
                     let algList = [
                         {
@@ -923,15 +924,17 @@ describe('Alrogithm Tests', () => {
                             }
                         }
                     ];
-                    const storedAlgList = await storeAlgorithm(algList)
-                    expect(storedAlgList).to.be.an('array');
-                    expect(storedAlgList[0].statusCode).to.be.equal(409, 'Expected status code to be CONFLICT');
-                    expect(storedAlgList[1].statusCode).to.be.equal(200, 'Expected status code to be CREATED');
+                    const storedAlgList = await insertAlgorithms(algList)
+                    expect(storedAlgList.statusCode).to.be.equal(201);
+                    expect(storedAlgList.body).to.be.an('array');
+                    expect(storedAlgList.text).to.include('algorithm alg1 already exists');
+                    expect(storedAlgList.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
                 }).timeout(1000 * 60 * 5);
 
 
                 it('should secceed creating an array containing a 400 Bad Request status and error message for invalid data', async () => {
-                const invalidAlgorithmData = [
+                    const deleteAlg1= await deleteAlgorithm("alg1", true)
+                    const invalidAlgorithmData = [
                     {
                         name: 'Invalid Algorithm NAME-',
                         algorithmImage: 'image',
@@ -953,12 +956,11 @@ describe('Alrogithm Tests', () => {
                         }
                     },
                 ];
-                const deleteAlg1= await deleteAlgorithm("alg1", true)
-                const storedAlgList = await storeAlgorithm(invalidAlgorithmData)
-                expect(storedAlgList).to.be.an('array');
-                expect(storedAlgList[1].statusCode).to.be.equal(200, 'Expected status code to be CREATED');
-                expect(storedAlgList[0].statusCode).to.be.equal(400, 'Expected status code to be BAD_REQUEST');
-                expect(storedAlgList[0].text).to.include('algorithm name must contain only lower-case alphanumeric, dash or dot');
+                const storedAlgList = await insertAlgorithms(invalidAlgorithmData)
+                expect(storedAlgList.body).to.be.an('array');
+                expect(storedAlgList.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
+                expect(storedAlgList.text).to.include('Invalid Algorithm NAME-');
+                expect(storedAlgList.text).to.include('algorithm name must contain only lower-case alphanumeric, dash or dot');
             });
             })
         })

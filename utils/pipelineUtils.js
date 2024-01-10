@@ -61,38 +61,20 @@ const getPipelineTriggerTree = async (pielineName) => {
     return res
 }
 const storePipeline = async (pipeObj) => {
-    if (Array.isArray(pipeObj)) {
-        const array = pipeObj.map(async (pipeline) => {
-            let res;
-            if (typeof pipeline != 'string') {
-                if ('pipeline' in pipeline) {
-                    pipeline = pipeline.pipeline;
-                }
-                res = await storePipelineWithDescriptor(pipeline);
-            } else {
-                res = await storeNewPipeLine(pipeline);
-            }
-            logResult(res, 'PipelineUtils storePipeline');
-            return res;
-        });
 
-        const results = await Promise.all(array);
-        return results;
-    } else {
-        let pipeline = pipeObj;
-        let res;
-        if (typeof pipeline != 'string') {
-            if ('pipeline' in pipeline) {
-                pipeline = pipeline.pipeline;
-            }
-            res = await storePipelineWithDescriptor(pipeline);
-        } else {
-            res = await storeNewPipeLine(pipeline);
+    let pipeline = pipeObj
+    let res
+    if (typeof pipeline != 'string') {
+        if ('pipeline' in pipeline) {
+            pipeline = pipeline.pipeline
         }
-        logResult(res, 'PipelineUtils storePipeline');
-        return res;
+        res = await storePipelineWithDescriptor(pipeline)
+    } else {
+        res = await storeNewPipeLine(pipeline)
     }
-};
+    logResult(res, 'PipelineUtils storePipeline')
+    return res
+}
 const putStorePipelineWithDescriptor = async (descriptor) => {
     const res = await chai.request(config.apiServerUrl)
         .put('/store/pipelines')
@@ -359,6 +341,7 @@ module.exports = {
     getAllPipeline,
     getPipelineStatus,
     storePipeline,
+    storePipelineWithDescriptor,
     deletePipeline,
     runStored,
     deconstructTestData,
