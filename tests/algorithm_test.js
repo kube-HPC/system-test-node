@@ -17,6 +17,7 @@ const { runAlgorithm,
     tagAlgorithmVersion,
     getAlgVersion,
     insertAlgorithms,
+    storeAlgorithms,
 } = require('../utils/algorithmUtils')
 
 const { filterPodsByName,
@@ -872,9 +873,10 @@ describe('Alrogithm Tests', () => {
                         }
                     ];
     
-                    const response = await insertAlgorithms(algList);
+                    const response = await storeAlgorithms(algList);
                     const listOfAlgorithmResponse = response.body
                     expect(listOfAlgorithmResponse).to.be.an('array');
+                    expect(listOfAlgorithmResponse.length).to.be.equal(2);
                     expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
                     expect(listOfAlgorithmResponse[0].name).to.be.equal('alg1');
                     expect(listOfAlgorithmResponse[1].name).to.be.equal('alg2');
@@ -896,7 +898,7 @@ describe('Alrogithm Tests', () => {
                             pending: false
                         }
                     }
-                    const responseOfExists = await insertAlgorithms(existingAlg)
+                    const responseOfExists = await storeAlgorithms(existingAlg)
                 
                     let algList = [
                         {
@@ -926,10 +928,11 @@ describe('Alrogithm Tests', () => {
                             }
                         }
                     ];
-                    const response = await insertAlgorithms(algList);
+                    const response = await storeAlgorithms(algList);
                     const listOfAlgorithmResponse = response.body
                     expect(response.statusCode).to.be.equal(201);
                     expect(listOfAlgorithmResponse).to.be.an('array');
+                    expect(listOfAlgorithmResponse.length).to.be.equal(2);
                     expect(listOfAlgorithmResponse[0].error.code).to.be.equal(409, 'Expected status code to be CONFLICT');
                     expect(listOfAlgorithmResponse[1].name).to.be.equal('alg2');
                 }).timeout(1000 * 60 * 5);
@@ -959,9 +962,10 @@ describe('Alrogithm Tests', () => {
                         }
                     },
                 ];
-                const response = await insertAlgorithms(invalidAlgorithmData);
+                const response = await storeAlgorithms(invalidAlgorithmData);
                 const listOfAlgorithmResponse = response.body
                 expect(listOfAlgorithmResponse).to.be.an('array');
+                expect(listOfAlgorithmResponse.length).to.be.equal(2);
                 expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
                 expect(listOfAlgorithmResponse[0].error.code).to.be.equal(400, 'Expected status code to be BAD-REQUEST');
                 expect(listOfAlgorithmResponse[1].name).to.be.equal('alg1');

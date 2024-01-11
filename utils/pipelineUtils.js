@@ -75,11 +75,11 @@ const storePipeline = async (pipeObj) => {
     logResult(res, 'PipelineUtils storePipeline')
     return res
 }
-const putstorePipelinesWithDescriptor = async (descriptor) => {
+const putStorePipelinesWithDescriptor = async (descriptor) => {
     const res = await chai.request(config.apiServerUrl)
         .put('/store/pipelines')
         .send(descriptor);
-    logResult(res, 'PipelineUtils putstorePipelinesWithDescriptor')
+    logResult(res, 'PipelineUtils puStorePipelinesWithDescriptor')
     return res
 }
 
@@ -334,7 +334,7 @@ const getActive = async () => {
 module.exports = {
     exceRerun,
     pipelineRandomName,
-    putstorePipelinesWithDescriptor,
+    putStorePipelinesWithDescriptor,
     getExecPipeline,
     getPiplineNodes,
     getPipeline,

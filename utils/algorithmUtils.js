@@ -77,7 +77,7 @@ const storeAlgorithmApply = async (alg) => {
     return res
 }
 
-const insertAlgorithms = async (alg) => {
+const storeAlgorithms = async (alg) => {
     const res = await chai.request(config.apiServerUrl)
         .post('/store/algorithms')
         .send(alg)
@@ -305,7 +305,7 @@ module.exports = {
     getAlgorithmVersion,
     updateAlgorithmVersion,
     storeAlgorithmApply,
-    insertAlgorithms,
+    storeAlgorithms,
     buildGitAlgorithm,
     deleteAlgorithmVersion,
     logResult,

@@ -1240,6 +1240,7 @@ describe("pipeline Tests 673", () => {
               const response = await storePipelinesWithDescriptor(pipelineList);
               const listOfPipelineResponse = response.body
               expect(listOfPipelineResponse).to.be.an('array');
+              expect(listOfPipelineResponse.length).to.be.equal(2);
               expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
               expect(listOfPipelineResponse[0].name).to.be.equal(d.name);
               expect(listOfPipelineResponse[1].name).to.be.equal(p.name);
@@ -1264,6 +1265,7 @@ describe("pipeline Tests 673", () => {
               const response = await storePipelinesWithDescriptor(pipelineList);
               const listOfPipelineResponse = response.body
               expect(listOfPipelineResponse).to.be.an('array');
+              expect(listOfPipelineResponse.length).to.be.equal(2);
               expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
               expect(listOfPipelineResponse[0].name).to.be.equal(d.name);
               expect(listOfPipelineResponse[1].error.code).to.be.equal(409, 'Expected status code to be CONFLICT');
@@ -1297,6 +1299,7 @@ describe("pipeline Tests 673", () => {
               const response = await storePipelinesWithDescriptor(pipelineList);
               const listOfPipelineResponse = response.body
               expect(listOfPipelineResponse).to.be.an('array');
+              expect(listOfPipelineResponse.length).to.be.equal(2);
               expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
               expect(listOfPipelineResponse[0].name).to.be.equal(d.name);
               expect(listOfPipelineResponse[1].error.code).to.be.equal(404, 'Expected status code to be NOT FOUND');
