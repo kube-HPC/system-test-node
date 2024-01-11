@@ -61,6 +61,7 @@ const storeAlgorithm = async (algName) => {
     }
 }
 
+
 const updateAlgorithm = async (algfile) => {
     const { alg } = require(path.join(process.cwd(), `additionalFiles/defaults/algorithms/${algfile}`))
     const res = storeAlgorithmApply(alg)
@@ -75,6 +76,16 @@ const storeAlgorithmApply = async (alg) => {
         .field('payload', JSON.stringify(alg))
     return res
 }
+
+const storeAlgorithms = async (alg) => {
+    const res = await chai.request(config.apiServerUrl)
+        .post('/store/algorithms')
+        .send(alg)
+        .set('Content-Type', 'application/json');
+    return res;
+};
+
+
 
 const buildAlgorithm = async ({ code, algName, entry, baseVersion = 'python:3.7.16', algorithmArray = [] }) => {
     const data = {
@@ -294,6 +305,7 @@ module.exports = {
     getAlgorithmVersion,
     updateAlgorithmVersion,
     storeAlgorithmApply,
+    storeAlgorithms,
     buildGitAlgorithm,
     deleteAlgorithmVersion,
     logResult,

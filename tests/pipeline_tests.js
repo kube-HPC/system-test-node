@@ -15,7 +15,6 @@ const {
   updateAlgorithmVersion,
   storeAlgorithmApply,
   deleteAlgorithmVersion,
-  getAlgorithim,
 } = require("../utils/algorithmUtils");
 
 const { celeanPipeLines } = require("../utils/gc");
@@ -67,6 +66,7 @@ const {
   stopPipeline,
   exceCachPipeline,
   getPipelinestatusByName,
+  storePipelinesWithDescriptor,
 } = require("../utils/pipelineUtils");
 
 chai.use(chaiHttp);
@@ -1221,4 +1221,88 @@ describe("pipeline Tests 673", () => {
       expect(result1.timeTook).to.be.lessThan(result2.timeTook);
     }).timeout(1000 * 60 * 20);
   });
+  describe('insert pipeline array', () =>{
+      it('should succeed to store an array of pipelines', async () => {
+          const p = deconstructTestData(testData11);
+          const d = deconstructTestData(testData10);
+          await deletePipeline(d.name);
+          await deletePipeline(p.name);
+          let pipelineList = [
+            {
+              name: d.name,
+              nodes: d.pipeline.nodes
+            },
+            {
+            name: p.name,
+            nodes: d.pipeline.nodes
+            }
+          ];         
+              const response = await storePipelinesWithDescriptor(pipelineList);
+              const listOfPipelineResponse = response.body
+              expect(listOfPipelineResponse).to.be.an('array');
+              expect(listOfPipelineResponse.length).to.be.equal(2);
+              expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
+              expect(listOfPipelineResponse[0].name).to.be.equal(d.name);
+              expect(listOfPipelineResponse[1].name).to.be.equal(p.name);
+          }).timeout(1000 * 60 * 5);
+
+      it('should succeed creating an array containing a 409 Conflict status & 200 Created', async () => {
+          const p = deconstructTestData(testData11);
+          const d = deconstructTestData(testData10);
+          await deletePipeline(d.name);
+          await deletePipeline(p.name);
+          await storePipeline(p)
+          let pipelineList = [
+            {
+              name: d.name,
+              nodes: d.pipeline.nodes
+            },
+            {
+            name: p.name,
+            nodes: d.pipeline.nodes
+            }
+          ];        
+              const response = await storePipelinesWithDescriptor(pipelineList);
+              const listOfPipelineResponse = response.body
+              expect(listOfPipelineResponse).to.be.an('array');
+              expect(listOfPipelineResponse.length).to.be.equal(2);
+              expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
+              expect(listOfPipelineResponse[0].name).to.be.equal(d.name);
+              expect(listOfPipelineResponse[1].error.code).to.be.equal(409, 'Expected status code to be CONFLICT');
+          }).timeout(1000 * 60 * 5);
+
+          it('should succeed creating an array containing a pipeline with a 404 algorithm Not Found status', async () => {
+            const d = deconstructTestData(testData10);
+            await deletePipeline(d.name);
+            let pipelineList = [
+              {
+                name: d.name,
+                nodes: d.pipeline.nodes
+              },
+              {
+                name: "jnk",
+                nodes: [
+                  {
+                    nodeName: "one",
+                    algorithmName: "func1-complex",
+                    input: ["@flowInput.inp"],
+                  },
+                  {
+                    nodeName: "two",
+                    algorithmName: "eval-alg",
+                    input: ["@flowInput.two"],
+                  },
+                ],
+                flowInput: { inp: 0 }
+              }
+            ];   
+              const response = await storePipelinesWithDescriptor(pipelineList);
+              const listOfPipelineResponse = response.body
+              expect(listOfPipelineResponse).to.be.an('array');
+              expect(listOfPipelineResponse.length).to.be.equal(2);
+              expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
+              expect(listOfPipelineResponse[0].name).to.be.equal(d.name);
+              expect(listOfPipelineResponse[1].error.code).to.be.equal(404, 'Expected status code to be NOT FOUND');
+          }).timeout(1000 * 60 * 5);
+      })
 });

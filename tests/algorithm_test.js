@@ -15,7 +15,9 @@ const { runAlgorithm,
     deleteAlgorithmVersion,
     buildAlgorithmAndWait,
     tagAlgorithmVersion,
-    getAlgVersion
+    getAlgVersion,
+    insertAlgorithms,
+    storeAlgorithms,
 } = require('../utils/algorithmUtils')
 
 const { filterPodsByName,
@@ -838,6 +840,136 @@ describe('Alrogithm Tests', () => {
 
         })
 
+        describe('insert algorithm array', () =>{
+            it('should succeed to store an array of algorithms', async () => {
+                const deletedAlg1 = await deleteAlgorithm("alg1", true)
+                const deletedAlg2 = await deleteAlgorithm("alg2", true)
+                    let algList = [
+                        {
+                            name: "alg1",
+                            cpu: 0.1,
+                            gpu: 0,
+                            mem: "256Mi",
+                            minHotWorkers: 0,
+                            algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                            type: "Image",
+                            options: {
+                                debug: false,
+                                pending: false
+                            }
+                        },
+                        {
+                            name: "alg2",
+                            cpu: 0.1,
+                            gpu: 0,
+                            mem: "256Mi",
+                            minHotWorkers: 0,
+                            algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                            type: "Image",
+                            options: {
+                                debug: false,
+                                pending: false
+                            }
+                        }
+                    ];
+    
+                    const response = await storeAlgorithms(algList);
+                    const listOfAlgorithmResponse = response.body
+                    expect(listOfAlgorithmResponse).to.be.an('array');
+                    expect(listOfAlgorithmResponse.length).to.be.equal(2);
+                    expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
+                    expect(listOfAlgorithmResponse[0].name).to.be.equal('alg1');
+                    expect(listOfAlgorithmResponse[1].name).to.be.equal('alg2');
+                }).timeout(1000 * 60 * 5);
 
+                it('create an algorithm array containing a 409 Conflict status and error message for existing algorithms', async () => {
+                    const deleteAlg1= await deleteAlgorithm("alg1", true)
+                    const deleteAlg2 = await deleteAlgorithm("alg2", true)
+                    let existingAlg = {
+                        name: "alg1",
+                        cpu: 0.1,
+                        gpu: 0,
+                        mem: "256Mi",
+                        minHotWorkers: 0,
+                        algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                        type: "Image",
+                        options: {
+                            debug: false,
+                            pending: false
+                        }
+                    }
+                    const responseOfExists = await storeAlgorithms(existingAlg)
+                
+                    let algList = [
+                        {
+                            "name": "alg1",
+                            "cpu": 0.1,
+                            "gpu": 0,
+                            "mem": "256Mi",
+                            "minHotWorkers": 0,
+                            "algorithmImage": "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                            "type": "Image",
+                            "options": {
+                                "debug": false,
+                                "pending": false
+                            }
+                        },
+                        {
+                            name: "alg2",
+                            cpu: 0.1,
+                            gpu: 0,
+                            mem: "256Mi",
+                            minHotWorkers: 0,
+                            algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                            type: "Image",
+                            options: {
+                                debug: false,
+                                pending: false
+                            }
+                        }
+                    ];
+                    const response = await storeAlgorithms(algList);
+                    const listOfAlgorithmResponse = response.body
+                    expect(response.statusCode).to.be.equal(201);
+                    expect(listOfAlgorithmResponse).to.be.an('array');
+                    expect(listOfAlgorithmResponse.length).to.be.equal(2);
+                    expect(listOfAlgorithmResponse[0].error.code).to.be.equal(409, 'Expected status code to be CONFLICT');
+                    expect(listOfAlgorithmResponse[1].name).to.be.equal('alg2');
+                }).timeout(1000 * 60 * 5);
+
+
+                it('should succeed creating an array containing a 400 Bad Request status and error message for invalid data', async () => {
+                    const deleteAlg1= await deleteAlgorithm("alg1", true)
+                    const invalidAlgorithmData = [
+                    {
+                        name: 'Invalid Algorithm NAME-',
+                        algorithmImage: 'image',
+                        mem: '50Mi',
+                        cpu: 1,
+                        type: 'Image',
+                    },
+                    {
+                        name: "alg1",
+                            cpu: 0.1,
+                            gpu: 0,
+                            mem: "256Mi",
+                            minHotWorkers: 0,
+                            algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                            type: "Image",
+                            options: {
+                                debug: false,
+                                pending: false
+                        }
+                    },
+                ];
+                const response = await storeAlgorithms(invalidAlgorithmData);
+                const listOfAlgorithmResponse = response.body
+                expect(listOfAlgorithmResponse).to.be.an('array');
+                expect(listOfAlgorithmResponse.length).to.be.equal(2);
+                expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
+                expect(listOfAlgorithmResponse[0].error.code).to.be.equal(400, 'Expected status code to be BAD-REQUEST');
+                expect(listOfAlgorithmResponse[1].name).to.be.equal('alg1');
+            });
+            })
+        })
     })
-})
