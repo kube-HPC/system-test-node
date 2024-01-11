@@ -876,6 +876,8 @@ describe('Alrogithm Tests', () => {
                     const listOfAlgorithmResponse = response.body
                     expect(listOfAlgorithmResponse).to.be.an('array');
                     expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
+                    expect(listOfAlgorithmResponse[0].name).to.be.equal('alg1');
+                    expect(listOfAlgorithmResponse[1].name).to.be.equal('alg2');
                 }).timeout(1000 * 60 * 5);
 
                 it('create an algorithm array containing a 409 Conflict status and error message for existing algorithms', async () => {
@@ -929,10 +931,11 @@ describe('Alrogithm Tests', () => {
                     expect(response.statusCode).to.be.equal(201);
                     expect(listOfAlgorithmResponse).to.be.an('array');
                     expect(listOfAlgorithmResponse[0].error.code).to.be.equal(409, 'Expected status code to be CONFLICT');
+                    expect(listOfAlgorithmResponse[1].name).to.be.equal('alg2');
                 }).timeout(1000 * 60 * 5);
 
 
-                it.only('should secceed creating an array containing a 400 Bad Request status and error message for invalid data', async () => {
+                it('should succeed creating an array containing a 400 Bad Request status and error message for invalid data', async () => {
                     const deleteAlg1= await deleteAlgorithm("alg1", true)
                     const invalidAlgorithmData = [
                     {
@@ -961,6 +964,7 @@ describe('Alrogithm Tests', () => {
                 expect(listOfAlgorithmResponse).to.be.an('array');
                 expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
                 expect(listOfAlgorithmResponse[0].error.code).to.be.equal(400, 'Expected status code to be BAD-REQUEST');
+                expect(listOfAlgorithmResponse[1].name).to.be.equal('alg1');
             });
             })
         })
