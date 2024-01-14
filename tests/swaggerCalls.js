@@ -315,9 +315,10 @@ describe('all swagger calls test ', () => {
             await delay(1000 * 3)
 
             const pause = await pausePipeline(jobId);
-            await delay(20000)
+            await delay(2000)
             let pipelineStatus = await getPipelineStatus(jobId)
             expect(pipelineStatus.body.status).to.be.equal("paused")
+            await delay(10000)
             const resume = await resumePipeline(jobId);
             expect(resume.status).to.be.equal(200)
             const result = await getResult(jobId, 200)
