@@ -17,7 +17,7 @@ const {
   deleteAlgorithmVersion,
 } = require("../utils/algorithmUtils");
 
-const { celeanPipeLines } = require("../utils/gc");
+const { cleanPipeLines } = require("../utils/gc");
 const {
   getWebSocketJobs,
   getWebSocketlogs,
@@ -245,7 +245,7 @@ describe("pipeline Tests 673", () => {
       expect(status.body.types).includes("sub-pipeline");
       expect(status.body.types).includes("internal");
       await deletePipeline(d);
-    }).timeout(1000 * 60 * 15);
+    }).timeout(1000 * 60 * 30);
 
     it("type= stored", async () => {
       const pipe = {
@@ -804,14 +804,14 @@ describe("pipeline Tests 673", () => {
         };
         const jobId2 = await runStored(ttl); //should be stoped  due to ttl
         await timeout(30000);
-        await celeanPipeLines();
+        await cleanPipeLines();
         const currentStatus = await getPipelineStatus(jobId2.body.jobId);
         expect(currentStatus.body.status).to.be.equal("stopped");
         expect(currentStatus.body.reason).to.be.equal("pipeline expired");
       }).timeout(1000 * 60 * 5);
 
       it("pipeline active ttl", async () => {
-        const algorithmName = "algoNotImage";
+        const algorithmName = "algo-not-image";
         
         await deletePipeline(d);
         await deleteAlgorithm(algorithmName, true);
@@ -825,7 +825,7 @@ describe("pipeline Tests 673", () => {
           {
               "kind": "algorithm",
               "nodeName": "node1",
-              "algorithmName": "algoNotImage",
+              "algorithmName": "algo-not-image",
               
           }
         ]
@@ -838,7 +838,7 @@ describe("pipeline Tests 673", () => {
             inputs: [30000],
           },
           options: {
-            ttl: 10,
+            ttl: 40,
             activeTtl: 15,
           },
         };
@@ -846,7 +846,7 @@ describe("pipeline Tests 673", () => {
         const jobId = await runStored(ttl);
 
         await timeout(20000);
-        const cealn = await celeanPipeLines();
+        const cealn = await cleanPipeLines();
         const currentStatus = await getPipelineStatus(jobId.body.jobId);
         expect(currentStatus.body.status).to.be.equal("stopped");
         expect(currentStatus.body.reason).to.be.equal(

@@ -17,11 +17,11 @@ const execGcClean = async (type, Age = 0) => {
   return res;
 };
 
-const celeanPipeLines = async (Age = 0) => {
+const cleanPipeLines = async (Age = 0) => {
   const res = await execGcClean("pipelines", Age);
   return res;
 };
 
 module.exports = {
-  celeanPipeLines,
+  cleanPipeLines,
 };
