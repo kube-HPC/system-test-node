@@ -812,21 +812,21 @@ describe("pipeline Tests 673", () => {
 
       it("pipeline active ttl", async () => {
         const algorithmName = "algo-not-image";
-        
+
         await deletePipeline(d);
         await deleteAlgorithm(algorithmName, true);
-  
-        const testAlgPath = "docker.io/hkubedevtest/test"; 
+
+        const testAlgPath = "docker.io/hkubedevtest/test";
         const testAlg = algJson(algorithmName, testAlgPath);
         await storeAlgorithmApply(testAlg);
         await delay(2000);
 
         d.nodes = [
           {
-              "kind": "algorithm",
-              "nodeName": "node1",
-              "algorithmName": "algo-not-image",
-              
+            "kind": "algorithm",
+            "nodeName": "node1",
+            "algorithmName": "algo-not-image",
+
           }
         ]
 
@@ -835,11 +835,11 @@ describe("pipeline Tests 673", () => {
         const ttl = {
           name: d.name,
           flowInput: {
-            inputs: [30000],
+            inputs: [50000],
           },
           options: {
             ttl: 40,
-            activeTtl: 15,
+            activeTtl: 10,
           },
         };
 
@@ -853,7 +853,7 @@ describe("pipeline Tests 673", () => {
           "pipeline active TTL expired"
         );
 
-        
+
       }).timeout(1000 * 60 * 5);
       it(" concurrentPipelines - pending  pipeline", async () => {
         //set test data to testData1
@@ -1221,88 +1221,88 @@ describe("pipeline Tests 673", () => {
       expect(result1.timeTook).to.be.lessThan(result2.timeTook);
     }).timeout(1000 * 60 * 20);
   });
-  describe('insert pipeline array', () =>{
-      it('should succeed to store an array of pipelines', async () => {
-          const p = deconstructTestData(testData11);
-          const d = deconstructTestData(testData10);
-          await deletePipeline(d.name);
-          await deletePipeline(p.name);
-          let pipelineList = [
+  describe('insert pipeline array', () => {
+    it('should succeed to store an array of pipelines', async () => {
+      const p = deconstructTestData(testData11);
+      const d = deconstructTestData(testData10);
+      await deletePipeline(d.name);
+      await deletePipeline(p.name);
+      let pipelineList = [
+        {
+          name: d.name,
+          nodes: d.pipeline.nodes
+        },
+        {
+          name: p.name,
+          nodes: d.pipeline.nodes
+        }
+      ];
+      const response = await storePipelinesWithDescriptor(pipelineList);
+      const listOfPipelineResponse = response.body
+      expect(listOfPipelineResponse).to.be.an('array');
+      expect(listOfPipelineResponse.length).to.be.equal(2);
+      expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
+      expect(listOfPipelineResponse[0].name).to.be.equal(d.name);
+      expect(listOfPipelineResponse[1].name).to.be.equal(p.name);
+    }).timeout(1000 * 60 * 5);
+
+    it('should succeed creating an array containing a 409 Conflict status & 200 Created', async () => {
+      const p = deconstructTestData(testData11);
+      const d = deconstructTestData(testData10);
+      await deletePipeline(d.name);
+      await deletePipeline(p.name);
+      await storePipeline(p)
+      let pipelineList = [
+        {
+          name: d.name,
+          nodes: d.pipeline.nodes
+        },
+        {
+          name: p.name,
+          nodes: d.pipeline.nodes
+        }
+      ];
+      const response = await storePipelinesWithDescriptor(pipelineList);
+      const listOfPipelineResponse = response.body
+      expect(listOfPipelineResponse).to.be.an('array');
+      expect(listOfPipelineResponse.length).to.be.equal(2);
+      expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
+      expect(listOfPipelineResponse[0].name).to.be.equal(d.name);
+      expect(listOfPipelineResponse[1].error.code).to.be.equal(409, 'Expected status code to be CONFLICT');
+    }).timeout(1000 * 60 * 5);
+
+    it('should succeed creating an array containing a pipeline with a 404 algorithm Not Found status', async () => {
+      const d = deconstructTestData(testData10);
+      await deletePipeline(d.name);
+      let pipelineList = [
+        {
+          name: d.name,
+          nodes: d.pipeline.nodes
+        },
+        {
+          name: "jnk",
+          nodes: [
             {
-              name: d.name,
-              nodes: d.pipeline.nodes
+              nodeName: "one",
+              algorithmName: "func1-complex",
+              input: ["@flowInput.inp"],
             },
             {
-            name: p.name,
-            nodes: d.pipeline.nodes
-            }
-          ];         
-              const response = await storePipelinesWithDescriptor(pipelineList);
-              const listOfPipelineResponse = response.body
-              expect(listOfPipelineResponse).to.be.an('array');
-              expect(listOfPipelineResponse.length).to.be.equal(2);
-              expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
-              expect(listOfPipelineResponse[0].name).to.be.equal(d.name);
-              expect(listOfPipelineResponse[1].name).to.be.equal(p.name);
-          }).timeout(1000 * 60 * 5);
-
-      it('should succeed creating an array containing a 409 Conflict status & 200 Created', async () => {
-          const p = deconstructTestData(testData11);
-          const d = deconstructTestData(testData10);
-          await deletePipeline(d.name);
-          await deletePipeline(p.name);
-          await storePipeline(p)
-          let pipelineList = [
-            {
-              name: d.name,
-              nodes: d.pipeline.nodes
+              nodeName: "two",
+              algorithmName: "eval-alg",
+              input: ["@flowInput.two"],
             },
-            {
-            name: p.name,
-            nodes: d.pipeline.nodes
-            }
-          ];        
-              const response = await storePipelinesWithDescriptor(pipelineList);
-              const listOfPipelineResponse = response.body
-              expect(listOfPipelineResponse).to.be.an('array');
-              expect(listOfPipelineResponse.length).to.be.equal(2);
-              expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
-              expect(listOfPipelineResponse[0].name).to.be.equal(d.name);
-              expect(listOfPipelineResponse[1].error.code).to.be.equal(409, 'Expected status code to be CONFLICT');
-          }).timeout(1000 * 60 * 5);
-
-          it('should succeed creating an array containing a pipeline with a 404 algorithm Not Found status', async () => {
-            const d = deconstructTestData(testData10);
-            await deletePipeline(d.name);
-            let pipelineList = [
-              {
-                name: d.name,
-                nodes: d.pipeline.nodes
-              },
-              {
-                name: "jnk",
-                nodes: [
-                  {
-                    nodeName: "one",
-                    algorithmName: "func1-complex",
-                    input: ["@flowInput.inp"],
-                  },
-                  {
-                    nodeName: "two",
-                    algorithmName: "eval-alg",
-                    input: ["@flowInput.two"],
-                  },
-                ],
-                flowInput: { inp: 0 }
-              }
-            ];   
-              const response = await storePipelinesWithDescriptor(pipelineList);
-              const listOfPipelineResponse = response.body
-              expect(listOfPipelineResponse).to.be.an('array');
-              expect(listOfPipelineResponse.length).to.be.equal(2);
-              expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
-              expect(listOfPipelineResponse[0].name).to.be.equal(d.name);
-              expect(listOfPipelineResponse[1].error.code).to.be.equal(404, 'Expected status code to be NOT FOUND');
-          }).timeout(1000 * 60 * 5);
-      })
+          ],
+          flowInput: { inp: 0 }
+        }
+      ];
+      const response = await storePipelinesWithDescriptor(pipelineList);
+      const listOfPipelineResponse = response.body
+      expect(listOfPipelineResponse).to.be.an('array');
+      expect(listOfPipelineResponse.length).to.be.equal(2);
+      expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
+      expect(listOfPipelineResponse[0].name).to.be.equal(d.name);
+      expect(listOfPipelineResponse[1].error.code).to.be.equal(404, 'Expected status code to be NOT FOUND');
+    }).timeout(1000 * 60 * 5);
+  })
 });
