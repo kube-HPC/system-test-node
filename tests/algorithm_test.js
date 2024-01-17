@@ -56,7 +56,7 @@ const {
 chai.use(chaiHttp);
 
 
-const { waitForWorkers,getJobsByNameAndVersion,getJobById } = require('../utils/socketGet')
+const { waitForWorkers, getJobsByNameAndVersion, getJobById } = require('../utils/socketGet')
 describe('Alrogithm Tests', () => {
 
 
@@ -137,7 +137,7 @@ describe('Alrogithm Tests', () => {
         const algJson = (algName, imageName) => {
             let alg = {
                 name: algName,
-                cpu: 0.05,
+                cpu: 0.001,
                 gpu: 0,
                 mem: "32Mi",
                 minHotWorkers: 0,
@@ -151,7 +151,7 @@ describe('Alrogithm Tests', () => {
             return alg
         }
 
-        afterEach(async function() {
+        afterEach(async function () {
             if ((this.currentTest.title === "update algorithm nodeSelector") && (this.currentTest.state === 'failed')) {
                 console.log(`After ${this.currentTest.title} failure - `)
                 if (this.currentTest.timedOut) {
@@ -159,17 +159,17 @@ describe('Alrogithm Tests', () => {
                 }
                 try {
                     const discovery = await chai.request(config.apiServerUrl)
-                    .get(`/resources/unscheduledalgorithms/${selectedNodeAlgName}`);
-                    if(discovery.status === 200){
+                        .get(`/resources/unscheduledalgorithms/${selectedNodeAlgName}`);
+                    if (discovery.status === 200) {
                         console.log(`Reason for the unschedualing of alg after node selector : ${discovery.body.message}\n`);
                         const amountMissing = discovery.body.complexResourceDescriptor.nodes[0].amountsMissing;
-                        let resourceMissingMessage ='';
+                        let resourceMissingMessage = '';
                         Object.entries(amountMissing).forEach(([k, v]) => {
                             resourceMissingMessage += `${k} : ${v}, `
                         });
                         console.log(`Missing resources : ${resourceMissingMessage}`);
                     }
-                    else{
+                    else {
                         console.log(`Api server response ${discovery.status} ${discovery.body}`);
                     }
                 } catch (error) {
@@ -283,9 +283,9 @@ describe('Alrogithm Tests', () => {
             deleteAlgorithm(algName)
         }).timeout(1000 * 60 * 10);
 
-        it('update algorithm nodeSelector', async () => {
+        it.only('update algorithm nodeSelector', async () => {
             const nodes = await getNodes();
-            expect(nodes.length).to.be.above(1,"Received 1 or less nodes.");
+            expect(nodes.length).to.be.above(1, "Received 1 or less nodes.");
             //create and store an algorithm
             const algName = pipelineRandomName(8).toLowerCase()
             selectedNodeAlgName = algName;
@@ -314,21 +314,21 @@ describe('Alrogithm Tests', () => {
             console.log(`New Selected node : ${nodes[0]}`);
             //store and update the new algorithm with a new version + a different selected node nodes[1];
             v1 = await storeAlgorithmApply(algV1);
-            const update = await updateAlgorithmVersion(algName, v1.body.algorithm.version, true);            
-            
+            const update = await updateAlgorithmVersion(algName, v1.body.algorithm.version, true);
+
             times = 0;
             let podsNamesAfter = [];
-            while (podsNamesAfter.length == 0 && times < 45 ) { 
+            while (podsNamesAfter.length == 0 && times < 45) {
                 await delay(1000);
                 podsNamesAfter = await filterPodsByName(algName);
-                podsNamesAfter = podsNamesAfter.filter((n) => { 
-                    if(n.metadata.name !== firstPodName){ //Make sure the old pod is not returned
+                podsNamesAfter = podsNamesAfter.filter((n) => {
+                    if (n.metadata.name !== firstPodName) { //Make sure the old pod is not returned
                         return n.metadata.name;
                     }
-                    });
+                });
                 times++;
             }
-            expect(podsNamesAfter.length).to.not.equal(0,"No new pods found with the new alg after store+update");
+            expect(podsNamesAfter.length).to.not.equal(0, "No new pods found with the new alg after store+update");
             console.log(`Pod names after new node selection : ${podsNamesAfter[0].metadata.name}`);
             //var index = podNamesAfter.indexOf(podNames[0]); //index=0; when fails.
             //var filteredAry = ary.filter(e => e !== 'seven')
@@ -534,11 +534,11 @@ describe('Alrogithm Tests', () => {
             await storeAlgorithmApply(algorithmV1);
 
             const resAlgorithmV1 = await runAlgorithm(
-                    {
-                        "name": algorithmV1.name,
-                        "input": [],
-                        "debug": false
-                    }
+                {
+                    "name": algorithmV1.name,
+                    "input": [],
+                    "debug": false
+                }
             );
 
             await delay(2000);
@@ -548,14 +548,14 @@ describe('Alrogithm Tests', () => {
             const versionranAlgorithm = await getJobsByNameAndVersion(job.graph.nodes[0].algorithmName, job.graph.nodes[0].algorithmVersion);
             expect(algorithmV1.algorithmImage).to.be.equal(versionranAlgorithm.algorithmsByVersion.algorithm.algorithmImage)
 
-            await deleteAlgorithm(algorithmName, true,true)
+            await deleteAlgorithm(algorithmName, true, true)
             const ranAlgorithmAfterDelete = await getJobsByNameAndVersion(job.graph.nodes[0].algorithmName, job.graph.nodes[0].algorithmVersion);
             expect(algorithmV1.algorithmImage).to.be.equal(ranAlgorithmAfterDelete.algorithmsByVersion.algorithm.algorithmImage)
-            
+
             await storeAlgorithmApply(algorithmV1);
             await deleteAlgorithm(algorithmName, true);
-             }).timeout(1000 * 60 * 5);
-        
+        }).timeout(1000 * 60 * 5);
+
     })
 
 
@@ -840,52 +840,12 @@ describe('Alrogithm Tests', () => {
 
         })
 
-        describe('insert algorithm array', () =>{
+        describe('insert algorithm array', () => {
             it('should succeed to store an array of algorithms', async () => {
                 const deletedAlg1 = await deleteAlgorithm("alg1", true)
                 const deletedAlg2 = await deleteAlgorithm("alg2", true)
-                    let algList = [
-                        {
-                            name: "alg1",
-                            cpu: 0.1,
-                            gpu: 0,
-                            mem: "256Mi",
-                            minHotWorkers: 0,
-                            algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
-                            type: "Image",
-                            options: {
-                                debug: false,
-                                pending: false
-                            }
-                        },
-                        {
-                            name: "alg2",
-                            cpu: 0.1,
-                            gpu: 0,
-                            mem: "256Mi",
-                            minHotWorkers: 0,
-                            algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
-                            type: "Image",
-                            options: {
-                                debug: false,
-                                pending: false
-                            }
-                        }
-                    ];
-    
-                    const response = await storeAlgorithms(algList);
-                    const listOfAlgorithmResponse = response.body
-                    expect(listOfAlgorithmResponse).to.be.an('array');
-                    expect(listOfAlgorithmResponse.length).to.be.equal(2);
-                    expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
-                    expect(listOfAlgorithmResponse[0].name).to.be.equal('alg1');
-                    expect(listOfAlgorithmResponse[1].name).to.be.equal('alg2');
-                }).timeout(1000 * 60 * 5);
-
-                it('create an algorithm array containing a 409 Conflict status and error message for existing algorithms', async () => {
-                    const deleteAlg1= await deleteAlgorithm("alg1", true)
-                    const deleteAlg2 = await deleteAlgorithm("alg2", true)
-                    let existingAlg = {
+                let algList = [
+                    {
                         name: "alg1",
                         cpu: 0.1,
                         gpu: 0,
@@ -897,50 +857,90 @@ describe('Alrogithm Tests', () => {
                             debug: false,
                             pending: false
                         }
-                    }
-                    const responseOfExists = await storeAlgorithms(existingAlg)
-                
-                    let algList = [
-                        {
-                            "name": "alg1",
-                            "cpu": 0.1,
-                            "gpu": 0,
-                            "mem": "256Mi",
-                            "minHotWorkers": 0,
-                            "algorithmImage": "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
-                            "type": "Image",
-                            "options": {
-                                "debug": false,
-                                "pending": false
-                            }
-                        },
-                        {
-                            name: "alg2",
-                            cpu: 0.1,
-                            gpu: 0,
-                            mem: "256Mi",
-                            minHotWorkers: 0,
-                            algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
-                            type: "Image",
-                            options: {
-                                debug: false,
-                                pending: false
-                            }
+                    },
+                    {
+                        name: "alg2",
+                        cpu: 0.1,
+                        gpu: 0,
+                        mem: "256Mi",
+                        minHotWorkers: 0,
+                        algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                        type: "Image",
+                        options: {
+                            debug: false,
+                            pending: false
                         }
-                    ];
-                    const response = await storeAlgorithms(algList);
-                    const listOfAlgorithmResponse = response.body
-                    expect(response.statusCode).to.be.equal(201);
-                    expect(listOfAlgorithmResponse).to.be.an('array');
-                    expect(listOfAlgorithmResponse.length).to.be.equal(2);
-                    expect(listOfAlgorithmResponse[0].error.code).to.be.equal(409, 'Expected status code to be CONFLICT');
-                    expect(listOfAlgorithmResponse[1].name).to.be.equal('alg2');
-                }).timeout(1000 * 60 * 5);
+                    }
+                ];
+
+                const response = await storeAlgorithms(algList);
+                const listOfAlgorithmResponse = response.body
+                expect(listOfAlgorithmResponse).to.be.an('array');
+                expect(listOfAlgorithmResponse.length).to.be.equal(2);
+                expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
+                expect(listOfAlgorithmResponse[0].name).to.be.equal('alg1');
+                expect(listOfAlgorithmResponse[1].name).to.be.equal('alg2');
+            }).timeout(1000 * 60 * 5);
+
+            it('create an algorithm array containing a 409 Conflict status and error message for existing algorithms', async () => {
+                const deleteAlg1 = await deleteAlgorithm("alg1", true)
+                const deleteAlg2 = await deleteAlgorithm("alg2", true)
+                let existingAlg = {
+                    name: "alg1",
+                    cpu: 0.1,
+                    gpu: 0,
+                    mem: "256Mi",
+                    minHotWorkers: 0,
+                    algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                    type: "Image",
+                    options: {
+                        debug: false,
+                        pending: false
+                    }
+                }
+                const responseOfExists = await storeAlgorithms(existingAlg)
+
+                let algList = [
+                    {
+                        "name": "alg1",
+                        "cpu": 0.1,
+                        "gpu": 0,
+                        "mem": "256Mi",
+                        "minHotWorkers": 0,
+                        "algorithmImage": "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                        "type": "Image",
+                        "options": {
+                            "debug": false,
+                            "pending": false
+                        }
+                    },
+                    {
+                        name: "alg2",
+                        cpu: 0.1,
+                        gpu: 0,
+                        mem: "256Mi",
+                        minHotWorkers: 0,
+                        algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                        type: "Image",
+                        options: {
+                            debug: false,
+                            pending: false
+                        }
+                    }
+                ];
+                const response = await storeAlgorithms(algList);
+                const listOfAlgorithmResponse = response.body
+                expect(response.statusCode).to.be.equal(201);
+                expect(listOfAlgorithmResponse).to.be.an('array');
+                expect(listOfAlgorithmResponse.length).to.be.equal(2);
+                expect(listOfAlgorithmResponse[0].error.code).to.be.equal(409, 'Expected status code to be CONFLICT');
+                expect(listOfAlgorithmResponse[1].name).to.be.equal('alg2');
+            }).timeout(1000 * 60 * 5);
 
 
-                it('should succeed creating an array containing a 400 Bad Request status and error message for invalid data', async () => {
-                    const deleteAlg1= await deleteAlgorithm("alg1", true)
-                    const invalidAlgorithmData = [
+            it('should succeed creating an array containing a 400 Bad Request status and error message for invalid data', async () => {
+                const deleteAlg1 = await deleteAlgorithm("alg1", true)
+                const invalidAlgorithmData = [
                     {
                         name: 'Invalid Algorithm NAME-',
                         algorithmImage: 'image',
@@ -950,15 +950,15 @@ describe('Alrogithm Tests', () => {
                     },
                     {
                         name: "alg1",
-                            cpu: 0.1,
-                            gpu: 0,
-                            mem: "256Mi",
-                            minHotWorkers: 0,
-                            algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
-                            type: "Image",
-                            options: {
-                                debug: false,
-                                pending: false
+                        cpu: 0.1,
+                        gpu: 0,
+                        mem: "256Mi",
+                        minHotWorkers: 0,
+                        algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                        type: "Image",
+                        options: {
+                            debug: false,
+                            pending: false
                         }
                     },
                 ];
@@ -970,6 +970,6 @@ describe('Alrogithm Tests', () => {
                 expect(listOfAlgorithmResponse[0].error.code).to.be.equal(400, 'Expected status code to be BAD-REQUEST');
                 expect(listOfAlgorithmResponse[1].name).to.be.equal('alg1');
             });
-            })
         })
     })
+})
