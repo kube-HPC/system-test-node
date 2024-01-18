@@ -23,6 +23,7 @@ const {
   getWebSocketlogs,
   getDriverIdByJobId,
 } = require("../utils/socketGet");
+const { getStatus } = require("../utils/results")
 
 const {
   testData1,
@@ -798,16 +799,16 @@ describe("pipeline Tests 673", () => {
             inputs: [50000],
           },
           options: {
-            ttl: 10,
+            ttl: 5,
             activeTtl: 130,
           },
         };
-        const jobId2 = await runStored(ttl); //should be stoped  due to ttl
-        await timeout(30000);
-        await cleanPipeLines();
-        const currentStatus = await getPipelineStatus(jobId2.body.jobId);
-        expect(currentStatus.body.status).to.be.equal("stopped");
-        expect(currentStatus.body.reason).to.be.equal("pipeline expired");
+        const runStoredResult = await runStored(ttl); //should be stoped  due to ttl
+        let getStatusResultBody = await getStatus(runStoredResult.body.jobId, 200, "active");
+        await timeout(5500)
+        const cealn = await cleanPipeLines();
+        getStatusResultBody = await getStatus(runStoredResult.body.jobId, 200, "stopped");
+        expect(getStatusResultBody.reason).to.be.equal("pipeline expired");
       }).timeout(1000 * 60 * 5);
 
       it("pipeline active ttl", async () => {
@@ -839,21 +840,18 @@ describe("pipeline Tests 673", () => {
           },
           options: {
             ttl: 40,
-            activeTtl: 10,
+            activeTtl: 5,
           },
         };
 
-        const jobId = await runStored(ttl);
-
-        await timeout(20000);
+        const runStoredResult = await runStored(ttl);
+        let getStatusResultBody = await getStatus(runStoredResult.body.jobId, 200, "active");
+        await timeout(5500)
         const cealn = await cleanPipeLines();
-        const currentStatus = await getPipelineStatus(jobId.body.jobId);
-        expect(currentStatus.body.status).to.be.equal("stopped");
-        expect(currentStatus.body.reason).to.be.equal(
+        getStatusResultBody = await getStatus(runStoredResult.body.jobId, 200, "stopped");
+        expect(getStatusResultBody.reason).to.be.equal(
           "pipeline active TTL expired"
         );
-
-
       }).timeout(1000 * 60 * 5);
       it(" concurrentPipelines - pending  pipeline", async () => {
         //set test data to testData1
@@ -1175,7 +1173,7 @@ describe("pipeline Tests 673", () => {
       const pipe = {
         name: d.name,
         flowInput: {
-          range: 1000,
+          range: 500,
           inputs: 6000,
         },
         priority: 3,

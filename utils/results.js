@@ -86,7 +86,7 @@ const toString = (fun) => {
 }
 
 // p6
-const getStatusall = async (id, url, expectedCode, expectedStatus, timeout = 60 * 1000 *3, interval = 1000) => {
+const getStatusall = async (id, url, expectedCode, expectedStatus, timeout = 60 * 1000 * 3, interval = 1000) => {
     const start = Date.now();
     do {
         process.stdout.write('.')
