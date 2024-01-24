@@ -29,8 +29,6 @@ const {
 
 chai.use(chaiHttp);
 chai.use(assertArrays);
-
-
 const yaml = require('js-yaml');
 
 const exceSyncString = async (command) => {
@@ -557,22 +555,213 @@ describe('Hkubectl Tests', () => {
             algList.push(newName)
             const result1 = await runAlgGetResult(newName, [4])
             console.log(result)
-            //when running the builed algorith the  there are 0 txt file as exepected from the hkubeignore file
             expect(result1.data[0].result).to.be.equal(0)
 
         }).timeout(1000 * 60 * 10)
 
+    describe('hkubecl export tests', () => {
+        it('export algoritms as jsons to a local directory ', async () => {
+            const fs = require('fs');
+            const rimraf = require('rimraf');
+            const folderPath = './additionalFiles/exportedAlgorithms';
+            if (!fs.existsSync(folderPath)) {
+                fs.mkdirSync(folderPath);
+            }
+            const exportAlgoCommand = `hkubectl export algorithms ${folderPath}`;
+            const exportAlgorithms = await execSync(exportAlgoCommand);
+            let files = fs.readdirSync(folderPath, 'utf8');
+            expect(files.length).to.be.greaterThan(0);
+            files.forEach((file) => {
+                let fileContent = fs.readFileSync(`${folderPath}/${file}`, 'utf8');
+                let isJson = false;
+                try {
+                    JSON.parse(fileContent);
+                    isJson = true;
+                } catch (error) {
+                    isJson = false;
+                }
+            expect(isJson, `${file} should be a valid JSON`).to.be.true;
+            });
+            let firstFileContent = fs.readFileSync(`${folderPath}/${files[0]}`, 'utf8');
+            let parsedData;
+            parsedData = JSON.parse(firstFileContent);
+            expect(parsedData).to.have.property('name'); 
+            rimraf.sync(folderPath);
+            fs.mkdirSync(folderPath); 
+        }).timeout(1000 * 60 * 6)
+
+        it('export algorithms as YAMLs to a local directory', async () => {
+            const fs = require('fs');
+            const rimraf = require('rimraf');
+            const yaml = require('js-yaml');
+            const folderPath = './additionalFiles/exportedAlgorithms';
+            if (!fs.existsSync(folderPath)) {
+                fs.mkdirSync(folderPath);
+            }
+            const exportAlgoCommand = "hkubectl export algorithms -f yaml ./additionalFiles/exportedAlgorithms";
+            const exportAlgorithms = await execSync(exportAlgoCommand);
+            let files = fs.readdirSync(folderPath, 'utf8');
+            expect(files.length).to.be.greaterThan(0);
+
+            files.forEach((file) => {
+                let fileContent = fs.readFileSync(`${folderPath}/${file}`, 'utf8');
+                try {
+                    yaml.safeLoad(fileContent);
+                    isYaml = true;
+                } catch (error) {
+                    isYaml = false;
+                }
+                expect(isYaml, `${file} should be a valid YAML`).to.be.true;
+            });
+            if (files.length > 0) {
+                let firstFileContent = fs.readFileSync(`${folderPath}/${files[0]}`, 'utf8');
+                let parsedData;
+                parsedData = yaml.safeLoad(firstFileContent);
+                expect(parsedData).to.have.property('name');
+            }
+        rimraf.sync(folderPath);
+        fs.mkdirSync(folderPath);
+    }).timeout(1000 * 60 * 10);
+
+        it('export with a non-existing directory', () => {
+            const { spawnSync } = require('child_process');
+            const fs = require('fs');
+            const nonExistingDir = './additionalFiles/nonExistingDir';
+            expect(fs.existsSync(nonExistingDir), `Directory "${nonExistingDir}" should not exist`).to.be.false;
+
+            const exportAlgoCommand = 'hkubectl';
+            const args = ['export', 'algorithms', nonExistingDir];
+            const args2 = ['export', 'pipelines', nonExistingDir];
+            const args3 = ['export', 'all', nonExistingDir];
 
 
+            console.log('Running command:', exportAlgoCommand, args.join(' '));
+
+            const result = spawnSync(exportAlgoCommand, args, { encoding: 'utf-8' });
+            const result2 = spawnSync(exportAlgoCommand, args2, { encoding: 'utf-8' });
+            const result3 = spawnSync(exportAlgoCommand, args3, { encoding: 'utf-8' });
 
 
+            expect(result.stderr).to.include(`Directory "./additionalFiles/nonExistingDir" does not exist.`);
+            expect(result2.stderr).to.include(`Directory "./additionalFiles/nonExistingDir" does not exist.`);
+            expect(result3.stderr).to.include(`Directory "./additionalFiles/nonExistingDir" does not exist.`);
+
+
+            }).timeout(1000 * 60 * 10);
+        it('export pipelines as jsons to a local directory', async () => {
+            const fs = require('fs');
+            const rimraf = require('rimraf');
+            const folderPath = './additionalFiles/exportedPipelines';
+            if (!fs.existsSync(folderPath)) {
+                fs.mkdirSync(folderPath);
+            }
+            const exportPipelineCommand = `hkubectl export pipelines ${folderPath}`;
+            const exportedPipelines = await execSync(exportPipelineCommand, { encoding: 'utf-8' });
+            let files = fs.readdirSync(folderPath, 'utf8');
+            expect(files.length).to.be.greaterThan(0, 'No files found in the directory');
+            expect(exportedPipelines).to.include("Saved")
+            files.forEach((file) => {
+                let fileContent = fs.readFileSync(`${folderPath}/${file}`, 'utf8');
+                let isJson = false;
+        
+                try {
+                    JSON.parse(fileContent);
+                    isJson = true;
+                } catch (error) {
+                    isJson = false;
+                }
+        
+            expect(isJson, `${file} should be a valid JSON`).to.be.true;
+            });
+            let firstFileContent = fs.readFileSync(`${folderPath}/${files[0]}`, 'utf8');
+            let parsedData;
+            parsedData = JSON.parse(firstFileContent);
+            expect(parsedData).to.have.property('nodes');
+            rimraf.sync(folderPath);
+            fs.mkdirSync(folderPath);
+        }).timeout(1000 * 60 * 6);
+
+        it('export pipelines as YAMLs to a local directory', async () => {
+            const fs = require('fs');
+            const rimraf = require('rimraf');
+            const yaml = require('js-yaml');
+            const folderPath = './additionalFiles/exportedPipelines';
+            if (!fs.existsSync(folderPath)) {
+                fs.mkdirSync(folderPath);
+            }
+            const exportPipelineCommand = `hkubectl export pipelines -f yaml ${folderPath}`;
+            const exportedPipelines = await execSync(exportPipelineCommand, { encoding: 'utf-8' });
+            let files = fs.readdirSync(folderPath, 'utf8');
+            expect(files.length).to.be.greaterThan(0, 'No files found in the directory');
+            expect(exportedPipelines).to.include("Saved")
+            files.forEach((file) => {
+                let fileContent = fs.readFileSync(`${folderPath}/${file}`, 'utf8');
+                try {
+                    yaml.safeLoad(fileContent);
+                    isYaml = true;
+                } catch (error) {
+                    isYaml = false;
+                }
+            expect(isYaml, `${file} should be a valid YAML`).to.be.true;
+            });
+            if (files.length > 0) {
+                let firstFileContent = fs.readFileSync(`${folderPath}/${files[0]}`, 'utf8');
+                let parsedData;
+                parsedData = yaml.safeLoad(firstFileContent);
+            expect(parsedData).to.have.property('nodes');
+            rimraf.sync(folderPath);
+            fs.mkdirSync(folderPath);
+            }
+        }).timeout(1000 * 60 * 6);
+        
+        it('export all data as jsons to a local directory', async () => {
+            const fs = require('fs');
+            const rimraf = require('rimraf');
+            const baseFolderPath = './additionalFiles/allData';
+            if (!fs.existsSync(baseFolderPath)) {
+                fs.mkdirSync(baseFolderPath);
+            }
+            const exportDataCommand = `hkubectl export all ${baseFolderPath}`;
+            const exportedData = await execSync(exportDataCommand, { encoding: 'utf-8' });
+            let files = fs.readdirSync(baseFolderPath, 'utf8');
+            expect(files.length).to.equal(2, 'two folders, pipelines and algorithms');
+        
+            files.forEach((folder) => {
+                let folderPath = `${baseFolderPath}/${folder}`;
+                let subFiles = fs.readdirSync(folderPath, 'utf8');
+        
+                subFiles.forEach((file) => {
+                    let fileContent = fs.readFileSync(`${folderPath}/${file}`, 'utf8');
+        
+                    if (folder === 'algorithms') {
+                        try {
+                            let parsedData = JSON.parse(fileContent);
+                            expect(parsedData).to.have.property('name');
+                        } catch (error) {
+                            console.error(`Error parsing JSON for algorithm ${file}: ${error}`);
+                            expect.fail(`Failed to parse JSON for algorithm ${file}`);
+                        }
+                    } else if (folder === 'pipelines') {
+                        try {
+                            let parsedData = JSON.parse(fileContent);
+                            expect(parsedData).to.have.property('nodes');
+                        } catch (error) {
+                            console.error(`Error parsing JSON for pipeline ${file}: ${error}`);
+                            expect.fail(`Failed to parse JSON for pipeline ${file}`);
+                        }
+                    } else {
+                        console.error(`Unexpected folder: ${folder}`);
+                        expect.fail(`Unexpected folder: ${folder}`);
+                    }
+                });
+            });
+        
+            rimraf.sync(baseFolderPath);
+            fs.mkdirSync(baseFolderPath);
+        }).timeout(1000 * 60 * 6);
     })
-
-
-
-
-
 });
+})
 
 
 
