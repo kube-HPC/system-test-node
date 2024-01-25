@@ -1,0 +1,23 @@
+{
+  "name": "6o5yjjiy",
+  "env": "python",
+  "cpu": 0.5,
+  "gpu": 0,
+  "mem": "512Mi",
+  "entryPoint": "pyeyemat",
+  "minHotWorkers": 0,
+  "baseImage": "python:3.7",
+  "type": "Code",
+  "options": {
+    "pending": true
+  },
+  "fileInfo": {
+    "fileExt": "gz",
+    "checksum": "4dc82480547f20e078d7b2b9a682c613ae23fa9a",
+    "fileSize": 267,
+    "path": "cicd-hkube-builds/6o5yjjiy-vjg77y"
+  },
+  "reservedMemory": "103Mi",
+  "created": 1694685000295,
+  "modified": 1694685000295
+}

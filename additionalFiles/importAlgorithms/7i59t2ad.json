@@ -1,0 +1,20 @@
+{
+  "name": "7i59t2ad",
+  "cpu": 1,
+  "gpu": 0,
+  "mem": "256Mi",
+  "minHotWorkers": 1,
+  "algorithmImage": "tamir321/algoversion:v1",
+  "type": "Image",
+  "options": {
+    "debug": false,
+    "pending": false
+  },
+  "nodeSelector": {
+    "kubernetes.io/hostname": "ip-172-20-54-98.eu-west-1.compute.internal"
+  },
+  "reservedMemory": "52Mi",
+  "version": "ps0hh6877k",
+  "created": 1694685327880,
+  "modified": 1694685327880
+}
