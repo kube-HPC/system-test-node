@@ -791,7 +791,7 @@ describe("pipeline Tests 673", () => {
     describe("pipeline options", async () => {
       const d = deconstructTestData(ttlPipe);
 
-      it.only("pipeline ttl ", async () => {
+      it("pipeline ttl ", async () => {
         await deletePipeline(d);
         await storePipeline(d);
         const ttl = {
