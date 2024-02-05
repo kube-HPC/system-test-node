@@ -21,7 +21,8 @@ const uploadFile = (code, algName, entry) => {
         mem: '512Mi',
         entryPoint: entry,
         minHotWorkers: 0,
-        version: idGen()
+        version: idGen(),
+        workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
     }
 
     const codeCwd = path.join(process.cwd(), code)

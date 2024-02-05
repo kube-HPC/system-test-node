@@ -85,6 +85,7 @@ const algJson = (algName, imageName) => {
       debug: false,
       pending: false,
     },
+    workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
   };
   return alg;
 };
@@ -790,7 +791,7 @@ describe("pipeline Tests 673", () => {
     describe("pipeline options", async () => {
       const d = deconstructTestData(ttlPipe);
 
-      it("pipeline ttl ", async () => {
+      it.only("pipeline ttl ", async () => {
         await deletePipeline(d);
         await storePipeline(d);
         const ttl = {

@@ -625,7 +625,8 @@ describe('all swagger calls test ', () => {
                 options: {
                     debug: false,
                     pending: false
-                }
+                },
+                workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
             }
             return alg
         }

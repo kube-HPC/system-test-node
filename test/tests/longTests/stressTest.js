@@ -615,6 +615,7 @@ describe("stress tests ", () => {
         options: {
           pending: false,
         },
+        workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 },
 
         algorithmImage: "docker.io/hkubedevtest/alg-1:v9qqnb3n9",
       };

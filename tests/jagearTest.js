@@ -42,7 +42,8 @@ describe('jagear', () => {
         options: {
             debug: false,
             pending: false
-        }
+        },
+        workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
     }
 
     it('test jagear  start algorithms', async () => {

@@ -9,7 +9,8 @@ const alg = {
     options: {
         debug: false,
         pending: false
-    }
+    },
+    workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
 }
 
 module.exports = { alg }

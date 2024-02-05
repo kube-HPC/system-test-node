@@ -573,6 +573,7 @@ describe("Node Tests git 660", () => {
       },
       minHotWorkers: 0,
       type: "Image",
+      workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
     };
 
     it("node Fail schdualing due to lack of resource", async () => {

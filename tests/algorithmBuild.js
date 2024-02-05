@@ -201,7 +201,8 @@ describe('Algorithm build test', () => {
                 mem: '5Gi',
                 entryPoint: entry,
                 minHotWorkers: 0,
-                version: idGen()
+                version: idGen(),
+                workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
             }
 
             const res = await chai.request(config.apiServerUrl)
@@ -232,6 +233,7 @@ describe('Algorithm build test', () => {
                 mem: '256Mi',
                 entryPoint: entry,
                 minHotWorkers: 0,
+                workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
 
             }
 
@@ -279,7 +281,8 @@ describe('Algorithm build test', () => {
                 mem: '1Gi',
                 entryPoint: 'main',
                 minHotWorkers: 0,
-                dependencyInstallCmd: "installDeps.sh"
+                dependencyInstallCmd: "installDeps.sh",
+                workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
 
             }
 

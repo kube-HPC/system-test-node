@@ -85,7 +85,13 @@ const storeAlgorithms = async (alg) => {
     return res;
 };
 
-
+const storeOrUpdateAlgorithms = async (alg) => {
+    const res = await chai.request(config.apiServerUrl)
+        .post('/store/algorithms?overwrite=true')
+        .send(alg)
+        .set('Content-Type', 'application/json');
+    return res;
+};
 
 const buildAlgorithm = async ({ code, algName, entry, baseVersion = 'python:3.7.16', algorithmArray = [] }) => {
     const data = {
@@ -97,7 +103,8 @@ const buildAlgorithm = async ({ code, algName, entry, baseVersion = 'python:3.7.
         entryPoint: entry,
         minHotWorkers: 0,
         version: idGen(),
-        baseImage: baseVersion
+        baseImage: baseVersion,
+        workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
     }
     algorithmArray.push(algName)
     const res = await chai.request(config.apiServerUrl)
@@ -136,7 +143,8 @@ const buildGitAlgorithm = async ({ algName, gitUrl, gitKind, entry, branch, lang
             url: gitUrl,
             branchName: branch,
             gitKind: gitKind
-        }
+        },
+        workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
     }
     algorithmArray.push(algName)
     if (typeof commit != "string") {
@@ -231,7 +239,7 @@ const tagAlgorithmVersion = async (algName, algVersion, algTag) => {
 
 }
 
-const deleteAlgorithm = async (name, force = true,keepOldVersions=false) => {
+const deleteAlgorithm = async (name, force = true, keepOldVersions = false) => {
     const res = await chai.request(config.apiServerUrl)
         .delete(`/store/algorithms/${name}?force=${force}&keepOldVersions=${keepOldVersions}`)
     logResult(res, "algorithmUtils deleteAlgorithm")
@@ -306,6 +314,7 @@ module.exports = {
     updateAlgorithmVersion,
     storeAlgorithmApply,
     storeAlgorithms,
+    storeOrUpdateAlgorithms,
     buildGitAlgorithm,
     deleteAlgorithmVersion,
     logResult,

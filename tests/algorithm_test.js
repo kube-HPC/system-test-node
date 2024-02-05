@@ -18,6 +18,7 @@ const { runAlgorithm,
     getAlgVersion,
     insertAlgorithms,
     storeAlgorithms,
+    storeOrUpdateAlgorithms
 } = require('../utils/algorithmUtils')
 
 const { filterPodsByName,
@@ -146,7 +147,8 @@ describe('Alrogithm Tests', () => {
                 options: {
                     debug: false,
                     pending: false
-                }
+                },
+                workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
             }
             return alg
         }
@@ -283,7 +285,7 @@ describe('Alrogithm Tests', () => {
             deleteAlgorithm(algName)
         }).timeout(1000 * 60 * 10);
 
-        it.only('update algorithm nodeSelector', async () => {
+        it('update algorithm nodeSelector', async () => {
             const nodes = await getNodes();
             expect(nodes.length).to.be.above(1, "Received 1 or less nodes.");
             //create and store an algorithm
@@ -582,6 +584,7 @@ describe('Alrogithm Tests', () => {
                     "debug": false,
                     "pending": false
                 },
+                workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 },
                 "version": "1.0.0",
                 algorithmImage: "docker.io/hkubedevtest/env-alg:vv61f5gc4"
             }
@@ -650,6 +653,7 @@ describe('Alrogithm Tests', () => {
                 debug: false,
                 pending: false
             },
+            workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 },
             algorithmImage: "docker.io/hkubedevtest/env-alg:vv61f5gc4",//"docker.io/hkubedevtest/stream-image-sleep-end:v8ie4jvzf",
             algorithmEnv: {
                 FOO: "I got foo",
@@ -780,7 +784,8 @@ describe('Alrogithm Tests', () => {
                 options: {
                     debug: false,
                     pending: false
-                }
+                },
+                workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
             }
             await deleteAlgorithm(alg.name, true);
             await storeAlgorithmApply(alg);
@@ -806,7 +811,8 @@ describe('Alrogithm Tests', () => {
                         options: {
                             debug: false,
                             pending: false
-                        }
+                        },
+                        workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
                     }
                     const aa = await deleteAlgorithm("versatile", true)
                     const bb = await storeAlgorithmApply(alg);
@@ -856,7 +862,8 @@ describe('Alrogithm Tests', () => {
                         options: {
                             debug: false,
                             pending: false
-                        }
+                        },
+                        workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
                     },
                     {
                         name: "alg2",
@@ -869,7 +876,8 @@ describe('Alrogithm Tests', () => {
                         options: {
                             debug: false,
                             pending: false
-                        }
+                        },
+                        workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
                     }
                 ];
 
@@ -896,7 +904,8 @@ describe('Alrogithm Tests', () => {
                     options: {
                         debug: false,
                         pending: false
-                    }
+                    },
+                    workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
                 }
                 const responseOfExists = await storeAlgorithms(existingAlg)
 
@@ -925,7 +934,8 @@ describe('Alrogithm Tests', () => {
                         options: {
                             debug: false,
                             pending: false
-                        }
+                        },
+                        workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
                     }
                 ];
                 const response = await storeAlgorithms(algList);
@@ -936,6 +946,66 @@ describe('Alrogithm Tests', () => {
                 expect(listOfAlgorithmResponse[0].error.code).to.be.equal(409, 'Expected status code to be CONFLICT');
                 expect(listOfAlgorithmResponse[1].name).to.be.equal('alg2');
             }).timeout(1000 * 60 * 5);
+
+            it('overwrite an algorithm', async () => {
+                const deleteAlg1 = await deleteAlgorithm("alg1", true)
+                const deleteAlg2 = await deleteAlgorithm("alg2", true)
+                let existingAlg = {
+                    name: "alg1",
+                    cpu: 0.1,
+                    gpu: 0,
+                    mem: "256Mi",
+                    minHotWorkers: 0,
+                    algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                    type: "Image",
+                    options: {
+                        debug: false,
+                        pending: false
+                    },
+                    workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
+                }
+                const responseOfExists = await storeAlgorithms(existingAlg)
+
+                let algList = [
+                    {
+                        "name": "alg1",
+                        "cpu": 0.1,
+                        "gpu": 0,
+                        "mem": "256Mi",
+                        "minHotWorkers": 0,
+                        "algorithmImage": "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                        "type": "Image",
+                        "options": {
+                            "debug": false,
+                            "pending": false
+                        }
+                    },
+                    {
+                        name: "alg2",
+                        cpu: 0.2,
+                        gpu: 0,
+                        mem: "256Mi",
+                        minHotWorkers: 0,
+                        algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                        type: "Image",
+                        options: {
+                            debug: false,
+                            pending: false
+                        },
+                        workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
+                    }
+                ];
+                const response = await storeOrUpdateAlgorithms(algList);
+                const listOfAlgorithmResponse = response.body
+                expect(response.statusCode).to.be.equal(201);
+                expect(listOfAlgorithmResponse).to.be.an('array');
+                expect(listOfAlgorithmResponse.length).to.be.equal(2);
+                expect(listOfAlgorithmResponse[1].name).to.be.equal('alg2');
+                alg2Response = await getAlgorithm('alg2');
+                expect(alg2Response.body.cpu).to.eq(0.2);
+
+            }).timeout(1000 * 60 * 5);
+
 
 
             it('should succeed creating an array containing a 400 Bad Request status and error message for invalid data', async () => {
@@ -959,7 +1029,8 @@ describe('Alrogithm Tests', () => {
                         options: {
                             debug: false,
                             pending: false
-                        }
+                        },
+                        workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
                     },
                 ];
                 const response = await storeAlgorithms(invalidAlgorithmData);

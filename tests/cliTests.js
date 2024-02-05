@@ -547,7 +547,8 @@ describe('Hkubectl Tests', () => {
                 options: {
                     debug: false,
                     pending: false
-                }
+                },
+                workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
 
             }
 
@@ -559,328 +560,328 @@ describe('Hkubectl Tests', () => {
 
         }).timeout(1000 * 60 * 10)
 
-    describe('hkubecl export tests', () => {
-        it('export algoritms as jsons to a local directory ', async () => {
-            const fs = require('fs');
-            const rimraf = require('rimraf');
-            const folderPath = './additionalFiles/exportedAlgorithms';
-            if (!fs.existsSync(folderPath)) {
-                fs.mkdirSync(folderPath);
-            }
-            const exportAlgoCommand = `hkubectl export algorithms ${folderPath}`;
-            const exportAlgorithms = await execSync(exportAlgoCommand);
-            let files = fs.readdirSync(folderPath, 'utf8');
-            expect(files.length).to.be.greaterThan(0);
-            files.forEach((file) => {
-                let fileContent = fs.readFileSync(`${folderPath}/${file}`, 'utf8');
-                let isJson = false;
-                try {
-                    JSON.parse(fileContent);
-                    isJson = true;
-                } catch (error) {
-                    isJson = false;
+        describe('hkubecl export tests', () => {
+            it('export algoritms as jsons to a local directory ', async () => {
+                const fs = require('fs');
+                const rimraf = require('rimraf');
+                const folderPath = './additionalFiles/exportedAlgorithms';
+                if (!fs.existsSync(folderPath)) {
+                    fs.mkdirSync(folderPath);
                 }
-            expect(isJson, `${file} should be a valid JSON`).to.be.true;
-            });
-            let firstFileContent = fs.readFileSync(`${folderPath}/${files[0]}`, 'utf8');
-            let parsedData;
-            parsedData = JSON.parse(firstFileContent);
-            expect(parsedData).to.have.property('name'); 
-            rimraf.sync(folderPath);
-            fs.mkdirSync(folderPath); 
-        }).timeout(1000 * 60 * 6)
-
-        it('export algorithms as YAMLs to a local directory', async () => {
-            const fs = require('fs');
-            const rimraf = require('rimraf');
-            const yaml = require('js-yaml');
-            const folderPath = './additionalFiles/exportedAlgorithms';
-            if (!fs.existsSync(folderPath)) {
-                fs.mkdirSync(folderPath);
-            }
-            const exportAlgoCommand = "hkubectl export algorithms -f yaml ./additionalFiles/exportedAlgorithms";
-            const exportAlgorithms = await execSync(exportAlgoCommand);
-            let files = fs.readdirSync(folderPath, 'utf8');
-            expect(files.length).to.be.greaterThan(0);
-
-            files.forEach((file) => {
-                let fileContent = fs.readFileSync(`${folderPath}/${file}`, 'utf8');
-                try {
-                    yaml.safeLoad(fileContent);
-                    isYaml = true;
-                } catch (error) {
-                    isYaml = false;
-                }
-                expect(isYaml, `${file} should be a valid YAML`).to.be.true;
-            });
-            if (files.length > 0) {
+                const exportAlgoCommand = `hkubectl export algorithms ${folderPath}`;
+                const exportAlgorithms = await execSync(exportAlgoCommand);
+                let files = fs.readdirSync(folderPath, 'utf8');
+                expect(files.length).to.be.greaterThan(0);
+                files.forEach((file) => {
+                    let fileContent = fs.readFileSync(`${folderPath}/${file}`, 'utf8');
+                    let isJson = false;
+                    try {
+                        JSON.parse(fileContent);
+                        isJson = true;
+                    } catch (error) {
+                        isJson = false;
+                    }
+                    expect(isJson, `${file} should be a valid JSON`).to.be.true;
+                });
                 let firstFileContent = fs.readFileSync(`${folderPath}/${files[0]}`, 'utf8');
                 let parsedData;
-                parsedData = yaml.safeLoad(firstFileContent);
+                parsedData = JSON.parse(firstFileContent);
                 expect(parsedData).to.have.property('name');
-            }
-        rimraf.sync(folderPath);
-        fs.mkdirSync(folderPath);
-    }).timeout(1000 * 60 * 10);
+                rimraf.sync(folderPath);
+                fs.mkdirSync(folderPath);
+            }).timeout(1000 * 60 * 6)
 
-        it('export with a non-existing directory', () => {
-            const { spawnSync } = require('child_process');
-            const fs = require('fs');
-            const nonExistingDir = './additionalFiles/nonExistingDir';
-            expect(fs.existsSync(nonExistingDir), `Directory "${nonExistingDir}" should not exist`).to.be.false;
+            it('export algorithms as YAMLs to a local directory', async () => {
+                const fs = require('fs');
+                const rimraf = require('rimraf');
+                const yaml = require('js-yaml');
+                const folderPath = './additionalFiles/exportedAlgorithms';
+                if (!fs.existsSync(folderPath)) {
+                    fs.mkdirSync(folderPath);
+                }
+                const exportAlgoCommand = "hkubectl export algorithms -f yaml ./additionalFiles/exportedAlgorithms";
+                const exportAlgorithms = await execSync(exportAlgoCommand);
+                let files = fs.readdirSync(folderPath, 'utf8');
+                expect(files.length).to.be.greaterThan(0);
 
-            const exportAlgoCommand = 'hkubectl';
-            const args = ['export', 'algorithms', nonExistingDir];
-            const args2 = ['export', 'pipelines', nonExistingDir];
-            const args3 = ['export', 'all', nonExistingDir];
+                files.forEach((file) => {
+                    let fileContent = fs.readFileSync(`${folderPath}/${file}`, 'utf8');
+                    try {
+                        yaml.safeLoad(fileContent);
+                        isYaml = true;
+                    } catch (error) {
+                        isYaml = false;
+                    }
+                    expect(isYaml, `${file} should be a valid YAML`).to.be.true;
+                });
+                if (files.length > 0) {
+                    let firstFileContent = fs.readFileSync(`${folderPath}/${files[0]}`, 'utf8');
+                    let parsedData;
+                    parsedData = yaml.safeLoad(firstFileContent);
+                    expect(parsedData).to.have.property('name');
+                }
+                rimraf.sync(folderPath);
+                fs.mkdirSync(folderPath);
+            }).timeout(1000 * 60 * 10);
+
+            it('export with a non-existing directory', () => {
+                const { spawnSync } = require('child_process');
+                const fs = require('fs');
+                const nonExistingDir = './additionalFiles/nonExistingDir';
+                expect(fs.existsSync(nonExistingDir), `Directory "${nonExistingDir}" should not exist`).to.be.false;
+
+                const exportAlgoCommand = 'hkubectl';
+                const args = ['export', 'algorithms', nonExistingDir];
+                const args2 = ['export', 'pipelines', nonExistingDir];
+                const args3 = ['export', 'all', nonExistingDir];
 
 
-            console.log('Running command:', exportAlgoCommand, args.join(' '));
+                console.log('Running command:', exportAlgoCommand, args.join(' '));
 
-            const result = spawnSync(exportAlgoCommand, args, { encoding: 'utf-8' });
-            const result2 = spawnSync(exportAlgoCommand, args2, { encoding: 'utf-8' });
-            const result3 = spawnSync(exportAlgoCommand, args3, { encoding: 'utf-8' });
+                const result = spawnSync(exportAlgoCommand, args, { encoding: 'utf-8' });
+                const result2 = spawnSync(exportAlgoCommand, args2, { encoding: 'utf-8' });
+                const result3 = spawnSync(exportAlgoCommand, args3, { encoding: 'utf-8' });
 
 
-            expect(result.stderr).to.include(`Directory "./additionalFiles/nonExistingDir" does not exist.`);
-            expect(result2.stderr).to.include(`Directory "./additionalFiles/nonExistingDir" does not exist.`);
-            expect(result3.stderr).to.include(`Directory "./additionalFiles/nonExistingDir" does not exist.`);
+                expect(result.stderr).to.include(`Directory "./additionalFiles/nonExistingDir" does not exist.`);
+                expect(result2.stderr).to.include(`Directory "./additionalFiles/nonExistingDir" does not exist.`);
+                expect(result3.stderr).to.include(`Directory "./additionalFiles/nonExistingDir" does not exist.`);
 
 
             }).timeout(1000 * 60 * 10);
-        it('export pipelines as jsons to a local directory', async () => {
-            const fs = require('fs');
-            const rimraf = require('rimraf');
-            const folderPath = './additionalFiles/exportedPipelines';
-            if (!fs.existsSync(folderPath)) {
-                fs.mkdirSync(folderPath);
-            }
-            const exportPipelineCommand = `hkubectl export pipelines ${folderPath}`;
-            const exportedPipelines = await execSync(exportPipelineCommand, { encoding: 'utf-8' });
-            let files = fs.readdirSync(folderPath, 'utf8');
-            expect(files.length).to.be.greaterThan(0, 'No files found in the directory');
-            expect(exportedPipelines).to.include("Saved")
-            files.forEach((file) => {
-                let fileContent = fs.readFileSync(`${folderPath}/${file}`, 'utf8');
-                let isJson = false;
-        
-                try {
-                    JSON.parse(fileContent);
-                    isJson = true;
-                } catch (error) {
-                    isJson = false;
+            it('export pipelines as jsons to a local directory', async () => {
+                const fs = require('fs');
+                const rimraf = require('rimraf');
+                const folderPath = './additionalFiles/exportedPipelines';
+                if (!fs.existsSync(folderPath)) {
+                    fs.mkdirSync(folderPath);
                 }
-        
-            expect(isJson, `${file} should be a valid JSON`).to.be.true;
-            });
-            let firstFileContent = fs.readFileSync(`${folderPath}/${files[0]}`, 'utf8');
-            let parsedData;
-            parsedData = JSON.parse(firstFileContent);
-            expect(parsedData).to.have.property('nodes');
-            rimraf.sync(folderPath);
-            fs.mkdirSync(folderPath);
-        }).timeout(1000 * 60 * 6);
+                const exportPipelineCommand = `hkubectl export pipelines ${folderPath}`;
+                const exportedPipelines = await execSync(exportPipelineCommand, { encoding: 'utf-8' });
+                let files = fs.readdirSync(folderPath, 'utf8');
+                expect(files.length).to.be.greaterThan(0, 'No files found in the directory');
+                expect(exportedPipelines).to.include("Saved")
+                files.forEach((file) => {
+                    let fileContent = fs.readFileSync(`${folderPath}/${file}`, 'utf8');
+                    let isJson = false;
 
-        it('export pipelines as YAMLs to a local directory', async () => {
-            const fs = require('fs');
-            const rimraf = require('rimraf');
-            const yaml = require('js-yaml');
-            const folderPath = './additionalFiles/exportedPipelines';
-            if (!fs.existsSync(folderPath)) {
-                fs.mkdirSync(folderPath);
-            }
-            const exportPipelineCommand = `hkubectl export pipelines -f yaml ${folderPath}`;
-            const exportedPipelines = await execSync(exportPipelineCommand, { encoding: 'utf-8' });
-            let files = fs.readdirSync(folderPath, 'utf8');
-            expect(files.length).to.be.greaterThan(0, 'No files found in the directory');
-            expect(exportedPipelines).to.include("Saved")
-            files.forEach((file) => {
-                let fileContent = fs.readFileSync(`${folderPath}/${file}`, 'utf8');
-                try {
-                    yaml.safeLoad(fileContent);
-                    isYaml = true;
-                } catch (error) {
-                    isYaml = false;
-                }
-            expect(isYaml, `${file} should be a valid YAML`).to.be.true;
-            });
-            if (files.length > 0) {
+                    try {
+                        JSON.parse(fileContent);
+                        isJson = true;
+                    } catch (error) {
+                        isJson = false;
+                    }
+
+                    expect(isJson, `${file} should be a valid JSON`).to.be.true;
+                });
                 let firstFileContent = fs.readFileSync(`${folderPath}/${files[0]}`, 'utf8');
                 let parsedData;
-                parsedData = yaml.safeLoad(firstFileContent);
-            expect(parsedData).to.have.property('nodes');
-            rimraf.sync(folderPath);
-            fs.mkdirSync(folderPath);
-            }
-        }).timeout(1000 * 60 * 6);
-        
-        it('export all data as jsons to a local directory', async () => {
-            const fs = require('fs');
-            const rimraf = require('rimraf');
-            const baseFolderPath = './additionalFiles/allData';
-            if (!fs.existsSync(baseFolderPath)) {
-                fs.mkdirSync(baseFolderPath);
-            }
-            const exportDataCommand = `hkubectl export all ${baseFolderPath}`;
-            const exportedData = await execSync(exportDataCommand, { encoding: 'utf-8' });
-            let files = fs.readdirSync(baseFolderPath, 'utf8');
-            expect(files.length).to.equal(2, 'two folders, pipelines and algorithms');
-        
-            files.forEach((folder) => {
-                let folderPath = `${baseFolderPath}/${folder}`;
-                let subFiles = fs.readdirSync(folderPath, 'utf8');
-        
-                subFiles.forEach((file) => {
+                parsedData = JSON.parse(firstFileContent);
+                expect(parsedData).to.have.property('nodes');
+                rimraf.sync(folderPath);
+                fs.mkdirSync(folderPath);
+            }).timeout(1000 * 60 * 6);
+
+            it('export pipelines as YAMLs to a local directory', async () => {
+                const fs = require('fs');
+                const rimraf = require('rimraf');
+                const yaml = require('js-yaml');
+                const folderPath = './additionalFiles/exportedPipelines';
+                if (!fs.existsSync(folderPath)) {
+                    fs.mkdirSync(folderPath);
+                }
+                const exportPipelineCommand = `hkubectl export pipelines -f yaml ${folderPath}`;
+                const exportedPipelines = await execSync(exportPipelineCommand, { encoding: 'utf-8' });
+                let files = fs.readdirSync(folderPath, 'utf8');
+                expect(files.length).to.be.greaterThan(0, 'No files found in the directory');
+                expect(exportedPipelines).to.include("Saved")
+                files.forEach((file) => {
                     let fileContent = fs.readFileSync(`${folderPath}/${file}`, 'utf8');
-        
-                    if (folder === 'algorithms') {
-                        try {
-                            let parsedData = JSON.parse(fileContent);
-                            expect(parsedData).to.have.property('name');
-                        } catch (error) {
-                            console.error(`Error parsing JSON for algorithm ${file}: ${error}`);
-                            expect.fail(`Failed to parse JSON for algorithm ${file}`);
-                        }
-                    } else if (folder === 'pipelines') {
-                        try {
-                            let parsedData = JSON.parse(fileContent);
-                            expect(parsedData).to.have.property('nodes');
-                        } catch (error) {
-                            console.error(`Error parsing JSON for pipeline ${file}: ${error}`);
-                            expect.fail(`Failed to parse JSON for pipeline ${file}`);
-                        }
-                    } else {
-                        console.error(`Unexpected folder: ${folder}`);
-                        expect.fail(`Unexpected folder: ${folder}`);
+                    try {
+                        yaml.safeLoad(fileContent);
+                        isYaml = true;
+                    } catch (error) {
+                        isYaml = false;
                     }
+                    expect(isYaml, `${file} should be a valid YAML`).to.be.true;
                 });
-            });
-        
-            rimraf.sync(baseFolderPath);
-            fs.mkdirSync(baseFolderPath);
-        }).timeout(1000 * 60 * 6);
-    })
-    describe('hkubecl import tests', () => {
-        it('import algoritms from a local directory to hkube env', async () => {
-            const fs = require('fs');
-            await deleteAlgorithm('6o5yjjiy')
-            await deleteAlgorithm('7i59t2ad')
-            const folderPath = './additionalFiles/importAlgorithms';
-            const importAlgoCommand = `hkubectl import algorithms ${folderPath}`;
-            const importedAlgorithms = await execSync(importAlgoCommand);
-            expect(importedAlgorithms.toString()).to.include("Successfully imported 6o5yjjiy");
-            expect(importedAlgorithms.toString()).to.include("Successfully imported 7i59t2ad") ;
-        }).timeout(1000 * 60 * 6);
+                if (files.length > 0) {
+                    let firstFileContent = fs.readFileSync(`${folderPath}/${files[0]}`, 'utf8');
+                    let parsedData;
+                    parsedData = yaml.safeLoad(firstFileContent);
+                    expect(parsedData).to.have.property('nodes');
+                    rimraf.sync(folderPath);
+                    fs.mkdirSync(folderPath);
+                }
+            }).timeout(1000 * 60 * 6);
 
-        it('import algoritms from a local directory to hkube env, switch cpu from 1 to 2', async () => {
-            const fs = require('fs');
-            await deleteAlgorithm('6o5yjjiy')
-            await deleteAlgorithm('7i59t2ad')
-            const folderPath = './additionalFiles/importAlgorithms';
-            const importAlgoCommand = `hkubectl import algorithms ${folderPath} -r \"\\"cpu\\": 1^\\"cpu\\": 2\"`;
-            const importedAlgorithms = await execSync(importAlgoCommand);
-            alg2 = await getAlgorithm('7i59t2ad')
-            expect(importedAlgorithms.toString()).to.include('1 occurrences of ""cpu": 1" found and changed');
-            expect(importedAlgorithms.toString()).to.include("Successfully imported 6o5yjjiy");
-            expect(importedAlgorithms.toString()).to.include("Successfully imported 7i59t2ad");
-            expect(alg2.body.cpu).to.be.equal(2)
-        }).timeout(1000 * 60 * 6);
+            it('export all data as jsons to a local directory', async () => {
+                const fs = require('fs');
+                const rimraf = require('rimraf');
+                const baseFolderPath = './additionalFiles/allData';
+                if (!fs.existsSync(baseFolderPath)) {
+                    fs.mkdirSync(baseFolderPath);
+                }
+                const exportDataCommand = `hkubectl export all ${baseFolderPath}`;
+                const exportedData = await execSync(exportDataCommand, { encoding: 'utf-8' });
+                let files = fs.readdirSync(baseFolderPath, 'utf8');
+                expect(files.length).to.equal(2, 'two folders, pipelines and algorithms');
 
-        it('import algoritms from a local directory to hkube env. use ; decorator to change 2 values', async () => {
-            const fs = require('fs');
-            await deleteAlgorithm('6o5yjjiy')
-            await deleteAlgorithm('7i59t2ad')
-            const folderPath = './additionalFiles/importAlgorithms';
-            const importAlgoCommand = `hkubectl import algorithms ${folderPath} -r \"\\"cpu\\": 1^\\"cpu\\": 2\"";"52Mi\"^\"60Mi\""`;
-            const importedAlgorithms = await execSync(importAlgoCommand);
-            alg2 = await getAlgorithm('7i59t2ad')
-            expect(importedAlgorithms.toString()).to.include('1 occurrences of ""cpu": 1" found and changed');
-            expect(importedAlgorithms.toString()).to.include('1 occurrences of "52Mi" found and changed');
-            expect(importedAlgorithms.toString()).to.include("Successfully imported 6o5yjjiy");
-            expect(importedAlgorithms.toString()).to.include("Successfully imported 7i59t2ad");
-            expect(alg2.body.cpu).to.be.equal(2)
-            expect(alg2.body.reservedMemory).to.be.equal('60Mi')
-        }).timeout(1000 * 60 * 6);
+                files.forEach((folder) => {
+                    let folderPath = `${baseFolderPath}/${folder}`;
+                    let subFiles = fs.readdirSync(folderPath, 'utf8');
 
-        it('import pipelines from a local directory to hkube env', async () => {
-            const fs = require('fs');
-            await deletePipeline('0aIWYOaR')
-            await deletePipeline('0lAzCLWk')
-            const folderPath = './additionalFiles/importPipelines';
-            const importPipeCommand = `hkubectl import pipelines ${folderPath}`;
-            const importedPipelines = await execSync(importPipeCommand);
-            expect(importedPipelines.toString()).to.include("Successfully imported 0aIWYOaR");
-            expect(importedPipelines.toString()).to.include("Successfully imported 0lAzCLWk") ;
-        }).timeout(1000 * 60 * 6);
+                    subFiles.forEach((file) => {
+                        let fileContent = fs.readFileSync(`${folderPath}/${file}`, 'utf8');
 
-        it('import all data from a local directory to hkube env', async () => {
-            const fs = require('fs');
-            await deletePipeline('0aIWYOaR')
-            await deletePipeline('0lAzCLWk')
-            await deleteAlgorithm('6o5yjjiy')
-            await deleteAlgorithm('7i59t2ad')
-            const folderPath = './additionalFiles/importAllData';
-            const importAllCommand = `hkubectl import all ${folderPath}`;
-            const importedAllFiles = await execSync(importAllCommand);
-            expect(importedAllFiles.toString()).to.include("Successfully imported 0aIWYOaR");
-            expect(importedAllFiles.toString()).to.include("Successfully imported 0lAzCLWk");
-            expect(importedAllFiles.toString()).to.include("Successfully imported 6o5yjjiy");
-            expect(importedAllFiles.toString()).to.include("Successfully imported 7i59t2ad");
-        }).timeout(1000 * 60 * 6);
+                        if (folder === 'algorithms') {
+                            try {
+                                let parsedData = JSON.parse(fileContent);
+                                expect(parsedData).to.have.property('name');
+                            } catch (error) {
+                                console.error(`Error parsing JSON for algorithm ${file}: ${error}`);
+                                expect.fail(`Failed to parse JSON for algorithm ${file}`);
+                            }
+                        } else if (folder === 'pipelines') {
+                            try {
+                                let parsedData = JSON.parse(fileContent);
+                                expect(parsedData).to.have.property('nodes');
+                            } catch (error) {
+                                console.error(`Error parsing JSON for pipeline ${file}: ${error}`);
+                                expect.fail(`Failed to parse JSON for pipeline ${file}`);
+                            }
+                        } else {
+                            console.error(`Unexpected folder: ${folder}`);
+                            expect.fail(`Unexpected folder: ${folder}`);
+                        }
+                    });
+                });
 
-        it('import all data from a local directory to hkube env. change one param in an algo', async () => {
-            const fs = require('fs');
-            await deletePipeline('0aIWYOaR')
-            await deletePipeline('0lAzCLWk')
-            await deleteAlgorithm('6o5yjjiy')
-            await deleteAlgorithm('7i59t2ad')
-            const folderPath = './additionalFiles/importAllData';
-            const importAllCommand = `hkubectl import all ${folderPath} -r \"\\"cpu\\": 1^\\"cpu\\": 2\"`;
-            const importedAllFiles = await execSync(importAllCommand);
-            expect(importedAllFiles.toString()).to.include('1 occurrences of ""cpu": 1" found and changed');
-            expect(importedAllFiles.toString()).to.include("Successfully imported 0aIWYOaR");
-            expect(importedAllFiles.toString()).to.include("Successfully imported 0lAzCLWk");
-            expect(importedAllFiles.toString()).to.include("Successfully imported 6o5yjjiy");
-            expect(importedAllFiles.toString()).to.include("Successfully imported 7i59t2ad");
-        }).timeout(1000 * 60 * 6);
+                rimraf.sync(baseFolderPath);
+                fs.mkdirSync(baseFolderPath);
+            }).timeout(1000 * 60 * 6);
+        })
+        describe('hkubecl import tests', () => {
+            it('import algoritms from a local directory to hkube env', async () => {
+                const fs = require('fs');
+                await deleteAlgorithm('6o5yjjiy')
+                await deleteAlgorithm('7i59t2ad')
+                const folderPath = './additionalFiles/importAlgorithms';
+                const importAlgoCommand = `hkubectl import algorithms ${folderPath}`;
+                const importedAlgorithms = await execSync(importAlgoCommand);
+                expect(importedAlgorithms.toString()).to.include("Successfully imported 6o5yjjiy");
+                expect(importedAlgorithms.toString()).to.include("Successfully imported 7i59t2ad");
+            }).timeout(1000 * 60 * 6);
 
-        it('import all data from a local directory to hkube env. use ; decorator to change 2 values', async () => {
-            const fs = require('fs');
-            await deletePipeline('0aIWYOaR')
-            await deletePipeline('0lAzCLWk')
-            await deleteAlgorithm('6o5yjjiy')
-            await deleteAlgorithm('7i59t2ad')
-            const folderPath = './additionalFiles/importAllData';
-            const importAllCommand = `hkubectl import all ${folderPath} -r \"\\"cpu\\": 1^\\"cpu\\": 2\"";"52Mi\"^\"60Mi\""`;
-            const importedAllFiles = await execSync(importAllCommand);
-            expect(importedAllFiles.toString()).to.include('1 occurrences of ""cpu": 1" found and changed');
-            expect(importedAllFiles.toString()).to.include('1 occurrences of "52Mi" found and changed');
-            expect(importedAllFiles.toString()).to.include("Successfully imported 0aIWYOaR");
-            expect(importedAllFiles.toString()).to.include("Successfully imported 0lAzCLWk");
-            expect(importedAllFiles.toString()).to.include("Successfully imported 6o5yjjiy");
-            expect(importedAllFiles.toString()).to.include("Successfully imported 7i59t2ad");
-        }).timeout(1000 * 60 * 6);
+            it('import algoritms from a local directory to hkube env, switch cpu from 1 to 2', async () => {
+                const fs = require('fs');
+                await deleteAlgorithm('6o5yjjiy')
+                await deleteAlgorithm('7i59t2ad')
+                const folderPath = './additionalFiles/importAlgorithms';
+                const importAlgoCommand = `hkubectl import algorithms ${folderPath} -r \"\\"cpu\\": 1^\\"cpu\\": 2\"`;
+                const importedAlgorithms = await execSync(importAlgoCommand);
+                alg2 = await getAlgorithm('7i59t2ad')
+                expect(importedAlgorithms.toString()).to.include('1 occurrences of ""cpu": 1" found and changed');
+                expect(importedAlgorithms.toString()).to.include("Successfully imported 6o5yjjiy");
+                expect(importedAlgorithms.toString()).to.include("Successfully imported 7i59t2ad");
+                expect(alg2.body.cpu).to.be.equal(2)
+            }).timeout(1000 * 60 * 6);
 
-        it('import using a non-existing directory', () => {
-            const { spawnSync } = require('child_process');
-            const fs = require('fs');
-            const nonExistingDir = './additionalFiles/nonExistingDir';
-            expect(fs.existsSync(nonExistingDir), `Directory "${nonExistingDir}" should not exist`).to.be.false;
+            it('import algoritms from a local directory to hkube env. use ; decorator to change 2 values', async () => {
+                const fs = require('fs');
+                await deleteAlgorithm('6o5yjjiy')
+                await deleteAlgorithm('7i59t2ad')
+                const folderPath = './additionalFiles/importAlgorithms';
+                const importAlgoCommand = `hkubectl import algorithms ${folderPath} -r \"\\"cpu\\": 1^\\"cpu\\": 2\"";"52Mi\"^\"60Mi\""`;
+                const importedAlgorithms = await execSync(importAlgoCommand);
+                alg2 = await getAlgorithm('7i59t2ad')
+                expect(importedAlgorithms.toString()).to.include('1 occurrences of ""cpu": 1" found and changed');
+                expect(importedAlgorithms.toString()).to.include('1 occurrences of "52Mi" found and changed');
+                expect(importedAlgorithms.toString()).to.include("Successfully imported 6o5yjjiy");
+                expect(importedAlgorithms.toString()).to.include("Successfully imported 7i59t2ad");
+                expect(alg2.body.cpu).to.be.equal(2)
+                expect(alg2.body.reservedMemory).to.be.equal('60Mi')
+            }).timeout(1000 * 60 * 6);
 
-            const importAlgoCommand = 'hkubectl';
-            const args = ['import', 'algorithms', nonExistingDir];
-            const args2 = ['import', 'pipelines', nonExistingDir];
-            const args3 = ['import', 'all', nonExistingDir];
-            console.log('Running command:', importAlgoCommand, args.join(' '));
-            const result = spawnSync(importAlgoCommand, args, { encoding: 'utf-8' });
-            const result2 = spawnSync(importAlgoCommand, args2, { encoding: 'utf-8' });
-            const result3 = spawnSync(importAlgoCommand, args3, { encoding: 'utf-8' });
+            it('import pipelines from a local directory to hkube env', async () => {
+                const fs = require('fs');
+                await deletePipeline('0aIWYOaR')
+                await deletePipeline('0lAzCLWk')
+                const folderPath = './additionalFiles/importPipelines';
+                const importPipeCommand = `hkubectl import pipelines ${folderPath}`;
+                const importedPipelines = await execSync(importPipeCommand);
+                expect(importedPipelines.toString()).to.include("Successfully imported 0aIWYOaR");
+                expect(importedPipelines.toString()).to.include("Successfully imported 0lAzCLWk");
+            }).timeout(1000 * 60 * 6);
 
-            console.log(result3.stderr)
-            expect(result.stderr).to.include(`Directory "./additionalFiles/nonExistingDir" does not exist.`);
-            expect(result2.stderr).to.include(`Directory "./additionalFiles/nonExistingDir" does not exist.`);
-            expect(result3.stderr).to.include(`Directory "additionalFiles/nonExistingDir/pipelines" does not exist.`);
-            expect(result3.stderr).to.include(`Directory "additionalFiles/nonExistingDir/algorithms" does not exist.`);
+            it('import all data from a local directory to hkube env', async () => {
+                const fs = require('fs');
+                await deletePipeline('0aIWYOaR')
+                await deletePipeline('0lAzCLWk')
+                await deleteAlgorithm('6o5yjjiy')
+                await deleteAlgorithm('7i59t2ad')
+                const folderPath = './additionalFiles/importAllData';
+                const importAllCommand = `hkubectl import all ${folderPath}`;
+                const importedAllFiles = await execSync(importAllCommand);
+                expect(importedAllFiles.toString()).to.include("Successfully imported 0aIWYOaR");
+                expect(importedAllFiles.toString()).to.include("Successfully imported 0lAzCLWk");
+                expect(importedAllFiles.toString()).to.include("Successfully imported 6o5yjjiy");
+                expect(importedAllFiles.toString()).to.include("Successfully imported 7i59t2ad");
+            }).timeout(1000 * 60 * 6);
+
+            it('import all data from a local directory to hkube env. change one param in an algo', async () => {
+                const fs = require('fs');
+                await deletePipeline('0aIWYOaR')
+                await deletePipeline('0lAzCLWk')
+                await deleteAlgorithm('6o5yjjiy')
+                await deleteAlgorithm('7i59t2ad')
+                const folderPath = './additionalFiles/importAllData';
+                const importAllCommand = `hkubectl import all ${folderPath} -r \"\\"cpu\\": 1^\\"cpu\\": 2\"`;
+                const importedAllFiles = await execSync(importAllCommand);
+                expect(importedAllFiles.toString()).to.include('1 occurrences of ""cpu": 1" found and changed');
+                expect(importedAllFiles.toString()).to.include("Successfully imported 0aIWYOaR");
+                expect(importedAllFiles.toString()).to.include("Successfully imported 0lAzCLWk");
+                expect(importedAllFiles.toString()).to.include("Successfully imported 6o5yjjiy");
+                expect(importedAllFiles.toString()).to.include("Successfully imported 7i59t2ad");
+            }).timeout(1000 * 60 * 6);
+
+            it('import all data from a local directory to hkube env. use ; decorator to change 2 values', async () => {
+                const fs = require('fs');
+                await deletePipeline('0aIWYOaR')
+                await deletePipeline('0lAzCLWk')
+                await deleteAlgorithm('6o5yjjiy')
+                await deleteAlgorithm('7i59t2ad')
+                const folderPath = './additionalFiles/importAllData';
+                const importAllCommand = `hkubectl import all ${folderPath} -r \"\\"cpu\\": 1^\\"cpu\\": 2\"";"52Mi\"^\"60Mi\""`;
+                const importedAllFiles = await execSync(importAllCommand);
+                expect(importedAllFiles.toString()).to.include('1 occurrences of ""cpu": 1" found and changed');
+                expect(importedAllFiles.toString()).to.include('1 occurrences of "52Mi" found and changed');
+                expect(importedAllFiles.toString()).to.include("Successfully imported 0aIWYOaR");
+                expect(importedAllFiles.toString()).to.include("Successfully imported 0lAzCLWk");
+                expect(importedAllFiles.toString()).to.include("Successfully imported 6o5yjjiy");
+                expect(importedAllFiles.toString()).to.include("Successfully imported 7i59t2ad");
+            }).timeout(1000 * 60 * 6);
+
+            it('import using a non-existing directory', () => {
+                const { spawnSync } = require('child_process');
+                const fs = require('fs');
+                const nonExistingDir = './additionalFiles/nonExistingDir';
+                expect(fs.existsSync(nonExistingDir), `Directory "${nonExistingDir}" should not exist`).to.be.false;
+
+                const importAlgoCommand = 'hkubectl';
+                const args = ['import', 'algorithms', nonExistingDir];
+                const args2 = ['import', 'pipelines', nonExistingDir];
+                const args3 = ['import', 'all', nonExistingDir];
+                console.log('Running command:', importAlgoCommand, args.join(' '));
+                const result = spawnSync(importAlgoCommand, args, { encoding: 'utf-8' });
+                const result2 = spawnSync(importAlgoCommand, args2, { encoding: 'utf-8' });
+                const result3 = spawnSync(importAlgoCommand, args3, { encoding: 'utf-8' });
+
+                console.log(result3.stderr)
+                expect(result.stderr).to.include(`Directory "./additionalFiles/nonExistingDir" does not exist.`);
+                expect(result2.stderr).to.include(`Directory "./additionalFiles/nonExistingDir" does not exist.`);
+                expect(result3.stderr).to.include(`Directory "additionalFiles/nonExistingDir/pipelines" does not exist.`);
+                expect(result3.stderr).to.include(`Directory "additionalFiles/nonExistingDir/algorithms" does not exist.`);
             }).timeout(1000 * 60 * 10);
         })
     });

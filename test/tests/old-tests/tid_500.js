@@ -141,7 +141,8 @@ describe('TID-500 ', () => {
                 options: {
                     debug: false,
                     pending: false
-                }
+                },
+                workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
             }
 
             const res = await await storeAlgorithmApply(alg);
