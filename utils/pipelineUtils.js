@@ -91,6 +91,14 @@ const storePipelinesWithDescriptor = async (descriptor) => {
     return res
 }
 
+const storeOrUpdatePipelines= async (descriptor) => {
+    const res = await chai.request(config.apiServerUrl)
+        .post('/store/pipelines?overwrite=true')
+        .send(descriptor);
+    logResult(res, 'PipelineUtils storeOrUpdatePipelines')
+    return res
+}
+
 const storeNewPipeLine = async (name) => {
     const pipeline = await getPipeline(name)
     if (pipeline.status === 404) {
@@ -342,6 +350,7 @@ module.exports = {
     getPipelineStatus,
     storePipeline,
     storePipelinesWithDescriptor,
+    storeOrUpdatePipelines,
     deletePipeline,
     runStored,
     deconstructTestData,
