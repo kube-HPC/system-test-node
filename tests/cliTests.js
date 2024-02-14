@@ -771,6 +771,8 @@ describe('Hkubectl Tests', () => {
                 const importedAlgorithms = await execSync(importAlgoCommand);
                 expect(importedAlgorithms.toString()).to.include("Successfully imported 6o5yjjiy");
                 expect(importedAlgorithms.toString()).to.include("Successfully imported 7i59t2ad");
+                await deleteAlgorithm('6o5yjjiy')
+                await deleteAlgorithm('7i59t2ad')
             }).timeout(1000 * 60 * 6);
 
             it('import algoritms from a local directory to hkube env, switch cpu from 1 to 2', async () => {
@@ -785,6 +787,8 @@ describe('Hkubectl Tests', () => {
                 expect(importedAlgorithms.toString()).to.include("Successfully imported 6o5yjjiy");
                 expect(importedAlgorithms.toString()).to.include("Successfully imported 7i59t2ad");
                 expect(alg2.body.cpu).to.be.equal(2)
+                await deleteAlgorithm('6o5yjjiy')
+                await deleteAlgorithm('7i59t2ad')
             }).timeout(1000 * 60 * 6);
 
             it('import algoritms from a local directory to hkube env. use ; decorator to change 2 values', async () => {
@@ -801,6 +805,8 @@ describe('Hkubectl Tests', () => {
                 expect(importedAlgorithms.toString()).to.include("Successfully imported 7i59t2ad");
                 expect(alg2.body.cpu).to.be.equal(2)
                 expect(alg2.body.reservedMemory).to.be.equal('60Mi')
+                await deleteAlgorithm('6o5yjjiy')
+                await deleteAlgorithm('7i59t2ad')
             }).timeout(1000 * 60 * 6);
 
             it('import pipelines from a local directory to hkube env', async () => {
@@ -812,6 +818,8 @@ describe('Hkubectl Tests', () => {
                 const importedPipelines = await execSync(importPipeCommand);
                 expect(importedPipelines.toString()).to.include("Successfully imported 0aIWYOaR");
                 expect(importedPipelines.toString()).to.include("Successfully imported 0lAzCLWk");
+                await deletePipeline('0aIWYOaR')
+                await deletePipeline('0lAzCLWk')
             }).timeout(1000 * 60 * 6);
 
             it('import all data from a local directory to hkube env', async () => {
@@ -827,8 +835,71 @@ describe('Hkubectl Tests', () => {
                 expect(importedAllFiles.toString()).to.include("Successfully imported 0lAzCLWk");
                 expect(importedAllFiles.toString()).to.include("Successfully imported 6o5yjjiy");
                 expect(importedAllFiles.toString()).to.include("Successfully imported 7i59t2ad");
+                await deletePipeline('0aIWYOaR')
+                await deletePipeline('0lAzCLWk')
+                await deleteAlgorithm('6o5yjjiy')
+                await deleteAlgorithm('7i59t2ad')
             }).timeout(1000 * 60 * 6);
 
+
+            it('import existing pipeline using overwrite', async () => {
+                const fs = require('fs');
+                await deletePipeline('0aIWYOaR')
+                await deletePipeline('0lAzCLWk')
+                await deleteAlgorithm('6o5yjjiy')
+                await deleteAlgorithm('7i59t2ad')
+                const pipelineFile = './pipelines/simpelraw.json'
+                const pipelineTemp = './pipelines/temp.json'
+                let fileContents = fs.readFileSync(pipelineFile, 'utf8');
+                let data = JSON.parse(fileContents);
+                data.name = "0aIWYOaR"
+                let jsonStr = JSON.stringify(data);
+                fs.writeFileSync(pipelineTemp, jsonStr, 'utf8');
+                const store = `hkubectl pipeline store -f ` + pipelineTemp
+                const output = await exceSyncString(store);
+                const pipe = await getPipeline(data.name)
+                expect(pipe.body.name).to.be.equal(data.name)
+                const folderPath = './additionalFiles/importAllData';
+                const importAllCommand = `hkubectl import all --overwrite=true ${folderPath}`;
+                const importedAllFiles = await execSync(importAllCommand);
+                expect(importedAllFiles.toString()).to.include("Successfully imported 0aIWYOaR");
+                expect(importedAllFiles.toString()).to.include("Successfully imported 0lAzCLWk");
+                expect(importedAllFiles.toString()).to.include("Successfully imported 6o5yjjiy");
+                expect(importedAllFiles.toString()).to.include("Successfully imported 7i59t2ad");
+                await deletePipeline('0aIWYOaR')
+                await deletePipeline('0lAzCLWk')
+                await deleteAlgorithm('6o5yjjiy')
+                await deleteAlgorithm('7i59t2ad')
+            }).timeout(1000 * 60 * 6);
+            it('import existing pipeline', async () => {
+                const fs = require('fs');
+                await deletePipeline('0aIWYOaR')
+                await deletePipeline('0lAzCLWk')
+                await deleteAlgorithm('6o5yjjiy')
+                await deleteAlgorithm('7i59t2ad')
+                const pipelineFile = './pipelines/simpelraw.json'
+                const pipelineTemp = './pipelines/temp.json'
+                let fileContents = fs.readFileSync(pipelineFile, 'utf8');
+                let data = JSON.parse(fileContents);
+                data.name = "0aIWYOaR"
+                let jsonStr = JSON.stringify(data);
+                fs.writeFileSync(pipelineTemp, jsonStr, 'utf8');
+                const store = `hkubectl pipeline store -f ` + pipelineTemp
+                const output = await exceSyncString(store);
+                const pipe = await getPipeline(data.name)
+                expect(pipe.body.name).to.be.equal(data.name)
+                const folderPath = './additionalFiles/importAllData';
+                const importAllCommand = `hkubectl import all  ${folderPath}`;
+                const importedAllFiles = await execSync(importAllCommand);
+                expect(importedAllFiles.toString()).not.to.include("Successfully imported 0aIWYOaR");
+                expect(importedAllFiles.toString()).to.include("Successfully imported 0lAzCLWk");
+                expect(importedAllFiles.toString()).to.include("Successfully imported 6o5yjjiy");
+                expect(importedAllFiles.toString()).to.include("Successfully imported 7i59t2ad");
+                await deletePipeline('0aIWYOaR')
+                await deletePipeline('0lAzCLWk')
+                await deleteAlgorithm('6o5yjjiy')
+                await deleteAlgorithm('7i59t2ad')
+            }).timeout(1000 * 60 * 6);
             it('import all data from a local directory to hkube env. change one param in an algo', async () => {
                 const fs = require('fs');
                 await deletePipeline('0aIWYOaR')
@@ -843,6 +914,10 @@ describe('Hkubectl Tests', () => {
                 expect(importedAllFiles.toString()).to.include("Successfully imported 0lAzCLWk");
                 expect(importedAllFiles.toString()).to.include("Successfully imported 6o5yjjiy");
                 expect(importedAllFiles.toString()).to.include("Successfully imported 7i59t2ad");
+                await deletePipeline('0aIWYOaR')
+                await deletePipeline('0lAzCLWk')
+                await deleteAlgorithm('6o5yjjiy')
+                await deleteAlgorithm('7i59t2ad')
             }).timeout(1000 * 60 * 6);
 
             it('import all data from a local directory to hkube env. use ; decorator to change 2 values', async () => {
@@ -860,6 +935,10 @@ describe('Hkubectl Tests', () => {
                 expect(importedAllFiles.toString()).to.include("Successfully imported 0lAzCLWk");
                 expect(importedAllFiles.toString()).to.include("Successfully imported 6o5yjjiy");
                 expect(importedAllFiles.toString()).to.include("Successfully imported 7i59t2ad");
+                await deletePipeline('0aIWYOaR')
+                await deletePipeline('0lAzCLWk')
+                await deleteAlgorithm('6o5yjjiy')
+                await deleteAlgorithm('7i59t2ad')
             }).timeout(1000 * 60 * 6);
 
             it('import using a non-existing directory', () => {
