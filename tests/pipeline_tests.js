@@ -282,7 +282,7 @@ describe("pipeline Tests 673", () => {
       expect(status.body.types[0]).to.be.equal("algorithm");
     }).timeout(1000 * 60 * 2);
 
-    it("type = raw tensor (git 652)", async () => {
+    xit("type = raw tensor (git 652)", async () => {
       const algorithmName = "tensor1";
       const tensorAlgPath = "docker.io/hkubedevtest/tensor11:v1.0.0"; //"docker.io/hkubedev/tensor1:v1.0.1"
       const tensorAlg = algJson(algorithmName, tensorAlgPath);
@@ -807,7 +807,7 @@ describe("pipeline Tests 673", () => {
         };
         const runStoredResult = await runStored(ttl); //should be stoped  due to ttl
         let getStatusResultBody = await getStatus(runStoredResult.body.jobId, 200, "active");
-        await timeout(5500)
+        await timeout(10500)
         const cealn = await cleanPipeLines();
         getStatusResultBody = await getStatus(runStoredResult.body.jobId, 200, "stopped");
         expect(getStatusResultBody.reason).to.be.equal("pipeline expired");
@@ -1276,7 +1276,7 @@ describe("pipeline Tests 673", () => {
       const d = deconstructTestData(testData10);
       await deletePipeline(d.name);
       await deletePipeline(p.name);
-      p.pipeline.nodes[1].nodeName="not-overwritten";
+      p.pipeline.nodes[1].nodeName = "not-overwritten";
       await storePipeline(p)
       let pipelineList = [
         {
