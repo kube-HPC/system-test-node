@@ -560,6 +560,73 @@ describe('Hkubectl Tests', () => {
 
         }).timeout(1000 * 60 * 10)
 
+        it('sync start algorithm should have required properties devMode and devFolder', async () => {
+            const somealg = {
+                name: "somealg",
+                cpu: 0.1,
+                gpu: 0,
+                mem: "128Mi",
+                minHotWorkers: 0,
+                algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                type: "Image",
+                options: {
+                    debug: false,
+                    pending: false
+                }
+            }
+            const storeresult = await storeAlgorithmApply(somealg);
+            console.log(storeresult.result)
+            algList.push("somealg")
+
+            const startCommand = ` hkubectl sync start` +
+                ` --algorithmName ${somealg.name}` +
+                ` --devFolder ${process.cwd()}`
+
+            console.log(startCommand)
+            await exceSyncString(startCommand)
+           
+            await delay(10 * 1000)
+
+            const alg = await getAlgorithm(somealg.name)
+            const  { devMode, devFolder } = alg.body.options
+
+            expect(devFolder).to.be.equal(process.cwd());
+            expect(devMode).to.be.equal(true);
+        }).timeout(1000 * 60 * 10)
+
+        it('sync stop algorithm should have devMode = false, and no devFolder', async () => {
+            const somealg = {
+                name: "somealg",
+                cpu: 0.1,
+                gpu: 0,
+                mem: "128Mi",
+                minHotWorkers: 0,
+                algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                type: "Image",
+                options: {
+                    debug: false,
+                    pending: false
+                }
+            }
+            const storeresult = await storeAlgorithmApply(somealg);
+            console.log(storeresult.result)
+            algList.push("somealg")
+
+            const startCommand = ` hkubectl sync stop` +
+                ` --algorithmName ${somealg.name}`
+
+            console.log(startCommand)
+            await exceSyncString(startCommand)
+           
+            await delay(10 * 1000)
+
+            const alg = await getAlgorithm(somealg.name)
+            const  { devMode, devFolder } = alg.body.options
+
+            expect(devFolder).to.be.equal(null);
+            expect(devMode).to.be.equal(false);
+        }).timeout(1000 * 60 * 10)
+
         describe('hkubecl export tests', () => {
             it('export algoritms as jsons to a local directory ', async () => {
                 const fs = require('fs');
