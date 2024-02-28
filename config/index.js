@@ -120,6 +120,9 @@ const index = {
         testData407: require('../pipelines/evalwait'),
         testData408: require('../pipelines/evalerror'),
         outputPipe: require('../pipelines/outputPipe')
+    },
+    syncTest:{
+        pipelineDevFolder: require('../pipelines/devfolder')
     }
     
 }
