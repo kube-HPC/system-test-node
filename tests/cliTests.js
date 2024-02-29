@@ -11,13 +11,27 @@ const execSync = require('child_process').execSync;
 const {
     pipelineRandomName,
     getPipeline,
-    deletePipeline
+    deletePipeline,
+    getPipelinestatusByName,
+    storePipeline,
+    deconstructTestData,
+    getPipelineStatus,
+    runStored,
+    getExecPipeline
 } = require('../utils/pipelineUtils')
+
+const {
+    pipelineDevFolder
+  } = require("../config/index").syncTest;
 
 const {
     getJobIdStatus,
     getResult,
     getStatusall } = require('../utils/results')
+
+const {
+    syncAlg
+} = require('../additionalFiles/defaults/algorithms/sync-dev-folder.js')
 
 
 const {
@@ -25,6 +39,7 @@ const {
     getAlgorithm,
     storeAlgorithmApply,
     deleteAlgorithm,
+    storeAlgorithm,
     getBuildList } = require('../utils/algorithmUtils')
 
 chai.use(chaiHttp);
@@ -559,6 +574,118 @@ describe('Hkubectl Tests', () => {
             expect(result1.data[0].result).to.be.equal(0)
 
         }).timeout(1000 * 60 * 10)
+
+        it('sync start algorithm should have required properties devMode and devFolder', async () => {
+            const somealg = {
+                name: "somealg",
+                cpu: 0.1,
+                gpu: 0,
+                mem: "128Mi",
+                minHotWorkers: 0,
+                algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                type: "Image",
+                options: {
+                    debug: false,
+                    pending: false
+                }
+            }
+            await deleteAlgorithm(somealg.name)
+            const storeresult = await storeAlgorithmApply(somealg);
+            console.log(storeresult.result)
+            algList.push("somealg")
+
+            const startCommand = ` hkubectl sync start` +
+                ` --algorithmName ${somealg.name}` +
+                ` --devFolder ${process.cwd()}`
+
+            console.log(startCommand)
+            await exceSyncString(startCommand)
+           
+            await delay(10 * 1000)
+
+            const alg = await getAlgorithm(somealg.name)
+            const  { devMode, devFolder } = alg.body.options
+
+            expect(devFolder).to.be.equal(process.cwd());
+            expect(devMode).to.be.equal(true);
+        }).timeout(1000 * 60 * 10)
+
+        it('sync stop algorithm should have devMode = false, and no devFolder', async () => {
+            const somealg = {
+                name: "somealg",
+                cpu: 0.1,
+                gpu: 0,
+                mem: "128Mi",
+                minHotWorkers: 0,
+                algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                type: "Image",
+                options: {
+                    debug: false,
+                    pending: false
+                }
+            }
+            await deleteAlgorithm(somealg.name)
+            const storeresult = await storeAlgorithmApply(somealg);
+            console.log(storeresult.result)
+            algList.push("somealg")
+
+            const stopCommand = ` hkubectl sync stop` +
+                ` --algorithmName ${somealg.name}`
+
+            console.log(stopCommand)
+            await exceSyncString(stopCommand)
+           
+            await delay(10 * 1000)
+
+            const alg = await getAlgorithm(somealg.name)
+            const  { devMode, devFolder } = alg.body.options
+
+            expect(devFolder).to.be.equal(null);
+            expect(devMode).to.be.equal(false);
+        }).timeout(1000 * 60 * 10)
+
+        it('sync an algorithm with a custom path using start,stop, and a devFolder', async () => {
+            const randomName = pipelineRandomName(8).toLowerCase()
+            const algName = "sync-dev-folder"+randomName;
+            syncAlg.name = algName;
+            algList.push(algName);
+            await storeAlgorithmApply(syncAlg);
+            const localFolder = path.join(process.cwd(), 'additionalFiles/file1');
+            // create and push pipeline with sync-dev-folder alg, input being devFolder = "/somePath"
+            const testData = pipelineDevFolder;
+            testData.descriptor.nodes[0].algorithmName = algName;
+            testData.descriptor.name = algName;
+            const devContainerFolder = testData.descriptor.nodes[0].input[0].devFolder;
+            const devPipeline = deconstructTestData(testData);
+            await deletePipeline(devPipeline);
+            await storePipeline(devPipeline);
+            // start the sync process
+            const startCommand = ` hkubectl sync start` +
+                ` --algorithmName ${algName}` +
+                ` --devFolder ${devContainerFolder}`
+        
+                console.log(startCommand)
+              await exceSyncString(startCommand)
+            let res = await runStored(devPipeline);
+            await delay(45 * 1000)
+            // get status before watch
+            let pipelineData = await getPipelineStatus(res.body.jobId);
+            expect(pipelineData.body.status).be.equal('failed');
+
+            // // sync watch
+            const watch = `hkubectl sync watch` +
+                ` -a ${algName}` +
+                ` -f ${localFolder}`
+                console.log("watch-" + watch)
+                execShellCommand(watch)
+
+            res = await runStored(devPipeline);
+            await delay(40 * 1000)
+            // get status
+            pipelineData = await getPipelineStatus(res.body.jobId);
+            expect(pipelineData.body.status).be.equal('completed');
+        }).timeout(1000 * 60 * 10)
+
 
         describe('hkubecl export tests', () => {
             it('export algoritms as jsons to a local directory ', async () => {
