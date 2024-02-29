@@ -654,6 +654,7 @@ describe('Hkubectl Tests', () => {
             // create and push pipeline with sync-dev-folder alg, input being devFolder = "/somePath"
             const testData = pipelineDevFolder;
             testData.descriptor.nodes[0].algorithmName = algName;
+            testData.descriptor.name = algName;
             const devContainerFolder = testData.descriptor.nodes[0].input[0].devFolder;
             const devPipeline = deconstructTestData(testData);
             await deletePipeline(devPipeline);
@@ -665,7 +666,12 @@ describe('Hkubectl Tests', () => {
         
                 console.log(startCommand)
               await exceSyncString(startCommand)
-           
+            let res = await runStored(devPipeline);
+            await delay(45 * 1000)
+            // get status before watch
+            let pipelineData = await getPipelineStatus(res.body.jobId);
+            expect(pipelineData.body.status).be.equal('failed');
+
             // // sync watch
             const watch = `hkubectl sync watch` +
                 ` -a ${algName}` +
@@ -673,44 +679,13 @@ describe('Hkubectl Tests', () => {
                 console.log("watch-" + watch)
                 execShellCommand(watch)
 
-            const res = await runStored(devPipeline);
+            res = await runStored(devPipeline);
             await delay(40 * 1000)
             // get status
-            const pipelineData = await getPipelineStatus(res.body.jobId);
+            pipelineData = await getPipelineStatus(res.body.jobId);
             expect(pipelineData.body.status).be.equal('completed');
         }).timeout(1000 * 60 * 10)
 
-        it('algorithm should fail finding a synced file', async () => {
-            const randomName = pipelineRandomName(8).toLowerCase()
-            const algName = "sync-dev-folder"+randomName;
-            syncAlg.name = algName;
-            algList.push(algName);
-            await storeAlgorithmApply(syncAlg);
-            const localFolder = path.join(process.cwd(), 'additionalFiles/file1');
-            // create and push pipeline with sync-dev-folder alg, input being devFolder = "/somePath"
-            const testData = pipelineDevFolder;
-            testData.descriptor.nodes[0].algorithmName = algName;
-            testData.descriptor.name = algName;
-            const devContainerFolder = testData.descriptor.nodes[0].input[0].devFolder;
-            const devPipeline = deconstructTestData(testData);
-            await storePipeline(devPipeline);
-            // start the sync process
-             const startCommand = ` hkubectl sync start` +
-                 ` --algorithmName ${algName}` +
-                 ` --devFolder ${devContainerFolder}`
-        
-                 console.log(startCommand)
-               await exceSyncString(startCommand)
-           
-               await delay(10 * 1000)
-
-            const res = await runStored(devPipeline);
-            await delay(45 * 1000)
-            // get status
-            const pipelineData = await getPipelineStatus(res.body.jobId);
-            expect(pipelineData.body.status).be.equal('failed');
-            await deletePipeline(devPipeline);
-        }).timeout(1000 * 60 * 10)
 
         describe('hkubecl export tests', () => {
             it('export algoritms as jsons to a local directory ', async () => {
