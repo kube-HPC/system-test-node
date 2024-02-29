@@ -655,7 +655,6 @@ describe('Hkubectl Tests', () => {
             const testData = pipelineDevFolder;
             testData.descriptor.nodes[0].algorithmName = algName;
             const devContainerFolder = testData.descriptor.nodes[0].input[0].devFolder;
-            const pipelineName = testData.descriptor.name;
             const devPipeline = deconstructTestData(testData);
             await deletePipeline(devPipeline);
             await storePipeline(devPipeline);
@@ -693,7 +692,6 @@ describe('Hkubectl Tests', () => {
             testData.descriptor.nodes[0].algorithmName = algName;
             testData.descriptor.name = algName;
             const devContainerFolder = testData.descriptor.nodes[0].input[0].devFolder;
-            const pipelineName = testData.descriptor.name;
             const devPipeline = deconstructTestData(testData);
             await storePipeline(devPipeline);
             // start the sync process
