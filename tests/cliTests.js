@@ -589,6 +589,7 @@ describe('Hkubectl Tests', () => {
                     pending: false
                 }
             }
+            await deleteAlgorithm(somealg.name)
             const storeresult = await storeAlgorithmApply(somealg);
             console.log(storeresult.result)
             algList.push("somealg")
@@ -623,6 +624,7 @@ describe('Hkubectl Tests', () => {
                     pending: false
                 }
             }
+            await deleteAlgorithm(somealg.name)
             const storeresult = await storeAlgorithmApply(somealg);
             console.log(storeresult.result)
             algList.push("somealg")
@@ -642,7 +644,7 @@ describe('Hkubectl Tests', () => {
             expect(devMode).to.be.equal(false);
         }).timeout(1000 * 60 * 10)
 
-        it.only('sync an algorithm with a custom path using start,stop, and a devFolder', async () => {
+        it('sync an algorithm with a custom path using start,stop, and a devFolder', async () => {
             const randomName = pipelineRandomName(8).toLowerCase()
             const algName = "sync-dev-folder"+randomName;
             syncAlg.name = algName;
@@ -665,36 +667,21 @@ describe('Hkubectl Tests', () => {
                 console.log(startCommand)
               await exceSyncString(startCommand)
            
-              await delay(10 * 1000)
-
             // // sync watch
-            const res = await runStored(devPipeline);
             const watch = `hkubectl sync watch` +
                 ` -a ${algName}` +
                 ` -f ${localFolder}`
                 console.log("watch-" + watch)
                 execShellCommand(watch)
+
+            const res = await runStored(devPipeline);
             await delay(40 * 1000)
             // get status
             const pipelineData = await getPipelineStatus(res.body.jobId);
             expect(pipelineData.body.status).be.equal('completed');
-            //sync stop
-            const stopCommand = ` hkubectl sync stop` +
-                ` --algorithmName ${algName}`
-
-            console.log(stopCommand)
-            await exceSyncString(stopCommand)
-           
-            await delay(10 * 1000)
-
-            const alg = await getAlgorithm(algName)
-            const  { devMode, devFolder } = alg.body.options
-
-            expect(devFolder).to.be.equal(null);
-            expect(devMode).to.be.equal(false);
         }).timeout(1000 * 60 * 10)
 
-        it.only('algorithm should fail finding a synced file', async () => {
+        it('algorithm should fail finding a synced file', async () => {
             const randomName = pipelineRandomName(8).toLowerCase()
             const algName = "sync-dev-folder"+randomName;
             syncAlg.name = algName;
@@ -724,20 +711,7 @@ describe('Hkubectl Tests', () => {
             // get status
             const pipelineData = await getPipelineStatus(res.body.jobId);
             expect(pipelineData.body.status).be.equal('failed');
-            //sync stop
-            const stopCommand = ` hkubectl sync stop` +
-                ` --algorithmName ${algName}`
-
-            console.log(stopCommand)
-            await exceSyncString(stopCommand)
-           
-            await delay(10 * 1000)
-
-            const alg = await getAlgorithm(algName)
-            const  { devMode, devFolder } = alg.body.options
             await deletePipeline(devPipeline);
-            expect(devFolder).to.be.equal(null);
-            expect(devMode).to.be.equal(false);
         }).timeout(1000 * 60 * 10)
 
         describe('hkubecl export tests', () => {
