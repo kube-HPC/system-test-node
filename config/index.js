@@ -123,6 +123,9 @@ const index = {
     },
     syncTest:{
         pipelineDevFolder: require('../pipelines/devfolder')
+    },
+    deletePodsJobsTest:{
+        statelessPipe: require('../pipelines/statelessPipe')
     }
     
 }

@@ -18,7 +18,9 @@ const { runAlgorithm,
     getAlgVersion,
     insertAlgorithms,
     storeAlgorithms,
-    storeOrUpdateAlgorithms
+    storeOrUpdateAlgorithms,
+    deleteAlgorithmJobs,
+    deleteAlgorithmPods
 } = require('../utils/algorithmUtils')
 
 const { filterPodsByName,
@@ -31,6 +33,14 @@ const {
     testData4,
     testData3
 } = require('../config/index').algorithmTest
+
+const {
+    stayUpTest
+} = require('../additionalFiles/defaults/algorithms/stayup.js')
+
+const {
+    statelessPipe
+  } = require("../config/index").deletePodsJobsTest;
 
 
 const {
@@ -48,7 +58,8 @@ const {
     storePipeline,
     runStored,
     deconstructTestData,
-    runStoredAndWaitForResults
+    runStoredAndWaitForResults,
+    stopPipeline
 } = require('../utils/pipelineUtils')
 
 const {
@@ -1041,6 +1052,88 @@ describe('Alrogithm Tests', () => {
                 expect(listOfAlgorithmResponse[0].error.code).to.be.equal(400, 'Expected status code to be BAD-REQUEST');
                 expect(listOfAlgorithmResponse[1].name).to.be.equal('alg1');
             });
+        }),
+        describe('kubernetes algorithm tests', () => {
+            const stayupAlgName = "stayuptest";
+            const statelessAlgName = "yellow-alg"
+            let stayUpBody = {
+                name: stayupAlgName,
+                input: []
+            }
+            it('should apply selector when given one, and find no pods to stop', async () => {
+                const response = await deleteAlgorithmPods("anyName", "mySelector");
+                expect(response.statusCode).to.be.equal(404);
+                expect(response.body).to.be.equal('No pods found with selector mySelector');
+            }).timeout(1000 * 60 * 5);
+            it('should find one pod to delete', async () => {
+                await deleteAlgorithm(stayupAlgName, true)
+                let suffix = pipelineRandomName(4).toLowerCase();
+                stayUpTest.name += `-${suffix}`;
+                stayUpBody.name = stayUpTest.name;
+                let storeResult = await storeAlgorithmApply(stayUpTest);
+                stayUpTest.name = stayupAlgName;
+                algList.push(stayUpBody.name);
+                const result = await runAlgorithm(stayUpBody);
+                await delay(10000); // wait for creation
+                const response = await deleteAlgorithmPods(stayUpBody.name);
+                await delay(1000);
+                await stopPipeline(result.body.jobId);
+                expect(response.statusCode).to.be.equal(200);
+                expect(response.body.message.length).to.be.equal(1);
+                await deleteAlgorithmJobs(stayUpBody.name);
+            }).timeout(1000 * 60 * 5);
+            it('should find multiple pods to delete', async () => {
+                await deleteAlgorithm(stayupAlgName, true)
+                const statelessPipeline = deconstructTestData(statelessPipe);
+                await deletePipeline(statelessPipeline.name)
+                let storeResult = await storeAlgorithmApply(stayUpTest);
+                algList.push(stayUpBody.name);
+                storeResult = await storePipeline(statelessPipeline);
+                let runResult = await runStored(statelessPipeline);
+                await delay(30000);
+                const response = await deleteAlgorithmPods("yellow-alg");
+                expect(response.statusCode).to.be.equal(200);
+                expect(response.body.message.length).to.be.greaterThan(2);
+                await deleteAlgorithmJobs(stayUpBody.name);
+                await deleteAlgorithmJobs(statelessAlgName);
+            }).timeout(1000 * 60 * 5);
+            it('should apply selector when given one, and find no jobs to stop', async () => {
+                const response = await deleteAlgorithmJobs("anyName", "mySelector");
+                expect(response.statusCode).to.be.equal(404);
+                expect(response.body).to.be.equal('No jobs found with selector mySelector');
+            }).timeout(1000 * 60 * 5);
+            it('should find one job to delete', async () => {
+                await deleteAlgorithm(stayupAlgName, true)
+                let suffix = pipelineRandomName(4).toLowerCase();
+                stayUpTest.name += `-${suffix}`;
+                stayUpBody.name = stayUpTest.name;
+                let storeResult = await storeAlgorithmApply(stayUpTest);
+                stayUpTest.name = stayupAlgName;
+                algList.push(stayUpBody.name);
+                const result = await runAlgorithm(stayUpBody);
+                await delay(10000); // wait for creation
+                const response = await deleteAlgorithmJobs(stayUpBody.name);
+                await delay(1000);
+                await stopPipeline(result.body.jobId);
+                expect(response.statusCode).to.be.equal(200);
+                expect(response.body.message.length).to.be.equal(1);
+            }).timeout(1000 * 60 * 5);
+            it('should find multiple jobs to delete', async () => {
+                await deleteAlgorithm(stayupAlgName, true)
+                const statelessPipeline = deconstructTestData(statelessPipe);
+                await deletePipeline(statelessPipeline.name)
+                let storeResult = await storeAlgorithmApply(stayUpTest);
+                algList.push(stayUpBody.name);
+                storeResult = await storePipeline(statelessPipeline);
+                let runResult = await runStored(statelessPipeline);
+                await delay(30000);
+                const response = await deleteAlgorithmJobs("yellow-alg");
+                expect(response.statusCode).to.be.equal(200);
+                expect(response.body.message.length).to.be.greaterThan(2);
+                await deleteAlgorithmJobs(stayUpBody.name);       
+            }).timeout(1000 * 60 * 5);
+            
+
         })
     })
 })
