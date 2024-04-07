@@ -1,5 +1,5 @@
-const stayUpTest = {
-    name: "stayuptest",
+const stayUpAlg = {
+    name: "stayuptestalg",
     cpu: 0.3,
     gpu: 0,
     mem: "128Mi",
@@ -17,4 +17,4 @@ const stayUpTest = {
     workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
   }
 
-  module.exports = { stayUpTest }
+  module.exports = { stayUpAlg }
