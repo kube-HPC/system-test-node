@@ -259,6 +259,24 @@ const deleteAlgorithmVersion = async (name, version) => {
     logResult(res, "algorithmUtils deleteAlgorithm")
     return res
 }
+
+
+const deleteAlgorithmJobs = async (name, selector) => {
+    let endpointUrl = selector ? `${name}?selector=${selector}` : `${name}`
+    const res = await chai.request(config.apiServerUrl)
+    .delete(`/kubernetes/algorithms/jobs/${endpointUrl}`)
+    logResult(res, "algorithmUtils deleteAlgorithmJobs")
+    return res
+}
+
+const deleteAlgorithmPods = async (name, selector) => {
+    let endpointUrl = selector ? `${name}?selector=${selector}` : `${name}`
+    const res = await chai.request(config.apiServerUrl)
+        .delete(`/kubernetes/algorithms/pods/${endpointUrl}`)
+    logResult(res, "algorithmUtils deleteAlgorithmPods")
+    return res
+}
+
 const updateAlgorithmVersion = async (Algname, algVersion, Force = true) => {
     let value = {
         name: Algname,
@@ -322,6 +340,8 @@ module.exports = {
     rerunBuild,
     getBuildList,
     tagAlgorithmVersion,
-    getAlgVersion
+    getAlgVersion,
+    deleteAlgorithmJobs,
+    deleteAlgorithmPods
 
 }
