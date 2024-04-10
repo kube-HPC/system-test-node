@@ -1060,12 +1060,12 @@ describe('Alrogithm Tests', () => {
                 name: stayupAlgName,
                 input: []
             }
-            it.only('should apply selector when given one, and find no pods to stop', async () => {
+            it('should apply selector when given one, and find no pods to stop', async () => {
                 const response = await deleteAlgorithmPods("anyName", "mySelector");
                 expect(response.statusCode).to.be.equal(404);
                 expect(response.body).to.be.equal('No pods found with selector mySelector');
             }).timeout(1000 * 60 * 5);
-            it.only('should find one pod to delete', async () => {
+            it('should find one pod to delete', async () => {
                 await deleteAlgorithm(stayupAlgName, true)
                 let suffix = pipelineRandomName(4).toLowerCase();
                 stayUpAlg.name += `-${suffix}`;
@@ -1082,7 +1082,7 @@ describe('Alrogithm Tests', () => {
                 expect(response.body.message.length).to.be.equal(1);
                 await deleteAlgorithmJobs(stayUpSkeleton.name);
             }).timeout(1000 * 60 * 5);
-            it.only('should find multiple pods to delete', async () => {
+            it('should find multiple pods to delete', async () => {
                 await deleteAlgorithm(stayupAlgName, true)
                 const statelessPipeline = deconstructTestData(statelessPipe);
                 await deletePipeline(statelessPipeline.name)
@@ -1097,12 +1097,12 @@ describe('Alrogithm Tests', () => {
                 await deleteAlgorithmJobs(stayUpSkeleton.name);
                 await deleteAlgorithmJobs(statelessAlgName);
             }).timeout(1000 * 60 * 5);
-            it.only('should apply selector when given one, and find no jobs to stop', async () => {
+            it('should apply selector when given one, and find no jobs to stop', async () => {
                 const response = await deleteAlgorithmJobs("anyName", "mySelector");
                 expect(response.statusCode).to.be.equal(404);
                 expect(response.body).to.be.equal('No jobs found with selector mySelector');
             }).timeout(1000 * 60 * 5);
-            it.only('should find one job to delete', async () => {
+            it('should find one job to delete', async () => {
                 await deleteAlgorithm(stayupAlgName, true)
                 let suffix = pipelineRandomName(4).toLowerCase();
                 stayUpAlg.name += `-${suffix}`;
@@ -1118,7 +1118,7 @@ describe('Alrogithm Tests', () => {
                 expect(response.statusCode).to.be.equal(200);
                 expect(response.body.message.length).to.be.equal(1);
             }).timeout(1000 * 60 * 5);
-            it.only('should find multiple jobs to delete', async () => {
+            it('should find multiple jobs to delete', async () => {
                 await deleteAlgorithm(stayupAlgName, true)
                 const statelessPipeline = deconstructTestData(statelessPipe);
                 await deletePipeline(statelessPipeline.name)
