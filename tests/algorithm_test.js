@@ -1074,7 +1074,7 @@ describe('Alrogithm Tests', () => {
                 stayUpAlg.name = stayupAlgName;
                 algList.push(stayUpSkeleton.name);
                 const result = await runAlgorithm(stayUpSkeleton);
-                await delay(10000); // wait for creation
+                await delay(20000); // wait for creation
                 const response = await deleteAlgorithmPods(stayUpSkeleton.name);
                 await delay(1000);
                 await stopPipeline(result.body.jobId);
@@ -1111,7 +1111,7 @@ describe('Alrogithm Tests', () => {
                 stayUpAlg.name = stayupAlgName;
                 algList.push(stayUpSkeleton.name);
                 const result = await runAlgorithm(stayUpSkeleton);
-                await delay(10000); // wait for creation
+                await delay(20000); // wait for creation
                 const response = await deleteAlgorithmJobs(stayUpSkeleton.name);
                 await delay(1000);
                 await stopPipeline(result.body.jobId);
