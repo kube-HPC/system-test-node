@@ -14,7 +14,7 @@
 //   //     }
 //   //   }
 //   //   let debug = false;
-//   //   url = "ws://test.hkube.io/hkube/debug/yellow-alg";
+//   //   url = "ws://cicd-test.hkube.org/hkube/debug/yellow-alg";
 //   //   const miws = new ws({ socket: { encoding: "msgpack", url } });
 
 //   //   miws.on("start", (message) => {
@@ -36,7 +36,7 @@
 //     return input + 42;
 //   };
 //   it("debug js ", async () => {
-//     url = "ws://test.hkube.io/hkube/debug/yellow-alg";
+//     url = "ws://cicd-test.hkube.org/hkube/debug/yellow-alg";
 //     console.log(`starting debug on url ${url}`);
 //     await NodejsWrapper.debug(url, alg);
 //   });

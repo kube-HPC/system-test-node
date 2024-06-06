@@ -11,7 +11,7 @@ const getSpansByJodid = async (jobId) => {
 
     return JSON.parse(res.text).data[0].spans
 }
-//  https://test.hkube.io/hkube/api-server//api/v1/jaeger?jobId=main:versatile-pipe:c005ca0a-d318-420f-94c3-63e566b9a126
+//  https://cicd-test.hkube.org/hkube/api-server//api/v1/jaeger?jobId=main:versatile-pipe:c005ca0a-d318-420f-94c3-63e566b9a126
 module.exports = { getSpansByJodid }
 
 
