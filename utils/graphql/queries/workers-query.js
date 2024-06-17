@@ -9,7 +9,6 @@ const WORKERS_ALL_QUERY = gql`
           stats {
             algorithmName
             count
-            results
             status
           }
         }
