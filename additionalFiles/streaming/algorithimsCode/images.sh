@@ -21,7 +21,7 @@ IMAGE="docker.io/hkubedevtest/stream-image:vkk9x7w07"
 for ALG in ${ALGS[@]}
 do
         echo "updating $ALG algorithm"
-	curl -k -X POST "https://test.hkube.io/hkube/api-server/api/v1/store/algorithms/apply" \
+	curl -k -X POST "https://cicd-test.hkube.org/hkube/api-server/api/v1/store/algorithms/apply" \
              -H  "accept: application/json" \
              -H  "Content-Type: multipart/form-data" \
              -F "payload={\"name\": \"$ALG\", \"algorithmImage\": \"$IMAGE\"};type=application/json" \

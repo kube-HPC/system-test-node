@@ -349,9 +349,9 @@ describe("stress tests ", () => {
     }
 
     const sendToGateway = async (amount, gateway, rate, data, flow = null) => {
-      let url = `https://test.hkube.io/hkube/gateway/${gateway}/streaming/message`;
+      let url = `https://cicd-test.hkube.org/hkube/gateway/${gateway}/streaming/message`;
       if (flow !== null) {
-        url = `https://test.hkube.io/hkube/gateway/${gateway}/streaming/message?flow=${flow}`;
+        url = `https://cicd-test.hkube.org/hkube/gateway/${gateway}/streaming/message?flow=${flow}`;
       }
 
       for (i = 0; i < amount; i++) {
@@ -419,7 +419,7 @@ describe("stress tests ", () => {
 
       for (i = 0; i < 2000; i++) {
         const jnk = axios.post(
-          "https://test.hkube.io/hkube/gateway/gateway/streaming/message",
+          "https://cicd-test.hkube.org/hkube/gateway/gateway/streaming/message",
           data
         );
         await timeout(10);
@@ -431,7 +431,7 @@ describe("stress tests ", () => {
       const file = getByteArrayBuffer("test/tests/longTests/chamilion.jpeg");
       for (i = 0; i < 100; i++) {
         const jnk = await axios.post(
-          "https://test.hkube.io/hkube/gateway/images-gateway/streaming/message",
+          "https://cicd-test.hkube.org/hkube/gateway/images-gateway/streaming/message",
           file,
           {
             headers: { "Content-Type": "application/octet-stream" },
@@ -442,18 +442,18 @@ describe("stress tests ", () => {
     }).timeout(1000 * 60 * 7);
 
     it("send message to gateway jobid", async () => {
-      // https://test.hkube.io/hkube/gateway/images-gateway/streaming/message"
+      // https://cicd-test.hkube.org/hkube/gateway/images-gateway/streaming/message"
 
       const url = "hkube/gateway/images-gateway";
       const status = await axios.get(
-        `https://test.hkube.io/${url}/streaming/info`
+        `https://cicd-test.hkube.org/${url}/streaming/info`
       );
 
       const data = { test: 1, image: Image }; //['0xff', '0xd8', '0xff', '0xdb', '0x00', '0x84', '0x00', '0x03']
 
       try {
         let jnk = await axios.post(
-          `https://test.hkube.io/${url}/streaming/message`,
+          `https://cicd-test.hkube.org/${url}/streaming/message`,
           data
         );
       } catch (error) {
@@ -464,7 +464,7 @@ describe("stress tests ", () => {
 
       //console.log("starts loop")
       for (i = 0; i < 1; i++) {
-        //    const message = await axios.post(`https://test.hkube.io/${url}/streaming/message`,data)
+        //    const message = await axios.post(`https://cicd-test.hkube.org/${url}/streaming/message`,data)
         // console.log(message.data)
       }
 
@@ -474,7 +474,7 @@ describe("stress tests ", () => {
     const sendMessage = async (data) => {
       const url = "hkube/gateway/raw-image-gateway";
       const jnk = await axios.post(
-        `https://test.hkube.io/${url}/streaming/message`,
+        `https://cicd-test.hkube.org/${url}/streaming/message`,
         data
       );
       return jnk;
@@ -623,7 +623,7 @@ describe("stress tests ", () => {
       const creatAlg = async (i) => {
         alg.name = `alg-${i}`;
         const message = await axios.post(
-          `https://test.hkube.io/hkube/api-server/api/v1/store/algorithms`,
+          `https://cicd-test.hkube.org/hkube/api-server/api/v1/store/algorithms`,
           alg
         );
         return message;
@@ -660,7 +660,7 @@ describe("stress tests ", () => {
         pipe.name = `alg-${i}-pipe`;
         pipe.nodes[0].algorithmName = `alg-${i}`;
         const message = await axios.post(
-          `https://test.hkube.io/hkube/api-server/api/v1/exec/raw`,
+          `https://cicd-test.hkube.org/hkube/api-server/api/v1/exec/raw`,
           pipe
         );
         return message;
@@ -681,7 +681,7 @@ describe("stress tests ", () => {
       const deleteAlg = async (i) => {
         const name = `alg-${i}`;
         const message = await axios.delete(
-          `https://test.hkube.io/hkube/api-server/api/v1/store/algorithms/${name}`
+          `https://cicd-test.hkube.org/hkube/api-server/api/v1/store/algorithms/${name}`
         );
         return message;
       };
@@ -707,7 +707,7 @@ describe("stress tests ", () => {
 
       const getStatus = async (i) => {
         const list = await axios.get(
-          `https://test.hkube.io/hkube/api-server/api/v1/pipelines/status?name=alg-${i}-pipe&limit=${timeToActivate}`
+          `https://cicd-test.hkube.org/hkube/api-server/api/v1/pipelines/status?name=alg-${i}-pipe&limit=${timeToActivate}`
         );
         return list;
       };

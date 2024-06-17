@@ -108,15 +108,15 @@ describe('streaming pipeline test', () => {
 
             const exec = await getExecPipeline(jobId)
             const url = exec.body.streaming.gateways[0].url
-            console.log(`url = https://test.hkube.io/${url}/streaming/info`);
+            console.log(`url = https://cicd-test.hkube.org/${url}/streaming/info`);
             await delay(20000)
-            const status = await axios.get(`https://test.hkube.io/${url}/streaming/info`)
+            const status = await axios.get(`https://cicd-test.hkube.org/${url}/streaming/info`)
             //const res = await axios.post(`${config.DsServerUrl}/${DsName}/snapshot`,snap)
 
             const data = { "test": 1 }
             console.log("starts loop")
             for (i = 0; i < 15; i++) {
-                const message = await axios.post(`https://test.hkube.io/${url}/streaming/message`, data)
+                const message = await axios.post(`https://cicd-test.hkube.org/${url}/streaming/message`, data)
                 console.log(message.data)
             }
 
@@ -138,18 +138,18 @@ describe('streaming pipeline test', () => {
 
 
             const url = "hkube/gateway/gateway"//"hkube/gateway/raw-image-gateway"
-            const status = await axios.get(`https://test.hkube.io/${url}/streaming/info`)
+            const status = await axios.get(`https://cicd-test.hkube.org/${url}/streaming/info`)
             //const res = await axios.post(`${config.DsServerUrl}/${DsName}/snapshot`,snap)
 
             const data = { "test": 1 }
-            let jnk = await axios.post(`https://test.hkube.io/${url}/streaming/message`, data)
+            let jnk = await axios.post(`https://cicd-test.hkube.org/${url}/streaming/message`, data)
             console.log("starts loop")
             for (i = 0; i < 1; i++) {
-                const message = await axios.post(`https://test.hkube.io/${url}/streaming/message`, data)
+                const message = await axios.post(`https://cicd-test.hkube.org/${url}/streaming/message`, data)
                 console.log(message.data)
             }
 
-            //https://test.hkube.io/hkube/gateway/raw-images-gateway/swagger-ui/
+            //https://cicd-test.hkube.org/hkube/gateway/raw-images-gateway/swagger-ui/
             //await delay(80000)
             //     const graph = await getRawGraph(jobId)
 
@@ -164,7 +164,7 @@ describe('streaming pipeline test', () => {
 
         const sendMessage = async (data) => {
             const url = "hkube/gateway/raw-image-gateway"
-            const jnk = await axios.post(`https://test.hkube.io/${url}/streaming/message`, data)
+            const jnk = await axios.post(`https://cicd-test.hkube.org/${url}/streaming/message`, data)
             return jnk;
         }
 
