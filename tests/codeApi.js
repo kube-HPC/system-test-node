@@ -103,7 +103,7 @@ describe('code api tests ', () => {
             this.timeout(1000 * 60 * 15);
             await createAlg();
         });
-        it.only("start algorithm", async () => {
+        it("start algorithm", async () => {
             const startAlg = [{
                 action: "start_alg",
                 name: "green-alg",

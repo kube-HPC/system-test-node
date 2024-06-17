@@ -5,20 +5,21 @@ global:
   storage:
     binary: true
     fs:
-      pvc: 
-         name: 'hkube-storage'
-         capacity: '50Gi'
-         nfs_server: '172.20.45.142'
-         nfs_root: '/nfs/storageclass/test-spot'
-      base_directory: '/hkubedata'
+      pvc:
+        name: "hkube-storage"
+        capacity: "50Gi"
+        nfs_server: "172.20.45.142"
+        nfs_root: "/nfs/storageclass/test-spot"
+      base_directory: "/hkubedata"
   ingress:
     use_regex: true
     # hostname: ${CICD_HOSTNAME}
 env:
-  default_storage: 'fs'
+  kibana_url: "https://cicd.hkube.org/system/kibana/"
+  default_storage: "fs"
 build_secret:
-  docker_registry: ''
-  docker_namespace: ''
+  docker_registry: ""
+  docker_namespace: ""
   docker_username: ${DOCKER_BUILD_PUSH_USERNAME}
   docker_password: ${DOCKER_BUILD_PUSH_PASSWORD}
 etcd:
@@ -28,16 +29,12 @@ etcd:
 task_executor:
   env:
     pipeline_drivers_amount: 30
-monitor_server:
-  env:
-    elasticsearch_service_url: 'http://elasticsearch-ingest.logging.svc.test:9200'
-    show_streaming_metrics: true
 storage_cleaner:
   pattern: "0 5 * * * "
 etcd_cleaner:
   pattern: "0 5 * * * "
 jaeger:
-  enable: true  
+  enable: true
 algorithm_operator:
   env: # +doc-gen:ignore
     algorithm_queue_concurrency_limit: 100
@@ -50,5 +47,5 @@ api_server:
   env:
     rate_limit_max: 5000
     rate_limit_ms: 60000
-    pipeline_driver_cpu: '0.6'
-    pipeline_driver_mem: '850'
+    pipeline_driver_cpu: "0.6"
+    pipeline_driver_mem: "850"
