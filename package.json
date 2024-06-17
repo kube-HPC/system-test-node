@@ -50,7 +50,7 @@
     "uuid": "^3.3.3",
     "winston": "^3.2.1",
     "winston-daily-rotate-file": "^3.10.0",
-    "ws": "^7.5.3"
+    "ws": "^7.5.10"
   },
   "devDependencies": {
     "mocha": "^5.2.0"
