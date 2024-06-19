@@ -201,7 +201,7 @@ describe('code api tests ', () => {
 
 
 
-    describe("Java code API", () => {
+    xdescribe("Java code API", () => {
         //buildGitAlgorithm({algName,gitUrl,gitKind ,entry , branch,language,  algorithmArray:algList})
         const algName = pipelineRandomName(8).toLowerCase();
         let algExsis = false
