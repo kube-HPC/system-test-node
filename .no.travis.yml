@@ -9,7 +9,7 @@ jobs:
     - stage: deploy
       install:
       - ./travis/install.sh
-      script: ./travis/deploy.sh
+      script: ./travis/deploy.sh ${{ secrets.HKUBE_DOMAIN_RAW }}
     - stage: test
       install:
       - ./travis/install.sh
