@@ -7,4 +7,4 @@ envsubst < ./travis/values-pub-template.yml > /tmp/pub.yml
 helm search repo hkube
 helm upgrade -i hkube -f /tmp/pub.yml hkube-dev/hkube
 helm ls --all
-
+echo end Of Script
