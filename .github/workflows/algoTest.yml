@@ -1,37 +1,37 @@
-# # This is a basic workflow to help you get started with Actions
+# This is a basic workflow to help you get started with Actions
 
-# name: algoTest
+name: algoTest
 
-# # Controls when the action will run. 
-# on:
-#   # Allows you to run this workflow manually from the Actions tab
-#    workflow_dispatch:
-#   #  schedule:
-#   #    - cron: '00 23 * * 0-4'
-# # A workflow run is made up of one or more jobs that can run sequentially or in parallel
-# jobs:
+# Controls when the action will run. 
+on:
+  # Allows you to run this workflow manually from the Actions tab
+   workflow_dispatch:
+  #  schedule:
+  #    - cron: '00 23 * * 0-4'
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
  
-#   algorithmTest:
-#     runs-on: ubuntu-latest
-#     if: ${{ always() }}
-#     steps:
-#       - uses: actions/checkout@v2
-#       - run: npm ci
-#       - name: create kubeconfig
-#         run: |
-#           echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
-#           echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
-#         env:
-#           KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
-#       - name: test
-#         run:  |
-#           echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
-#           echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
-#           npm run algorithmtest
-#         env:
-#           BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
-#           WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
-#           KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
-#           K8S_VERSION: 1.13
-#           K8S_CONFIG_PATH: /tmp/config
+  algorithmTest:
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    steps:
+      - uses: actions/checkout@v2
+      - run: npm ci
+      - name: create kubeconfig
+        run: |
+          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
+          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
+      - name: test
+        run:  |
+          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
+          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
+          npm run algorithmtest
+        env:
+          BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
+          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
+          K8S_VERSION: 1.13
+          K8S_CONFIG_PATH: /tmp/config
   
