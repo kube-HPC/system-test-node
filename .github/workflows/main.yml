@@ -28,7 +28,7 @@ jobs:
       - name: verify kubectl
         run: kubectl cluster-info
       - name: deploy
-        run: ./travis/deploy.sh
+        run: ./travis/deploy.sh ${{ secrets.HKUBE_DOMAIN_RAW }}
         env:
           DOCKER_BUILD_PUSH_PASSWORD: ${{ secrets.DOCKER_BUILD_PUSH_PASSWORD }}
           DOCKER_BUILD_PUSH_USERNAME: ${{ secrets.DOCKER_BUILD_PUSH_USERNAME }}
