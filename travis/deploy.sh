@@ -1,5 +1,5 @@
 #!/bin/bash
-domain = "$1"
+domain="$1"
 echo Deploy to kubernetes
 helm repo add hkube-dev http://"$domain"/helm/dev/
 helm repo update
