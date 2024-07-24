@@ -68,7 +68,7 @@ const {
 chai.use(chaiHttp);
 
 
-const { waitForWorkers, getJobsByNameAndVersion, getJobById } = require('../utils/socketGet')
+const { waitForWorkers, getJobsByNameAndVersion, getJobById, getAllAlgorithms } = require('../utils/socketGet')
 describe('Alrogithm Tests', () => {
 
 
@@ -139,6 +139,60 @@ describe('Alrogithm Tests', () => {
             expect(nodesError.length).to.be.equal(0)
         }).timeout(1000 * 60 * 5);
 
+    })
+
+    describe('Test If Algorithm Is Satisfied', () => {
+        const maxCPU = 8
+        const minMem = "4Mi"
+        const algorithmBaseName = 'algo-is-satisfied-test'
+        const algorithmImage = 'tamir321/algoversion:v1'
+        const algJson = (algName, imageName, algMinHotWorkers, algCPU, algGPU, algMEMORY) => {
+            return {
+                name: algName.toLowerCase(),
+                cpu: algCPU,
+                gpu: algGPU,
+                mem: algMEMORY,
+                minHotWorkers: algMinHotWorkers,
+                algorithmImage: imageName,
+                type: "Image",
+                options: {
+                    debug: false,
+                    pending: false
+                },
+                workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
+            }
+        }
+        const algorithmSatisfied = algJson(algorithmBaseName + '-true', algorithmImage, 0, 0, 0, minMem);
+        const algorithmNotSatisfied = algJson(algorithmBaseName + '-false', algorithmImage, 0, maxCPU, 0, minMem);
+
+        it('should run algorithm and mark as satisfied', async () => {
+            const algorithm = { name: algorithmSatisfied.name, input: [] };
+            await storeAlgorithmApply(algorithmSatisfied);
+            await runAlgorithm(algorithm);
+            await delay(90000);
+            const allAlgorithms = await getAllAlgorithms();
+            await deleteAlgorithm(algorithm.name, true)
+            const algoStatus = allAlgorithms.find(algo => algo.name === algorithm.name)?.isSatisfied;
+            if (algoStatus === undefined) {
+                throw new Error(`Algorithm ${algorithm.name} not found`);
+            }
+            expect(algoStatus).to.be.true;
+        }).timeout(1000 * 60 * 5);
+
+
+        it('should run algorithm and mark as not satisfied', async () => {
+            const algorithm = { name: algorithmNotSatisfied.name, input: [] };
+            await storeAlgorithmApply(algorithmNotSatisfied);
+            await runAlgorithm(algorithm);
+            await delay(90000);
+            const allAlgorithms = await getAllAlgorithms();
+            await deleteAlgorithm(algorithm.name);
+            const algoStatus = allAlgorithms.find(algo => algo.name === algorithm.name)?.isSatisfied;
+            if (algoStatus === undefined) {
+                throw new Error(`Algorithm ${algorithm.name} not found`);
+            }
+            expect(algoStatus).to.be.false;
+        }).timeout(1000 * 60 * 5);
     })
 
     describe('Test Algorithm Version (git 560 487 998)', () => {
