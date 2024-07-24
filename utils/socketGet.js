@@ -5,6 +5,7 @@ const JOB_QUERY = require('../utils/graphql/queries/job-query');
 const JOB_BY_ID_QUERY = require('../utils/graphql/queries/job-by-id-query');
 const ALGORITHM_BY_VERSION_QUERY = require('../utils/graphql/queries/algorithm-by-version-query');
 const ERROR_LOG_QUERY = require('../utils/graphql/queries/error-log-query');
+const ALL_ALGORITHMS_QUERY = require('../utils/graphql/queries/all-algorithms');
 const PIPELINE_DRIVER_QUERY = require('./graphql/queries/pipeline-driver-query');
 const delay = require('delay')
 const { setDefaultEncoding } = require('winston-daily-rotate-file');
@@ -17,6 +18,10 @@ const getDriverIdByJobId = async (jobId, experimentName = 'main') => {
     return data.discovery.pipelineDriver.filter((driver) => driver.jobs.some(job => job.jobId === jobId));
 }
 
+const getAllAlgorithms = async (experimentName = 'main') => {
+    const data = await request(Graphql_URL, ALL_ALGORITHMS_QUERY);
+    return data.algorithms.list;
+}
 
 const getWebSocketlogs = async (experimentName = 'main') => {
     const data = await request(Graphql_URL, ERROR_LOG_QUERY);
@@ -44,8 +49,6 @@ const getJobsByNameAndVersion = async (name,version) => {
     return data;
 };
 
-
-
 const getWorkers = async (experimentName = 'main') => {
 
     return await request(Graphql_URL, WORKERS_ALL_QUERY);
@@ -72,5 +75,6 @@ module.exports = {
     getDriverIdByJobId,
     waitForWorkers,
     getJobById,
-    getJobsByNameAndVersion
+    getJobsByNameAndVersion,
+    getAllAlgorithms
 }
