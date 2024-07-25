@@ -67,14 +67,7 @@ const {
 
 chai.use(chaiHttp);
 
-const algJson = (
-    algName,
-    imageName,
-    algMinHotWorkers = 0,
-    algCPU = 0.001,
-    algGPU = 0,
-    algMEMORY = "32Mi"
-) => {
+const algJson = (algName, imageName, algMinHotWorkers = 0, algCPU = 0.001, algGPU = 0, algMEMORY = "32Mi") => {
     return {
         name: algName.toLowerCase(),
         cpu: algCPU,
