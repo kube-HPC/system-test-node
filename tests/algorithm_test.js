@@ -67,8 +67,25 @@ const {
 
 chai.use(chaiHttp);
 
+const algJson = (algName, imageName, algMinHotWorkers = 0, algCPU = 0.001, algGPU = 0, algMEMORY = "32Mi") => {
+    return {
+        name: algName.toLowerCase(),
+        cpu: algCPU,
+        gpu: algGPU,
+        mem: algMEMORY,
+        minHotWorkers: algMinHotWorkers,
+        algorithmImage: imageName,
+        type: "Image",
+        options: {
+            debug: false,
+            pending: false
+        },
+        workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
+    }
+}
 
-const { waitForWorkers, getJobsByNameAndVersion, getJobById } = require('../utils/socketGet')
+
+const { waitForWorkers, getJobsByNameAndVersion, getJobById, getAllAlgorithms } = require('../utils/socketGet')
 describe('Alrogithm Tests', () => {
 
 
@@ -141,28 +158,49 @@ describe('Alrogithm Tests', () => {
 
     })
 
+    describe('Test If Algorithm Is Satisfied', () => {
+        const maxCPU = 8
+        const minMem = "4Mi"
+        const algorithmBaseName = 'algo-is-satisfied-test'
+        const algorithmImage = 'tamir321/algoversion:v1'
+        const algorithmSatisfied = algJson(algorithmBaseName + '-true', algorithmImage, 0, 0, 0, minMem);
+        const algorithmNotSatisfied = algJson(algorithmBaseName + '-false', algorithmImage, 0, maxCPU, 0, minMem);
+
+        it('should run algorithm and mark as satisfied', async () => {
+            const algorithm = { name: algorithmSatisfied.name, input: [] };
+            await storeAlgorithmApply(algorithmSatisfied);
+            await runAlgorithm(algorithm);
+            await delay(90000);
+            const allAlgorithms = await getAllAlgorithms();
+            await deleteAlgorithm(algorithm.name, true)
+            const algoStatus = allAlgorithms.find(algo => algo.name === algorithm.name)?.isSatisfied;
+            if (algoStatus === undefined) {
+                throw new Error(`Algorithm ${algorithm.name} not found`);
+            }
+            expect(algoStatus).to.be.true;
+        }).timeout(1000 * 60 * 5);
+
+
+        it('should run algorithm and mark as not satisfied', async () => {
+            const algorithm = { name: algorithmNotSatisfied.name, input: [] };
+            await storeAlgorithmApply(algorithmNotSatisfied);
+            await runAlgorithm(algorithm);
+            await delay(90000);
+            const allAlgorithms = await getAllAlgorithms();
+            await deleteAlgorithm(algorithm.name);
+            const algoStatus = allAlgorithms.find(algo => algo.name === algorithm.name)?.isSatisfied;
+            if (algoStatus === undefined) {
+                throw new Error(`Algorithm ${algorithm.name} not found`);
+            }
+            expect(algoStatus).to.be.false;
+        }).timeout(1000 * 60 * 5);
+    })
+
     describe('Test Algorithm Version (git 560 487 998)', () => {
         //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/560
         const algorithmName = "algorithm-version-test"
         const algorithmImageV1 = "tamir321/algoversion:v1"
         const algorithmImageV2 = "tamir321/algoversion:v2"
-        const algJson = (algName, imageName) => {
-            let alg = {
-                name: algName,
-                cpu: 0.001,
-                gpu: 0,
-                mem: "32Mi",
-                minHotWorkers: 0,
-                algorithmImage: imageName,
-                type: "Image",
-                options: {
-                    debug: false,
-                    pending: false
-                },
-                workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
-            }
-            return alg
-        }
 
         afterEach(async function () {
             if ((this.currentTest.title === "update algorithm nodeSelector") && (this.currentTest.state === 'failed')) {
