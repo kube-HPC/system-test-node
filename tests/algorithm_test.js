@@ -73,7 +73,7 @@ const algJson = (
     algMinHotWorkers = 0,
     algCPU = 0.001,
     algGPU = 0,
-    algMEMORY = "32MI"
+    algMEMORY = "32Mi"
 ) => {
     return {
         name: algName.toLowerCase(),
