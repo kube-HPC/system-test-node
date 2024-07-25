@@ -67,6 +67,30 @@ const {
 
 chai.use(chaiHttp);
 
+const algJson = (
+    algName,
+    imageName,
+    algMinHotWorkers = 0,
+    algCPU = 0.001,
+    algGPU = 0,
+    algMEMORY = "32MI"
+) => {
+    return {
+        name: algName.toLowerCase(),
+        cpu: algCPU,
+        gpu: algGPU,
+        mem: algMEMORY,
+        minHotWorkers: algMinHotWorkers,
+        algorithmImage: imageName,
+        type: "Image",
+        options: {
+            debug: false,
+            pending: false
+        },
+        workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
+    }
+}
+
 
 const { waitForWorkers, getJobsByNameAndVersion, getJobById, getAllAlgorithms } = require('../utils/socketGet')
 describe('Alrogithm Tests', () => {
@@ -146,22 +170,6 @@ describe('Alrogithm Tests', () => {
         const minMem = "4Mi"
         const algorithmBaseName = 'algo-is-satisfied-test'
         const algorithmImage = 'tamir321/algoversion:v1'
-        const algJson = (algName, imageName, algMinHotWorkers, algCPU, algGPU, algMEMORY) => {
-            return {
-                name: algName.toLowerCase(),
-                cpu: algCPU,
-                gpu: algGPU,
-                mem: algMEMORY,
-                minHotWorkers: algMinHotWorkers,
-                algorithmImage: imageName,
-                type: "Image",
-                options: {
-                    debug: false,
-                    pending: false
-                },
-                workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
-            }
-        }
         const algorithmSatisfied = algJson(algorithmBaseName + '-true', algorithmImage, 0, 0, 0, minMem);
         const algorithmNotSatisfied = algJson(algorithmBaseName + '-false', algorithmImage, 0, maxCPU, 0, minMem);
 
@@ -200,23 +208,6 @@ describe('Alrogithm Tests', () => {
         const algorithmName = "algorithm-version-test"
         const algorithmImageV1 = "tamir321/algoversion:v1"
         const algorithmImageV2 = "tamir321/algoversion:v2"
-        const algJson = (algName, imageName) => {
-            let alg = {
-                name: algName,
-                cpu: 0.001,
-                gpu: 0,
-                mem: "32Mi",
-                minHotWorkers: 0,
-                algorithmImage: imageName,
-                type: "Image",
-                options: {
-                    debug: false,
-                    pending: false
-                },
-                workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
-            }
-            return alg
-        }
 
         afterEach(async function () {
             if ((this.currentTest.title === "update algorithm nodeSelector") && (this.currentTest.state === 'failed')) {
