@@ -583,7 +583,7 @@ describe("Node Tests git 660", () => {
       await delay(90000);
       const graph = await getRawGraph(res.body.jobId);
       await deleteAlgorithm(algName);
-      expect(graph.body.nodes[0].status).to.be.equal("FailedScheduling");
+      expect(graph.body.nodes[0].status).to.be.equal("failedScheduling");
     }).timeout(1000 * 60 * 3);
   });
 
