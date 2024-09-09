@@ -158,7 +158,7 @@ describe('Alrogithm Tests', () => {
 
     })
 
-    describe('Test If Algorithm Is Satisfied', () => {
+    describe('Test Algorithm unscheduledReason', () => {
         const maxCPU = 8
         const minMem = "4Mi"
         const algorithmBaseName = 'algo-is-satisfied-test'
@@ -166,33 +166,33 @@ describe('Alrogithm Tests', () => {
         const algorithmSatisfied = algJson(algorithmBaseName + '-true', algorithmImage, 0, 0, 0, minMem);
         const algorithmNotSatisfied = algJson(algorithmBaseName + '-false', algorithmImage, 0, maxCPU, 0, minMem);
 
-        it('should run algorithm and mark as satisfied', async () => {
+        it('should run algorithm and verify it has no unscheduledReason', async () => {
             const algorithm = { name: algorithmSatisfied.name, input: [] };
             await storeAlgorithmApply(algorithmSatisfied);
             await runAlgorithm(algorithm);
-            await delay(90000);
+            await delay(2000);
             const allAlgorithms = await getAllAlgorithms();
             await deleteAlgorithm(algorithm.name, true)
-            const algoStatus = allAlgorithms.find(algo => algo.name === algorithm.name)?.isSatisfied;
-            if (algoStatus === undefined) {
-                throw new Error(`Algorithm ${algorithm.name} not found`);
+            const algo = allAlgorithms.find(algo => algo.name === algorithm.name);
+            if (!algo) {
+                throw new Error(`Algorithm ${algorithm.name} not found`)
             }
-            expect(algoStatus).to.be.true;
+            expect(algo.unscheduledReason).to.be.null;
         }).timeout(1000 * 60 * 5);
 
 
-        it('should run algorithm and mark as not satisfied', async () => {
+        it('should run algorithm and verify it has an unscheduledReason', async () => {
             const algorithm = { name: algorithmNotSatisfied.name, input: [] };
             await storeAlgorithmApply(algorithmNotSatisfied);
             await runAlgorithm(algorithm);
-            await delay(90000);
+            await delay(2000);
             const allAlgorithms = await getAllAlgorithms();
             await deleteAlgorithm(algorithm.name);
-            const algoStatus = allAlgorithms.find(algo => algo.name === algorithm.name)?.isSatisfied;
-            if (algoStatus === undefined) {
+            const algo = allAlgorithms.find(algo => algo.name === algorithm.name);
+            if (!algo) {
                 throw new Error(`Algorithm ${algorithm.name} not found`);
             }
-            expect(algoStatus).to.be.false;
+            expect(algo.unscheduledReason).to.be.a('string');
         }).timeout(1000 * 60 * 5);
     })
 

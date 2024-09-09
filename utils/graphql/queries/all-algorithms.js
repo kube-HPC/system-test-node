@@ -5,7 +5,7 @@ query Algorithms {
   algorithms {
     list {
       name
-      isSatisfied
+      unscheduledReason
       cpu
       created
       entryPoint
