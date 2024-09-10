@@ -170,7 +170,7 @@ describe('Alrogithm Tests', () => {
             const algorithm = { name: algorithmSatisfied.name, input: [] };
             await storeAlgorithmApply(algorithmSatisfied);
             await runAlgorithm(algorithm);
-            await delay(2000);
+            await delay(45000);
             const allAlgorithms = await getAllAlgorithms();
             await deleteAlgorithm(algorithm.name, true)
             const algo = allAlgorithms.find(algo => algo.name === algorithm.name);
@@ -185,7 +185,7 @@ describe('Alrogithm Tests', () => {
             const algorithm = { name: algorithmNotSatisfied.name, input: [] };
             await storeAlgorithmApply(algorithmNotSatisfied);
             await runAlgorithm(algorithm);
-            await delay(2000);
+            await delay(45000);
             const allAlgorithms = await getAllAlgorithms();
             await deleteAlgorithm(algorithm.name);
             const algo = allAlgorithms.find(algo => algo.name === algorithm.name);
