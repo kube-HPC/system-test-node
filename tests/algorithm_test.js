@@ -391,12 +391,12 @@ describe('Alrogithm Tests', () => {
         it(`change baseImage trigger new Build`, async () => {
             const code1 = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
             const entry = 'main27'
-            const algName = "python2.7-test-1"
-            const pythonVersion = "python:2.7"
+            const algName = "python3.7-test-1"
+            const pythonVersion = "python:3.7"
             await deleteAlgorithm(algName)
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algList })
             expect(buildStatusAlg.status).to.be.equal("completed")
-            expect(buildStatusAlg.algorithmImage).to.contain(buildStatusAlg.imageTag)//.endsWith(buildStatusAlg.imageTag)
+            expect(buildStatusAlg.algorithmImage).to.contain(buildStatusAlg.imageTag) //.endsWith(buildStatusAlg.imageTag)
             let alg = await getAlgorithm(algName)
 
             let algJson = JSON.parse(alg.text);
@@ -413,8 +413,8 @@ describe('Alrogithm Tests', () => {
         it(`change env trigger new Build`, async () => {
             const code1 = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
             const entry = 'main27'
-            const algName = "python2.7-test-1"
-            const pythonVersion = "python:2.7"
+            const algName = "python3.7-test-1"
+            const pythonVersion = "python:3.7"
             await deleteAlgorithm(algName)
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algList })
             expect(buildStatusAlg.status).to.be.equal("completed")
