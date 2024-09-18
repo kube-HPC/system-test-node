@@ -360,9 +360,9 @@ describe('Alrogithm Tests', () => {
             const podNode = await getPodNode(firstPodName);
             expect(podNode).to.be.equal(nodes[1]) // verify worker on selected node nodes[2]
 
-            algV1.nodeSelector = { "kubernetes.io/hostname": nodes[2] }
+            algV1.nodeSelector = { "kubernetes.io/hostname": nodes[0] }
             algV1.minHotWorkers = 1;
-            console.log(`New Selected node : ${nodes[2]}`);
+            console.log(`New Selected node : ${nodes[0]}`);
             //store and update the new algorithm with a new version + a different selected node nodes[1];
             v1 = await storeAlgorithmApply(algV1);
             const update = await updateAlgorithmVersion(algName, v1.body.algorithm.version, true);
@@ -384,7 +384,7 @@ describe('Alrogithm Tests', () => {
             //var index = podNamesAfter.indexOf(podNames[0]); //index=0; when fails.
             //var filteredAry = ary.filter(e => e !== 'seven')
             const podNodeAfter = await getPodNode(podsNamesAfter[0].metadata.name)
-            expect(podNodeAfter).to.be.equal(nodes[2])
+            expect(podNodeAfter).to.be.equal(nodes[0])
             deleteAlgorithm(algName)
         }).timeout(1000 * 60 * 10);
 
