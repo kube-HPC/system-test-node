@@ -668,9 +668,9 @@ describe("pipeline Tests 673", () => {
       await deletePipeline(pipeline["name"]);
       await storePipeline(pipeline);
       const jobId = await runStoredAndWaitForResults(pipeline);
-      const result = await getResult(jobId, 200);
       await deletePipeline(pipeline["name"]);
       await deleteAlgorithm(algorithm.name);
+      const result = await getResult(jobId, 200);
       expect(result.data).to.have.lengthOf(8);
       result.data.forEach(output => {
         expect(Object.keys(output.result)).to.have.lengthOf(2);
