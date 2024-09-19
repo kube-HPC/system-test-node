@@ -95,6 +95,7 @@ const index = {
         testData10: require('../pipelines/evalwait161'),
         testData11: require('../pipelines/evalwait400'),
         testData12: require('../pipelines/evalwait'),
+        testData13: require('../pipelines/pipelineFlowAndList'),
         ttlPipe: require('../pipelines/ttlPipe')
 
     },
