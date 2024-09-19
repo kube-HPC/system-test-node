@@ -38,6 +38,7 @@ const {
   testData10,
   testData11,
   testData12,
+  testData13,
   ttlPipe,
 } = require("../config/index").pipelineTest;
 
@@ -117,6 +118,27 @@ const timeout = (ms) => {
 describe("pipeline Tests 673", () => {
   describe("pipeline includeInResults (git 673)", () => {
     //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/673
+    it.only("should run in flow input size and print it values", async () => {
+      const { pipeline, input, algorithm } = testData13;
+      const printAndReturnAlg = algJson(algorithm.name, algorithm.image);
+      printAndReturnAlg["env"] = "python";
+      printAndReturnAlg["entryPoint"] = "print-and-return.py";
+      await deleteAlgorithm(algorithm.name);
+      await storeAlgorithmApply(printAndReturnAlg);
+      await deletePipeline(pipeline["name"]);
+      await storePipeline(pipeline);
+      const jobId = await runStoredAndWaitForResults(pipeline);
+      const result = await getResult(jobId, 200);
+      await deletePipeline(pipeline["name"]);
+      await deleteAlgorithm(algorithm.name);
+      expect(result.data).to.have.lengthOf(8);
+      result.data.forEach(output => {
+        expect(Object.keys(output.result)).to.have.lengthOf(2);
+        expect(output.result.list).to.eql(input.listValues);
+        expect(output.result.flow).to.eql(output.batchIndex); // equal to batch index since flow is 1-4, same as index in this case
+      });
+    }).timeout(1000 * 60 * 2);
+
     it("yellow node includeInResults = true", async () => {
       const testData = testData2;
       const d = deconstructTestData(testData);
