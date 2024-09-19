@@ -1311,7 +1311,7 @@ describe("pipeline Tests 673", () => {
           nodes: [
             {
               nodeName: "one",
-              algorithmName: "func1-complex",
+              algorithmName: "not-existing-alg-w341",
               input: ["@flowInput.inp"],
             },
             {
