@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha ./tests/swaggerCalls.js",
+    "streaming": "mocha ./tests/streaming_tests.js",
     "pipelinetest": "mocha ./tests/pipeline_tests.js",
     "jageartest": "mocha ./tests/jagearTest.js",
     "nodetest": "mocha ./tests/node_tests.js",
