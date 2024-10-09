@@ -39,7 +39,31 @@ describe('streaming pipeline test', () => {
         await deleteAlgorithm(alg.name, true, true)
         await storeAlgorithms(alg);
     }
+    let algList = [];
+    after(async function () {
+        this.timeout(2 * 60 * 1000);
+        console.log("algList = " + algList)
+        j = 0
+        z = 3
 
+        while (j < algList.length) {
+            delAlg = algList.slice(j, z)
+            const del = delAlg.map((e) => {
+                return deleteAlgorithm(e)
+            })
+            console.log("delAlg-" + delAlg)
+            const delResult = await Promise.all(del)
+            console.log("delResult-" + delResult)
+            await delay(2000)
+            j += 3
+            z += 3
+            console.log("j=" + j + ",z=" + z)
+        }
+
+
+        console.log("end -----")
+
+    });
     const getResult = async (jobId, expectedStatus, timeout = 60 * 1000 * 10, interval = 5000) => {
 
         if (typeof jobId != 'string') {
@@ -128,11 +152,14 @@ describe('streaming pipeline test', () => {
 
     describe("time tests", () => {
 
-        it("run simple stream", async () => {
+        it.only("run simple stream", async () => {
             await createAlg(start);
             await createAlg(statefull);
+            algList.push(start.name);
+            algList.push(statefull.name);
             try {
                 await createAlg(stateless);
+                algList.push(stateless.name);
             }
             catch (e) {
                 e.printSackTrace();
@@ -157,11 +184,11 @@ describe('streaming pipeline test', () => {
             const res = await runRaw(streamSimple);
             const { jobId } = res.body;
             await waitForStatus(jobId, 'sen-1', 'active', 60000, 2000);
-            console.log("sen-1 is activce")
+            console.log("sen-1 is active")
             await delay(110);
             await waitForStatus(jobId, 'sen-out-1', 'active', 120000, 2000);
             await delay(10);
-            console.log("sen-out-1 is activce")
+            console.log("sen-out-1 is active")
             const required = await getRequiredPods(jobId, 'sen-1', 'sen-out-1');
             expect(required).to.be.gt(2);
             await delay(60)
@@ -178,8 +205,11 @@ describe('streaming pipeline test', () => {
         it("Second Rate", async () => {
             await createAlg(start);
             await createAlg(statefull);
+            algList.push(start.name);
+            algList.push(statefull.name);
             try {
                 await createAlg(stateless);
+                algList.push(stateless.name);
             }
             catch (e) {
                 e.printSackTrace();

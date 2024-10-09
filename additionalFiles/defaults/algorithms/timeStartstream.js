@@ -11,7 +11,8 @@ const alg = {
   "minHotWorkers": 0,
   "algorithmImage": "docker.io/hkubedevtest/start-streaming:v2i0hkqse",
   "workerEnv": {
-    "INACTIVE_WORKER_TIMEOUT_MS": 1000
+    "INACTIVE_WORKER_TIMEOUT_MS": 1000,
+    "AUTO_SCALER_MAX_REPLICAS_PER_SCALE": 30
   },
   "reservedMemory": "52Mi",
   "errors": [],
