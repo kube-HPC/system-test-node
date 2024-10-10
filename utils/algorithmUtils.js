@@ -104,7 +104,8 @@ const buildAlgorithm = async ({ code, algName, entry, baseVersion = 'python:3.7.
         minHotWorkers: 0,
         version: idGen(),
         baseImage: baseVersion,
-        workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
+        workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 },
+        type: 'Code'
     }
     algorithmArray.push(algName)
     const res = await chai.request(config.apiServerUrl)
