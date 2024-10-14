@@ -6,7 +6,7 @@ const alg = {
   "name": "start-streaming-tst",
   "entryPoint": "startpoint.py",
   "type": "Image",
-  "cpu": 0.01,
+  "cpu": 0.1,
   "mem": "128Mi",
   "minHotWorkers": 0,
   "algorithmImage": "docker.io/hkubedevtest/start-streaming:v2i0hkqse",
