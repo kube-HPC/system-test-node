@@ -301,7 +301,7 @@ describe('streaming pipeline test', () => {
             await stopPipeline(jobId)
         }).timeout(400 * 1000);
 
-        it("should scale up at first, and then scale down to 0.", async () => {
+        it("should scale up at first, then scale down to 0 and then back up.", async () => {
             await createAlg(statefull);
             algList.push(statefull.name);
             try {
@@ -345,8 +345,11 @@ describe('streaming pipeline test', () => {
             await delay(160 * 1000);
             required = await getRequiredPods(jobId, 'sen-1', 'sen-out-1');
             expect(required).to.be.equal(0);
+            await delay(160 * 1000);
+            required = await getRequiredPods(jobId, 'sen-1', 'sen-out-1');
+            expect(required).to.be.gt(0);
             await stopPipeline(jobId)
-        }).timeout(400 * 1000);
+        }).timeout(550 * 1000);
 
         it("should satisfy the high request rate with high rate, with enough nodes.", async () => {
             await createAlg(statefull, 0.3);
