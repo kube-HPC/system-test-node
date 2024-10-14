@@ -238,13 +238,12 @@ describe('streaming pipeline test', () => {
             const { jobId } = res.body;
             await waitForStatus(jobId, 'sen-1', 'active', 60000, 2000);
             console.log("sen-1 is active")
-            await delay(110);
             await waitForStatus(jobId, 'sen-out-1', 'active', 120000, 2000);
-            await delay(10);
             console.log("sen-out-1 is active")
+            await delay(120 * 1000);
             const required = await getRequiredPods(jobId, 'sen-1', 'sen-out-1');
             expect(required).to.be.gt(2);
-            await delay(60)
+            await delay(60 * 1000)
             const reqRate = await getRequestRate(jobId, 'sen-1', 'sen-out-1');
             const resRate = await getResponseRate(jobId, 'sen-1', 'sen-out-1');
             const current = await getCurrentPods(jobId, 'sen-1', 'sen-out-1');
@@ -253,7 +252,7 @@ describe('streaming pipeline test', () => {
             expect(ratio).to.be.lt(9);
             expect(current).to.be.lt(4);
             await stopPipeline(jobId)
-        }).timeout(180000);
+        }).timeout(250 * 1000);
 
         it("Should scale up at first, then scale down to second rate.", async () => {
             await createAlg(statefull);
