@@ -288,15 +288,14 @@ describe('streaming pipeline test', () => {
 
             const res = await runRaw(streamSimple);
             const { jobId } = res.body;
-            await waitForStatus(jobId, 'sen-1', 'active', 60000, 2000);
-            console.log("sen-1 is activce")
-            await delay(140);
-            await waitForStatus(jobId, 'sen-out-1', 'active', 60000, 2000);
-            console.log("sen-out-1 is activce")
-            await delay(5);
+            await waitForStatus(jobId, 'sen-1', 'active', 60 * 1000, 2000);
+            console.log("sen-1 is active")
+            await waitForStatus(jobId, 'sen-out-1', 'active', 60 * 1000, 2000);
+            console.log("sen-out-1 is active")
+            await delay(125 * 1000);
             let required = await getRequiredPods(jobId, 'sen-1', 'sen-out-1');
             expect(required).to.be.gt(3);
-            await delay(160);
+            await delay(160 * 1000);
             required = await getRequiredPods(jobId, 'sen-1', 'sen-out-1');
             expect(required).to.be.lt(3);
             await stopPipeline(jobId)
