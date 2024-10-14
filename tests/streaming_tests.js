@@ -126,11 +126,13 @@ describe('streaming pipeline test', () => {
      * @returns {number} The number of active pods for the specified node.
      */
     const getNumActivePods = (graph, nodeName) => {
-        const filtered = graph.nodes.filter(node => node.nodeName == nodeName);
-        if (filtered) {
+        const filtered = graph.nodes.filter(node => node.nodeName === nodeName);
+        if (filtered.length > 0) {
             const node = filtered[0];
             if (node.batch) {
-
+                return node.batch.filter(task => task.status === 'active').length;
+            } else if (node.status === 'active') {
+                return 1;
             }
             else {
                 if (node.status == 'active')
