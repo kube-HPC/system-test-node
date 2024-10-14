@@ -134,11 +134,7 @@ describe('streaming pipeline test', () => {
             } else if (node.status === 'active') {
                 return 1;
             }
-            else {
-                if (node.status == 'active')
-                    return 1
             }
-
             return 0;
         }
 
@@ -154,7 +150,7 @@ describe('streaming pipeline test', () => {
     const getRequestRate = async (jobId, source, target) => {
 
         let { body: graph } = await getRawGraph(jobId);
-        const filtered = graph.edges.filter(edge => edge.from == source && edge.to == target);
+        const filtered = graph.edges.filter(edge => edge.from === source && edge.to === target);
         const metrics = filtered[0]?.value['metrics'];
         return metrics.reqRate;
 
@@ -170,9 +166,8 @@ describe('streaming pipeline test', () => {
      * @returns {Promise<number>} The current number of pods between the source and target nodes.
      */
     const getCurrentPods = async (jobId, source, target) => {
-
         let { body: graph } = await getRawGraph(jobId);
-        const filtered = graph.edges.filter(edge => edge.from == source && edge.to == target);
+        const filtered = graph.edges.filter(edge => edge.from === source && edge.to === target);
         const metrics = filtered[0]?.value['metrics'];
         return metrics.currentSize;
 
@@ -189,7 +184,7 @@ describe('streaming pipeline test', () => {
      */
     const getResponseRate = async (jobId, source, target) => {
         let { body: graph } = await getRawGraph(jobId);
-        const filtered = graph.edges.filter(edge => edge.from == source && edge.to == target);
+        const filtered = graph.edges.filter(edge => edge.from === source && edge.to === target);
         const metrics = filtered[0]?.value['metrics'];
         return metrics.resRate;
     }
@@ -205,7 +200,7 @@ describe('streaming pipeline test', () => {
      */
     const getRequiredPods = async (jobId, source, target) => {
         let { body: graph } = await getRawGraph(jobId);
-        const filtered = graph.edges.filter(edge => edge.from == source && edge.to == target);
+        const filtered = graph.edges.filter(edge => edge.from === source && edge.to === target);
         const metrics = filtered[0]?.value['metrics'];
         return metrics.required;
     }
