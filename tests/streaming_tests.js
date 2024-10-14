@@ -100,16 +100,15 @@ describe('streaming pipeline test', () => {
         do {
             process.stdout.write('.')
             let { body: graph } = await getRawGraph(jobId);
-            const filtered = graph.nodes.filter(node => node.nodeName == nodeName);
-            if (filtered) {
+            const filtered = graph.nodes.filter(node => node.nodeName === nodeName);
+            if (filtered.length > 0) {
                 const node = filtered[0];
                 if (node.batch) {
-                    const activeTask = node.batch.filter((task) => task.status == expectedStatus);
+                    const activeTask = node.batch.filter((task) => task.status === expectedStatus);
                     if (activeTask)
                         return true;
                 }
-                else {
-                    if (node.status == expectedStatus)
+                else if (node.status === expectedStatus) {
                         return true;
                 }
             }
