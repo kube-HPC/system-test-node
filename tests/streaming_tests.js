@@ -207,11 +207,8 @@ describe('streaming pipeline test', () => {
 
 
     describe("time tests", () => {
-
-        it.only("run simple stream", async () => {
-            await createAlg(start);
+        it("should satisfy the request rate with high rate, with enough nodes.", async () => {
             await createAlg(statefull);
-            algList.push(start.name);
             algList.push(statefull.name);
             try {
                 await createAlg(stateless);
@@ -258,10 +255,8 @@ describe('streaming pipeline test', () => {
             await stopPipeline(jobId)
         }).timeout(180000);
 
-        it("Second Rate", async () => {
-            await createAlg(start);
+        it("Should scale up at first, then scale down to second rate.", async () => {
             await createAlg(statefull);
-            algList.push(start.name);
             algList.push(statefull.name);
             try {
                 await createAlg(stateless);
@@ -280,12 +275,7 @@ describe('streaming pipeline test', () => {
                                 "rate": 150,
                                 "time": 140,
                                 "size": 80
-                            }
-                        ]
                     },
-                    {
-                        "name": "hkube_desc",
-                        "program": [
                             {
                                 "rate": 50,
                                 "time": 240,
