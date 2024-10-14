@@ -75,7 +75,7 @@ describe('streaming pipeline test', () => {
         do {
             process.stdout.write('.')
             const res = await getJobResult(jobId)
-            if (res.status == expectedStatus) {
+            if (res.status === expectedStatus) {
                 return res.body;
             }
             await delay(interval);
