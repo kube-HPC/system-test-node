@@ -26,9 +26,7 @@ const {
     runRaw, stopPipeline
 } = require('../utils/pipelineUtils')
 
-const { alg: start } = require("../additionalFiles/defaults/algorithms/timeStartstream")
-
-const { alg: statefull } = require("../additionalFiles/defaults/algorithms/timeStatefull")
+const { alg: statefull } = require("../additionalFiles/defaults/algorithms/timeStartstream")
 
 const { pipe1: streamSimple } = require("../additionalFiles/defaults/pipelines/stream-simple");
 
