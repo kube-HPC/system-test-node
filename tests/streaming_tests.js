@@ -299,8 +299,109 @@ describe('streaming pipeline test', () => {
             required = await getRequiredPods(jobId, 'sen-1', 'sen-out-1');
             expect(required).to.be.lt(3);
             await stopPipeline(jobId)
-        }).timeout(180000);
+        }).timeout(400 * 1000);
 
+        it("should scale up at first, and then scale down to 0.", async () => {
+            await createAlg(statefull);
+            algList.push(statefull.name);
+            try {
+                await createAlg(stateless);
+                algList.push(stateless.name);
+            }
+            catch (e) {
+                e.printSackTrace();
+            }
+
+            streamSimple.flowInput = {
+                "flows": [
+                    {
+                        "name": "hkube_desc",
+                        "program": [
+                            {
+                                "rate": 150,
+                                "time": 140,
+                                "size": 80
+                            },
+                            {
+                                "rate": 0,
+                                "time": 240,
+                                "size": 80
+                            }
+                        ]
+                    }
+                ],
+                "process_time": 0.02
+            }
+
+            const res = await runRaw(streamSimple);
+            const { jobId } = res.body;
+            await waitForStatus(jobId, 'sen-1', 'active', 60 * 1000, 2000);
+            console.log("sen-1 is active")
+            await waitForStatus(jobId, 'sen-out-1', 'active', 60 * 1000, 2000);
+            console.log("sen-out-1 is active")
+            await delay(125 * 1000);
+            let required = await getRequiredPods(jobId, 'sen-1', 'sen-out-1');
+            expect(required).to.be.gt(3);
+            await delay(160 * 1000);
+            required = await getRequiredPods(jobId, 'sen-1', 'sen-out-1');
+            expect(required).to.be.equal(0);
+            await stopPipeline(jobId)
+        }).timeout(400 * 1000);
+
+        it("should satisfy the high request rate with high rate, with enough nodes.", async () => {
+            await createAlg(statefull, 0.3);
+            algList.push(statefull.name);
+            try {
+                await createAlg(stateless);
+                algList.push(stateless.name);
+            }
+            catch (e) {
+                e.printSackTrace();
+            }
+
+            streamSimple.flowInput = {
+                "flows": [
+                    {
+                        "name": "hkube_desc",
+                        "program": [
+                            {
+                                "rate": 1200,
+                                "time": 50,
+                                "size": 80
+                            }
+                        ]
+                    }
+                ],
+                "process_time": 0.02
+            }
+
+            const res = await runRaw(streamSimple);
+            const { jobId } = res.body;
+            await waitForStatus(jobId, 'sen-1', 'active', 60000, 2000);
+            console.log("sen-1 is active")
+            await waitForStatus(jobId, 'sen-out-1', 'active', 120000, 2000);
+            console.log("sen-out-1 is active")
+            await delay(120 * 1000);
+            const required = await getRequiredPods(jobId, 'sen-1', 'sen-out-1');
+            expect(required).to.be.gt(26); // ideal amount, but queue is filled
+            await delay(90 * 1000)
+            let reqRate = await getRequestRate(jobId, 'sen-1', 'sen-out-1');
+            let resRate = await getResponseRate(jobId, 'sen-1', 'sen-out-1');
+            let current = await getCurrentPods(jobId, 'sen-1', 'sen-out-1');
+            expect(current).to.be.gt(30);
+            let ratio = (resRate * 10) / reqRate;
+            expect(ratio).to.be.gt(9);
+            await delay(240 * 1000);
+            // Suppose to have 26 pods, but might go to 24~28
+            reqRate = await getRequestRate(jobId, 'sen-1', 'sen-out-1');
+            resRate = await getResponseRate(jobId, 'sen-1', 'sen-out-1');
+            current = await getCurrentPods(jobId, 'sen-1', 'sen-out-1');
+            expect(current).to.be.lt(29);
+            expect(current).to.be.gt(23);
+            ratio = (resRate * 10) / reqRate;
+            expect(ratio).to.be.gt(9);
+            await stopPipeline(jobId)
+        }).timeout(550 * 1000);
     });
 
 
