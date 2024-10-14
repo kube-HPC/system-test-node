@@ -248,8 +248,8 @@ describe('streaming pipeline test', () => {
             const resRate = await getResponseRate(jobId, 'sen-1', 'sen-out-1');
             const current = await getCurrentPods(jobId, 'sen-1', 'sen-out-1');
             expect(current).to.be.gt(2);
-            const ratio = (reqRate * 10) / resRate;
-            expect(ratio).to.be.lt(9);
+            const ratio = (resRate * 10) / reqRate;
+            expect(ratio).to.be.gt(9);
             expect(current).to.be.lt(4);
             await stopPipeline(jobId)
         }).timeout(250 * 1000);
