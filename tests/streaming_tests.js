@@ -33,8 +33,11 @@ const { pipe1: streamSimple } = require("../additionalFiles/defaults/pipelines/s
 const { alg: stateless } = require("../additionalFiles/defaults/algorithms/timeStateless")
 
 describe('streaming pipeline test', () => {
-    const createAlg = async (alg) => {
+    const createAlg = async (alg, cpu) => {
         await deleteAlgorithm(alg.name, true, true)
+        if (cpu) {
+            alg.cpu = cpu;
+        }
         await storeAlgorithms(alg);
     }
     let algList = [];
