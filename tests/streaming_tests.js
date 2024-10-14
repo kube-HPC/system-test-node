@@ -134,9 +134,9 @@ describe('streaming pipeline test', () => {
             } else if (node.status === 'active') {
                 return 1;
             }
-            }
-            return 0;
         }
+        return 0;
+    }
 
     /**
      * Retrieves the request rate between two nodes in a job graph.
@@ -274,7 +274,7 @@ describe('streaming pipeline test', () => {
                                 "rate": 150,
                                 "time": 140,
                                 "size": 80
-                    },
+                            },
                             {
                                 "rate": 50,
                                 "time": 240,
