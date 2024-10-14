@@ -6,7 +6,7 @@ const alg = {
     "name": "stateless-time-statistics-tst",
     "entryPoint": "statelessGetSendTime.py",
     "cpu": 0.3,
-    "mem": "256Mi",
+    "mem": "60Mi",
     "minHotWorkers": 0,
     "algorithmImage": "docker.io/hkubedevtest/start-streaming:v2i0hkqse",
     "type": "Image",
