@@ -15,16 +15,21 @@ const {
     getRawGraph
 } = require('../utils/results');
 
-// const {
-
-//     getRawGraph
-// } = require('../utils/results')
-
 // const KubernetesClient = require('@hkube/kubernetes-client').Client;
 const {
-    getExecPipeline,
-    runRaw, stopPipeline
+    runRaw,
+    stopPipeline
 } = require('../utils/pipelineUtils')
+
+const {
+    getResult
+} = require('../../utils/results')
+
+const {
+    getCurrentPods,
+    getRequiredPods,
+    getThroughput,
+    waitForStatus } = require('../utils/streamingUtils')
 
 const { alg: statefull } = require("../additionalFiles/defaults/algorithms/timeStartstream")
 
@@ -60,151 +65,8 @@ describe('streaming pipeline test', () => {
             z += 3
             console.log("j=" + j + ",z=" + z)
         }
-
-
         console.log("end -----")
-
     });
-    const getResult = async (jobId, expectedStatus, timeout = 60 * 1000 * 10, interval = 5000) => {
-
-        if (typeof jobId != 'string') {
-            jobId = jobId.body.jobId
-        }
-
-        const start = Date.now();
-        do {
-            process.stdout.write('.')
-            const res = await getJobResult(jobId)
-            if (res.status === expectedStatus) {
-                return res.body;
-            }
-            await delay(interval);
-        } while (Date.now() - start < timeout);
-        expect.fail(`timeout exceeded trying to get ${expectedStatus} status in result for jobId ${jobId}`);
-    };
-
-    /**
-     * Waits for a specific status of a node in a job graph, polling at intervals, until a timeout is reached.
-     * 
-     * @param {string} jobId - The ID of the job whose graph is being monitored.
-     * @param {string} nodeName - The name of the node to monitor for the expected status.
-     * @param {string} expectedStatus - The status value to wait for (e.g., 'active', 'completed').
-     * @param {number} [timeout=600000] - Optional. The maximum time to wait for the status in milliseconds (default is 10 minutes).
-     * @param {number} [interval=5000] - Optional. The polling interval in milliseconds (default is 5 seconds).
-     * 
-     * @returns {Promise<boolean>} Resolves to `true` if the expected status is found before timeout, otherwise fails the test.
-     * @throws Will throw an error if the expected status is not achieved within the timeout.
-     */
-    const waitForStatus = async (jobId, nodeName, expectedStatus, timeout = 60 * 1000 * 10, interval = 5000) => {
-        const start = Date.now();
-        do {
-            process.stdout.write('.')
-            let { body: graph } = await getRawGraph(jobId);
-            const filtered = graph.nodes.filter(node => node.nodeName === nodeName);
-            if (filtered.length > 0) {
-                const node = filtered[0];
-                if (node.batch) {
-                    const activeTask = node.batch.filter((task) => task.status === expectedStatus);
-                    if (activeTask)
-                        return true;
-                }
-                else if (node.status === expectedStatus) {
-                        return true;
-                }
-            }
-            await delay(interval);
-        } while (Date.now() - start < timeout);
-        expect.fail(`timeout exceeded trying to get ${expectedStatus} status in result for node ${nodeName}`);
-    }
-
-    /**
-     * Retrieves the number of active pods for a specific node in a job graph.
-     * 
-     * @param {object} graph - The job graph containing nodes and edges.
-     * @param {string} nodeName - The name of the node to check for active pods.
-     * 
-     * @returns {number} The number of active pods for the specified node.
-     */
-    const getNumActivePods = (graph, nodeName) => {
-        const filtered = graph.nodes.filter(node => node.nodeName === nodeName);
-        if (filtered.length > 0) {
-            const node = filtered[0];
-            if (node.batch) {
-                return node.batch.filter(task => task.status === 'active').length;
-            } else if (node.status === 'active') {
-                return 1;
-            }
-        }
-        return 0;
-    }
-
-    /**
-     * Retrieves the request rate between two nodes in a job graph.
-     * 
-     * @param {string} jobId - The ID of the job whose graph is being queried.
-     * @param {string} source - The source node.
-     * @param {string} target - The target node.
-     * 
-     * @returns {Promise<number>} The request rate between the source and target nodes.
-     */
-    const getRequestRate = async (jobId, source, target) => {
-
-        let { body: graph } = await getRawGraph(jobId);
-        const filtered = graph.edges.filter(edge => edge.from === source && edge.to === target);
-        const metrics = filtered[0]?.value['metrics'];
-        return metrics.reqRate;
-
-    }
-
-    /**
-     * Retrieves the current number of pods between two nodes in a job graph.
-     * 
-     * @param {string} jobId - The ID of the job whose graph is being queried.
-     * @param {string} source - The source node.
-     * @param {string} target - The target node.
-     * 
-     * @returns {Promise<number>} The current number of pods between the source and target nodes.
-     */
-    const getCurrentPods = async (jobId, source, target) => {
-        let { body: graph } = await getRawGraph(jobId);
-        const filtered = graph.edges.filter(edge => edge.from === source && edge.to === target);
-        const metrics = filtered[0]?.value['metrics'];
-        return metrics.currentSize;
-
-    }
-
-    /**
-     * Retrieves the response rate between two nodes in a job graph.
-     * 
-     * @param {string} jobId - The ID of the job whose graph is being queried.
-     * @param {string} source - The source node.
-     * @param {string} target - The target node.
-     * 
-     * @returns {Promise<number>} The response rate between the source and target nodes.
-     */
-    const getResponseRate = async (jobId, source, target) => {
-        let { body: graph } = await getRawGraph(jobId);
-        const filtered = graph.edges.filter(edge => edge.from === source && edge.to === target);
-        const metrics = filtered[0]?.value['metrics'];
-        return metrics.resRate;
-    }
-
-    /**
-     * Retrieves the required number of pods between two nodes in a job graph.
-     * 
-     * @param {string} jobId - The ID of the job whose graph is being queried.
-     * @param {string} source - The source node.
-     * @param {string} target - The target node.
-     * 
-     * @returns {Promise<number>} The required number of pods between the source and target nodes.
-     */
-    const getRequiredPods = async (jobId, source, target) => {
-        let { body: graph } = await getRawGraph(jobId);
-        const filtered = graph.edges.filter(edge => edge.from === source && edge.to === target);
-        const metrics = filtered[0]?.value['metrics'];
-        return metrics.required;
-    }
-
 
     describe("time tests", () => {
         it("should satisfy the request rate with high rate, with enough nodes.", async () => {
@@ -244,12 +106,10 @@ describe('streaming pipeline test', () => {
             const required = await getRequiredPods(jobId, 'sen-1', 'sen-out-1');
             expect(required).to.be.gt(2);
             await delay(60 * 1000)
-            const reqRate = await getRequestRate(jobId, 'sen-1', 'sen-out-1');
-            const resRate = await getResponseRate(jobId, 'sen-1', 'sen-out-1');
             const current = await getCurrentPods(jobId, 'sen-1', 'sen-out-1');
             expect(current).to.be.gt(2);
-            const ratio = (resRate * 10) / reqRate;
-            expect(ratio).to.be.gt(9);
+            const ratio = getThroughput(jobId, 'sen-1', 'sen-out-1');
+            expect(ratio).to.be.gt(90);
             expect(current).to.be.lt(4);
             await stopPipeline(jobId)
         }).timeout(250 * 1000);
@@ -368,14 +228,14 @@ describe('streaming pipeline test', () => {
                         "name": "hkube_desc",
                         "program": [
                             {
-                                "rate": 1200,
-                                "time": 50,
-                                "size": 80
+                                "rate": 1200, // rate of request per second
+                                "time": 50, // for how long this rate will continue, once done going to next one (unless it's the only one, then back to it)
+                                "size": 80 // size of each message
                             }
                         ]
                     }
                 ],
-                "process_time": 0.02
+                "process_time": 0.02 // process time per message
             }
 
             const res = await runRaw(streamSimple);
@@ -388,23 +248,68 @@ describe('streaming pipeline test', () => {
             const required = await getRequiredPods(jobId, 'sen-1', 'sen-out-1');
             expect(required).to.be.gt(26); // ideal amount, but queue is filled
             await delay(90 * 1000)
-            let reqRate = await getRequestRate(jobId, 'sen-1', 'sen-out-1');
-            let resRate = await getResponseRate(jobId, 'sen-1', 'sen-out-1');
             let current = await getCurrentPods(jobId, 'sen-1', 'sen-out-1');
             expect(current).to.be.gt(30);
-            let ratio = (resRate * 10) / reqRate;
-            expect(ratio).to.be.gt(9);
+            let ratio = getThroughput(jobId, 'sen-1', 'sen-out-1');
+            expect(ratio).to.be.gt(90);
             await delay(240 * 1000);
-            // Suppose to have 26 pods, but might go to 24~28
-            reqRate = await getRequestRate(jobId, 'sen-1', 'sen-out-1');
-            resRate = await getResponseRate(jobId, 'sen-1', 'sen-out-1');
+            // Suppose to have 26 pods (not 24 since traffic), but might go to 24~28
             current = await getCurrentPods(jobId, 'sen-1', 'sen-out-1');
             expect(current).to.be.lt(29);
             expect(current).to.be.gt(23);
-            ratio = (resRate * 10) / reqRate;
-            expect(ratio).to.be.gt(9);
+            ratio = getThroughput(jobId, 'sen-1', 'sen-out-1');
+            expect(ratio).to.be.gt(90);
             await stopPipeline(jobId)
-        }).timeout(550 * 1000);
+        }).timeout(580 * 1000);
+
+        it.only("should stabilize on 21 pods.", async () => {
+            await createAlg(statefull, 0.3);
+            algList.push(statefull.name);
+            try {
+                await createAlg(stateless);
+                algList.push(stateless.name);
+            }
+            catch (e) {
+                e.printSackTrace();
+            }
+
+            streamSimple.flowInput = {
+                "flows": [
+                    {
+                        "name": "hkube_desc",
+                        "program": [
+                            {
+                                "rate": 20,
+                                "time": 1,
+                                "size": 80
+                            }
+                        ]
+                    }
+                ],
+                "process_time": 1
+            }
+
+            const res = await runRaw(streamSimple);
+            const { jobId } = res.body;
+            await waitForStatus(jobId, 'sen-1', 'active', 60000, 2000);
+            console.log("sen-1 is active")
+            await waitForStatus(jobId, 'sen-out-1', 'active', 120000, 2000);
+            console.log("sen-out-1 is active")
+            await delay(120 * 1000);
+            const required =  await getRequiredPods(jobId, 'sen-1', 'sen-out-1');
+            expect(required).to.be.gt(20); // ideal amount, but queue is filled
+            let current = await getCurrentPods(jobId, 'sen-1', 'sen-out-1');
+            let ratio = await getThroughput(jobId, 'sen-1', 'sen-out-1');
+            expect(ratio).to.be.gt(100); // suppose to be emptying the queue
+            await delay(90 * 1000);
+            current = await getCurrentPods(jobId, 'sen-1', 'sen-out-1');
+            expect(current).to.be.equal(21);
+            ratio = getThroughput(jobId, 'sen-1', 'sen-out-1');
+            // ratio suppose to be around 100%
+            expect(ratio).to.be.gt(98);
+            expect(ratio).to.be.lt(102);
+            await stopPipeline(jobId)
+        }).timeout(300 * 1000);
     });
 
 
