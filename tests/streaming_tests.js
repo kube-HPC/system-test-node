@@ -63,7 +63,7 @@ describe('streaming pipeline test', () => {
     });
 
     describe("time tests", () => {
-        it("should satisfy the request rate with the given rate, with enough nodes.", async () => {
+        it.only("should satisfy the request rate with the given rate, with enough nodes.", async () => {
             await createAlg(statefull);
             algList.push(statefull.name);
             try {
@@ -96,17 +96,21 @@ describe('streaming pipeline test', () => {
             console.log(`${statefulNodeName} is active`)
             await waitForStatus(jobId, statelessNodeName, 'active', 120000, 2000);
             console.log(`${statelessNodeName} is active`)
-            await intervalDelay('Waiting phase 1', 120 * 1000);
+            await intervalDelay('Waiting phase 1', 60 * 1000);
             const required = await getRequiredPods(jobId, statefulNodeName, statelessNodeName);
-            expect(required).to.be.gt(2);
+            let ratio = await getThroughput(jobId, statefulNodeName, statelessNodeName);
+            expect(ratio).to.be.gt(100); // suppose to be emptying the queue
+            expect(required).to.be.gt(3);
             await intervalDelay('Waiting phase 2', 60 * 1000)
             const current = await getCurrentPods(jobId, statefulNodeName, statelessNodeName);
-            expect(current).to.be.gt(2);
-            const ratio = await getThroughput(jobId, statefulNodeName, statelessNodeName);
-            expect(ratio).to.be.gt(90);
+            expect(current).to.be.equal(3);
+            ratio = await getThroughput(jobId, statefulNodeName, statelessNodeName);
+            // ratio suppose to be around 100%
+            expect(ratio).to.be.gt(98);
+            expect(ratio).to.be.lt(102);
             expect(current).to.be.lt(4);
             await stopPipeline(jobId)
-        }).timeout(250 * 1000);
+        }).timeout(300 * 1000);
 
         it("Should scale up at first, then scale down to second rate.", async () => {
             await createAlg(statefull);
