@@ -150,14 +150,14 @@ describe('streaming pipeline test', () => {
             console.log(`${statefulNodeName} is active`)
             await waitForStatus(jobId, statelessNodeName, 'active', 120000, 2000);
             console.log(`${statelessNodeName} is active`)
-            await intervalDelay('Waiting phase 1', 125 * 1000);
+            await intervalDelay('Waiting phase 1', 130 * 1000);
             let required = await getRequiredPods(jobId, statefulNodeName, statelessNodeName);
             expect(required).to.be.gt(3);
-            await intervalDelay('Waiting phase 2', 160 * 1000);
+            await intervalDelay('Waiting phase 2', 70 * 1000);
             required = await getRequiredPods(jobId, statefulNodeName, statelessNodeName);
             expect(required).to.be.lt(3);
             await stopPipeline(jobId)
-        }).timeout(500 * 1000);
+        }).timeout(400 * 1000);
 
         it("should scale up at first, then scale down to 0 and then back up.", async () => {
             await createAlg(statefull);
