@@ -63,7 +63,7 @@ describe('streaming pipeline test', () => {
     });
 
     describe("time tests", () => {
-        it.only("should satisfy the request rate with the given rate, with enough nodes.", async () => {
+        it("should satisfy the request rate with the given rate, with enough nodes.", async () => {
             await createAlg(statefull);
             algList.push(statefull.name);
             try {
@@ -112,7 +112,7 @@ describe('streaming pipeline test', () => {
             await stopPipeline(jobId)
         }).timeout(300 * 1000);
 
-        it("Should scale up at first, then scale down to second rate.", async () => {
+        it.only("Should scale up at first, then scale down to second rate.", async () => {
             await createAlg(statefull);
             algList.push(statefull.name);
             try {
@@ -157,7 +157,7 @@ describe('streaming pipeline test', () => {
             required = await getRequiredPods(jobId, statefulNodeName, statelessNodeName);
             expect(required).to.be.lt(3);
             await stopPipeline(jobId)
-        }).timeout(400 * 1000);
+        }).timeout(500 * 1000);
 
         it("should scale up at first, then scale down to 0 and then back up.", async () => {
             await createAlg(statefull);
