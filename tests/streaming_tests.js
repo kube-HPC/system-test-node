@@ -302,6 +302,52 @@ describe('streaming pipeline test', () => {
             await stopPipeline(jobId)
         }).timeout(300 * 1000);
 
+        it.only("should stabilize on 2 pods.", async () => {
+            await createAlg(statefull, 0.3);
+            algList.push(statefull.name);
+            try {
+                await createAlg(stateless);
+                algList.push(stateless.name);
+            }
+            catch (e) {
+                e.printSackTrace();
+            }
+
+            streamSimple.flowInput = {
+                "flows": [
+                    {
+                        "name": "hkube_desc",
+                        "program": [
+                            {
+                                "rate": 1,
+                                "time": 1,
+                                "size": 80
+                            }
+                        ]
+                    }
+                ],
+                "process_time": 1
+            }
+
+            const res = await runRaw(streamSimple);
+            const { jobId } = res.body;
+            await waitForStatus(jobId, statefulNodeName, 'active', 60 * 1000, 2 * 1000);
+            console.log(`${statefulNodeName} is active`)
+            await waitForStatus(jobId, statelessNodeName, 'active', 120 * 1000, 2* 1000);
+            console.log(`${statelessNodeName} is active`)
+            await intervalDelay('Waiting phase 1', 40 * 1000);
+            let ratio = await getThroughput(jobId, statefulNodeName, statelessNodeName);
+            expect(ratio).to.be.gt(100); // suppose to be emptying the queue
+            await intervalDelay('Waiting phase 2', 50 * 1000);
+            current = await getCurrentPods(jobId, statefulNodeName, statelessNodeName);
+            expect(current).to.be.equal(2);
+            ratio = await getThroughput(jobId, statefulNodeName, statelessNodeName);
+            // ratio suppose to be around 100%
+            expect(ratio).to.be.gt(98);
+            expect(ratio).to.be.lt(102);
+            await stopPipeline(jobId)
+        }).timeout(300 * 1000);
+
         it("should stabilize on 21 pods.", async () => {
             await createAlg(statefull, 0.3);
             algList.push(statefull.name);
