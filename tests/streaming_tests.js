@@ -1,9 +1,6 @@
 const chai = require('chai');
 const expect = chai.expect;
 const delay = require('delay');
-const path = require('path')
-
-
 
 // const axios = require('axios')
 const {
@@ -11,19 +8,11 @@ const {
     storeAlgorithms,
     getAlgorithim } = require('../utils/algorithmUtils')
 
-const {
-    getRawGraph
-} = require('../utils/results');
-
 // const KubernetesClient = require('@hkube/kubernetes-client').Client;
 const {
     runRaw,
     stopPipeline
 } = require('../utils/pipelineUtils')
-
-const {
-    getResult
-} = require('../utils/results')
 
 const {
     getCurrentPods,
