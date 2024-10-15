@@ -256,7 +256,7 @@ describe('streaming pipeline test', () => {
             await stopPipeline(jobId)
         }).timeout(580 * 1000);
 
-        it.only("should stabilize on 2 pods.", async () => {
+        it("should stabilize on 1 pod.", async () => {
             await createAlg(statefull, 0.3);
             algList.push(statefull.name);
             try {
@@ -273,14 +273,14 @@ describe('streaming pipeline test', () => {
                         "name": "hkube_desc",
                         "program": [
                             {
-                                "rate": 0.99,
+                                "rate": 1,
                                 "time": 1,
                                 "size": 80
                             }
                         ]
                     }
                 ],
-                "process_time": 1
+                "process_time": 0.99
             }
 
             const res = await runRaw(streamSimple);
@@ -292,7 +292,7 @@ describe('streaming pipeline test', () => {
             await intervalDelay('Waiting phase 1', 40 * 1000);
             let ratio = await getThroughput(jobId, statefulNodeName, statelessNodeName);
             expect(ratio).to.be.gt(100); // suppose to be emptying the queue
-            await intervalDelay('Waiting phase 2', 120 * 1000);
+            await intervalDelay('Waiting phase 2', 50 * 1000);
             current = await getCurrentPods(jobId, statefulNodeName, statelessNodeName);
             expect(current).to.be.equal(1);
             ratio = await getThroughput(jobId, statefulNodeName, statelessNodeName);
@@ -300,7 +300,7 @@ describe('streaming pipeline test', () => {
             expect(ratio).to.be.gt(98);
             expect(ratio).to.be.lt(102);
             await stopPipeline(jobId)
-        }).timeout(350 * 1000);
+        }).timeout(300 * 1000);
 
         it("should stabilize on 21 pods.", async () => {
             await createAlg(statefull, 0.3);
