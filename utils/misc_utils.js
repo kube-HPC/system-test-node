@@ -27,7 +27,7 @@ const intervalDelay = async (msg, timeout, interval = 2 * 1000) => {
         process.stdout.write(`\r${msg}: ${Date.now() - start}/${timeout} ms...`);
         await delay(interval);
     } while (Date.now() - start < timeout);
-    process.stdout.write(`\r${msg}: ${timeout}/${timeout} - done waiting.`);
+    process.stdout.write(`\r${msg}: ${timeout}/${timeout} ms - done waiting.`);
     console.log();
 };
 
