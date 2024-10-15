@@ -12,19 +12,21 @@ const {
 const {
     runRaw,
     stopPipeline
-} = require('../utils/pipelineUtils')
+} = require('../utils/pipelineUtils');
 
 const {
     getCurrentPods,
     getRequiredPods,
     getThroughput,
-    waitForStatus } = require('../utils/streamingUtils')
+    waitForStatus } = require('../utils/streamingUtils');
 
-const { alg: statefull } = require("../additionalFiles/defaults/algorithms/timeStartstream")
+const { intervalDelay } = require('../utils/misc_utils');
+
+const { alg: statefull } = require("../additionalFiles/defaults/algorithms/timeStartstream");
 
 const { pipe1: streamSimple } = require("../additionalFiles/defaults/pipelines/stream-simple");
 
-const { alg: stateless } = require("../additionalFiles/defaults/algorithms/timeStateless")
+const { alg: stateless } = require("../additionalFiles/defaults/algorithms/timeStateless");
 
 const statefulNodeName = streamSimple.nodes.filter(node => node.stateType === 'stateful')[0].nodeName;
 const statelessNodeName = streamSimple.nodes.filter(node => node.stateType === 'stateless')[0].nodeName;
@@ -94,10 +96,10 @@ describe('streaming pipeline test', () => {
             console.log(`${statefulNodeName} is active`)
             await waitForStatus(jobId, statelessNodeName, 'active', 120000, 2000);
             console.log(`${statelessNodeName} is active`)
-            await delay(120 * 1000);
+            await intervalDelay('Waiting phase 1', 120 * 1000);
             const required = await getRequiredPods(jobId, statefulNodeName, statelessNodeName);
             expect(required).to.be.gt(2);
-            await delay(60 * 1000)
+            await intervalDelay('Waiting phase 2', 60 * 1000)
             const current = await getCurrentPods(jobId, statefulNodeName, statelessNodeName);
             expect(current).to.be.gt(2);
             const ratio = await getThroughput(jobId, statefulNodeName, statelessNodeName);
@@ -144,10 +146,10 @@ describe('streaming pipeline test', () => {
             console.log(`${statefulNodeName} is active`)
             await waitForStatus(jobId, statelessNodeName, 'active', 120000, 2000);
             console.log(`${statelessNodeName} is active`)
-            await delay(125 * 1000);
+            await intervalDelay('Waiting phase 1', 125 * 1000);
             let required = await getRequiredPods(jobId, statefulNodeName, statelessNodeName);
             expect(required).to.be.gt(3);
-            await delay(160 * 1000);
+            await intervalDelay('Waiting phase 2', 160 * 1000);
             required = await getRequiredPods(jobId, statefulNodeName, statelessNodeName);
             expect(required).to.be.lt(3);
             await stopPipeline(jobId)
@@ -191,13 +193,13 @@ describe('streaming pipeline test', () => {
             console.log(`${statefulNodeName} is active`)
             await waitForStatus(jobId, statelessNodeName, 'active', 120000, 2000);
             console.log(`${statelessNodeName} is active`)
-            await delay(125 * 1000);
+            await intervalDelay('Waiting phase 1', 125 * 1000);
             let required = await getRequiredPods(jobId, statefulNodeName, statelessNodeName);
             expect(required).to.be.gt(3);
-            await delay(160 * 1000);
+            await intervalDelay('Waiting phase 2', 160 * 1000);
             required = await getRequiredPods(jobId, statefulNodeName, statelessNodeName);
             expect(required).to.be.equal(0);
-            await delay(160 * 1000);
+            await intervalDelay('Waiting phase 3', 160 * 1000);
             required = await getRequiredPods(jobId, statefulNodeName, statelessNodeName);
             expect(required).to.be.gt(0);
             await stopPipeline(jobId)
@@ -236,15 +238,15 @@ describe('streaming pipeline test', () => {
             console.log(`${statefulNodeName} is active`)
             await waitForStatus(jobId, statelessNodeName, 'active', 120000, 2000);
             console.log(`${statelessNodeName} is active`)
-            await delay(120 * 1000);
+            await intervalDelay('Waiting phase 1', 120 * 1000);
             const required = await getRequiredPods(jobId, statefulNodeName, statelessNodeName);
             expect(required).to.be.gt(26); // ideal amount, but queue is filled
-            await delay(90 * 1000)
+            await intervalDelay('Waiting phase 2', 90 * 1000);
             let current = await getCurrentPods(jobId, statefulNodeName, statelessNodeName);
             expect(current).to.be.gt(30);
             let ratio = await getThroughput(jobId, statefulNodeName, statelessNodeName);
             expect(ratio).to.be.gt(90);
-            await delay(240 * 1000);
+            await intervalDelay('Waiting phase 3', 240 * 1000);
             // Suppose to have 26 pods (not 24 since traffic), but might go to 24~28
             current = await getCurrentPods(jobId, statefulNodeName, statelessNodeName);
             expect(current).to.be.lt(29);
@@ -283,14 +285,14 @@ describe('streaming pipeline test', () => {
 
             const res = await runRaw(streamSimple);
             const { jobId } = res.body;
-            await waitForStatus(jobId, statefulNodeName, 'active', 60000, 2000);
+            await waitForStatus(jobId, statefulNodeName, 'active', 60 * 1000, 2 * 1000);
             console.log(`${statefulNodeName} is active`)
-            await waitForStatus(jobId, statelessNodeName, 'active', 120000, 2000);
+            await waitForStatus(jobId, statelessNodeName, 'active', 120 * 1000, 2* 1000);
             console.log(`${statelessNodeName} is active`)
-            await delay(120 * 1000);
+            await intervalDelay('Waiting phase 1', 40 * 1000);
             let ratio = await getThroughput(jobId, statefulNodeName, statelessNodeName);
             expect(ratio).to.be.gt(100); // suppose to be emptying the queue
-            await delay(120 * 1000);
+            await intervalDelay('Waiting phase 2', 120 * 1000);
             current = await getCurrentPods(jobId, statefulNodeName, statelessNodeName);
             expect(current).to.be.equal(1);
             ratio = await getThroughput(jobId, statefulNodeName, statelessNodeName);
@@ -333,13 +335,13 @@ describe('streaming pipeline test', () => {
             console.log(`${statefulNodeName} is active`)
             await waitForStatus(jobId, statelessNodeName, 'active', 120000, 2000);
             console.log(`${statelessNodeName} is active`)
-            await delay(120 * 1000);
+            await intervalDelay('Waiting phase 1', 120 * 1000);
             const required =  await getRequiredPods(jobId, statefulNodeName, statelessNodeName);
             expect(required).to.be.gt(20); // ideal amount, but queue is filled
             let current = await getCurrentPods(jobId, statefulNodeName, statelessNodeName);
             let ratio = await getThroughput(jobId, statefulNodeName, statelessNodeName);
             expect(ratio).to.be.gt(100); // suppose to be emptying the queue
-            await delay(120 * 1000);
+            await intervalDelay('Waiting phase 2', 120 * 1000);
             current = await getCurrentPods(jobId, statefulNodeName, statelessNodeName);
             expect(current).to.be.equal(21);
             ratio = await getThroughput(jobId, statefulNodeName, statelessNodeName);
