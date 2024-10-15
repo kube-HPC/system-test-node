@@ -18,21 +18,27 @@ const {
      * @returns {Promise<boolean>} Resolves to `true` if the expected status is found before timeout, otherwise fails the test.
      * @throws Will throw an error if the expected status is not achieved within the timeout.
      */
-const waitForStatus = async (jobId, nodeName, expectedStatus, timeout = 60 * 1000 * 10, interval = 5000) => {
+const waitForStatus = async (jobId, nodeName, expectedStatus, timeout = 60 * 1000 * 10, interval = 5 * 1000) => {
     const start = Date.now();
+    const totalChecks = Math.ceil(timeout / interval);
+    let check = 0;
     do {
-        process.stdout.write('.')
+        check += 1;
+        process.stdout.write(`\rcheck number ${check}/${totalChecks}`)
         let { body: graph } = await getRawGraph(jobId);
         const filtered = graph.nodes.filter(node => node.nodeName === nodeName);
         if (filtered.length > 0) {
             const node = filtered[0];
             if (node.batch) {
                 const activeTask = node.batch.filter((task) => task.status === expectedStatus);
-                if (activeTask)
+                if (activeTask.length > 0) {
+                    console.log();
                     return true;
+                }
             }
             else if (node.status === expectedStatus) {
-                    return true;
+                console.log();
+                return true;
             }
         }
         await delay(interval);
