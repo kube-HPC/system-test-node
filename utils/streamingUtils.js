@@ -20,11 +20,8 @@ const {
      */
 const waitForStatus = async (jobId, nodeName, expectedStatus, timeout = 60 * 1000 * 10, interval = 5 * 1000) => {
     const start = Date.now();
-    const totalChecks = Math.ceil(timeout / interval);
-    let check = 0;
     do {
-        check += 1;
-        process.stdout.write(`\rcheck number ${check}/${totalChecks}`)
+        process.stdout.write(`\rWaiting for ${nodeName} status to be ${expectedStatus}, Time passed: ${Date.now() - start}/${timeout} ms...`)
         let { body: graph } = await getRawGraph(jobId);
         const filtered = graph.nodes.filter(node => node.nodeName === nodeName);
         if (filtered.length > 0) {
