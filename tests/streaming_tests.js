@@ -63,7 +63,7 @@ describe('streaming pipeline test', () => {
     });
 
     describe("time tests", () => {
-        it("should satisfy the request rate with high rate, with enough nodes.", async () => {
+        it("should satisfy the request rate with the given rate, with enough nodes.", async () => {
             await createAlg(statefull);
             algList.push(statefull.name);
             try {
