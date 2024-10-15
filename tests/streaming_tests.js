@@ -108,7 +108,7 @@ describe('streaming pipeline test', () => {
             await delay(60 * 1000)
             const current = await getCurrentPods(jobId, 'sen-1', 'sen-out-1');
             expect(current).to.be.gt(2);
-            const ratio = getThroughput(jobId, 'sen-1', 'sen-out-1');
+            const ratio = await getThroughput(jobId, 'sen-1', 'sen-out-1');
             expect(ratio).to.be.gt(90);
             expect(current).to.be.lt(4);
             await stopPipeline(jobId)
@@ -250,14 +250,14 @@ describe('streaming pipeline test', () => {
             await delay(90 * 1000)
             let current = await getCurrentPods(jobId, 'sen-1', 'sen-out-1');
             expect(current).to.be.gt(30);
-            let ratio = getThroughput(jobId, 'sen-1', 'sen-out-1');
+            let ratio = await getThroughput(jobId, 'sen-1', 'sen-out-1');
             expect(ratio).to.be.gt(90);
             await delay(240 * 1000);
             // Suppose to have 26 pods (not 24 since traffic), but might go to 24~28
             current = await getCurrentPods(jobId, 'sen-1', 'sen-out-1');
             expect(current).to.be.lt(29);
             expect(current).to.be.gt(23);
-            ratio = getThroughput(jobId, 'sen-1', 'sen-out-1');
+            ratio = await getThroughput(jobId, 'sen-1', 'sen-out-1');
             expect(ratio).to.be.gt(90);
             await stopPipeline(jobId)
         }).timeout(580 * 1000);
@@ -304,7 +304,7 @@ describe('streaming pipeline test', () => {
             await delay(90 * 1000);
             current = await getCurrentPods(jobId, 'sen-1', 'sen-out-1');
             expect(current).to.be.equal(21);
-            ratio = getThroughput(jobId, 'sen-1', 'sen-out-1');
+            ratio = await getThroughput(jobId, 'sen-1', 'sen-out-1');
             // ratio suppose to be around 100%
             expect(ratio).to.be.gt(98);
             expect(ratio).to.be.lt(102);
