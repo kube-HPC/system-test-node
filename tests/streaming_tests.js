@@ -383,7 +383,7 @@ describe('streaming pipeline test', () => {
             console.log(`${statelessNodeName} is active`)
             await intervalDelay('Waiting phase 1', 120 * 1000);
             const required =  await getRequiredPods(jobId, statefulNodeName, statelessNodeName);
-            expect(required).to.be.gt(20); // ideal amount, but queue is filled
+            expect(required).to.be.gt(21); // ideal amount, but queue is filled
             let current = await getCurrentPods(jobId, statefulNodeName, statelessNodeName);
             let ratio = await getThroughput(jobId, statefulNodeName, statelessNodeName);
             expect(ratio).to.be.gt(100); // suppose to be emptying the queue
