@@ -26,6 +26,9 @@ const { pipe1: streamSimple } = require("../additionalFiles/defaults/pipelines/s
 
 const { alg: stateless } = require("../additionalFiles/defaults/algorithms/timeStateless")
 
+const statefulNodeName = streamSimple.nodes.filter(node => node.stateType === 'stateful')[0].nodeName;
+const statelessNodeName = streamSimple.nodes.filter(node => node.stateType === 'stateless')[0].nodeName;
+
 describe('streaming pipeline test', () => {
     const createAlg = async (alg, cpu) => {
         await deleteAlgorithm(alg.name, true, true)
@@ -251,7 +254,53 @@ describe('streaming pipeline test', () => {
             await stopPipeline(jobId)
         }).timeout(580 * 1000);
 
-        it.only("should stabilize on 21 pods.", async () => {
+        it.only("should stabilize on 2 pods.", async () => {
+            await createAlg(statefull, 0.3);
+            algList.push(statefull.name);
+            try {
+                await createAlg(stateless);
+                algList.push(stateless.name);
+            }
+            catch (e) {
+                e.printSackTrace();
+            }
+
+            streamSimple.flowInput = {
+                "flows": [
+                    {
+                        "name": "hkube_desc",
+                        "program": [
+                            {
+                                "rate": 0.99,
+                                "time": 1,
+                                "size": 80
+                            }
+                        ]
+                    }
+                ],
+                "process_time": 1
+            }
+
+            const res = await runRaw(streamSimple);
+            const { jobId } = res.body;
+            await waitForStatus(jobId, statefulNodeName, 'active', 60000, 2000);
+            console.log(`${statefulNodeName} is active`)
+            await waitForStatus(jobId, statelessNodeName, 'active', 120000, 2000);
+            console.log(`${statelessNodeName} is active`)
+            await delay(120 * 1000);
+            let ratio = await getThroughput(jobId, statefulNodeName, statelessNodeName);
+            expect(ratio).to.be.gt(100); // suppose to be emptying the queue
+            await delay(120 * 1000);
+            current = await getCurrentPods(jobId, statefulNodeName, statelessNodeName);
+            expect(current).to.be.equal(1);
+            ratio = await getThroughput(jobId, statefulNodeName, statelessNodeName);
+            // ratio suppose to be around 100%
+            expect(ratio).to.be.gt(98);
+            expect(ratio).to.be.lt(102);
+            await stopPipeline(jobId)
+        }).timeout(350 * 1000);
+
+        it("should stabilize on 21 pods.", async () => {
             await createAlg(statefull, 0.3);
             algList.push(statefull.name);
             try {
