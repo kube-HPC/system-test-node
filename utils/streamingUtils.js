@@ -1,3 +1,7 @@
+const {
+    getRawGraph
+} = require('../utils/results');
+
 /**
      * Waits for a specific status of a node in a job graph, polling at intervals, until a timeout is reached.
      * 
@@ -132,4 +136,14 @@ const getThroughput = async (jobId, source, target) => {
     const filtered = graph.edges.filter(edge => edge.from === source && edge.to === target);
     const metrics = filtered[0]?.value['metrics'];
     return metrics.throughput;
+}
+
+module.exports = {
+    waitForStatus,
+    getNumActivePods,
+    getRequestRate,
+    getCurrentPods,
+    getResponseRate,
+    getRequiredPods,
+    getThroughput
 }
