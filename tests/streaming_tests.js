@@ -23,7 +23,7 @@ const {
 
 const {
     getResult
-} = require('../../utils/results')
+} = require('../utils/results')
 
 const {
     getCurrentPods,
