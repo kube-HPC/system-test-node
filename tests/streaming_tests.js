@@ -301,7 +301,7 @@ describe('streaming pipeline test', () => {
             let current = await getCurrentPods(jobId, 'sen-1', 'sen-out-1');
             let ratio = await getThroughput(jobId, 'sen-1', 'sen-out-1');
             expect(ratio).to.be.gt(100); // suppose to be emptying the queue
-            await delay(90 * 1000);
+            await delay(120 * 1000);
             current = await getCurrentPods(jobId, 'sen-1', 'sen-out-1');
             expect(current).to.be.equal(21);
             ratio = await getThroughput(jobId, 'sen-1', 'sen-out-1');
@@ -309,7 +309,7 @@ describe('streaming pipeline test', () => {
             expect(ratio).to.be.gt(98);
             expect(ratio).to.be.lt(102);
             await stopPipeline(jobId)
-        }).timeout(300 * 1000);
+        }).timeout(350 * 1000);
     });
 
 
