@@ -1,5 +1,5 @@
 const path = require('path');
-
+const delay = require('delay');
 const logger = require('../utils/logger')
 
 
@@ -22,11 +22,12 @@ const write_log = (st, sv = 'info') => {
  * @returns {Promise<void>} - A promise that resolves after the specified timeout.
  */
 const intervalDelay = async (msg, timeout, interval = 10 * 1000) => {
-    const totalChecks = Math.ceil(timeout / interval);
-    for (let check = 1; check <= totalChecks; check++) {
-        process.stdout.write(`\r${msg}: ${check}/${totalChecks}`);
+    const start = Date.now();
+    do {
+        process.stdout.write(`\r${msg}: ${Date.now() - start}/${timeout} ms...`);
         await delay(interval);
-    }
+    } while (Date.now() - start < timeout);
+    process.stdout.write(`\r${msg}: ${timeout}/${timeout} - done waiting.`);
     console.log();
 };
 
