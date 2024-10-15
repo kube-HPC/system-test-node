@@ -1,3 +1,5 @@
+const delay = require('delay');
+
 const {
     getRawGraph
 } = require('../utils/results');
