@@ -21,7 +21,7 @@ const write_log = (st, sv = 'info') => {
  * @param {number} [interval=10000] - Optional. The delay interval in milliseconds between each check.
  * @returns {Promise<void>} - A promise that resolves after the specified timeout.
  */
-const intervalDelay = async (msg, timeout, interval = 10 * 1000) => {
+const intervalDelay = async (msg, timeout, interval = 2 * 1000) => {
     const start = Date.now();
     do {
         process.stdout.write(`\r${msg}: ${Date.now() - start}/${timeout} ms...`);
