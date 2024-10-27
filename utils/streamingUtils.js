@@ -29,18 +29,18 @@ const waitForStatus = async (jobId, nodeName, expectedStatus, timeout = 60 * 100
             if (node.batch) {
                 const activeTask = node.batch.filter((task) => task.status === expectedStatus);
                 if (activeTask.length > 0) {
-                    console.log();
+                    console.log(`\n${nodeName} is ${expectedStatus}`);
                     return true;
                 }
             }
             else if (node.status === expectedStatus) {
-                console.log();
+                console.log(`\n${nodeName} is ${expectedStatus}`);
                 return true;
             }
         }
         await delay(interval);
     } while (Date.now() - start < timeout);
-    expect.fail(`timeout exceeded trying to get ${expectedStatus} status in result for node ${nodeName}`);
+    expect.fail(`\ntimeout exceeded trying to get ${expectedStatus} status in result for node ${nodeName}`);
 }
 
 /**
