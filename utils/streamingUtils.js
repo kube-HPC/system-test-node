@@ -145,6 +145,47 @@ const getThroughput = async (jobId, source, target) => {
     return metrics.throughput;
 }
 
+/**
+ * Creates a flowInput object based on the provided values object.
+ * If any values are not provided, default values are used for optional fields,
+ * but 'rate' and 'time' are required.
+ *
+ * @param {Object} values - An object containing the flow values.
+ * @param {string} [values.flowName="hkube_desc"] - The name of the flow.
+ * @param {number} [values.processTime=0.02] - The process_time value.
+ * @param {Array} values.programs - Array of program objects with required rate and time, and optional size.
+ * @returns {Object} The flowInput object structured with the given values.
+ * @throws Will fail the test if 'rate' or 'time' is not provided in any program object.
+ */
+const createFlowInput = (values = {}) => {
+    const {
+        flowName = "hkube_desc",
+        processTime = 0.02,
+        programs = []
+    } = values;
+
+    const invalidPrograms = programs.filter(program => program.rate === undefined || program.time === undefined);
+    
+    if (invalidPrograms.length > 0) {
+        expect.fail(`\nMissing required fields in programs: ${JSON.stringify(invalidPrograms)}`);
+    }
+
+    return {
+        "flows": [
+            {
+                "name": flowName,
+                "program": programs.map(program => ({
+                    "rate": program.rate || 120, // rate of request per second
+                    "time": program.time || 50, // for how long this rate will continue
+                    "size": program.size || 80 // size of each message
+                }))
+            }
+        ],
+        "process_time": processTime // process time per message
+    };
+};
+
+
 module.exports = {
     waitForStatus,
     getNumActivePods,
@@ -152,5 +193,6 @@ module.exports = {
     getCurrentPods,
     getResponseRate,
     getRequiredPods,
-    getThroughput
+    getThroughput,
+    createFlowInput
 }

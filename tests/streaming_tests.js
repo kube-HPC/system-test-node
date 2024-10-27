@@ -5,8 +5,8 @@ const delay = require('delay');
 // const axios = require('axios')
 const {
     deleteAlgorithm,
-    storeAlgorithms,
-    getAlgorithim } = require('../utils/algorithmUtils')
+    storeAlgorithms
+} = require('../utils/algorithmUtils')
 
 // const KubernetesClient = require('@hkube/kubernetes-client').Client;
 const {
@@ -18,7 +18,9 @@ const {
     getCurrentPods,
     getRequiredPods,
     getThroughput,
-    waitForStatus } = require('../utils/streamingUtils');
+    waitForStatus,
+    createFlowInput
+} = require('../utils/streamingUtils');
 
 const { intervalDelay } = require('../utils/misc_utils');
 
@@ -74,21 +76,11 @@ describe('streaming pipeline test', () => {
                 e.printSackTrace();
             }
 
-            streamSimple.flowInput = {
-                "flows": [
-                    {
-                        "name": "hkube_desc",
-                        "program": [
-                            {
-                                "rate": 120,
-                                "time": 50,
-                                "size": 80
-                            }
-                        ]
-                    }
-                ],
-                "process_time": 0.02
-            }
+            streamSimple.flowInput = createFlowInput({
+                programs: [
+                    { rate: 120, time: 50 }
+                ]
+            });
 
             const res = await runRaw(streamSimple);
             const { jobId } = res.body;
@@ -121,26 +113,12 @@ describe('streaming pipeline test', () => {
                 e.printSackTrace();
             }
 
-            streamSimple.flowInput = {
-                "flows": [
-                    {
-                        "name": "hkube_desc",
-                        "program": [
-                            {
-                                "rate": 150,
-                                "time": 140,
-                                "size": 80
-                            },
-                            {
-                                "rate": 50,
-                                "time": 240,
-                                "size": 80
-                            }
-                        ]
-                    }
-                ],
-                "process_time": 0.02
-            }
+            streamSimple.flowInput = createFlowInput({
+                programs: [
+                    { rate: 150, time: 140 },
+                    { rate: 50, time: 240 }
+                ]
+            });
 
             const res = await runRaw(streamSimple);
             const { jobId } = res.body;
@@ -166,26 +144,12 @@ describe('streaming pipeline test', () => {
                 e.printSackTrace();
             }
 
-            streamSimple.flowInput = {
-                "flows": [
-                    {
-                        "name": "hkube_desc",
-                        "program": [
-                            {
-                                "rate": 150,
-                                "time": 140,
-                                "size": 80
-                            },
-                            {
-                                "rate": 0,
-                                "time": 70,
-                                "size": 80
-                            }
-                        ]
-                    }
-                ],
-                "process_time": 0.02
-            }
+            streamSimple.flowInput = createFlowInput({
+                programs: [
+                    { rate: 150, time: 140 },
+                    { rate: 0, time: 70 }
+                ]
+            });
 
             const res = await runRaw(streamSimple);
             const { jobId } = res.body;
@@ -214,21 +178,11 @@ describe('streaming pipeline test', () => {
                 e.printSackTrace();
             }
 
-            streamSimple.flowInput = {
-                "flows": [
-                    {
-                        "name": "hkube_desc",
-                        "program": [
-                            {
-                                "rate": 1200, // rate of request per second
-                                "time": 50, // for how long this rate will continue, once done going to next one (unless it's the only one, then back to it)
-                                "size": 80 // size of each message
-                            }
-                        ]
-                    }
-                ],
-                "process_time": 0.02 // process time per message
-            }
+            streamSimple.flowInput = createFlowInput({
+                programs: [
+                    { rate: 1200, time: 50 }
+                ]
+            });
 
             const res = await runRaw(streamSimple);
             const { jobId } = res.body;
@@ -263,21 +217,12 @@ describe('streaming pipeline test', () => {
                 e.printSackTrace();
             }
 
-            streamSimple.flowInput = {
-                "flows": [
-                    {
-                        "name": "hkube_desc",
-                        "program": [
-                            {
-                                "rate": 1,
-                                "time": 1,
-                                "size": 80
-                            }
-                        ]
-                    }
-                ],
-                "process_time": 0.99
-            }
+            streamSimple.flowInput = createFlowInput({
+                processTime: 0.99,
+                programs: [
+                    { rate: 1, time: 1 }
+                ]
+            });
 
             const res = await runRaw(streamSimple);
             const { jobId } = res.body;
@@ -307,21 +252,12 @@ describe('streaming pipeline test', () => {
                 e.printSackTrace();
             }
 
-            streamSimple.flowInput = {
-                "flows": [
-                    {
-                        "name": "hkube_desc",
-                        "program": [
-                            {
-                                "rate": 1,
-                                "time": 1,
-                                "size": 80
-                            }
-                        ]
-                    }
-                ],
-                "process_time": 1
-            }
+            streamSimple.flowInput = createFlowInput({
+                processTime: 1,
+                programs: [
+                    { rate: 1, time: 1 }
+                ]
+            });
 
             const res = await runRaw(streamSimple);
             const { jobId } = res.body;
@@ -351,21 +287,12 @@ describe('streaming pipeline test', () => {
                 e.printSackTrace();
             }
 
-            streamSimple.flowInput = {
-                "flows": [
-                    {
-                        "name": "hkube_desc",
-                        "program": [
-                            {
-                                "rate": 20,
-                                "time": 1,
-                                "size": 80
-                            }
-                        ]
-                    }
-                ],
-                "process_time": 1
-            }
+            streamSimple.flowInput = createFlowInput({
+                processTime: 1,
+                programs: [
+                    { rate: 20, time: 1 }
+                ]
+            });
 
             const res = await runRaw(streamSimple);
             const { jobId } = res.body;
