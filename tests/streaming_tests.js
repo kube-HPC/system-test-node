@@ -195,7 +195,7 @@ describe('streaming pipeline test', () => {
             streamSimple.flowInput = createFlowInput({
                 processTime: 0.95,
                 programs: [
-                    { rate: 1, time: 1 }
+                    { rate: 1, time: 50 }
                 ]
             });
 
