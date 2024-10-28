@@ -26,7 +26,9 @@ const { intervalDelay } = require('../utils/misc_utils');
 
 const { alg: statefull } = require("../additionalFiles/defaults/algorithms/timeStartstream");
 
-const { pipe1: streamSimple } = require("../additionalFiles/defaults/pipelines/stream-simple");
+const { pipe: streamSimple } = require("../additionalFiles/defaults/pipelines/stream-simple");
+
+const { pipe: streamMultiple } = require("../additionalFiles/defaults/pipelines/stream-TwoStreamingNodes");
 
 const { alg: stateless } = require("../additionalFiles/defaults/algorithms/timeStateless");
 
