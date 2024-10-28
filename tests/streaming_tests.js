@@ -113,8 +113,8 @@ describe('streaming pipeline test', () => {
             const res = await runRaw(streamSimple);
             const { jobId } = res.body;
             await waitForStatus(jobId, statefulNodeName, 'active', 60 * 1000, 2 * 1000);
-            await waitForStatus(jobId, statelessNodeName, 'active', 120 * 1000, 2 * 1000);
-            await intervalDelay('Waiting phase 1', 130 * 1000);
+            const statelessWaitingTime = await waitForStatus(jobId, statelessNodeName, 'active', 120 * 1000, 2 * 1000);
+            await intervalDelay('Waiting phase 1', 145 * 1000 - statelessWaitingTime);
             let required = await getRequiredPods(jobId, statefulNodeName, statelessNodeName);
             expect(required).to.be.gt(3);
             await intervalDelay('Waiting phase 2', 70 * 1000);
@@ -139,8 +139,8 @@ describe('streaming pipeline test', () => {
             const res = await runRaw(streamSimple);
             const { jobId } = res.body;
             await waitForStatus(jobId, statefulNodeName, 'active', 60 * 1000, 2 * 1000);
-            await waitForStatus(jobId, statelessNodeName, 'active', 120 * 1000, 2 * 1000);
-            await intervalDelay('Waiting phase 1', 125 * 1000);
+            const statelessWaitingTime = await waitForStatus(jobId, statelessNodeName, 'active', 120 * 1000, 2 * 1000);
+            await intervalDelay('Waiting phase 1', 140 * 1000 - statelessWaitingTime);
             let required = await getRequiredPods(jobId, statefulNodeName, statelessNodeName);
             expect(required).to.be.gt(3);
             await intervalDelay('Waiting phase 2', 50 * 1000);

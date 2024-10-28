@@ -7,17 +7,19 @@ const {
 } = require('../utils/results');
 
 /**
-     * Waits for a specific status of a node in a job graph, polling at intervals, until a timeout is reached.
-     * 
-     * @param {string} jobId - The ID of the job whose graph is being monitored.
-     * @param {string} nodeName - The name of the node to monitor for the expected status.
-     * @param {string} expectedStatus - The status value to wait for (e.g., 'active', 'completed').
-     * @param {number} [timeout=600000] - Optional. The maximum time to wait for the status in milliseconds (default is 10 minutes).
-     * @param {number} [interval=5000] - Optional. The polling interval in milliseconds (default is 5 seconds).
-     * 
-     * @returns {Promise<boolean>} Resolves to `true` if the expected status is found before timeout, otherwise fails the test.
-     * @throws Will throw an error if the expected status is not achieved within the timeout.
-     */
+ * Waits for a specific status of a node in a job graph, polling at intervals, until a timeout is reached.
+ * 
+ * @param {string} jobId - The ID of the job whose graph is being monitored.
+ * @param {string} nodeName - The name of the node to monitor for the expected status.
+ * @param {string} expectedStatus - The status value to wait for (e.g., 'active', 'completed').
+ * @param {number} [timeout=600000] - Optional. The maximum time to wait for the status in milliseconds (default is 10 minutes).
+ * @param {number} [interval=5000] - Optional. The polling interval in milliseconds (default is 5 seconds).
+ * 
+ * @returns {Promise<number>} Resolves to the time in milliseconds that was taken to achieve the expected status before the timeout.
+ * If the expected status is not achieved within the timeout, it throws an error.
+ * 
+ * @throws Will throw an error if the expected status is not achieved within the timeout.
+ */
 const waitForStatus = async (jobId, nodeName, expectedStatus, timeout = 60 * 1000 * 10, interval = 5 * 1000) => {
     const start = Date.now();
     do {
@@ -30,12 +32,12 @@ const waitForStatus = async (jobId, nodeName, expectedStatus, timeout = 60 * 100
                 const activeTask = node.batch.filter((task) => task.status === expectedStatus);
                 if (activeTask.length > 0) {
                     console.log(`\n${nodeName} is ${expectedStatus}`);
-                    return true;
+                    return Date.now() - start;
                 }
             }
             else if (node.status === expectedStatus) {
                 console.log(`\n${nodeName} is ${expectedStatus}`);
-                return true;
+                return Date.now() - start;
             }
         }
         await delay(interval);
