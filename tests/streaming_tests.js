@@ -193,7 +193,7 @@ describe('streaming pipeline test', () => {
             algList.push(stateless.name);
 
             streamSimple.flowInput = createFlowInput({
-                processTime: 0.99,
+                processTime: 0.95,
                 programs: [
                     { rate: 1, time: 1 }
                 ]
