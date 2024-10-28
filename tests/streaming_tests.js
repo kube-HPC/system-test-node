@@ -68,13 +68,8 @@ describe('streaming pipeline test', () => {
         it("should satisfy the request rate with the given rate, with enough nodes.", async () => {
             await createAlg(statefull);
             algList.push(statefull.name);
-            try {
-                await createAlg(stateless);
-                algList.push(stateless.name);
-            }
-            catch (e) {
-                e.printSackTrace();
-            }
+            await createAlg(stateless);
+            algList.push(stateless.name);
 
             streamSimple.flowInput = createFlowInput({
                 programs: [
@@ -105,13 +100,8 @@ describe('streaming pipeline test', () => {
         it("Should scale up at first, then scale down to second rate.", async () => {
             await createAlg(statefull);
             algList.push(statefull.name);
-            try {
-                await createAlg(stateless);
-                algList.push(stateless.name);
-            }
-            catch (e) {
-                e.printSackTrace();
-            }
+            await createAlg(stateless);
+            algList.push(stateless.name);
 
             streamSimple.flowInput = createFlowInput({
                 programs: [
@@ -136,13 +126,8 @@ describe('streaming pipeline test', () => {
         it("should scale up at first, then scale down to 0 and then back up.", async () => {
             await createAlg(statefull);
             algList.push(statefull.name);
-            try {
-                await createAlg(stateless);
-                algList.push(stateless.name);
-            }
-            catch (e) {
-                e.printSackTrace();
-            }
+            await createAlg(stateless);
+            algList.push(stateless.name);
 
             streamSimple.flowInput = createFlowInput({
                 programs: [
@@ -170,13 +155,8 @@ describe('streaming pipeline test', () => {
         it("should satisfy the high request rate with high rate, with enough nodes.", async () => {
             await createAlg(statefull, 0.3);
             algList.push(statefull.name);
-            try {
-                await createAlg(stateless);
-                algList.push(stateless.name);
-            }
-            catch (e) {
-                e.printSackTrace();
-            }
+            await createAlg(stateless);
+            algList.push(stateless.name);
 
             streamSimple.flowInput = createFlowInput({
                 programs: [
@@ -209,13 +189,8 @@ describe('streaming pipeline test', () => {
         it("should stabilize on 1 pod.", async () => {
             await createAlg(statefull, 0.3);
             algList.push(statefull.name);
-            try {
-                await createAlg(stateless);
-                algList.push(stateless.name);
-            }
-            catch (e) {
-                e.printSackTrace();
-            }
+            await createAlg(stateless);
+            algList.push(stateless.name);
 
             streamSimple.flowInput = createFlowInput({
                 processTime: 0.99,
@@ -244,13 +219,8 @@ describe('streaming pipeline test', () => {
         it("should stabilize on 2 pods.", async () => {
             await createAlg(statefull, 0.3);
             algList.push(statefull.name);
-            try {
-                await createAlg(stateless);
-                algList.push(stateless.name);
-            }
-            catch (e) {
-                e.printSackTrace();
-            }
+            await createAlg(stateless);
+            algList.push(stateless.name);
 
             streamSimple.flowInput = createFlowInput({
                 processTime: 1,
@@ -279,13 +249,8 @@ describe('streaming pipeline test', () => {
         it("should stabilize on 21 pods.", async () => {
             await createAlg(statefull, 0.3);
             algList.push(statefull.name);
-            try {
-                await createAlg(stateless);
-                algList.push(stateless.name);
-            }
-            catch (e) {
-                e.printSackTrace();
-            }
+            await createAlg(stateless);
+            algList.push(stateless.name);
 
             streamSimple.flowInput = createFlowInput({
                 processTime: 1,
