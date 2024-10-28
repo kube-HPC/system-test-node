@@ -18,14 +18,10 @@ const pipe = {
     },
     "streaming": {
         "flows": {
-            "hkube_desc_1": " sen-1 & sen-2 >> sen-out-1"
-        },
-        "defaultFlow": ""
+            "hkube_desc": " sen-1 & sen-2 >> sen-out-1"
+        }
     },
-    "webhooks": {
-        "progress": "",
-        "result": ""
-    },
+    "webhooks": {},
     "triggers": {
         "cron": {
             "enabled": false,
@@ -40,7 +36,6 @@ const pipe = {
             "rejectOnFailure": true
         },
         "ttl": 3600,
-        "activeTtl": "",
         "progressVerbosityLevel": "info"
     },
     "priority": 3,
