@@ -1,4 +1,4 @@
-const pipe1 = {
+const pipe = {
     "name": "sub-ein-tst",
     "kind": "stream",
     "flowInput": {
@@ -76,4 +76,4 @@ const pipe1 = {
         }
     ]
 }
-module.exports = { pipe1 }
+module.exports = { pipe }
