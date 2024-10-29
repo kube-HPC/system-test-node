@@ -193,7 +193,7 @@ describe('streaming pipeline test', () => {
         }).timeout(650 * 1000);
 
         it("should stabilize on 1 pod.", async () => {
-            await createAlg(statefull, 0.3);
+            await createAlg(statefull);
             algList.push(statefull.name);
             await createAlg(stateless);
             algList.push(stateless.name);
@@ -223,7 +223,7 @@ describe('streaming pipeline test', () => {
         }).timeout(300 * 1000);
 
         it("should stabilize on 2 pods.", async () => {
-            await createAlg(statefull, 0.3);
+            await createAlg(statefull);
             algList.push(statefull.name);
             await createAlg(stateless);
             algList.push(stateless.name);
@@ -286,5 +286,44 @@ describe('streaming pipeline test', () => {
         }).timeout(450 * 1000);
     });
 
+    describe("multiple streaming nodes pipeline tests", () => {
+        it("should satisfy the request rate of 2 statefuls", async () => {
+            await createAlg(statefull, 0.3);
+            algList.push(statefull.name);
+            await createAlg(stateless);
+            algList.push(stateless.name);
+
+            streamMultiple.flowInput = createFlowInput({
+                programs: [
+                    { rate: 120, time: 50 }
+                ]
+            });
+
+            const res = await runRaw(streamMultiple);
+            const { jobId } = res.body;
+            await waitForStatus(jobId, multiple_statefulNodeName1, 'active', 60 * 1000, 2 * 1000);
+            await waitForStatus(jobId, multiple_statefulNodeName2, 'active', 60 * 1000, 2 * 1000);
+            await waitForStatus(jobId, multiple_statelessNodeName, 'active', 120 * 1000, 2 * 1000);
+            await intervalDelay('Waiting phase 1', 50 * 1000);
+            const required = await getRequiredPods(jobId, multiple_statefulNodeName1, multiple_statelessNodeName);
+            let ratio1 = await getThroughput(jobId, multiple_statefulNodeName1, multiple_statelessNodeName);
+            let ratio2 = await getThroughput(jobId, multiple_statefulNodeName2, multiple_statelessNodeName);
+            expect(ratio1).to.be.gte(100); // suppose to be emptying the queue
+            expect(ratio2).to.be.gte(100);
+            expect(required).to.be.gte(5);
+            await intervalDelay('Waiting phase 2', 60 * 1000)
+            const current = await getCurrentPods(jobId, multiple_statefulNodeName1, multiple_statelessNodeName);
+            expect(current).to.be.equal(5);
+            ratio1 = await getThroughput(jobId, multiple_statefulNodeName1, multiple_statelessNodeName);
+            ratio2 = await getThroughput(jobId, multiple_statefulNodeName2, multiple_statelessNodeName);
+            // ratio suppose to be around 100% for both
+            expect(ratio1).to.be.gt(98);
+            expect(ratio1).to.be.lt(102);
+            expect(ratio2).to.be.gt(98);
+            expect(ratio2).to.be.lt(102);
+            expect(current).to.be.lt(4);
+            await stopPipeline(jobId)
+        }).timeout(300 * 1000);
+    });
 
 });
