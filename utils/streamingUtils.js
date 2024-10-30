@@ -177,9 +177,9 @@ const createFlowInput = (values = {}) => {
             {
                 "name": flowName,
                 "program": programs.map(program => ({
-                    "rate": program.rate !== undefined ? program.rate : 120, // rate of request per second
-                    "time": program.time !== undefined ? program.time : 50, // for how long this rate will continue
-                    "size": program.size !== undefined ? program.size : 80 // size of each message
+                    "rate": program.rate, // rate of request per second
+                    "time": program.time, // for how long this rate will continue
+                    "size": program.size ?? 80 // size of each message
                 }))
             }
         ],
