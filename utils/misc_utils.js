@@ -73,12 +73,6 @@ const checkInRangeWithRetries = async (computeFn, funcArguments = [], min, max, 
     expect.fail(`Value did not fall within range [${min}, ${max}] after ${retries} attempts.`);
 };
 
-module.exports = {
-    checkEqualWithRetries,
-    checkInRangeWithRetries
-};
-
-
 
 module.exports = {
     write_log,
