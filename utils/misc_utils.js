@@ -44,8 +44,10 @@ const checkEqualWithRetries = async (computeFn, funcArguments = [], targetValue,
     for (let attempt = 1; attempt <= retries; attempt++) {
         const computedValue = await computeFn(...funcArguments);
         if (computedValue === targetValue) {
+            process.stdout.write('\x1b[2K\r');
             return true;
         }
+        process.stdout.write(`\rFailed check ${attempt}/${retries}`);
         if (attempt < retries) await delay(retryDelay);
     }
     expect.fail(`Value did not match target value (${targetValue}) after ${retries} attempts.`);
@@ -66,8 +68,10 @@ const checkInRangeWithRetries = async (computeFn, funcArguments = [], min, max, 
     for (let attempt = 1; attempt <= retries; attempt++) {
         const computedValue = await computeFn(...funcArguments);
         if (computedValue >= min && computedValue <= max) {
+            process.stdout.write('\x1b[2K\r');
             return true;
         }
+        process.stdout.write(`\rFailed check ${attempt}/${retries}`);
         if (attempt < retries) await delay(retryDelay);
     }
     expect.fail(`Value did not fall within range [${min}, ${max}] after ${retries} attempts.`);
