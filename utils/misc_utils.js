@@ -1,3 +1,4 @@
+const chai = require('chai');
 const delay = require('delay');
 const logger = require('../utils/logger')
 const expect = chai.expect;
