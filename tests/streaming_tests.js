@@ -82,7 +82,7 @@ describe('streaming pipeline test', () => {
     });
 
     describe("simple pipeline tests", () => {
-        it.only("should satisfy the request rate with the given rate, with enough nodes.", async () => {
+        it("should satisfy the request rate with the given rate, with enough nodes.", async () => {
             await createAlg(statefull);
             algList.push(statefull.name);
             await createAlg(stateless);
@@ -181,7 +181,7 @@ describe('streaming pipeline test', () => {
             await stopPipeline(jobId)
         }).timeout(450 * 1000);
 
-        it.only("should satisfy the high request rate with high rate, with enough nodes.", async () => {
+        it("should satisfy the high request rate with high rate, with enough nodes.", async () => {
             await createAlg(statefull, 0.5);
             algList.push(statefull.name);
             await createAlg(stateless);
