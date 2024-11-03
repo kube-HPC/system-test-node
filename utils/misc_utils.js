@@ -1,4 +1,3 @@
-const path = require('path');
 const delay = require('delay');
 const logger = require('../utils/logger')
 
