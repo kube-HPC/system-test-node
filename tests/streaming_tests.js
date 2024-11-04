@@ -34,7 +34,7 @@ const { pipe: streamMultiple } = require("../additionalFiles/defaults/pipelines/
 
 const { alg: stateless } = require("../additionalFiles/defaults/algorithms/timeStateless");
 
-const { alg: statelessByMinute } = require("../additionalFiles/defaults/algorithms/timeByMinuteStateless.js");
+const { alg: statelessByInterval } = require("../additionalFiles/defaults/algorithms/timeStatelessByInterval.js");
 
 const simple_statefulNodeName = streamSimple.nodes.filter(node => node.stateType === 'stateful')[0].nodeName;
 const simple_statelessNodeName = streamSimple.nodes.filter(node => node.stateType === 'stateless')[0].nodeName;
