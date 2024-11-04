@@ -53,7 +53,7 @@ const pipe = {
                 }
             ],
             "retry": {
-                "policy": "OnCrash",
+                "policy": "Always",
                 "limit": 3
             },
             "ttl": 0
@@ -69,7 +69,7 @@ const pipe = {
                 }
             ],
             "retry": {
-                "policy": "OnCrash",
+                "policy": "Always",
                 "limit": 3
             },
             "ttl": 0
@@ -85,7 +85,7 @@ const pipe = {
                 }
             ],
             "retry": {
-                "policy": "OnCrash",
+                "policy": "Always",
                 "limit": 3
             },
             "ttl": 0
