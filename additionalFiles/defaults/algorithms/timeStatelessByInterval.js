@@ -4,7 +4,7 @@ const alg = {
         "pending": false
     },
     "name": "stateless-time-by-interval-tst",
-    "description": "args (default value): first_process_time (1), second_process_time (0.1), interval in sec (60)",
+    "description": "args (default value): first_process_time (1), second_process_time (0.1), interval - in sec (60)",
     "entryPoint": "statelessGetSendByIntervalTime.py",
     "cpu": 0.2,
     "mem": "60Mi",
