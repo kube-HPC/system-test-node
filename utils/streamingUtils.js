@@ -155,7 +155,7 @@ const getThroughput = async (jobId, source, target) => {
  * @param {Object} values - An object containing the flow values.
  * @param {string} [values.flowName="hkube_desc"] - The name of the flow.
  * @param {number} [values.processTime=0.02] - The process_time value.
- * @param {Array} values.programs - Array of program objects with required rate and time, and optional size.
+ * @param {Array} values.programs - Array of program objects, each with a required `rate` and `time`, and an optional `size`.
  * @returns {Object} The flowInput object structured with the given values.
  * @throws Will fail the test if 'rate' or 'time' is not provided in any program object.
  */
@@ -187,6 +187,52 @@ const createFlowInput_Simple = (values = {}) => {
     };
 };
 
+/**
+ * Creates a flowInput object based on the provided values object, with an interval between process times.
+ * If any values are not provided, default values are used for optional fields,
+ * but 'rate' and 'time' are required for each program in `programs`.
+ *
+ * @param {Object} values - An object containing the flow values.
+ * @param {string} [values.flowName="hkube_desc"] - The name of the flow.
+ * @param {number} [values.first_process_time=1] - The initial process time per message.
+ * @param {number} [values.second_process_time=0.1] - The subsequent process time per message.
+ * @param {number} [values.interval=60] - The interval, in seconds, at which the process times alternate.
+ * @param {Array} values.programs - Array of program objects, each with a required `rate` and `time`, and an optional `size`.
+ * @returns {Object} The flowInput object structured with the provided values.
+ * @throws Will fail the test if 'rate' or 'time' is not provided in any program object.
+ */
+const createFlowInput_ByInterval = (values = {}) => {
+    const {
+        flowName = "hkube_desc",
+        first_process_time = 1,
+        second_process_time = 0.1,
+        interval = 60,
+        programs = []
+    } = values;
+
+    const invalidPrograms = programs.filter(program => program.rate === undefined || program.time === undefined);
+    
+    if (invalidPrograms.length > 0) {
+        expect.fail(`\nMissing required fields in programs: ${JSON.stringify(invalidPrograms)}`);
+    }
+
+    return {
+        "flows": [
+            {
+                "name": flowName,
+                "program": programs.map(program => ({
+                    "rate": program.rate, // rate of request per second
+                    "time": program.time, // for how long this rate will continue
+                    "size": program.size ?? 80 // size of each message
+                }))
+            }
+        ],
+        "first_process_time": first_process_time, // the first process time per message
+        "second_process_time": second_process_time, // the second process time per message
+        "interval": interval // the interval which the process times are being changed
+    };
+};
+
 
 module.exports = {
     waitForStatus,
@@ -196,5 +242,6 @@ module.exports = {
     getResponseRate,
     getRequiredPods,
     getThroughput,
-    createFlowInput_Simple
+    createFlowInput_Simple,
+    createFlowInput_ByInterval
 }
