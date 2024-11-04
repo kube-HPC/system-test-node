@@ -5,6 +5,7 @@ const alg = {
     },
     "name": "stateless-time-statistics-tst",
     "entryPoint": "statelessGetSendTime.py",
+    "description": "args (default value): process_time (0.0001)",
     "cpu": 0.2,
     "mem": "60Mi",
     "minHotWorkers": 0,
