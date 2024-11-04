@@ -159,7 +159,7 @@ const getThroughput = async (jobId, source, target) => {
  * @returns {Object} The flowInput object structured with the given values.
  * @throws Will fail the test if 'rate' or 'time' is not provided in any program object.
  */
-const createFlowInput = (values = {}) => {
+const createFlowInput_Simple = (values = {}) => {
     const {
         flowName = "hkube_desc",
         processTime = 0.02,
@@ -196,5 +196,5 @@ module.exports = {
     getResponseRate,
     getRequiredPods,
     getThroughput,
-    createFlowInput
+    createFlowInput_Simple
 }

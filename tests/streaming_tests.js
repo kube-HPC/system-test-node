@@ -17,7 +17,7 @@ const {
     getRequiredPods,
     getThroughput,
     waitForStatus,
-    createFlowInput
+    createFlowInput_Simple
 } = require('../utils/streamingUtils');
 
 const { 
@@ -88,7 +88,7 @@ describe('streaming pipeline test', () => {
             await createAlg(stateless);
             algList.push(stateless.name);
 
-            streamSimple.flowInput = createFlowInput({
+            streamSimple.flowInput = createFlowInput_Simple({
                 programs: [
                     { rate: 120, time: 50 }
                 ]
@@ -117,13 +117,13 @@ describe('streaming pipeline test', () => {
             await stopPipeline(jobId)
         }).timeout(350 * 1000);
 
-        it("Should scale up at first, then scale down to second rate.", async () => {
+        it("should scale up at first, then scale down to second rate.", async () => {
             await createAlg(statefull);
             algList.push(statefull.name);
             await createAlg(stateless);
             algList.push(stateless.name);
 
-            streamSimple.flowInput = createFlowInput({
+            streamSimple.flowInput = createFlowInput_Simple({
                 programs: [
                     { rate: 150, time: 140 },
                     { rate: 50, time: 240 }
@@ -153,7 +153,7 @@ describe('streaming pipeline test', () => {
             await createAlg(stateless);
             algList.push(stateless.name);
 
-            streamSimple.flowInput = createFlowInput({
+            streamSimple.flowInput = createFlowInput_Simple({
                 programs: [
                     { rate: 150, time: 140 },
                     { rate: 0, time: 70 }
@@ -187,7 +187,7 @@ describe('streaming pipeline test', () => {
             await createAlg(stateless);
             algList.push(stateless.name);
 
-            streamSimple.flowInput = createFlowInput({
+            streamSimple.flowInput = createFlowInput_Simple({
                 programs: [
                     { rate: 1200, time: 50 }
                 ]
@@ -223,7 +223,7 @@ describe('streaming pipeline test', () => {
             await createAlg(stateless);
             algList.push(stateless.name);
 
-            streamSimple.flowInput = createFlowInput({
+            streamSimple.flowInput = createFlowInput_Simple({
                 processTime: 0.95,
                 programs: [
                     { rate: 1, time: 50 }
@@ -255,7 +255,7 @@ describe('streaming pipeline test', () => {
             await createAlg(stateless);
             algList.push(stateless.name);
 
-            streamSimple.flowInput = createFlowInput({
+            streamSimple.flowInput = createFlowInput_Simple({
                 processTime: 1,
                 programs: [
                     { rate: 1, time: 1 }
@@ -285,7 +285,7 @@ describe('streaming pipeline test', () => {
             await createAlg(stateless);
             algList.push(stateless.name);
 
-            streamSimple.flowInput = createFlowInput({
+            streamSimple.flowInput = createFlowInput_Simple({
                 processTime: 1,
                 programs: [
                     { rate: 20, time: 1 }
@@ -331,7 +331,7 @@ describe('streaming pipeline test', () => {
             await createAlg(stateless);
             algList.push(stateless.name);
 
-            streamMultiple.flowInput = createFlowInput({
+            streamMultiple.flowInput = createFlowInput_Simple({
                 programs: [
                     { rate: 120, time: 50 }
                 ]
