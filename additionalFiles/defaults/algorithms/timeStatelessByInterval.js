@@ -9,7 +9,7 @@ const alg = {
     "cpu": 0.2,
     "mem": "60Mi",
     "minHotWorkers": 0,
-    "algorithmImage": "docker.io/hkubedevtest/stateless-time-by-interval-tst:vsgyjhgol",
+    "algorithmImage": "docker.io/hkubedevtest/stateless-time-by-interval-tst:vpruhvbs7",
     "type": "Image",
     "reservedMemory": "52Mi",
     "workerEnv": {
