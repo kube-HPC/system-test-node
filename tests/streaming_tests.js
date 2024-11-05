@@ -49,7 +49,7 @@ const multiple_statefulNodeName1 = streamMultiple.nodes.filter(node => node.stat
 const multiple_statefulNodeName2 = streamMultiple.nodes.filter(node => node.stateType === 'stateful')[1].nodeName;
 const multiple_statelessNodeName = streamMultiple.nodes.filter(node => node.stateType === 'stateless')[0].nodeName;
 
-describe('streaming pipeline test', () => {
+describe("streaming pipeline test", () => {
     const createAlg = async (alg, cpu) => {
         await deleteAlgorithm(alg.name, true, true)
         if (cpu) {
@@ -87,7 +87,7 @@ describe('streaming pipeline test', () => {
         console.log("----------------------- end -----------------------");
     });
 
-    describe("simple pipeline tests", () => {
+    describe("simple pipeline tests with constant ratios", () => {
         it("should satisfy the request rate with the given rate, with enough nodes.", async () => {
             await createAlg(statefull);
             algList.push(statefull.name);
@@ -122,70 +122,6 @@ describe('streaming pipeline test', () => {
             await checkInRangeWithRetries(getThroughput, [jobId, simple_statefulNodeName, simple_statelessNodeName], 99, 101);
             await stopPipeline(jobId)
         }).timeout(350 * 1000);
-
-        it("should scale up at first, then scale down to second rate.", async () => {
-            await createAlg(statefull);
-            algList.push(statefull.name);
-            await createAlg(stateless);
-            algList.push(stateless.name);
-
-            streamSimple.flowInput = createFlowInput_Simple({
-                programs: [
-                    { rate: 150, time: 140 },
-                    { rate: 50, time: 240 }
-                ]
-            });
-
-            const res = await runRaw(streamSimple);
-            const { jobId } = res.body;
-
-            // Wait all nodes to be active
-            await waitForStatus(jobId, simple_statefulNodeName, 'active', 60 * 1000, 2 * 1000);
-            const statelessWaitingTime = await waitForStatus(jobId, simple_statelessNodeName, 'active', 120 * 1000, 2 * 1000);
-
-            await intervalDelay('Waiting phase 1', 145 * 1000 - statelessWaitingTime);
-            let current = await getCurrentPods(jobId, simple_statefulNodeName, simple_statelessNodeName);
-            expect(current).to.be.gt(3);
-
-            await intervalDelay('Waiting phase 2', 70 * 1000);
-            current = await getCurrentPods(jobId, simple_statefulNodeName, simple_statelessNodeName);
-            expect(current).to.be.lt(3);
-            await stopPipeline(jobId)
-        }).timeout(400 * 1000);
-
-        it("should scale up at first, then scale down to 0 and then back up.", async () => {
-            await createAlg(statefull);
-            algList.push(statefull.name);
-            await createAlg(stateless);
-            algList.push(stateless.name);
-
-            streamSimple.flowInput = createFlowInput_Simple({
-                programs: [
-                    { rate: 150, time: 140 },
-                    { rate: 0, time: 70 }
-                ]
-            });
-
-            const res = await runRaw(streamSimple);
-            const { jobId } = res.body;
-
-            // Wait all nodes to be active
-            await waitForStatus(jobId, simple_statefulNodeName, 'active', 60 * 1000, 2 * 1000);
-            const statelessWaitingTime = await waitForStatus(jobId, simple_statelessNodeName, 'active', 120 * 1000, 2 * 1000);
-
-            await intervalDelay('Waiting phase 1', 140 * 1000 - statelessWaitingTime);
-            let current = await getCurrentPods(jobId, simple_statefulNodeName, simple_statelessNodeName);
-            expect(current).to.be.gte(4);
-
-            await intervalDelay('Waiting phase 2', 50 * 1000);
-            current = await getCurrentPods(jobId, simple_statefulNodeName, simple_statelessNodeName);
-            expect(current).to.be.equal(0);
-
-            await intervalDelay('Waiting phase 3', 75 * 1000);
-            current = await getCurrentPods(jobId, simple_statefulNodeName, simple_statelessNodeName);
-            expect(current).to.be.gt(0);
-            await stopPipeline(jobId)
-        }).timeout(450 * 1000);
 
         it("should satisfy the high request rate with high rate, with enough nodes.", async () => {
             await createAlg(statefull, 0.5);
@@ -318,6 +254,72 @@ describe('streaming pipeline test', () => {
             await intervalDelay('Waiting phase 3', 120 * 1000);
             await checkEqualWithRetries(getCurrentPods, [jobId, simple_statefulNodeName, simple_statelessNodeName], 21);
             await checkEqualWithRetries(getThroughput, [jobId, simple_statefulNodeName, simple_statelessNodeName], 100);
+            await stopPipeline(jobId)
+        }).timeout(450 * 1000);
+    });
+
+    describe("simple pipeline test with changing ratios", () => {
+        it("should scale up at first, then scale down to second rate.", async () => {
+            await createAlg(statefull);
+            algList.push(statefull.name);
+            await createAlg(stateless);
+            algList.push(stateless.name);
+
+            streamSimple.flowInput = createFlowInput_Simple({
+                programs: [
+                    { rate: 150, time: 140 },
+                    { rate: 50, time: 240 }
+                ]
+            });
+
+            const res = await runRaw(streamSimple);
+            const { jobId } = res.body;
+
+            // Wait all nodes to be active
+            await waitForStatus(jobId, simple_statefulNodeName, 'active', 60 * 1000, 2 * 1000);
+            const statelessWaitingTime = await waitForStatus(jobId, simple_statelessNodeName, 'active', 120 * 1000, 2 * 1000);
+
+            await intervalDelay('Waiting phase 1', 145 * 1000 - statelessWaitingTime);
+            let current = await getCurrentPods(jobId, simple_statefulNodeName, simple_statelessNodeName);
+            expect(current).to.be.gt(3);
+
+            await intervalDelay('Waiting phase 2', 70 * 1000);
+            current = await getCurrentPods(jobId, simple_statefulNodeName, simple_statelessNodeName);
+            expect(current).to.be.lt(3);
+            await stopPipeline(jobId)
+        }).timeout(400 * 1000);
+
+        it("should scale up at first, then scale down to 0 and then back up.", async () => {
+            await createAlg(statefull);
+            algList.push(statefull.name);
+            await createAlg(stateless);
+            algList.push(stateless.name);
+
+            streamSimple.flowInput = createFlowInput_Simple({
+                programs: [
+                    { rate: 150, time: 140 },
+                    { rate: 0, time: 70 }
+                ]
+            });
+
+            const res = await runRaw(streamSimple);
+            const { jobId } = res.body;
+
+            // Wait all nodes to be active
+            await waitForStatus(jobId, simple_statefulNodeName, 'active', 60 * 1000, 2 * 1000);
+            const statelessWaitingTime = await waitForStatus(jobId, simple_statelessNodeName, 'active', 120 * 1000, 2 * 1000);
+
+            await intervalDelay('Waiting phase 1', 140 * 1000 - statelessWaitingTime);
+            let current = await getCurrentPods(jobId, simple_statefulNodeName, simple_statelessNodeName);
+            expect(current).to.be.gte(4);
+
+            await intervalDelay('Waiting phase 2', 50 * 1000);
+            current = await getCurrentPods(jobId, simple_statefulNodeName, simple_statelessNodeName);
+            expect(current).to.be.equal(0);
+
+            await intervalDelay('Waiting phase 3', 75 * 1000);
+            current = await getCurrentPods(jobId, simple_statefulNodeName, simple_statelessNodeName);
+            expect(current).to.be.gt(0);
             await stopPipeline(jobId)
         }).timeout(450 * 1000);
 
