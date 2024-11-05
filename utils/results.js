@@ -23,10 +23,10 @@ const getResult = async (jobId, expectedStatus, timeout = 60 * 1000 * 10, interv
 
     const start = Date.now();
     do {
-        process.stdout.write(`\rWaiting for jobId: ${jobId} to be completed, time passed: ${Date.now - start}/${timeout} ms...`);
+        process.stdout.write(`\rWaiting for jobId: ${jobId} to get status: ${expectedStatus}, time passed: ${Date.now - start}/${timeout} ms...`);
         const res = await getJobResult(jobId);
         if (res.status == expectedStatus) {
-            console.log(`\njobId ${jobid} has status ${expectedStatus}`);
+            console.log(`\njobId: ${jobid} has status: ${expectedStatus}`);
             return res.body;
         }
         await delay(interval);
@@ -42,17 +42,18 @@ const getJobIdStatus = async (jobId) => {
 const getStatus = async (jobId, expectedCode, expectedStatus, timeout = 60 * 1000 * 3, interval = 1000) => {
     const start = Date.now();
     do {
-        process.stdout.write('.')
+        process.stdout.write(`\rWaiting for jobId: ${jobId} to get status: ${expectedStatus}, time passed: ${Date.now - start}/${timeout} ms...`);
         const res = await chai.request(config.apiServerUrl)
             .get(`/exec/status/${jobId}`);
 
         logger.info(`${res.status}, ${JSON.stringify(res.body)}`)
         if (res.status == expectedCode && res.body.status == expectedStatus) {
+            console.log(`\njobId: ${jobid} has status: ${expectedStatus}`);
             return res.body;
         }
         await delay(interval);
     } while (Date.now() - start < timeout);
-    expect.fail(`timeout exceeded trying to get ${expectedStatus} status for jobId ${jobId}`);
+    expect.fail(`\ntimeout exceeded trying to get ${expectedStatus} status for jobId ${jobId}`);
 };
 
 
@@ -90,20 +91,22 @@ const toString = (fun) => {
 const getStatusall = async (id, url, expectedCode, expectedStatus, timeout = 60 * 1000 * 3, interval = 1000) => {
     const start = Date.now();
     do {
-        process.stdout.write('.')
+        process.stdout.write(`\rWaiting for jobId: ${id} to get status: ${expectedStatus}, time passed: ${Date.now - start}/${timeout} ms...`);
         const res = await chai.request(config.apiServerUrl)
             .get(`${url}/${id}`);
 
         logger.info(`${res.status}, ${JSON.stringify(res.body)}`)
         if (res.status == expectedCode && res.body.status == expectedStatus) {
+            console.log(`\njobId: ${jobid} has status: ${expectedStatus}`);
             return res.body;
         }
         if (res.body.status == "failed") {
+            console.log(`\njobId: ${jobid} has status: failed`);
             return res.body;
         }
         await delay(interval);
     } while (Date.now() - start < timeout);
-    expect.fail(`timeout exceeded trying to get ${expectedStatus} status for jobId ${id}`);
+    expect.fail(`\ntimeout exceeded trying to get ${expectedStatus} status for jobId ${id}`);
 };
 
 const runRaw = async (time = 15000) => {
