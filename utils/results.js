@@ -16,21 +16,22 @@ const getJobResult = async (jobId) => {
 }
 
 const getResult = async (jobId, expectedStatus, timeout = 60 * 1000 * 10, interval = 5000) => {
-
+    
     if (typeof jobId != 'string') {
-        jobId = jobId.body.jobId
+        jobId = jobId.body.jobId;
     }
 
     const start = Date.now();
     do {
-        process.stdout.write('.')
-        const res = await getJobResult(jobId)
+        process.stdout.write(`\rWaiting for jobId: ${jobId} to be completed, time passed: ${Date.now - start}/${timeout} ms...`);
+        const res = await getJobResult(jobId);
         if (res.status == expectedStatus) {
+            console.log(`\njobId ${jobid} has status ${expectedStatus}`);
             return res.body;
         }
         await delay(interval);
     } while (Date.now() - start < timeout);
-    expect.fail(`timeout exceeded trying to get ${expectedStatus} status in result for jobId ${jobId}`);
+    expect.fail(`\ntimeout exceeded trying to get ${expectedStatus} status in result for jobId ${jobId}`);
 };
 const getJobIdStatus = async (jobId) => {
     const res = await chai.request(config.apiServerUrl)
