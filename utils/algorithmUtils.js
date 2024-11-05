@@ -3,78 +3,70 @@ const chaiHttp = require('chai-http');
 const expect = chai.expect;
 const delay = require('delay');
 chai.use(chaiHttp);
-const path = require('path')
-const config = require(path.join(process.cwd(), 'config/config'))
-const logger = require('../utils/logger')
+const path = require('path');
+const config = require(path.join(process.cwd(), 'config/config'));
+const logger = require('../utils/logger');
 const {
     getResult,
     idGen,
-    getStatusall } = require('../utils/results')
+    getStatusall } = require('../utils/results');
+
 const {
-    write_log } = require('../utils/misc_utils')
+    write_log } = require('../utils/misc_utils');
 
-
-const fse = require('fs')
+const fse = require('fs');
 
 const logResult = (result, text = '') => {
-
     if (result.status > 201) {
-        write_log(result.body, 'error')
+        write_log(result.body, 'error');
     } else {
-        write_log(`${text} -${result.status}`)
+        write_log(`${text} -${result.status}`);
     }
 }
 
 const StoreDebugAlgorithm = async (algorithmName) => {
-
     const debudAlg = {
         "name": algorithmName
     }
     const res = await chai.request(config.apiServerUrl)
         .post('/store/algorithms/debug')
-        .send(debudAlg)
-    logResult(res, 'algorithmUtils StoreDebugAlgorithm')
-    return res
+        .send(debudAlg);
+    logResult(res, 'algorithmUtils StoreDebugAlgorithm');
+    return res;
 }
 
 const getAlgorithm = async (name) => {
     const res = await chai.request(config.apiServerUrl)
-        .get(`/store/algorithms/${name}`)
-    logResult(res, "algorithmUtils getAlgorithm")
-    return res
+        .get(`/store/algorithms/${name}`);
+    logResult(res, "algorithmUtils getAlgorithm");
+    return res;
 }
 
-
 const storeAlgorithm = async (algName) => {
-
-    const res = await getAlgorithm(algName)
-    write_log(res.status + " " + algName)
+    const res = await getAlgorithm(algName);
+    write_log(res.status + " " + algName);
     if (res.status === 404) {
-        const {
-            alg
-        } = require(path.join(process.cwd(), `additionalFiles/defaults/algorithms/${algName}`))
-
-        const res1 = storeAlgorithmApply(alg)
-        logResult(res1, "algorithmUtils storeAlgorithm")
-        const timeout = await delay(1000 * 3);
-        return res1
+        const { alg } = require(path.join(process.cwd(), `additionalFiles/defaults/algorithms/${algName}`));
+        const res1 = storeAlgorithmApply(alg);
+        logResult(res1, "algorithmUtils storeAlgorithm");
+        await delay(1000 * 3);
+        return res1;
     }
 }
 
-
 const updateAlgorithm = async (algfile) => {
-    const { alg } = require(path.join(process.cwd(), `additionalFiles/defaults/algorithms/${algfile}`))
-    const res = storeAlgorithmApply(alg)
-    logResult(res, "algorithmUtils updateAlgorithm")
-    const timeout = await delay(1000 * 3);
-    return res
+    const { alg } = require(path.join(process.cwd(), `additionalFiles/defaults/algorithms/${algfile}`));
+    const res = storeAlgorithmApply(alg);
+    logResult(res, "algorithmUtils updateAlgorithm");
+    await delay(1000 * 3);
+    return res;
 }
 
 const storeAlgorithmApply = async (alg) => {
     const res = await chai.request(config.apiServerUrl)
         .post('/store/algorithms/apply')
-        .field('payload', JSON.stringify(alg))
-    return res
+        .field('payload', JSON.stringify(alg));
+    return res;
 }
 
 const storeAlgorithms = async (alg) => {
@@ -107,27 +99,25 @@ const buildAlgorithm = async ({ code, algName, entry, baseVersion = 'python:3.7.
         workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 },
         type: 'Code'
     }
-    algorithmArray.push(algName)
+    algorithmArray.push(algName);
     const res = await chai.request(config.apiServerUrl)
         .post('/store/algorithms/apply')
         .field('payload', JSON.stringify(data))
-        .attach('file', fse.readFileSync(code), entry)
+        .attach('file', fse.readFileSync(code), entry);
 
-    logger.info(JSON.stringify(res.body))
+    logger.info(JSON.stringify(res.body));
 
     // res.should.have.status(200)
-    expect(res.status).to.eql(200)
-    const buildIdAlg = res.body.buildId
+    expect(res.status).to.eql(200);
+    const buildIdAlg = res.body.buildId;
 
-    return buildIdAlg
+    return buildIdAlg;
 }
 
 const buildAlgorithmAndWait = async ({ code, algName, entry, baseVersion = 'python:3.7', algorithmArray = [] }) => {
-
-    const buildIdAlg = await buildAlgorithm({ code: code, algName: algName, entry: entry, baseVersion: baseVersion, algorithmArray: algorithmArray })
-    const buildStatusAlg = await getStatusall(buildIdAlg, `/builds/status/`, 200, "completed", 1000 * 60 * 15)
-
-    return buildStatusAlg
+    const buildIdAlg = await buildAlgorithm({ code: code, algName: algName, entry: entry, baseVersion: baseVersion, algorithmArray: algorithmArray });
+    const buildStatusAlg = await getStatusall(buildIdAlg, `/builds/status/`, 200, "completed", 1000 * 60 * 15);
+    return buildStatusAlg;
 }
 
 const buildGitAlgorithm = async ({ algName, gitUrl, gitKind, entry, branch, language = 'python', commit = "null", tag = "null", token = "null", algorithmArray = [] }) => {
@@ -147,104 +137,97 @@ const buildGitAlgorithm = async ({ algName, gitUrl, gitKind, entry, branch, lang
         },
         workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
     }
-    algorithmArray.push(algName)
+    algorithmArray.push(algName);
     if (typeof commit != "string") {
-
-        data.gitRepository.commit = commit
+        data.gitRepository.commit = commit;
     }
 
     if (tag != "null") {
-        data.gitRepository.tag = tag
+        data.gitRepository.tag = tag;
     }
 
     if (token != "null") {
-        data.gitRepository.token = token
+        data.gitRepository.token = token;
     }
-    console.log(data)
+    console.log(data);
     const res = await chai.request(config.apiServerUrl)
         .post('/store/algorithms/apply')
-        .field('payload', JSON.stringify(data))
-    logger.info(JSON.stringify(res.body))
+        .field('payload', JSON.stringify(data));
+    logger.info(JSON.stringify(res.body));
     if (res.status != 200) {
-        logger.info(JSON.stringify(res.text))
-        return res
+        logger.info(JSON.stringify(res.text));
+        return res;
     }
     // res.should.have.status(200)
-    expect(res.status).to.eql(200)
-    const buildIdAlg = res.body.buildId
-    const buildStatusAlg = await getStatusall(buildIdAlg, `/builds/status/`, 200, "completed", 1000 * 60 * 14)
+    expect(res.status).to.eql(200);
+    const buildIdAlg = res.body.buildId;
+    const buildStatusAlg = await getStatusall(buildIdAlg, `/builds/status/`, 200, "completed", 1000 * 60 * 14);
 
-    return buildStatusAlg
-
+    return buildStatusAlg;
 }
-
 
 const runAlgGetResult = async (algName, inupts) => {
     const alg = {
         name: algName,
         input: inupts
     }
-    const res = await runAlgorithm(alg)
-    const jobId = res.body.jobId
-    const result = await getResult(jobId, 200)
-    return result
+    const res = await runAlgorithm(alg);
+    const jobId = res.body.jobId;
+    const result = await getResult(jobId, 200);
+    return result;
     // expect(result.data[0].result).to.be.equal(42)
 }
+
 const runAlgorithm = async (body) => {
     const res = await chai.request(config.apiServerUrl)
         .post('/exec/algorithm')
-        .send(body)
-    logResult(res, 'algorithmUtils runAlgorithm')
-    return res
+        .send(body);
+    logResult(res, 'algorithmUtils runAlgorithm');
+    return res;
 }
 
 const getBuildList = async (name) => {
     const res = await chai.request(config.apiServerUrl)
-        .get(`/builds/list/${name}`)
-    logResult(res, "algorithmUtils getBuildList")
+        .get(`/builds/list/${name}`);
+    logResult(res, "algorithmUtils getBuildList");
     return res.body;
-
 }
 
 const getAlgorithmVersion = async (name) => {
     const res = await chai.request(config.apiServerUrl)
-        .get(`/versions/algorithms/${name}`)
-    logResult(res, "algorithmUtils getAlgorithimVersion")
+        .get(`/versions/algorithms/${name}`);
+    logResult(res, "algorithmUtils getAlgorithimVersion");
     return res;
-
 }
 
 const getAlgVersion = async (name, version) => {
     const res = await chai.request(config.apiServerUrl)
-        .get(`/versions/algorithms/${name}/${version}`)
-    logResult(res, "algorithmUtils getAlgorithimVersion")
-    return res;
-
+        .get(`/versions/algorithms/${name}/${version}`);
+    logResult(res, "algorithmUtils getAlgorithimVersion");
+    return res;;
 }
-const tagAlgorithmVersion = async (algName, algVersion, algTag) => {
 
+const tagAlgorithmVersion = async (algName, algVersion, algTag) => {
     let alg = {
         name: algName,
         version: algVersion,
         pinned: false,
         tags: [algTag]
-
     }
 
     const res = await chai.request(config.apiServerUrl)
         .post(`/versions/algorithms/tag`)
-        .send(alg)
-    logResult(res, "algorithmUtils tagAlgorithmVersion")
+        .send(alg);
+    logResult(res, "algorithmUtils tagAlgorithmVersion");
 
-    return res;
-
+    return res;;
 }
 
 const deleteAlgorithm = async (name, force = true, keepOldVersions = false) => {
     const res = await chai.request(config.apiServerUrl)
-        .delete(`/store/algorithms/${name}?force=${force}&keepOldVersions=${keepOldVersions}`)
-    logResult(res, "algorithmUtils deleteAlgorithm")
-    return res
+        .delete(`/store/algorithms/${name}?force=${force}&keepOldVersions=${keepOldVersions}`);
+    logResult(res, "algorithmUtils deleteAlgorithm");
+    return res;
 }
 
 // const deleteAlgorithmVersion = async (name,image) => {
@@ -256,26 +239,25 @@ const deleteAlgorithm = async (name, force = true, keepOldVersions = false) => {
 
 const deleteAlgorithmVersion = async (name, version) => {
     const res = await chai.request(config.apiServerUrl)
-        .delete(`/versions/algorithms/${name}/${version}`)
-    logResult(res, "algorithmUtils deleteAlgorithm")
-    return res
+        .delete(`/versions/algorithms/${name}/${version}`);
+    logResult(res, "algorithmUtils deleteAlgorithm");
+    return res;
 }
 
-
 const deleteAlgorithmJobs = async (name, selector) => {
-    let endpointUrl = selector ? `${name}?selector=${selector}` : `${name}`
+    let endpointUrl = selector ? `${name}?selector=${selector}` : `${name}`;
     const res = await chai.request(config.apiServerUrl)
-    .delete(`/kubernetes/algorithms/jobs/${endpointUrl}`)
-    logResult(res, "algorithmUtils deleteAlgorithmJobs")
-    return res
+        .delete(`/kubernetes/algorithms/jobs/${endpointUrl}`);
+    logResult(res, "algorithmUtils deleteAlgorithmJobs");
+    return res;
 }
 
 const deleteAlgorithmPods = async (name, selector) => {
-    let endpointUrl = selector ? `${name}?selector=${selector}` : `${name}`
+    let endpointUrl = selector ? `${name}?selector=${selector}` : `${name}`;
     const res = await chai.request(config.apiServerUrl)
-        .delete(`/kubernetes/algorithms/pods/${endpointUrl}`)
-    logResult(res, "algorithmUtils deleteAlgorithmPods")
-    return res
+        .delete(`/kubernetes/algorithms/pods/${endpointUrl}`);
+    logResult(res, "algorithmUtils deleteAlgorithmPods");
+    return res;
 }
 
 const updateAlgorithmVersion = async (Algname, algVersion, Force = true) => {
@@ -286,9 +268,9 @@ const updateAlgorithmVersion = async (Algname, algVersion, Force = true) => {
     }
     const res = await chai.request(config.apiServerUrl)
         .post(`/versions/algorithms/apply`)
-        .send(value)
+        .send(value);
 
-    return res
+    return res;
 }
 
 const stopBuild = async (buildId) => {
@@ -298,12 +280,10 @@ const stopBuild = async (buildId) => {
 
     const res = await chai.request(config.apiServerUrl)
         .post(`/builds/stop`)
-        .send(body)
+        .send(body);
 
-    return res
-
+    return res;
 }
-
 
 const rerunBuild = async (buildId) => {
     let body = {
@@ -312,10 +292,9 @@ const rerunBuild = async (buildId) => {
 
     const res = await chai.request(config.apiServerUrl)
         .post(`/builds/rerun`)
-        .send(body)
+        .send(body);
 
-    return res
-
+    return res;
 }
 
 module.exports = {
