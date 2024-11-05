@@ -83,22 +83,22 @@ const toString = (fun) => {
 const getStatusall = async (id, url, expectedCode, expectedStatus, timeout = 60 * 1000 * 3, interval = 1000) => {
     const start = Date.now();
     do {
-        process.stdout.write(`\rWaiting for jobId: ${id} to get status: ${expectedStatus}, time passed: ${Date.now() - start}/${timeout} ms...`);
+        process.stdout.write(`\rWaiting for buildId: ${id} to get status: ${expectedStatus}, time passed: ${Date.now() - start}/${timeout} ms...`);
         const res = await chai.request(config.apiServerUrl)
             .get(`${url}/${id}`);
 
         logger.info(`${res.status}, ${JSON.stringify(res.body)}`);
         if (res.status == expectedCode && res.body.status == expectedStatus) {
-            console.log(`\njobId: ${id} has status: ${expectedStatus}`);
+            console.log(`\nbuildId: ${id} has status: ${expectedStatus}`);
             return res.body;
         }
         if (res.body.status == "failed") {
-            console.log(`\njobId: ${id} has status: failed`);
+            console.log(`\nbuildId: ${id} has status: failed`);
             return res.body;
         }
         await delay(interval);
     } while (Date.now() - start < timeout);
-    expect.fail(`\ntimeout exceeded trying to get ${expectedStatus} status for jobId ${id}`);
+    expect.fail(`\ntimeout exceeded trying to get ${expectedStatus} status for buildId ${id}`);
 };
 
 const runRaw = async (time = 15000) => {
