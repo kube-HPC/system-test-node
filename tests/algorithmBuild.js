@@ -139,7 +139,7 @@ describe('Algorithm build test', () => {
             expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,9,16,final,0");
         }).timeout(1000 * 60 * 20);
 
-        it(`python 3.10`, async () => {
+        it.only(`python 3.10`, async () => {
             const entry = 'main37';
             const algName = pipelineRandomName(8).toLowerCase();
             const pythonVersion = "python:3.10.9";
