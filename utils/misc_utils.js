@@ -45,7 +45,7 @@ const checkEqualWithRetries = async (computeFn, funcArguments = [], targetValue,
         const computedValue = await computeFn(...funcArguments);
         if (computedValue === targetValue) {
             process.stdout.write('\x1b[2K\r');
-            return true;
+            return attempt;
         }
         process.stdout.write(`\rFailed check ${attempt}/${retries}`);
         if (attempt < retries) await delay(retryDelay);
@@ -69,7 +69,7 @@ const checkInRangeWithRetries = async (computeFn, funcArguments = [], min, max, 
         const computedValue = await computeFn(...funcArguments);
         if (computedValue >= min && computedValue <= max) {
             process.stdout.write('\x1b[2K\r');
-            return true;
+            return attempt;
         }
         process.stdout.write(`\rFailed check ${attempt}/${retries}`);
         if (attempt < retries) await delay(retryDelay);
