@@ -17,7 +17,8 @@ const {
     getRequiredPods,
     getThroughput,
     waitForStatus,
-    createFlowInput_Simple
+    createFlowInput_Simple,
+    createFlowInput_ByInterval
 } = require('../utils/streamingUtils');
 
 const { 
@@ -30,6 +31,8 @@ const { alg: statefull } = require("../additionalFiles/defaults/algorithms/timeS
 
 const { pipe: streamSimple } = require("../additionalFiles/defaults/pipelines/stream-simple");
 
+const { pipe: streamInterval } = require("../additionalFiles/defaults/pipelines/stream-byInterval");
+
 const { pipe: streamMultiple } = require("../additionalFiles/defaults/pipelines/stream-TwoStreamingNodes");
 
 const { alg: stateless } = require("../additionalFiles/defaults/algorithms/timeStateless");
@@ -38,6 +41,9 @@ const { alg: statelessByInterval } = require("../additionalFiles/defaults/algori
 
 const simple_statefulNodeName = streamSimple.nodes.filter(node => node.stateType === 'stateful')[0].nodeName;
 const simple_statelessNodeName = streamSimple.nodes.filter(node => node.stateType === 'stateless')[0].nodeName;
+
+const interval_statefulNodeName = streamInterval.nodes.filter(node => node.stateType === 'stateful')[0].nodeName;
+const interval_statelessNodeName = streamInterval.nodes.filter(node => node.stateType === 'stateless')[0].nodeName;
 
 const multiple_statefulNodeName1 = streamMultiple.nodes.filter(node => node.stateType === 'stateful')[0].nodeName;
 const multiple_statefulNodeName2 = streamMultiple.nodes.filter(node => node.stateType === 'stateful')[1].nodeName;
@@ -315,13 +321,42 @@ describe('streaming pipeline test', () => {
             await stopPipeline(jobId)
         }).timeout(450 * 1000);
 
-        it("des...", async () => {
+        it("should satisfy the request rate with changing processing time.", async () => {
             await createAlg(statefull, 0.3);
             algList.push(statefull.name);
-            await createAlg(statelessByMinute);
-            algList.push(stateless.name);
-            // .........
-        });
+            await createAlg(statelessByInterval);
+            algList.push(statelessByInterval.name);
+            
+            streamInterval.flowInput = createFlowInput_ByInterval({
+                first_process_time: 1,
+                second_process_time: 0.01,
+                interval: 50,
+                programs: [
+                    { rate: 20, time: 1 }
+                ]
+            });
+
+            const res = await runRaw(streamInterval);
+            const { jobId } = res.body;
+
+            // Wait all nodes to be active
+            await waitForStatus(jobId, interval_statefulNodeName, 'active', 60 * 1000, 2 * 1000);
+            await waitForStatus(jobId, interval_statelessNodeName, 'active', 120 * 1000, 2 * 1000);
+            await intervalDelay('Waiting streaming to run for data to update', 30 * 1000);
+
+            // Should get to required = 1 at some point.
+            let attemptNumber = await checkEqualWithRetries(getRequiredPods, [jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 1, 5 * 1000, 15);
+            console.log(`Phase 1 passed at attempt number ${attemptNumber}.`);
+
+            // Should get to required >= 20 required at some point.
+            await checkInRangeWithRetries(getRequiredPods, [jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 20, 50, 5 * 1000, 15);
+            console.log(`Phase 2 passed at attempt number ${attemptNumber}.`);
+
+            // Should get again to required = 1 at some point.
+            await checkEqualWithRetries(getRequiredPods, [jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 1, 5 * 1000, 15);
+            console.log(`Phase 3 passed at attempt number ${attemptNumber}.`);
+            await stopPipeline(jobId);
+        }).timeout(500000 * 1000);
     });
 
     describe("multiple streaming nodes pipeline tests", () => {
