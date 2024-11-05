@@ -356,7 +356,7 @@ describe('streaming pipeline test', () => {
             await checkEqualWithRetries(getRequiredPods, [jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 1, 5 * 1000, 15);
             console.log(`Phase 3 passed at attempt number ${attemptNumber}.`);
             await stopPipeline(jobId);
-        }).timeout(500000 * 1000);
+        }).timeout(450 * 1000);
     });
 
     describe("multiple streaming nodes pipeline tests", () => {
