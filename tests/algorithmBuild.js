@@ -5,32 +5,22 @@ const config = require(path.join(process.cwd(), 'config/config'));
 const chaiHttp = require('chai-http');
 const assertArrays = require('chai-arrays');
 const fs = require('fs');
-const {
-    write_log
-} = require('../utils/misc_utils')
 const fse = require('fs')
 
 
 const delay = require('delay');
 
 const {
-    getResult,
     getStatusall,
-    idGen,
-    runRaw,
-    getRawGraph,
-    getParsedGraph } = require('../utils/results')
+    idGen } = require('../utils/results')
 const {
     pipelineRandomName } = require('../utils/pipelineUtils')
 const {
     runAlgGetResult,
-    runAlgorithm,
-    getAlgorithm,
     deleteAlgorithm,
     getAlgorithmVersion,
     updateAlgorithmVersion,
     storeAlgorithmApply,
-    deleteAlgorithmVersion,
     buildAlgorithmAndWait,
     buildAlgorithm,
     buildGitAlgorithm,
