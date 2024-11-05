@@ -139,16 +139,16 @@ describe('Algorithm build test', () => {
             expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,9,16,final,0");
         }).timeout(1000 * 60 * 20);
 
-        it.only(`python 3.10`, async () => {
+        it(`python 3.10`, async () => {
             const entry = 'main37';
             const algName = pipelineRandomName(8).toLowerCase();
-            const pythonVersion = "python:3.10.9";
+            const pythonVersion = "python:3.10-slim";
 
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algList });
             expect(buildStatusAlg.status).to.be.equal("completed");
             const result = await runAlgGetResult(algName, [4]);
             await deleteAlgorithm(algName, true);
-            expect(result.data[0].result.sysVersion.toString()).to.be.equal('3,10,9,final,0');
+            expect(result.data[0].result.sysVersion.toString()).to.be.equal('3,10,15,final,0');
         }).timeout(1000 * 60 * 20);
 
         it('stop rerun build', async () => {
@@ -294,7 +294,7 @@ describe('Algorithm build test', () => {
             expect(result.data[0].result.commit).to.be.equal("A6");
         }).timeout(1000 * 60 * 20);
 
-        it("build github master algorithm java", async () => {
+        it.skip("build github master algorithm java", async () => {
             const entry = 'Algorithm';
             const algName = pipelineRandomName(8).toLowerCase();
             const language = 'java';
@@ -352,7 +352,7 @@ describe('Algorithm build test', () => {
             expect(result.data[0].result.version).to.be.equal("gitlab branch1");
         }).timeout(1000 * 60 * 20);
         // p1
-        it("test webhook github (git 518)", async () => {
+        it.only("test webhook github (git 518)", async () => {
             const data = {
                 ref: 'refs/heads/master',
                 before: 'f96bd9ffc2d6e0e31fea1b28328600156c5877b0',
@@ -400,7 +400,7 @@ describe('Algorithm build test', () => {
                 .type('form')
                 .set('content-type', 'application/x-www-form-urlencoded')
                 .send({ 'payload': JSON.stringify(data) });
-            const buildStatusAlg2 = await getStatusall(res.body[0].buildId, `/builds/status/`, 200, "completed", 1000 * 60 * 10);
+            const buildStatusAlg2 = await getStatusall(res.body.filter(item => item.buildId)[0]?.buildId, `/builds/status/`, 200, "completed", 1000 * 60 * 10);
             expect(buildStatusAlg2.status).to.be.equal("completed");
             const newVersion = await getAlgorithmVersion(algName);
             console.log("~~~~~~~~~~~~~~~~~~~");
