@@ -10,8 +10,10 @@ const delay = require('delay');
 const {
     getStatusall,
     idGen } = require('../utils/results')
+
 const {
     pipelineRandomName } = require('../utils/pipelineUtils')
+
 const {
     runAlgGetResult,
     deleteAlgorithm,
@@ -23,7 +25,6 @@ const {
     buildGitAlgorithm,
     stopBuild,
     rerunBuild } = require('../utils/algorithmUtils')
-
 
 chai.use(chaiHttp);
 chai.use(assertArrays);
