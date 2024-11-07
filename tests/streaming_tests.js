@@ -18,7 +18,8 @@ const {
     getThroughput,
     waitForStatus,
     createFlowInput_Simple,
-    createFlowInput_ByInterval
+    createFlowInput_ByInterval,
+    combineFlows
 } = require('../utils/streamingUtils');
 
 const { 
@@ -35,6 +36,8 @@ const { pipe: streamInterval } = require("../additionalFiles/defaults/pipelines/
 
 const { pipe: streamMultiple } = require("../additionalFiles/defaults/pipelines/stream-TwoStreamingNodes");
 
+const { pipe: streamDifferentFlows } = require("../additionalFiles/defaults/pipelines/stream-TwoStreamingNodesWithDifferentFlows");
+
 const { alg: stateless } = require("../additionalFiles/defaults/algorithms/timeStateless");
 
 const { alg: statelessByInterval } = require("../additionalFiles/defaults/algorithms/timeStatelessByInterval.js");
@@ -48,6 +51,11 @@ const interval_statelessNodeName = streamInterval.nodes.filter(node => node.stat
 const multiple_statefulNodeName1 = streamMultiple.nodes.filter(node => node.stateType === 'stateful')[0].nodeName;
 const multiple_statefulNodeName2 = streamMultiple.nodes.filter(node => node.stateType === 'stateful')[1].nodeName;
 const multiple_statelessNodeName = streamMultiple.nodes.filter(node => node.stateType === 'stateless')[0].nodeName;
+
+const differentFlows_statefulNodeName1 = streamDifferentFlows.nodes.filter(node => node.stateType === 'stateful')[0].nodeName;
+const differentFlows_statefulNodeName2 = streamDifferentFlows.nodes.filter(node => node.stateType === 'stateful')[1].nodeName;
+const differentFlows_statelessNodeName = streamDifferentFlows.nodes.filter(node => node.stateType === 'stateless')[0].nodeName;
+
 
 describe("streaming pipeline test", () => {
     const createAlg = async (alg, cpu) => {
@@ -382,7 +390,7 @@ describe("streaming pipeline test", () => {
             await waitForStatus(jobId, multiple_statefulNodeName2, 'active', 60 * 1000, 2 * 1000);
             await waitForStatus(jobId, multiple_statelessNodeName, 'active', 120 * 1000, 2 * 1000);
 
-            await intervalDelay('Wating phase 1', 30 * 1000);
+            await intervalDelay('Waiting phase 1', 30 * 1000);
             const required = await getRequiredPods(jobId, multiple_statefulNodeName1, multiple_statelessNodeName);
             expect(required).to.be.gt(5, `required is ${required}, needed >5`);
 
@@ -396,6 +404,52 @@ describe("streaming pipeline test", () => {
 
             await intervalDelay('Waiting phase 3', 60 * 1000)
             await checkEqualWithRetries(getCurrentPods, [jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 5);
+            await checkEqualWithRetries(getThroughput, [jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 100);
+            await checkEqualWithRetries(getThroughput, [jobId, multiple_statefulNodeName2, multiple_statelessNodeName], 100);
+            await stopPipeline(jobId)
+        }).timeout(400 * 1000);
+
+        it.only("should satisfy the request rate of 2 statefuls, each with different rate", async () => {
+            await createAlg(statefull);
+            algList.push(statefull.name);
+            await createAlg(stateless);
+            algList.push(stateless.name);
+
+            const flow1Config = {
+                programs: [
+                    { rate: 120, time: 50 }
+                ]
+            };
+            const flow2Config = {
+                flowName: "hkube_desc2",
+                programs: [
+                    { rate: 60, time: 50 }
+                ]
+            };
+            streamDifferentFlows.flowInput = combineFlows([flow1Config, flow2Config]);
+
+            const res = await runRaw(streamDifferentFlows);
+            const { jobId } = res.body;
+
+            // Wait all nodes to be active
+            await waitForStatus(jobId, differentFlows_statefulNodeName1, 'active', 60 * 1000, 2 * 1000);
+            await waitForStatus(jobId, differentFlows_statefulNodeName2, 'active', 60 * 1000, 2 * 1000);
+            await waitForStatus(jobId, differentFlows_statelessNodeName, 'active', 120 * 1000, 2 * 1000);
+
+            await intervalDelay('Waiting phase 1', 30 * 1000);
+            const required = await getRequiredPods(jobId, multiple_statefulNodeName1, multiple_statelessNodeName);
+            expect(required).to.be.gt(2, `required is ${required}, needed >2`);
+
+            await intervalDelay('Waiting phase 2', 30 * 1000);
+            const current = await getCurrentPods(jobId, multiple_statefulNodeName1, multiple_statelessNodeName);
+            const throughput1 = await getThroughput(jobId, multiple_statefulNodeName1, multiple_statelessNodeName);
+            const throughput2 = await getThroughput(jobId, multiple_statefulNodeName2, multiple_statelessNodeName);
+            expect(throughput1).to.be.gte(100, `throughput1 is ${throughput1}, needed >=100`); // suppose to be emptying the queue
+            expect(throughput2).to.be.gte(100, `throughput is ${throughput2}, needed >=100`);
+            expect(current).to.be.gte(2, `current is ${current}, needed >=2`);
+
+            await intervalDelay('Waiting phase 3', 60 * 1000)
+            await checkEqualWithRetries(getCurrentPods, [jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 2);
             await checkEqualWithRetries(getThroughput, [jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 100);
             await checkEqualWithRetries(getThroughput, [jobId, multiple_statefulNodeName2, multiple_statelessNodeName], 100);
             await stopPipeline(jobId)

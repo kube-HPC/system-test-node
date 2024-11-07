@@ -150,29 +150,30 @@ const getThroughput = async (jobId, source, target) => {
 /**
  * Creates a flowInput object based on the provided values object.
  * If any values are not provided, default values are used for optional fields,
- * but 'rate' and 'time' are required.
+ * but 'rate' and 'time' are required in each program object within `programs`.
  *
- * @param {Object} values - An object containing the flow values.
+ * @param {Object} values - An object containing the flow configuration values.
  * @param {string} [values.flowName="hkube_desc"] - The name of the flow.
- * @param {number} [values.processTime=0.02] - The process_time value.
- * @param {Array} values.programs - Array of program objects, each with a required `rate` and `time`, and an optional `size`.
+ * @param {number} [values.processTime=0.02] - The process time per message.
+ * @param {Array<Object>} values.programs - Array of program objects, each with required `rate` and `time`, and an optional `size`.
+ * @param {boolean} [processTimeNeeded=true] - If true, includes `process_time` in the returned object; otherwise, `process_time` is omitted.
  * @returns {Object} The flowInput object structured with the given values.
- * @throws Will fail the test if 'rate' or 'time' is not provided in any program object.
+ * @throws {Error} Will throw an error if any program object in `programs` is missing the required 'rate' or 'time' fields.
  */
-const createFlowInput_Simple = (values = {}) => {
+const createFlowInput_Simple = (values = {}, processTimeNeeded = true) => {
     const {
         flowName = "hkube_desc",
         processTime = 0.02,
-        programs = []
+        programs = [],
     } = values;
 
     const invalidPrograms = programs.filter(program => program.rate === undefined || program.time === undefined);
     
     if (invalidPrograms.length > 0) {
-        expect.fail(`\nMissing required fields in programs: ${JSON.stringify(invalidPrograms)}`);
+        throw new Error(`\nMissing required fields (rate, time) in programs: ${JSON.stringify(invalidPrograms)}`);
     }
 
-    return {
+    const flow = {
         "flows": [
             {
                 "name": flowName,
@@ -182,9 +183,14 @@ const createFlowInput_Simple = (values = {}) => {
                     "size": program.size ?? 80 // size of each message
                 }))
             }
-        ],
-        "process_time": processTime // process time per message
+        ]
     };
+
+    if (processTimeNeeded) {
+        flow["process_time"] = processTime;
+    }
+
+    return flow;
 };
 
 /**
@@ -213,7 +219,7 @@ const createFlowInput_ByInterval = (values = {}) => {
     const invalidPrograms = programs.filter(program => program.rate === undefined || program.time === undefined);
     
     if (invalidPrograms.length > 0) {
-        expect.fail(`\nMissing required fields in programs: ${JSON.stringify(invalidPrograms)}`);
+        throw new Error(`\nMissing required fields (rate, time) in programs: ${JSON.stringify(invalidPrograms)}`);
     }
 
     return {
@@ -233,6 +239,26 @@ const createFlowInput_ByInterval = (values = {}) => {
     };
 };
 
+/**
+ * Combines multiple flow configurations into a single flowInput object.
+ * 
+ * @param {Array} flowConfigs - An array of flow configuration objects, each containing `flowName` and `programs`.
+ * @param {number} [processTime=0.01] - The `process_time` to be applied to all flows. Defaults to 0.01.
+ * @returns {Object} - The combined `flowInput` object with all flows and `process_time`.
+ */
+const combineFlows = (flowConfigs, processTime = 0.01) => {
+    const flows = flowConfigs.map(config => {
+        const flow = createFlowInput_Simple(config, false);
+        return flow.flows[0];
+    });
+
+    return {
+        process_time: processTime,
+        flows: flows
+    };
+};
+
+
 
 module.exports = {
     waitForStatus,
@@ -243,5 +269,6 @@ module.exports = {
     getRequiredPods,
     getThroughput,
     createFlowInput_Simple,
-    createFlowInput_ByInterval
+    createFlowInput_ByInterval,
+    combineFlows
 }
