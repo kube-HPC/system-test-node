@@ -61,7 +61,7 @@ describe("streaming pipeline test", () => {
     const algList = [];
 
     const createAlg = async (alg, cpu) => {
-        await deleteAlgorithm(alg.name, true, true)
+        await deleteAlgorithm(alg.name, true, true);
         if (cpu) {
             alg.cpu = cpu;
         }
@@ -72,7 +72,7 @@ describe("streaming pipeline test", () => {
     beforeEach(function () {
         console.log('\n-----------------------------------------------\n');
     });
-    
+
     after(async function () {
         this.timeout(2 * 60 * 1000);
         console.log("algList = " + algList);
@@ -80,7 +80,7 @@ describe("streaming pipeline test", () => {
         z = 3;
 
         while (j < algList.length) {
-            delAlg = algList.slice(j, z)
+            delAlg = algList.slice(j, z);
             const del = delAlg.map((e) => {
                 return deleteAlgorithm(e);
             })
