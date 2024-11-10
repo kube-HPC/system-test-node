@@ -58,6 +58,8 @@ const differentFlows_statelessNodeName = streamDifferentFlows.nodes.filter(node 
 
 
 describe("streaming pipeline test", () => {
+    const algList = [];
+
     const createAlg = async (alg, cpu) => {
         await deleteAlgorithm(alg.name, true, true)
         if (cpu) {
@@ -66,10 +68,11 @@ describe("streaming pipeline test", () => {
         await storeAlgorithms(alg);
         algList.push(alg.name);
     }
-    let algList = [];
+
     beforeEach(function () {
         console.log('\n-----------------------------------------------\n');
     });
+    
     after(async function () {
         this.timeout(2 * 60 * 1000);
         console.log("algList = " + algList);
