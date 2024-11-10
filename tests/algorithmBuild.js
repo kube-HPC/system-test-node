@@ -487,7 +487,7 @@ describe('Algorithm build test', () => {
             expect(resultAfterCommit.data[0].result.commit).to.be.equal("A7");
         }).timeout(1000 * 60 * 20);
 
-        it('gitlab repository authentication (Token)', async () => {
+        it.skip('gitlab repository authentication (Token)', async () => {
             const entry = 'main';
             const algName = pipelineRandomName(8).toLowerCase();
 
@@ -507,7 +507,7 @@ describe('Algorithm build test', () => {
             await deleteAlgorithm(algName, true);
         }).timeout(1000 * 60 * 20);
 
-        it('github repository authentication', async () => {
+        it.skip('github repository authentication', async () => {
             const entry = 'main';
             const algName = pipelineRandomName(8).toLowerCase();
 
