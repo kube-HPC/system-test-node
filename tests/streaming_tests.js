@@ -64,6 +64,7 @@ describe("streaming pipeline test", () => {
             alg.cpu = cpu;
         }
         await storeAlgorithms(alg);
+        algList.push(alg.name);
     }
     let algList = [];
     beforeEach(function () {
@@ -98,9 +99,7 @@ describe("streaming pipeline test", () => {
     describe("simple pipeline tests with constant ratios", () => {
         it("should satisfy the request rate with the given rate, with enough nodes.", async () => {
             await createAlg(statefull);
-            algList.push(statefull.name);
             await createAlg(stateless);
-            algList.push(stateless.name);
 
             streamSimple.flowInput = createFlowInput_Simple({
                 programs: [
@@ -133,9 +132,7 @@ describe("streaming pipeline test", () => {
 
         it("should satisfy the high request rate with high rate, with enough nodes.", async () => {
             await createAlg(statefull, 0.5);
-            algList.push(statefull.name);
             await createAlg(stateless);
-            algList.push(stateless.name);
 
             streamSimple.flowInput = createFlowInput_Simple({
                 programs: [
@@ -169,9 +166,7 @@ describe("streaming pipeline test", () => {
 
         it("should stabilize on 1 pod.", async () => {
             await createAlg(statefull);
-            algList.push(statefull.name);
             await createAlg(stateless);
-            algList.push(stateless.name);
 
             streamSimple.flowInput = createFlowInput_Simple({
                 processTime: 0.95,
@@ -201,9 +196,7 @@ describe("streaming pipeline test", () => {
 
         it("should stabilize on 2 pods.", async () => {
             await createAlg(statefull);
-            algList.push(statefull.name);
             await createAlg(stateless);
-            algList.push(stateless.name);
 
             streamSimple.flowInput = createFlowInput_Simple({
                 processTime: 1,
@@ -231,9 +224,7 @@ describe("streaming pipeline test", () => {
 
         it("should stabilize on 21 pods.", async () => {
             await createAlg(statefull, 0.3);
-            algList.push(statefull.name);
             await createAlg(stateless);
-            algList.push(stateless.name);
 
             streamSimple.flowInput = createFlowInput_Simple({
                 processTime: 1,
@@ -269,9 +260,7 @@ describe("streaming pipeline test", () => {
     describe("simple pipeline test with changing ratios", () => {
         it("should scale up at first, then scale down to second rate.", async () => {
             await createAlg(statefull);
-            algList.push(statefull.name);
             await createAlg(stateless);
-            algList.push(stateless.name);
 
             streamSimple.flowInput = createFlowInput_Simple({
                 programs: [
@@ -299,9 +288,7 @@ describe("streaming pipeline test", () => {
 
         it("should scale up at first, then scale down to 0 and then back up.", async () => {
             await createAlg(statefull);
-            algList.push(statefull.name);
             await createAlg(stateless);
-            algList.push(stateless.name);
 
             streamSimple.flowInput = createFlowInput_Simple({
                 programs: [
@@ -333,9 +320,7 @@ describe("streaming pipeline test", () => {
 
         it("should satisfy the request rate with changing processing time.", async () => {
             await createAlg(statefull, 0.3);
-            algList.push(statefull.name);
             await createAlg(statelessByInterval);
-            algList.push(statelessByInterval.name);
             
             streamInterval.flowInput = createFlowInput_ByInterval({
                 first_process_time: 1,
@@ -372,9 +357,7 @@ describe("streaming pipeline test", () => {
     describe("multiple streaming nodes pipeline tests", () => {
         it("should satisfy the request rate of 2 statefuls", async () => {
             await createAlg(statefull);
-            algList.push(statefull.name);
             await createAlg(stateless);
-            algList.push(stateless.name);
 
             streamMultiple.flowInput = createFlowInput_Simple({
                 programs: [
@@ -411,9 +394,7 @@ describe("streaming pipeline test", () => {
 
         it("should satisfy the request rate of 2 statefuls, each with different rate", async () => {
             await createAlg(statefull);
-            algList.push(statefull.name);
             await createAlg(stateless);
-            algList.push(stateless.name);
 
             const flow1Config = {
                 programs: [
