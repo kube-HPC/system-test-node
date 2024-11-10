@@ -48,16 +48,20 @@ describe('Algorithm build test', () => {
             const del = delAlg.map((e) => {
                 return deleteAlgorithm(e);
             });
-            console.log("delAlg-" + delAlg);
+            console.log("delAlg-", JSON.stringify(delAlg, null, 2));
             const delResult = await Promise.all(del);
-            console.log("delResult-" + delResult);
+            delResult.forEach(result => {
+                if (result && result.text) {
+                    console.log("Delete Result Message:", result.text);
+                }
+            });            
             await delay(2000);
             j += 3;
             z += 3;
             console.log("j=" + j + ",z=" + z);
         }
         console.log("----------------------- end -----------------------");
-    })
+    });
 
     describe('python version test', () => {
         const code1 = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
