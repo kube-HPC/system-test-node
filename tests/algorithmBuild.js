@@ -295,7 +295,7 @@ describe('Algorithm build test', () => {
             expect(result.data[0].result.commit).to.be.equal("A6");
         }).timeout(1000 * 60 * 20);
 
-        it.skip("build github master algorithm java", async () => {
+        it.skip("build github master algorithm java", async () => { // Java not supported anymore.
             const entry = 'Algorithm';
             const algName = pipelineRandomName(8).toLowerCase();
             const language = 'java';
@@ -487,14 +487,14 @@ describe('Algorithm build test', () => {
             expect(resultAfterCommit.data[0].result.commit).to.be.equal("A7");
         }).timeout(1000 * 60 * 20);
 
-        it.skip('gitlab repository authentication (Token)', async () => {
+        it('gitlab repository authentication (Token)', async () => {
             const entry = 'main';
             const algName = pipelineRandomName(8).toLowerCase();
 
-            const gitUrl = "https://gitlab.com/tamir321/hkubepravate.git";
-            const branch = "master";
+            const gitUrl = "https://gitlab.com/hkube-dev/private-system-test.git";
+            const branch = "main";
             const gitKind = "gitlab";
-            const commit = { "id": "66e76131b39fd2e1df6b46ec179962fa7cbbd24c" };
+            const commit = "null";
             const tag = "null";
             const token = config.gitlabToken;
             const language = 'python';
@@ -503,7 +503,7 @@ describe('Algorithm build test', () => {
             const buildStatusAlg = await buildGitAlgorithm({ algName, gitUrl, gitKind, entry, branch, language, commit, tag, token, algorithmArray: algList });
             expect(buildStatusAlg.status).to.be.equal("completed");
             const result = await runAlgGetResult(algName, [4]);
-            expect(result.data[0].result.result).to.be.equal("private-repo");
+            expect(result.data[0].result.commit).to.be.equal("A6");
             await deleteAlgorithm(algName, true);
         }).timeout(1000 * 60 * 20);
 
@@ -523,7 +523,7 @@ describe('Algorithm build test', () => {
             const buildStatusAlg = await buildGitAlgorithm({ algName, gitUrl, gitKind, entry, branch, language, commit, tag, token, algorithmArray: algList });
             expect(buildStatusAlg.status).to.be.equal("completed");
             const result = await runAlgGetResult(algName, [4]);
-            expect(result.data[0].result).to.be.equal("private-repo");
+            expect(result.data[0].commit).to.be.equal("A6");
             await deleteAlgorithm(algName, true);
         }).timeout(1000 * 60 * 20);
 
