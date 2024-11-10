@@ -18,7 +18,7 @@ const pipe = {
                 "name": "hkube_desc2",
                 "program": [
                     {
-                        "rate": 250,
+                        "rate": 150,
                         "time": 50,
                         "size": 80
                     }
