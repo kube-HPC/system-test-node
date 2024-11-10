@@ -409,7 +409,7 @@ describe("streaming pipeline test", () => {
             await stopPipeline(jobId)
         }).timeout(400 * 1000);
 
-        it.only("should satisfy the request rate of 2 statefuls, each with different rate", async () => {
+        it("should satisfy the request rate of 2 statefuls, each with different rate", async () => {
             await createAlg(statefull);
             algList.push(statefull.name);
             await createAlg(stateless);
