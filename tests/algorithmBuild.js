@@ -507,12 +507,12 @@ describe('Algorithm build test', () => {
             await deleteAlgorithm(algName, true);
         }).timeout(1000 * 60 * 20);
 
-        it.skip('github repository authentication', async () => {
+        it('github repository authentication', async () => {
             const entry = 'main';
             const algName = pipelineRandomName(8).toLowerCase();
 
-            const gitUrl = "https://github.com/tamir321/hkubePrivate.git";
-            const branch = "master";
+            const gitUrl = "https://github.com/hkube-dev/private-system-test.git";
+            const branch = "main";
             const gitKind = "github";
             const commit = "null";
             const tag = "null";
