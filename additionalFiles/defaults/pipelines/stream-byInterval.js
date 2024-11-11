@@ -2,7 +2,9 @@ const pipe = {
     "name": "sub-ein-tst",
     "kind": "stream",
     "flowInput": {
-        "process_time": 0.02,
+        "first_process_time": 1,
+        "second_process_time": 0.1,
+        "interval": 60,
         "flows": [
             {
                 "name": "hkube_desc",
@@ -44,12 +46,14 @@ const pipe = {
             "kind": "algorithm",
             "stateType": "stateless",
             "nodeName": "sen-out-1",
-            "algorithmName": "stateless-time-statistics-tst",
+            "algorithmName": "stateless-time-by-interval-tst",
             "minStatelessCount": 0,
             "maxStatelessCount": null,
             "input": [
                 {
-                    "process_time": "@flowInput.process_time"
+                    "first_process_time": "@flowInput.first_process_time",
+                    "second_process_time": "@flowInput.second_process_time",
+                    "interval": "@flowInput.interval"
                 }
             ],
             "retry": {

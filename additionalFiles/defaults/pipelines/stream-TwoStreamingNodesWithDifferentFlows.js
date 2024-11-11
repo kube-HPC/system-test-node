@@ -13,13 +13,25 @@ const pipe = {
                         "size": 80
                     }
                 ]
+            },
+            {
+                "name": "hkube_desc2",
+                "program": [
+                    {
+                        "rate": 150,
+                        "time": 50,
+                        "size": 80
+                    }
+                ]
             }
         ]
     },
     "streaming": {
         "flows": {
-            "hkube_desc": " sen-1 >> sen-out-1"
-        }
+            "hkube_desc": " sen-1 >> sen-out-1",
+            "hkube_desc2": " sen-2 >> sen-out-1"
+        },
+        "defaultFlow": "hkube_desc"
     },
     "webhooks": {},
     "triggers": {
@@ -73,7 +85,23 @@ const pipe = {
                 "limit": 3
             },
             "ttl": 0
+        },
+        {
+            "kind": "algorithm",
+            "stateType": "stateful",
+            "nodeName": "sen-2",
+            "algorithmName": "start-streaming-tst",
+            "input": [
+                {
+                    "flows": "@flowInput.flows"
+                }
+            ],
+            "retry": {
+                "policy": "Always",
+                "limit": 3
+            },
+            "ttl": 0
         }
     ]
 }
-module.exports = { pipe }
+module.exports = { pipe };
