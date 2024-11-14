@@ -71,30 +71,6 @@ describe('Algorithm build test', () => {
                 .get(`/builds/status/${jobId}`);
             return res.body.status;
         }
-        // it(`python 3.5`, async () => { // NOT SUPPORTED, ONLY PYTHON >= 3.7
-        //     const entry = 'main35'
-        //     const algName = pipelineRandomName(8).toLowerCase()
-        //     const pythonVersion = "python:3.5.10"
-
-        //     const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algList })
-        //     expect(buildStatusAlg.status).to.be.equal("completed")
-        //     const result = await runAlgGetResult(algName, [4])
-        //     await deleteAlgorithm(algName, true)
-        //     expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,5,10,final,0")
-        // }).timeout(1000 * 60 * 20)
-
-
-        // it(`python 3.6`, async () => { // NOT SUPPORTED, ONLY PYTHON >= 3.7
-        //     const entry = 'main36'
-        //     const algName = pipelineRandomName(8).toLowerCase()
-        //     const pythonVersion = "python:3.6"
-
-        //     const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algList })
-        //     expect(buildStatusAlg.status).to.be.equal("completed")
-        //     const result = await runAlgGetResult(algName, [4])
-        //     await deleteAlgorithm(algName, true)
-        //     expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,6,15,final,0")
-        // }).timeout(1000 * 60 * 20)
 
         it(`python 3.7`, async () => {
             const entry = 'main37';
