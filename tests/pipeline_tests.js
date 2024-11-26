@@ -130,6 +130,7 @@ describe("pipeline Tests 673", () => {
       expect(yellow.length).to.be.equal(7);
       const black = result.data.filter((obj) => obj.nodeName == "black");
       expect(black.length).to.be.equal(1);
+      await deletePipeline(d);
     }).timeout(1000 * 60 * 2);
 
     it("yellow node includeInResults = false", async () => {
@@ -144,6 +145,7 @@ describe("pipeline Tests 673", () => {
       expect(yellow.length).to.be.equal(0);
       const black = result.data.filter((obj) => obj.nodeName == "black");
       expect(black.length).to.be.equal(1);
+      await deletePipeline(d);
     }).timeout(1000 * 60 * 2);
   });
   describe("pipeline Types (git 614)", () => {
@@ -218,6 +220,7 @@ describe("pipeline Tests 673", () => {
       expect(status.body.types).includes("stored");
       expect(status.body.types).includes("internal");
       await deletePipeline(d);
+      await deletePipeline(simple);
     }).timeout(1000 * 60 * 7);
 
     it("type= Sub-pipeline", async () => {
@@ -250,6 +253,7 @@ describe("pipeline Tests 673", () => {
       expect(status.body.types).includes("sub-pipeline");
       expect(status.body.types).includes("internal");
       await deletePipeline(d);
+      await deletePipeline(e);
     }).timeout(1000 * 60 * 30);
 
     it("type= stored", async () => {
@@ -606,6 +610,7 @@ describe("pipeline Tests 673", () => {
       const expected = [46, 47, 48, 49, 50, 51, 52, 53, 54, 45];
       const a = result.data.filter((obj) => !expected.includes(obj.result));
       expect(a.length).to.be.equal(0);
+      await deletePipeline(trigger);
     }).timeout(1000 * 60 * 7);
 
     it(" Sub-pipeline does not have flowInput", async () => {
@@ -655,6 +660,7 @@ describe("pipeline Tests 673", () => {
           )
         ).length;
       await deletePipeline(d);
+      await deletePipeline(e);
       expect(after).to.be.greaterThan(before);
     }).timeout(1000 * 60 * 7);
 
@@ -727,6 +733,7 @@ describe("pipeline Tests 673", () => {
       expect(pipelineStatus.body.status).to.be.equal("paused");
       const resume = await resumePipeline(jobId);
       const result = await getResult(jobId, 200);
+      await deletePipeline(e);
     }).timeout(1000 * 60 * 20);
 
     it("pause stop pipeline", async () => {
@@ -1003,6 +1010,7 @@ describe("pipeline Tests 673", () => {
       expect(secondChild.length).to.be.equal(1);
       await deletePipeline(triggeredPipe);
       await deletePipeline(triggeredPipe2);
+      await deletePipeline(e);
     }).timeout(1000 * 60 * 7);
 
     it("Trigger cycle pipeline tree", async () => {
@@ -1037,6 +1045,8 @@ describe("pipeline Tests 673", () => {
       expect(tree.body.error.message).to.be.equal(
         "the pipelines triggers is cyclic"
       );
+      await deletePipeline(d);
+      await deletePipeline(e);
     }).timeout(1000 * 60 * 7);
   });
   describe("TID-440 Pipeline priority tests (git 58)~", () => {
@@ -1109,6 +1119,7 @@ describe("pipeline Tests 673", () => {
       const result1 = await getResult(getJobId(pipe1JobId), 200);
       const result2 = await getResult(getJobId(pipe3JobId), 200);
       expect(result1.timeTook).to.be.lessThan(result2.timeTook);
+      await deletePipeline(d);
     }).timeout(1000 * 60 * 35);
 
     it.skip("fast load ", async () => {
@@ -1242,6 +1253,7 @@ describe("pipeline Tests 673", () => {
       const result1 = await getResult(jobId1, 200, 1000 * 60 * 19);
       const result2 = await getResult(jobId2, 200, 1000 * 60 * 19);
       expect(result1.timeTook).to.be.lessThan(result2.timeTook);
+      await deletePipeline(d);
     }).timeout(1000 * 60 * 20);
   });
   describe('insert pipeline array', () => {
@@ -1267,6 +1279,8 @@ describe("pipeline Tests 673", () => {
       expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
       expect(listOfPipelineResponse[0].name).to.be.equal(d.name);
       expect(listOfPipelineResponse[1].name).to.be.equal(p.name);
+      await deletePipeline(d.name);
+      await deletePipeline(p.name);
     }).timeout(1000 * 60 * 5);
 
     it('should succeed creating an array containing a 409 Conflict status & 200 Created', async () => {
@@ -1292,6 +1306,8 @@ describe("pipeline Tests 673", () => {
       expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
       expect(listOfPipelineResponse[0].name).to.be.equal(d.name);
       expect(listOfPipelineResponse[1].error.code).to.be.equal(409, 'Expected status code to be CONFLICT');
+      await deletePipeline(d);
+      await deletePipeline(p);
     }).timeout(1000 * 60 * 5);
 
     it('should succeed insertting pipelines due to overwrite=true flag', async () => {
@@ -1319,6 +1335,8 @@ describe("pipeline Tests 673", () => {
       expect(listOfPipelineResponse[0].name).to.be.equal(d.name);
       expect(listOfPipelineResponse[1].name).to.be.equal(p.name);
       expect(listOfPipelineResponse[1].nodes[1].nodeName).to.be.equal(listOfPipelineResponse[0].nodes[1].nodeName);
+      await deletePipeline(d);
+      await deletePipeline(p);
     }).timeout(1000 * 60 * 5);
 
     it('should succeed creating an array containing a pipeline with a 404 algorithm Not Found status', async () => {
@@ -1353,6 +1371,7 @@ describe("pipeline Tests 673", () => {
       expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
       expect(listOfPipelineResponse[0].name).to.be.equal(d.name);
       expect(listOfPipelineResponse[1].error.code).to.be.equal(404, 'Expected status code to be NOT FOUND');
+      await deletePipeline(d);
     }).timeout(1000 * 60 * 5);
   })
 });
