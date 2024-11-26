@@ -141,7 +141,7 @@ describe('Alrogithm Tests', () => {
             const nodesStatus = graph.body.nodes[0].batch
             const nodesError = nodesStatus.filter(obj => obj.error == "Algorithm TTL expired")
             expect(nodesError.length).to.be.equal(1)
-
+            await deletePipeline(d)
         }).timeout(1000 * 60 * 5);
 
         it('ttl =0 one of the inputs = 5 seconds', async () => {
@@ -154,6 +154,7 @@ describe('Alrogithm Tests', () => {
             const nodesStatus = graph.body.nodes[0].batch
             const nodesError = nodesStatus.filter(obj => obj.error == "Algorithm TTL expired")
             expect(nodesError.length).to.be.equal(0)
+            await deletePipeline(d)
         }).timeout(1000 * 60 * 5);
 
     })
@@ -1134,6 +1135,8 @@ describe('Alrogithm Tests', () => {
                 expect(response.body.message.length).to.be.greaterThan(2);
                 await deleteAlgorithmJobs(stayUpSkeleton.name);
                 await deleteAlgorithmJobs(statelessAlgName);
+                await deletePipeline(statelessPipeline.name)
+                await deleteAlgorithm(stayupAlgName, true)
             }).timeout(1000 * 60 * 5);
             it('should apply selector when given one, and find no jobs to stop', async () => {
                 const response = await deleteAlgorithmJobs("anyName", "mySelector");
