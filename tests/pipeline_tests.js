@@ -1118,6 +1118,7 @@ describe("pipeline Tests 673", () => {
       const result1 = await getResult(getJobId(pipe1JobId), 200);
       const result2 = await getResult(getJobId(pipe3JobId), 200);
       expect(result1.timeTook).to.be.lessThan(result2.timeTook);
+      await deletePipeline(d);
     }).timeout(1000 * 60 * 35);
 
     it.skip("fast load ", async () => {
