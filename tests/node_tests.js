@@ -707,6 +707,7 @@ describe("Node Tests git 660", () => {
       const result = await getResult(jobId, 200);
       // let diff = []
       expect(result.data[0].result).to.be.equal(true);
+      await deletePipeline(d);
     }).timeout(1000 * 60 * 5);
 
     it(" bool false", async () => {
@@ -727,6 +728,7 @@ describe("Node Tests git 660", () => {
       const result = await getResult(jobId, 200);
       // let diff = []
       expect(result.data[0].result).to.be.equal(false);
+      await deletePipeline(d);
     }).timeout(1000 * 60 * 5);
 
     it(" bool object type", async () => {
@@ -751,6 +753,7 @@ describe("Node Tests git 660", () => {
       const result = await getResult(jobId, 200);
       // let diff = []
       expect(result.data[0].result).to.be.deep.equal(pipe.flowInput.inputs);
+      await deletePipeline(d);
     }).timeout(1000 * 60 * 5);
   });
 

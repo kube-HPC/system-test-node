@@ -610,6 +610,7 @@ describe("pipeline Tests 673", () => {
       const expected = [46, 47, 48, 49, 50, 51, 52, 53, 54, 45];
       const a = result.data.filter((obj) => !expected.includes(obj.result));
       expect(a.length).to.be.equal(0);
+      await deletePipeline(trigger);
     }).timeout(1000 * 60 * 7);
 
     it(" Sub-pipeline does not have flowInput", async () => {
