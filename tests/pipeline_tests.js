@@ -1251,6 +1251,7 @@ describe("pipeline Tests 673", () => {
       const result1 = await getResult(jobId1, 200, 1000 * 60 * 19);
       const result2 = await getResult(jobId2, 200, 1000 * 60 * 19);
       expect(result1.timeTook).to.be.lessThan(result2.timeTook);
+      await deletePipeline(d);
     }).timeout(1000 * 60 * 20);
   });
   describe('insert pipeline array', () => {
@@ -1276,6 +1277,8 @@ describe("pipeline Tests 673", () => {
       expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
       expect(listOfPipelineResponse[0].name).to.be.equal(d.name);
       expect(listOfPipelineResponse[1].name).to.be.equal(p.name);
+      await deletePipeline(d.name);
+      await deletePipeline(p.name);
     }).timeout(1000 * 60 * 5);
 
     it('should succeed creating an array containing a 409 Conflict status & 200 Created', async () => {
@@ -1301,6 +1304,8 @@ describe("pipeline Tests 673", () => {
       expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
       expect(listOfPipelineResponse[0].name).to.be.equal(d.name);
       expect(listOfPipelineResponse[1].error.code).to.be.equal(409, 'Expected status code to be CONFLICT');
+      await deletePipeline(d);
+      await deletePipeline(p);
     }).timeout(1000 * 60 * 5);
 
     it('should succeed insertting pipelines due to overwrite=true flag', async () => {
@@ -1328,6 +1333,8 @@ describe("pipeline Tests 673", () => {
       expect(listOfPipelineResponse[0].name).to.be.equal(d.name);
       expect(listOfPipelineResponse[1].name).to.be.equal(p.name);
       expect(listOfPipelineResponse[1].nodes[1].nodeName).to.be.equal(listOfPipelineResponse[0].nodes[1].nodeName);
+      await deletePipeline(d);
+      await deletePipeline(p);
     }).timeout(1000 * 60 * 5);
 
     it('should succeed creating an array containing a pipeline with a 404 algorithm Not Found status', async () => {
@@ -1362,6 +1369,7 @@ describe("pipeline Tests 673", () => {
       expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
       expect(listOfPipelineResponse[0].name).to.be.equal(d.name);
       expect(listOfPipelineResponse[1].error.code).to.be.equal(404, 'Expected status code to be NOT FOUND');
+      await deletePipeline(d);
     }).timeout(1000 * 60 * 5);
   })
 });
