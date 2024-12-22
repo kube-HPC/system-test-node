@@ -297,6 +297,15 @@ const rerunBuild = async (buildId) => {
     return res;
 }
 
+// normalize k8s values to sent spec for cpu core values
+const normalizeCpuValue = (value) =>{
+    if (typeof value === 'string' && value.endsWith('m')) {
+        // Convert from millicores to cores
+        return parseInt(value.slice(0, -1)) / 1000;
+    }
+    return parseFloat(value);
+}
+
 module.exports = {
 
     runAlgGetResult,
@@ -322,6 +331,6 @@ module.exports = {
     tagAlgorithmVersion,
     getAlgVersion,
     deleteAlgorithmJobs,
-    deleteAlgorithmPods
-
+    deleteAlgorithmPods,
+    normalizeCpuValue
 }

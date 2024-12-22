@@ -20,12 +20,14 @@ const { runAlgorithm,
     storeAlgorithms,
     storeOrUpdateAlgorithms,
     deleteAlgorithmJobs,
-    deleteAlgorithmPods
+    deleteAlgorithmPods,
+    normalizeCpuValue
 } = require('../utils/algorithmUtils')
 
 const { filterPodsByName,
     getNodes,
-    getPodNode
+    getPodNode,
+    getPodSpecByContainer
 } = require('../utils/kubeCtl')
 
 const {
@@ -128,9 +130,6 @@ describe('Alrogithm Tests', () => {
 
 
     describe('TID 480 - Test Algorithm ttl (git 61 342)', () => {
-
-
-
         // p1
         it('ttl = 3 one of the inputs = 5 seconds ', async () => {
             const d = deconstructTestData(testData3)
@@ -686,6 +685,104 @@ describe('Alrogithm Tests', () => {
         }).timeout(1000 * 10 * 60)
 
     })
+
+    describe('Test algorithm workerCustomResources', () => {
+        it(' algorithm with workerCustomResources should run with stated workerCustomValues values', async () => {
+            let alg = {
+                name: "workercustom",
+                cpu: 0.1,
+                gpu: 0,
+                mem: "256Mi",
+                workerCustomResources: {
+                    requests: {
+                        cpu: "0.1",
+                        memory: "128Mi"
+                    },
+                    limits: {
+                        cpu: "0.1",
+                        memory: "128Mi"
+                    },
+                },
+                minHotWorkers: 0,
+                env: "python",
+                entryPoint: "envAlg",
+                type: "Image",
+                options: {
+                    "debug": false,
+                    "pending": false
+                },
+                workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 1000 },
+                "version": "1.0.0",
+                algorithmImage: "docker.io/hkubedevtest/env-alg:vv61f5gc4"
+            }
+            let algRun = {
+                name: "workercustom",
+                input: [
+                    "FOO"
+                ],
+                debug: false
+            }
+            await deleteAlgorithm(alg.name, true)
+            algList.push(alg.name);
+            await storeAlgorithmApply(alg);
+            const res = await runAlgorithm(algRun)
+            await delay(15000);
+            const expectedPod = await filterPodsByName(alg.name);
+            const containerSpec = await getPodSpecByContainer(expectedPod[0].metadata.name);
+            expect(normalizeCpuValue(containerSpec.resources.requests.cpu)).to.be.equal(parseFloat(alg.workerCustomResources.requests.cpu));
+            expect(containerSpec.resources.requests.memory).to.be.equal(alg.workerCustomResources.requests.memory);
+            expect(normalizeCpuValue(containerSpec.resources.limits.cpu)).to.be.equal(parseFloat(alg.workerCustomResources.limits.cpu));
+            expect(containerSpec.resources.limits.memory).to.be.equal(alg.workerCustomResources.limits.memory);
+        }).timeout(1000 * 10 * 60)
+
+    it(' algorithm with workerCustomResources should run with stated workerCustomValues cpu and default memory ', async () => {
+        let alg = {
+            name: "workercustomnomem",
+            cpu: 0.1,
+            gpu: 0,
+            mem: "256Mi",
+            workerCustomResources: {
+                requests: {
+                    cpu: "0.1",
+
+                },
+                limits: {
+                    cpu: "0.2",
+
+                },
+            },
+            minHotWorkers: 0,
+            env: "python",
+            entryPoint: "envAlg",
+            type: "Image",
+            options: {
+                "debug": false,
+                "pending": false
+            },
+            workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 1000 },
+            "version": "1.0.0",
+            algorithmImage: "docker.io/hkubedevtest/env-alg:vv61f5gc4"
+        }
+        let algRun = {
+            name: "workercustomnomem",
+            input: [
+                "FOO"
+            ],
+            debug: false
+        }
+        await deleteAlgorithm(alg.name, true)
+        algList.push(alg.name);
+        await storeAlgorithmApply(alg);
+        const res = await runAlgorithm(algRun)
+        await delay(15000);
+        const expectedPod = await filterPodsByName(alg.name);
+        const containerSpec = await getPodSpecByContainer(expectedPod[0].metadata.name);
+        expect(normalizeCpuValue(containerSpec.resources.requests.cpu)).to.be.equal(parseFloat(alg.workerCustomResources.requests.cpu));
+        expect(containerSpec.resources.requests.memory).to.be.equal('512Mi');
+        expect(normalizeCpuValue(containerSpec.resources.limits.cpu)).to.be.equal(parseFloat(alg.workerCustomResources.limits.cpu));
+        expect(containerSpec.resources.limits.memory).to.be.equal('1Gi');
+    }).timeout(1000 * 10 * 60)
+})
 
     describe('Test algorithm Environment Variables', () => {
         let alg = {

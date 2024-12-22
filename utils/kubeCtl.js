@@ -76,7 +76,10 @@ const filterPodsByName = async (name, namespace = 'default') => {
     const pod = await client.api.v1.namespaces(namespace).pods().get()
 
     const pods = pod.body.items.filter(obj => obj.metadata.name.startsWith(name))
-
+    if (!pods.length) {
+        write_log(`pod that starts with ${name} wasn't found in namespace ${namespace} `);
+        return null;
+    }
     return pods
 }
 
@@ -86,6 +89,18 @@ const getPodNode = async (podName, namespace = 'default') => {
 
     const node = pod.body.spec.nodeName
     return node
+}
+
+const getPodSpecByContainer = async (podName, containerName = 'worker', namespace = 'default') => {
+    const pod = await client.api.v1.namespaces(namespace).pods(podName).get()
+    const container = pod.body.spec.containers.find(c=> c.name === containerName)
+    if(!container) {
+        write_log(`container ${containerName} not found in pod ${podName} `)
+        return null;
+    }
+    else {
+        return container;
+    }
 }
 
 const FailSingelPod = async (podName, namespace = 'default') => {
@@ -124,7 +139,8 @@ module.exports = {
     getPodNode,
     getNodes,
     deleteJob,
-    filterjobsByName
+    filterjobsByName,
+    getPodSpecByContainer
 }
 
 
