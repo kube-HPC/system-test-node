@@ -83,7 +83,7 @@ describe("streaming pipeline test", () => {
             delAlg = algList.slice(j, z);
             const del = delAlg.map((e) => {
                 return deleteAlgorithm(e);
-            })
+            });
             console.log("delAlg-", JSON.stringify(delAlg, null, 2));
             const delResult = await Promise.all(del);
             delResult.forEach(result => {
