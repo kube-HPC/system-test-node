@@ -351,7 +351,7 @@ describe('Alrogithm Tests', () => {
             let pods = [];
             while (pods.length == 0 && times < 15) {
                 await delay(1000);
-                pods = await filterPodsByName(algName);
+                pods = await filterPodsByName(algName) || [];
                 times++;
             }//awaits hotworker uptime
             const podNames = pods.map((n) => { return n.metadata.name }) // Should hold only one node - the original selection
