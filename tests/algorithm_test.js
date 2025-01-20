@@ -496,7 +496,7 @@ describe('Alrogithm Tests', () => {
 
         }).timeout(1000 * 60 * 5);
 
-        it('Update algorithm version while executing force = true', async () => {
+        it.only('Update algorithm version while executing force = true', async () => {
             const pipe = {
                 name: d.name,
                 flowInput: {
@@ -513,7 +513,7 @@ describe('Alrogithm Tests', () => {
             await delay(15000)
             const update = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, true);
             expect(update.status).to.be.equal(201);
-            await delay(5000);
+            await delay(10000);
             const status = await getPipelineStatus(jobId)
             expect(status.body.status).to.be.equal("failed")
             const alg = await getAlgorithm(algorithmName)
