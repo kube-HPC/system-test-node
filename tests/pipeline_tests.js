@@ -10,11 +10,7 @@ const {
   deleteAlgorithm,
   storeAlgorithm,
   StoreDebugAlgorithm,
-  getAlgorithm,
-  getAlgorithmVersion,
-  updateAlgorithmVersion,
-  storeAlgorithmApply,
-  deleteAlgorithmVersion,
+  storeAlgorithmApply
 } = require("../utils/algorithmUtils");
 
 const { cleanPipeLines } = require("../utils/gc");
@@ -112,10 +108,61 @@ const printJobId = (array) => {
   console.log("fail to get jobId");
   return null;
 };
+
 const timeout = (ms) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 describe("pipeline Tests 673", () => {
+  const algList = [];
+
+  const createAlg = async (algName) => {
+    await deleteAlgorithm(algName, true);
+    await storeAlgorithm(algName);
+    algList.push(algName);
+  }
+
+  const applyAlg = async (alg) => {
+    await deleteAlgorithm(alg.name, true);
+    await storeAlgorithmApply(alg);
+    algList.push(alg.name);
+  }
+
+  const createDebugAlg = async (algName) => {
+    await deleteAlgorithm(algName, true);
+    await StoreDebugAlgorithm(algName);
+    algList.push(algName);
+  }
+
+  beforeEach(function () {
+    console.log('\n-----------------------------------------------\n');
+  });
+
+  after(async function () {
+    this.timeout(2 * 60 * 1000);
+    console.log("algList = " + algList);
+    j = 0;
+    z = 3;
+
+    while (j < algList.length) {
+        delAlg = algList.slice(j, z);
+        const del = delAlg.map((e) => {
+            return deleteAlgorithm(e, true);
+        });
+        console.log("delAlg-", JSON.stringify(delAlg, null, 2));
+        const delResult = await Promise.all(del);
+        delResult.forEach(result => {
+            if (result && result.text) {
+                console.log("Delete Result Message:", result.text);
+            }
+        });
+        await delay(2000);
+        j += 3;
+        z += 3;
+        console.log("j=" + j + ",z=" + z);
+    }
+    console.log("----------------------- end -----------------------");
+  });
+
   describe("pipeline includeInResults (git 673)", () => {
     //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/673
 
@@ -148,6 +195,7 @@ describe("pipeline Tests 673", () => {
       await deletePipeline(d);
     }).timeout(1000 * 60 * 2);
   });
+
   describe("pipeline Types (git 614)", () => {
     // undefined
     const rawPipe = {
@@ -239,7 +287,7 @@ describe("pipeline Tests 673", () => {
           ],
         },
       };
-      await storeAlgorithm("versatile");
+      await createAlg("versatile");
       testData.descriptor.name = pipelineName;
       const d = deconstructTestData(testData);
       await storePipeline(d);
@@ -293,7 +341,7 @@ describe("pipeline Tests 673", () => {
       const tensorAlgPath = "docker.io/hkubedevtest/tensor11:v1.0.0"; //"docker.io/hkubedev/tensor1:v1.0.1"
       const tensorAlg = algJson(algorithmName, tensorAlgPath);
       tensorAlg.mem = "5Gi";
-      await storeAlgorithmApply(tensorAlg);
+      await applyAlg(tensorAlg);
       const tensorRawPipe = {
         name: "tesorPipe",
         nodes: [
@@ -368,7 +416,7 @@ describe("pipeline Tests 673", () => {
       };
 
       const res = await runRaw(pipe_in_pipe);
-      const result = await getResult(res.body.jobId, 200);
+      await getResult(res.body.jobId, 200);
       const graph = await getRawGraph(res.body.jobId);
       expect(graph.body.nodes.length).to.be.equal(6);
     }).timeout(1000 * 60 * 7);
@@ -376,12 +424,11 @@ describe("pipeline Tests 673", () => {
     it.skip("type = Debug ", async () => {
       const algName = pipelineRandomName(8).toLowerCase();
 
-      const debugAlg = await StoreDebugAlgorithm(algName);
+      await createDebugAlg(algName);
       const alg = { name: algName, input: [1] };
       const res = await runAlgorithm(alg);
       const jobId = res.body.jobId;
       const status = await getExecPipeline(jobId);
-      await deleteAlgorithm(algName, true);
       expect(status.body.types[1]).to.be.equal("debug");
     }).timeout(1000 * 60 * 7);
 
@@ -459,7 +506,7 @@ describe("pipeline Tests 673", () => {
           ],
         },
       };
-      await storeAlgorithm("versatile");
+      await createAlg("versatile");
       testData.descriptor.name = pipelineName;
       const d = deconstructTestData(testData);
       await storePipeline(d);
@@ -493,11 +540,12 @@ describe("pipeline Tests 673", () => {
       expect(rr.length).to.be.equal(0);
     }).timeout(1000 * 60 * 7);
   });
+
   describe("validate flowInput exist (git 725 756)", () => {
     //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/725
     //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/756
 
-    it(" stored does not have flowInput", async () => {
+    it("stored does not have flowInput", async () => {
       const simpletestData = testData2;
       const storedsimpleName = pipelineRandomName(8);
       console.log("stored does not have flowInput =" + storedsimpleName);
@@ -517,7 +565,7 @@ describe("pipeline Tests 673", () => {
       expect(res.text).to.include("unable to find flowInput.inp");
     }).timeout(1000 * 60 * 2);
 
-    it(" raw does not have flowInput", async () => {
+    it("raw does not have flowInput", async () => {
       const pipe = {
         name: "jnk",
 
@@ -550,8 +598,9 @@ describe("pipeline Tests 673", () => {
 
       expect(res.text).to.include("unable to find flowInput.two");
     }).timeout(1000 * 60 * 2);
+  
     //undefined
-    it(" cron  does not have flowInput ", async () => {
+    it("cron  does not have flowInput ", async () => {
       const testData = testData3;
       const pipelineName = pipelineRandomName(8);
       testData.descriptor.name = pipelineName;
@@ -566,8 +615,9 @@ describe("pipeline Tests 673", () => {
       await deletePipeline(d);
       expect(error.length).to.be.greaterThan(0);
     }).timeout(1000 * 60 * 7);
+
     //undefined
-    it(" Trigger does not have flowInput", async () => {
+    it("Trigger does not have flowInput", async () => {
       const simpleTestdata = testData2;
       const triggerTestData = testData2;
       const simpleName = simpleTestdata.descriptor.name;
@@ -588,8 +638,9 @@ describe("pipeline Tests 673", () => {
       await deletePipeline(d);
       expect(error.length).to.be.greaterThan(0);
     }).timeout(1000 * 60 * 7);
+
     //undefined
-    it(" Trigger get input from parent ", async () => {
+    it("Trigger get input from parent", async () => {
       const triggerTestData = testData9;
       const triggerdName = pipelineRandomName(8);
       triggerTestData.descriptor.name = triggerdName;
@@ -613,7 +664,7 @@ describe("pipeline Tests 673", () => {
       await deletePipeline(trigger);
     }).timeout(1000 * 60 * 7);
 
-    it(" Sub-pipeline does not have flowInput", async () => {
+    it("Sub-pipeline does not have flowInput", async () => {
       // testData2 pipeline Simple2 with flowInput
       // testData4 = versatile-pipe
       const simple2TestData = testData2;
@@ -641,7 +692,7 @@ describe("pipeline Tests 673", () => {
           ],
         },
       };
-      await storeAlgorithm("versatile");
+      await createAlg("versatile");
       simple2TestData.descriptor.name = pipelineName;
       const d = deconstructTestData(simple2TestData);
       await storePipeline(d);
@@ -650,7 +701,7 @@ describe("pipeline Tests 673", () => {
       await storePipeline(e);
       const res = await runStored(pipe);
       await delay(1000 * 20);
-      const dr = await getDriverIdByJobId(res.body.jobId);
+      await getDriverIdByJobId(res.body.jobId);
       const log = await getWebSocketlogs();
       const after = log
         .filter((obj) => typeof obj.message == "string")
@@ -669,13 +720,11 @@ describe("pipeline Tests 673", () => {
       const printAndReturnAlg = algJson(algorithm.name, algorithm.image);
       printAndReturnAlg["env"] = "python";
       printAndReturnAlg["entryPoint"] = "print-and-return.py";
-      await deleteAlgorithm(algorithm.name);
-      await storeAlgorithmApply(printAndReturnAlg);
+      await applyAlg(printAndReturnAlg);
       await deletePipeline(pipeline["name"]);
       await storePipeline(pipeline);
       const jobId = await runStoredAndWaitForResults(pipeline);
       await deletePipeline(pipeline["name"]);
-      await deleteAlgorithm(algorithm.name);
       const result = await getResult(jobId, 200);
       expect(result.data).to.have.lengthOf(8);
       result.data.forEach(output => {
@@ -685,6 +734,7 @@ describe("pipeline Tests 673", () => {
       });
     }).timeout(1000 * 60 * 2);
   });
+
   describe("pause_resume_pipelineas (git 529 344)", () => {
     //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/529
     const algorithmName = "algorithm-version-test";
@@ -701,8 +751,7 @@ describe("pipeline Tests 673", () => {
           inp: 15000,
         },
       };
-      await deleteAlgorithm(algorithmName, true);
-      await storeAlgorithmApply(algorithmV1);
+      await applyAlg(algorithmV1);
 
       await delay(2000);
       await storePipeline(d);
@@ -710,12 +759,12 @@ describe("pipeline Tests 673", () => {
       const jobId = res.body.jobId;
       await delay(3000);
 
-      const pause = await pausePipeline(jobId);
+      await pausePipeline(jobId);
       await delay(3000);
       let pipelineStatus = await getPipelineStatus(jobId);
       expect(pipelineStatus.body.status).to.be.equal("paused");
-      const resume = await resumePipeline(jobId);
-      const result = await getResult(jobId, 200);
+      await resumePipeline(jobId);
+      await getResult(jobId, 200);
     }).timeout(1000 * 60 * 5);
 
     it("pause resume pipeline multiple batch", async () => {
@@ -727,12 +776,12 @@ describe("pipeline Tests 673", () => {
       const jobId = res.body.jobId;
       await delay(3000);
 
-      const pause = await pausePipeline(jobId);
+      await pausePipeline(jobId);
       await delay(60000);
       let pipelineStatus = await getPipelineStatus(jobId);
       expect(pipelineStatus.body.status).to.be.equal("paused");
-      const resume = await resumePipeline(jobId);
-      const result = await getResult(jobId, 200);
+      await resumePipeline(jobId);
+      await getResult(jobId, 200);
       await deletePipeline(e);
     }).timeout(1000 * 60 * 20);
 
@@ -743,8 +792,7 @@ describe("pipeline Tests 673", () => {
           inp: 15000,
         },
       };
-      await deleteAlgorithm(algorithmName, true);
-      await storeAlgorithmApply(algorithmV1);
+      await applyAlg(algorithmV1);
 
       await delay(2000);
       await storePipeline(d);
@@ -752,11 +800,11 @@ describe("pipeline Tests 673", () => {
       const jobId = res.body.jobId;
       await delay(3000);
 
-      const pause = await pausePipeline(jobId);
+      await pausePipeline(jobId);
       await delay(3000);
-      let pipelineStatus = await getPipelineStatus(jobId);
+      await getPipelineStatus(jobId);
 
-      const stop = await stopPipeline(jobId);
+      await stopPipeline(jobId);
       const result = await getPipelineStatus(jobId);
       expect(result.body.status).to.be.equal("stopped");
     }).timeout(1000 * 60 * 5);
@@ -819,6 +867,7 @@ describe("pipeline Tests 673", () => {
       expect(firstAfter.body.status).to.be.equal("stopped");
       expect(lastAfter.body.status).to.be.equal("stopped");
     }).timeout(1000 * 60 * 25);
+
     describe("pipeline options", async () => {
       const d = deconstructTestData(ttlPipe);
 
@@ -838,7 +887,7 @@ describe("pipeline Tests 673", () => {
         const runStoredResult = await runStored(ttl); //should be stoped  due to ttl
         let getStatusResultBody = await getStatus(runStoredResult.body.jobId, 200, "active");
         await timeout(10500)
-        const cealn = await cleanPipeLines();
+        await cleanPipeLines();
         getStatusResultBody = await getStatus(runStoredResult.body.jobId, 200, "stopped");
         expect(getStatusResultBody.reason).to.be.equal("pipeline expired");
       }).timeout(1000 * 60 * 5);
@@ -847,11 +896,10 @@ describe("pipeline Tests 673", () => {
         const algorithmName = "algo-not-image";
 
         await deletePipeline(d);
-        await deleteAlgorithm(algorithmName, true);
 
         const testAlgPath = "docker.io/hkubedevtest/test";
         const testAlg = algJson(algorithmName, testAlgPath);
-        await storeAlgorithmApply(testAlg);
+        await applyAlg(testAlg);
         await delay(2000);
 
         d.nodes = [
@@ -879,12 +927,13 @@ describe("pipeline Tests 673", () => {
         const runStoredResult = await runStored(ttl);
         let getStatusResultBody = await getStatus(runStoredResult.body.jobId, 200, "active");
         await timeout(5500)
-        const cealn = await cleanPipeLines();
+        await cleanPipeLines();
         getStatusResultBody = await getStatus(runStoredResult.body.jobId, 200, "stopped");
         expect(getStatusResultBody.reason).to.be.equal(
           "pipeline active TTL expired"
         );
       }).timeout(1000 * 60 * 5);
+
       it(" concurrentPipelines - pending  pipeline", async () => {
         //set test data to testData1
         const d = deconstructTestData(testData12);
@@ -942,6 +991,7 @@ describe("pipeline Tests 673", () => {
       }).timeout(1000 * 60 * 5);
     });
   });
+
   describe("Trigger pipeline ", () => {
     it("Trigger tree", async () => {
       const testData = testData2;
@@ -1049,6 +1099,7 @@ describe("pipeline Tests 673", () => {
       await deletePipeline(e);
     }).timeout(1000 * 60 * 7);
   });
+
   describe("TID-440 Pipeline priority tests (git 58)~", () => {
     it("pipeline queue priority test", async () => {
       var characters =
@@ -1217,7 +1268,7 @@ describe("pipeline Tests 673", () => {
       testData11.descriptor.name = testData11.descriptor.name + "2";
       const d2 = deconstructTestData(testDataA);
       await deletePipeline(d2);
-      const r = await storePipeline(d2);
+      await storePipeline(d2);
       const res2 = await runStored(pipe);
       await delay(5000);
       pipe.name = d2.name;
@@ -1256,6 +1307,7 @@ describe("pipeline Tests 673", () => {
       await deletePipeline(d);
     }).timeout(1000 * 60 * 20);
   });
+
   describe('insert pipeline array', () => {
     it('should succeed to store an array of pipelines', async () => {
       const p = deconstructTestData(testData11);
