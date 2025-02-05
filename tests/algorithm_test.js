@@ -6,7 +6,8 @@ const delay = require('delay')
 const config = require('../config/config');
 require('./processEvent')
 
-const { runAlgorithm,
+const {
+    runAlgorithm,
     deleteAlgorithm,
     getAlgorithm,
     getAlgorithmVersion,
@@ -23,7 +24,8 @@ const { runAlgorithm,
     normalizeCpuValue
 } = require('../utils/algorithmUtils')
 
-const { filterPodsByName,
+const {
+    filterPodsByName,
     getNodes,
     getPodNode,
     getPodSpecByContainer
@@ -62,7 +64,12 @@ const {
 } = require('../utils/pipelineUtils')
 
 const {
-    pipelineRandomName } = require('../utils/pipelineUtils')
+    pipelineRandomName
+} = require('../utils/pipelineUtils')
+
+const { 
+    intervalDelay
+ } = require('../utils/misc_utils');
 
 chai.use(chaiHttp);
 
@@ -201,7 +208,7 @@ describe('Alrogithm Tests', () => {
             const algorithm = { name: algorithmSatisfied.name, input: [] };
             await applyAlg(algorithmSatisfied);
             await runAlgorithm(algorithm);
-            await delay(45000);
+            await intervalDelay("Waiting", 45000, 2500);
             const allAlgorithms = await getAllAlgorithms();
             const algo = allAlgorithms.find(algo => algo.name === algorithm.name);
             if (!algo) {
@@ -214,7 +221,7 @@ describe('Alrogithm Tests', () => {
             const algorithm = { name: algorithmNotSatisfied.name, input: [] };
             await applyAlg(algorithmNotSatisfied);
             await runAlgorithm(algorithm);
-            await delay(45000);
+            await intervalDelay("Waiting", 45000, 2500);
             const allAlgorithms = await getAllAlgorithms();
             const algo = allAlgorithms.find(algo => algo.name === algorithm.name);
             if (!algo) {
@@ -317,8 +324,8 @@ describe('Alrogithm Tests', () => {
             const algV1 = algJson(algName, algorithmImageV1);
             algV1.minHotWorkers = 1; // get a pod running
             algV1.labels = { "created-by": "test" };
-            let v1 = await applyAlg(algV1);
-            await delay(10000);
+            await applyAlg(algV1);
+            await intervalDelay("Waiting", 10000);
             let times = 0;
             let pods = [];
             while (pods.length === 0 && times < 15) {
@@ -512,10 +519,10 @@ describe('Alrogithm Tests', () => {
             await storePipeline(d);
             const res = await runStored(pipe);
             const jobId = res.body.jobId;
-            await delay(15000);
+            await intervalDelay("Waiting", 15000, 1500);
             const update = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, true);
             expect(update.status).to.be.equal(201);
-            await delay(10000);
+            await intervalDelay("Waiting", 10000);
             const status = await getPipelineStatus(jobId);
             expect(status.body.status).to.be.equal("failed");
             const alg = await getAlgorithm(algorithmName);
@@ -535,7 +542,7 @@ describe('Alrogithm Tests', () => {
             await storePipeline(d);
             const res = await runStored(pipe);
             const jobId = res.body.jobId;
-            await delay(10000);
+            await intervalDelay("Waiting", 10000);
             const update = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, false);
             expect(update.status).to.be.equal(400);
             await delay(3000);
@@ -693,7 +700,7 @@ describe('Alrogithm Tests', () => {
             }
             await applyAlg(alg);
             await runAlgorithm(algRun);
-            await delay(15000);
+            await intervalDelay("Waiting", 15000, 1500);
             const expectedPod = await filterPodsByName(alg.name);
             const containerSpec = await getPodSpecByContainer(expectedPod[0].metadata.name);
             expect(normalizeCpuValue(containerSpec.resources.requests.cpu)).to.be.equal(parseFloat(alg.workerCustomResources.requests.cpu));
@@ -739,7 +746,7 @@ describe('Alrogithm Tests', () => {
             }
             await applyAlg(alg);
             await runAlgorithm(algRun);
-            await delay(15000);
+            await intervalDelay("Waiting", 15000, 1500);
             const expectedPod = await filterPodsByName(alg.name);
             const containerSpec = await getPodSpecByContainer(expectedPod[0].metadata.name);
             expect(normalizeCpuValue(containerSpec.resources.requests.cpu)).to.be.equal(parseFloat(alg.workerCustomResources.requests.cpu));
@@ -887,7 +894,7 @@ describe('Alrogithm Tests', () => {
                 workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
             }
             await applyAlg(alg);
-            await delay(40000);
+            await intervalDelay("Waiting", 40000);
             const workers = await waitForWorkers(alg.name, alg.minHotWorkers);
             await deleteAlgorithm(alg.name, true);
             expect(workers.length).to.be.equal(alg.minHotWorkers);
@@ -1146,7 +1153,7 @@ describe('Alrogithm Tests', () => {
                 await applyAlg(stayUpAlg);
                 stayUpAlg.name = stayupAlgName;
                 const result = await runAlgorithm(stayUpSkeleton);
-                await delay(20000); // wait for creation
+                await intervalDelay("Waiting for creation", 20000);
                 const response = await deleteAlgorithmPods(stayUpSkeleton.name);
                 await delay(1000);
                 await stopPipeline(result.body.jobId);
@@ -1161,7 +1168,7 @@ describe('Alrogithm Tests', () => {
                 let storeResult = await applyAlg(stayUpAlg);
                 storeResult = await storePipeline(statelessPipeline);
                 await runStored(statelessPipeline);
-                await delay(30000);
+                await intervalDelay("Waiting", 30000);
                 const response = await deleteAlgorithmPods("yellow-alg");
                 expect(response.statusCode).to.be.equal(200);
                 expect(response.body.message.length).to.be.greaterThan(2);
@@ -1184,7 +1191,7 @@ describe('Alrogithm Tests', () => {
                 await applyAlg(stayUpAlg);
                 stayUpAlg.name = stayupAlgName;
                 const result = await runAlgorithm(stayUpSkeleton);
-                await delay(20000); // wait for creation
+                await intervalDelay("Waiting for creation", 20000);
                 const response = await deleteAlgorithmJobs(stayUpSkeleton.name);
                 await delay(1000);
                 await stopPipeline(result.body.jobId);
@@ -1198,7 +1205,7 @@ describe('Alrogithm Tests', () => {
                 let storeResult = await applyAlg(stayUpAlg);
                 storeResult = await storePipeline(statelessPipeline);
                 await runStored(statelessPipeline);
-                await delay(30000);
+                await intervalDelay("Waiting", 30000);
                 const response = await deleteAlgorithmJobs("yellow-alg");
                 expect(response.statusCode).to.be.equal(200);
                 expect(response.body.message.length).to.be.greaterThan(2);
