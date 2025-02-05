@@ -88,7 +88,7 @@ describe('Alrogithm Tests', () => {
     let algList = [];
     let selectedNodeAlgName = "";
 
-    // se one of the following methods to apply algorithms, as these methods ensure that the algorithms are inserted into the algList.
+    // Use one of the following methods to apply algorithms, as these methods ensure that the algorithms are inserted into the algList.
     // This, in turn, guarantees that no unnecessary data is left behind by properly removing those algorithms.
     const applyAlg = async (alg) => {
         await deleteAlgorithm(alg.name, true);
