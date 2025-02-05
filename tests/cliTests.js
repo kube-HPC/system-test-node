@@ -1,46 +1,42 @@
 const chai = require('chai');
 const path = require('path');
 const chaiHttp = require('chai-http');
-const config = require(path.join(process.cwd(), 'config/config'));
 const delay = require('delay')
 const expect = chai.expect;
 const assertArrays = require('chai-arrays');
-
-
 const execSync = require('child_process').execSync;
+
 const {
     pipelineRandomName,
     getPipeline,
     deletePipeline,
-    getPipelinestatusByName,
     storePipeline,
     deconstructTestData,
     getPipelineStatus,
-    runStored,
-    getExecPipeline
+    runStored
 } = require('../utils/pipelineUtils')
 
 const {
     pipelineDevFolder
-  } = require("../config/index").syncTest;
+} = require("../config/index").syncTest;
 
 const {
     getJobIdStatus,
     getResult,
-    getStatusall } = require('../utils/results')
+    getStatusall
+} = require('../utils/results')
 
 const {
     syncAlg
 } = require('../additionalFiles/defaults/algorithms/sync-dev-folder.js')
-
 
 const {
     runAlgGetResult,
     getAlgorithm,
     storeAlgorithmApply,
     deleteAlgorithm,
-    storeAlgorithm,
-    getBuildList } = require('../utils/algorithmUtils')
+    getBuildList
+} = require('../utils/algorithmUtils')
 
 chai.use(chaiHttp);
 chai.use(assertArrays);
@@ -54,11 +50,9 @@ const exceSyncString = async (command) => {
     console.log(noColor)
     console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     return noColor
-
 }
 
 const execSyncReturenJSON = async (command) => {
-
     const noColor = await exceSyncString(command)
     const obj = yaml.load(noColor)
     const result = JSON.stringify(obj, null, 2)
@@ -69,9 +63,19 @@ const execSyncReturenJSON = async (command) => {
     return jsonResult
 }
 
-
 describe('Hkubectl Tests', () => {
     let algList = []
+
+    // Use this method to apply algorithms, as it ensures that the algorithms are inserted into the algList.
+    // This, in turn, guarantees that no unnecessary data is left behind by properly removing those algorithms.
+    const applyAlg = async (alg) => {
+        await deleteAlgorithm(alg.name, true);
+        if (!algList.includes(alg.name)) {
+            algList.push(alg.name);
+        }
+        const res = await storeAlgorithmApply(alg);
+        return res;
+    }
 
     after(async function () {
         this.timeout(2 * 60 * 1000);
@@ -93,11 +97,9 @@ describe('Hkubectl Tests', () => {
             z += 3
             console.log("j=" + j + ",z=" + z)
         }
-
-
         console.log("end -----")
+    });
 
-    })
     describe('hkubecl algorithm tests', () => {
         it('hkube algorithm list', async () => {
             const runSimple = "hkubectl algorithm list --json"
@@ -108,8 +110,6 @@ describe('Hkubectl Tests', () => {
             expect(jsonResult.length).to.be.above(6)
 
         }).timeout(1000 * 60 * 6)
-
-
 
         it('hkube algorithm get', async () => {
             const runSimple = "hkubectl algorithm get green-alg --json"
@@ -166,10 +166,6 @@ describe('Hkubectl Tests', () => {
             console.log(alg.body)
             expect(alg.status).to.be.equal(404)
         }).timeout(1000 * 60 * 10)
-
-
-
-
 
         it('hkube algorithm apply alg version', async () => {
             const algName = pipelineRandomName(8).toLowerCase()
@@ -250,14 +246,10 @@ describe('Hkubectl Tests', () => {
             await deleteAlgorithm(algName, true)
             expect(result.data[0].result.version.toString()).to.be.equal("3.5")
 
-        }).timeout(1000 * 60 * 6)
+        }).timeout(1000 * 60 * 6);
+    });
 
-
-
-
-    })
     describe('hkubecl pipeline tests', () => {
-
         it('pipeline get', async () => {
 
             const get = "hkubectl pipeline get simple  --json"
@@ -286,9 +278,9 @@ describe('Hkubectl Tests', () => {
             expect(pipe.body.name).to.be.equal(pipelineName)
             await deletePipeline(pipelineName)
         }).timeout(1000 * 60 * 6)
-    })
-    describe('hkubecl exec tests', () => {
+    });
 
+    describe('hkubecl exec tests', () => {
         it('exec stored pipe wait', async () => {
 
             console.log("start")
@@ -297,7 +289,6 @@ describe('Hkubectl Tests', () => {
             const jsonResult = await execSyncReturenJSON(runSimple);
             expect(jsonResult.jobResult[0].result).to.be.equal('links-1')
         }).timeout(1000 * 60 * 6)
-
 
         it('exec stored pipe noWait', async () => {
             const runSimple = "hkubectl exec stored simple --noWait"
@@ -324,7 +315,6 @@ describe('Hkubectl Tests', () => {
             expect(result.data[0].result).to.be.equal('links-1')
         }).timeout(1000 * 60 * 6)
 
-
         it('exec  algorithm wait', async () => {
 
             console.log("start")
@@ -334,7 +324,6 @@ describe('Hkubectl Tests', () => {
             console.log(jsonResult)
             expect(jsonResult.jobResult[0].nodeName).to.be.equal('green-alg')
         }).timeout(1000 * 60 * 6)
-
 
         it('exec  algorithm noWait', async () => {
             const runSimple = "hkubectl exec algorithm green-alg --noWait"
@@ -360,7 +349,6 @@ describe('Hkubectl Tests', () => {
             console.log(result)
             expect(result.status).to.be.equal("stopped")
         }).timeout(1000 * 60 * 6)
-
 
         it('exec status pipe ', async () => {
             const runSimple = "hkubectl exec stored simple --noWait"
@@ -415,7 +403,6 @@ describe('Hkubectl Tests', () => {
     });
 
     describe('sync test', () => {
-
         const delay = require('delay')
         function execShellCommand(cmd) {
             const exec = require('child_process').exec;
@@ -477,7 +464,6 @@ describe('Hkubectl Tests', () => {
 
         }).timeout(1000 * 60 * 10)
 
-
         it('sync python alg with requirements', async () => {
             const folderPath = path.join(process.cwd(), 'additionalFiles/pythonAlg');
             const algName = pipelineRandomName(8).toLowerCase()
@@ -509,8 +495,6 @@ describe('Hkubectl Tests', () => {
             console.log(result)
             deleteAlgorithm(algName)
         }).timeout(1000 * 60 * 10)
-
-
 
         it('sync python alg ignor files', async () => {
             //the folder containg hkubeignore that has one line to ignore *.txt
@@ -567,8 +551,7 @@ describe('Hkubectl Tests', () => {
 
             }
 
-            const res = await storeAlgorithmApply(alg1);
-            algList.push(newName)
+            await applyAlg(alg1);
             const result1 = await runAlgGetResult(newName, [4])
             console.log(result)
             expect(result1.data[0].result).to.be.equal(0)
@@ -590,9 +573,8 @@ describe('Hkubectl Tests', () => {
                 }
             }
             await deleteAlgorithm(somealg.name)
-            const storeresult = await storeAlgorithmApply(somealg);
+            const storeresult = await applyAlg(somealg);
             console.log(storeresult.result)
-            algList.push("somealg")
 
             const startCommand = ` hkubectl sync start` +
                 ` --algorithmName ${somealg.name}` +
@@ -625,9 +607,8 @@ describe('Hkubectl Tests', () => {
                 }
             }
             await deleteAlgorithm(somealg.name)
-            const storeresult = await storeAlgorithmApply(somealg);
+            const storeresult = await applyAlg(somealg);
             console.log(storeresult.result)
-            algList.push("somealg")
 
             const stopCommand = ` hkubectl sync stop` +
                 ` --algorithmName ${somealg.name}`
@@ -648,8 +629,7 @@ describe('Hkubectl Tests', () => {
             const randomName = pipelineRandomName(8).toLowerCase()
             const algName = "sync-dev-folder"+randomName;
             syncAlg.name = algName;
-            algList.push(algName);
-            await storeAlgorithmApply(syncAlg);
+            await applyAlg(syncAlg);
             const localFolder = path.join(process.cwd(), 'additionalFiles/file1');
             // create and push pipeline with sync-dev-folder alg, input being devFolder = "/somePath"
             const testData = pipelineDevFolder;
@@ -776,6 +756,7 @@ describe('Hkubectl Tests', () => {
 
 
             }).timeout(1000 * 60 * 10);
+
             it('export pipelines as jsons to a local directory', async () => {
                 const fs = require('fs');
                 const rimraf = require('rimraf');
@@ -887,9 +868,10 @@ describe('Hkubectl Tests', () => {
                 rimraf.sync(baseFolderPath);
                 fs.mkdirSync(baseFolderPath);
             }).timeout(1000 * 60 * 6);
-        })
+        });
+
         describe('hkubecl import tests', () => {
-            it('import algoritms from a local directory to hkube env', async () => {
+            it.only('import algoritms from a local directory to hkube env', async () => {
                 const fs = require('fs');
                 await deleteAlgorithm('6o5yjjiy')
                 await deleteAlgorithm('7i59t2ad')
@@ -968,7 +950,6 @@ describe('Hkubectl Tests', () => {
                 await deleteAlgorithm('7i59t2ad')
             }).timeout(1000 * 60 * 6);
 
-
             it('import existing pipeline using overwrite', async () => {
                 const fs = require('fs');
                 await deletePipeline('0aIWYOaR')
@@ -998,6 +979,7 @@ describe('Hkubectl Tests', () => {
                 await deleteAlgorithm('6o5yjjiy')
                 await deleteAlgorithm('7i59t2ad')
             }).timeout(1000 * 60 * 6);
+
             it('import existing pipeline', async () => {
                 const fs = require('fs');
                 await deletePipeline('0aIWYOaR')
@@ -1027,6 +1009,7 @@ describe('Hkubectl Tests', () => {
                 await deleteAlgorithm('6o5yjjiy')
                 await deleteAlgorithm('7i59t2ad')
             }).timeout(1000 * 60 * 6);
+
             it('import all data from a local directory to hkube env. change one param in an algo', async () => {
                 const fs = require('fs');
                 await deletePipeline('0aIWYOaR')
@@ -1089,6 +1072,6 @@ describe('Hkubectl Tests', () => {
                 expect(result3.stderr).to.include(`Directory "additionalFiles/nonExistingDir/pipelines" does not exist.`);
                 expect(result3.stderr).to.include(`Directory "additionalFiles/nonExistingDir/algorithms" does not exist.`);
             }).timeout(1000 * 60 * 10);
-        })
+        });
     });
 })
