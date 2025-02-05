@@ -9,10 +9,12 @@ const delay = require('delay');
 
 const {
     getStatusall,
-    idGen } = require('../utils/results')
+    idGen
+} = require('../utils/results')
 
 const {
-    pipelineRandomName } = require('../utils/pipelineUtils')
+    pipelineRandomName
+} = require('../utils/pipelineUtils')
 
 const {
     runAlgGetResult,
@@ -24,13 +26,32 @@ const {
     buildAlgorithm,
     buildGitAlgorithm,
     stopBuild,
-    rerunBuild } = require('../utils/algorithmUtils')
+    rerunBuild
+} = require('../utils/algorithmUtils')
+
+const { 
+    intervalDelay
+} = require('../utils/misc_utils');
 
 chai.use(chaiHttp);
 chai.use(assertArrays);
 
 describe('Algorithm build test', () => {
     let algList = []
+
+    // Use this method to apply algorithms, as it ensures that the algorithms are inserted into the algList.
+    // This, in turn, guarantees that no unnecessary data is left behind by properly removing those algorithms.
+    const applyAlg = async (alg, code, entry) => {
+        await deleteAlgorithm(alg.name, true);
+        if (!algList.includes(alg.name)) {
+            algList.push(alg.name);
+        }
+        const res = await chai.request(config.apiServerUrl)
+        .post('/store/algorithms/apply')
+        .field('payload', JSON.stringify(alg))
+        .attach('file', fse.readFileSync(code), entry);
+        return res;
+    }
 
     beforeEach(function () {
         console.log('\n-----------------------------------------------\n');
@@ -46,15 +67,23 @@ describe('Algorithm build test', () => {
         while (j < algList.length) {
             delAlg = algList.slice(j, z);
             const del = delAlg.map((e) => {
-                return deleteAlgorithm(e);
+                return deleteAlgorithm(e, true);
             });
             console.log("delAlg-", JSON.stringify(delAlg, null, 2));
             const delResult = await Promise.all(del);
             delResult.forEach(result => {
                 if (result && result.text) {
-                    console.log("Delete Result Message:", result.text);
+                    try { 
+                        const parsedText = JSON.parse(result.text);
+                        if (parsedText.message) {
+                            console.log("Delete Result Message:", parsedText.message);
+                        }
+                    }
+                    catch (error) { 
+                        console.error(error);
+                    }
                 }
-            });            
+            });          
             await delay(2000);
             j += 3;
             z += 3;
@@ -80,7 +109,6 @@ describe('Algorithm build test', () => {
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algList });
             expect(buildStatusAlg.status).to.be.equal("completed");
             const result = await runAlgGetResult(algName, [4]);
-            await deleteAlgorithm(algName, true);
             expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,7,16,final,0");
         }).timeout(1000 * 60 * 20);
         
@@ -92,7 +120,6 @@ describe('Algorithm build test', () => {
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algList });
             expect(buildStatusAlg.status).to.be.equal("completed");
             const result = await runAlgGetResult(algName, [4]);
-            await deleteAlgorithm(algName, true);
             expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,7,16,final,0");
         }).timeout(1000 * 60 * 20);
 
@@ -104,7 +131,6 @@ describe('Algorithm build test', () => {
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algList });
             expect(buildStatusAlg.status).to.be.equal("completed");
             const result = await runAlgGetResult(algName, [4]);
-            await deleteAlgorithm(algName, true);
             expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,8,16,final,0");
         }).timeout(1000 * 60 * 20);
 
@@ -116,7 +142,6 @@ describe('Algorithm build test', () => {
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algList });
             expect(buildStatusAlg.status).to.be.equal("completed");
             const result = await runAlgGetResult(algName, [4]);
-            await deleteAlgorithm(algName, true);
             expect(result.data[0].result.sysVersion.toString()).to.be.equal("3,9,16,final,0");
         }).timeout(1000 * 60 * 20);
 
@@ -128,7 +153,6 @@ describe('Algorithm build test', () => {
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algList });
             expect(buildStatusAlg.status).to.be.equal("completed");
             const result = await runAlgGetResult(algName, [4]);
-            await deleteAlgorithm(algName, true);
             expect(result.data[0].result.sysVersion.toString()).to.be.equal('3,10,15,final,0');
         }).timeout(1000 * 60 * 20);
 
@@ -138,15 +162,14 @@ describe('Algorithm build test', () => {
             const pythonVersion = "python:3.7";
 
             const buildId = await buildAlgorithm({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algList });
-            await delay(30000);
-            const res = await stopBuild(buildId);
-            await delay(10000);
+            await intervalDelay("Waiting", 30000, 2000);
+            await stopBuild(buildId);
+            await intervalDelay("Waiting", 10000);
             const status = await getBuildStates(buildId);
             expect(status).to.be.equal("stopped");
-            const rerun = await rerunBuild(buildId);
-            await delay(50000);
+            await rerunBuild(buildId);
+            await intervalDelay("Waiting", 50000);
             let rereunStatus = await getBuildStates(buildId);
-            await deleteAlgorithm(algName, true);
             expect(rereunStatus).to.be.equal("active");
         }).timeout(1000 * 60 * 5);
     })
@@ -169,16 +192,12 @@ describe('Algorithm build test', () => {
                 workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
             }
 
-            const res = await chai.request(config.apiServerUrl)
-                .post('/store/algorithms/apply')
-                .field('payload', JSON.stringify(data))
-                .attach('file', fse.readFileSync(code), entry);
+            const res = await applyAlg(data, code, entry);
             expect(res.status).to.eql(200);
             const buildIdAlg = res.body.buildId;
             const buildStatusAlg = await getStatusall(buildIdAlg, `/builds/status/`, 200, "completed", 1000 * 60 * 10);
             expect(buildStatusAlg.status).to.be.equal("completed");
             const result = await runAlgGetResult(algName, [4]);
-            await deleteAlgorithm(algName, true);
             expect(result.status).to.be.equal("completed");
         }).timeout(1000 * 60 * 20);
 
@@ -198,10 +217,7 @@ describe('Algorithm build test', () => {
                 workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
             }
 
-            const res = await chai.request(config.apiServerUrl)
-                .post('/store/algorithms/apply')
-                .field('payload', JSON.stringify(data))
-                .attach('file', fse.readFileSync(code), entry)
+            const res = await applyAlg(data, code, entry);
 
             expect(res.status).to.eql(200);
             const buildIdAlg = res.body.buildId;
@@ -218,7 +234,6 @@ describe('Algorithm build test', () => {
                 ],
                 ["user", "age"]
             ]);
-            await deleteAlgorithm(algName, true);
             expect(result.data[0].result.result.sorted[0].user).to.be.equal("barney");
             expect(result.data[0].result.result.sorted[0].age).to.be.equal(34);
             expect(result.status).to.be.equal("completed");
@@ -227,8 +242,8 @@ describe('Algorithm build test', () => {
         it('dependency installed from sh file', async () => {
             // buil algorithm use  the  installDeps.sh scripts that installed numpy and create folder with files 
             // the algorithm use numpy and read the files that the script created.  
-            const aldCode = path.join(process.cwd(), 'additionalFiles/depsInstallCmd/depsInstallCmd.zip');
-
+            const code = path.join(process.cwd(), 'additionalFiles/depsInstallCmd/depsInstallCmd.zip');
+            const entry = "main";
             const algName = pipelineRandomName(8).toLowerCase();
 
             const data = {
@@ -243,10 +258,7 @@ describe('Algorithm build test', () => {
                 workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
             }
 
-            const res = await chai.request(config.apiServerUrl)
-                .post('/store/algorithms/apply')
-                .field('payload', JSON.stringify(data))
-                .attach('file', fse.readFileSync(aldCode), "main");
+            const res = await applyAlg(data, code, entry);
 
             expect(res.status).to.eql(200);
             const buildIdAlg = res.body.buildId;
@@ -254,7 +266,6 @@ describe('Algorithm build test', () => {
 
             expect(buildStatusAlg.status).to.be.equal("completed");
             const result = await runAlgGetResult(algName, [4]);
-            await deleteAlgorithm(algName, true);
             expect(result.data[0].result).to.be.equal(10);
         }).timeout(1000 * 60 * 20);
     });
@@ -270,7 +281,6 @@ describe('Algorithm build test', () => {
             const buildStatusAlg = await buildGitAlgorithm({ algName, gitUrl, gitKind, entry, branch, language, algorithmArray: algList });
             expect(buildStatusAlg.status).to.be.equal("completed");
             const result = await runAlgGetResult(algName, [4]);
-            await deleteAlgorithm(algName, true);
             expect(result.data[0].result.version).to.be.equal("master margev1");
             expect(result.data[0].result.commit).to.be.equal("A6");
         }).timeout(1000 * 60 * 20);
@@ -285,7 +295,6 @@ describe('Algorithm build test', () => {
             const buildStatusAlg = await buildGitAlgorithm({ algName, gitUrl, gitKind, entry, branch, language, algorithmArray: algList });
             expect(buildStatusAlg.status).to.be.equal("completed");
             const result = await runAlgGetResult(algName, [4, 3, 2, 1]);
-            await deleteAlgorithm(algName, true);
             expect(result.data[0].result.data.myAnswer).to.be.equal(33);
             expect(result.data[0].result.files.link).to.be.equal("mylink");
         }).timeout(1000 * 60 * 20);
@@ -300,7 +309,6 @@ describe('Algorithm build test', () => {
             const buildStatusAlg = await buildGitAlgorithm({ algName, gitUrl, gitKind, entry, branch, algorithmArray: algList });
             expect(buildStatusAlg.status).to.be.equal("completed");
             const result = await runAlgGetResult(algName, [4]);
-            await deleteAlgorithm(algName, true);
             expect(result.data[0].result.version).to.be.equal("new branch2-v1");
             //result.data[0].result.version  =  "new branch2-v1"
         }).timeout(1000 * 60 * 20);
@@ -314,7 +322,6 @@ describe('Algorithm build test', () => {
             const buildStatusAlg = await buildGitAlgorithm({ algName, gitUrl, gitKind, entry, branch, algorithmArray: algList });
             expect(buildStatusAlg.status).to.be.equal("completed");
             const result = await runAlgGetResult(algName, [4]);
-            await deleteAlgorithm(algName, true);
             expect(result.data[0].result.version).to.be.equal("gitlab master");
         }).timeout(1000 * 60 * 20);
 
@@ -329,7 +336,6 @@ describe('Algorithm build test', () => {
             const buildStatusAlg = await buildGitAlgorithm({ algName, gitUrl, gitKind, entry, branch, algorithmArray: algList });
             expect(buildStatusAlg.status).to.be.equal("completed");
             const result = await runAlgGetResult(algName, [4]);
-            await deleteAlgorithm(algName, true);
             expect(result.data[0].result.version).to.be.equal("gitlab branch1");
         }).timeout(1000 * 60 * 20);
         // p1
@@ -406,7 +412,6 @@ describe('Algorithm build test', () => {
             const buildStatusAlg = await buildGitAlgorithm({ algName, gitUrl, gitKind, entry, branch, language, commit, tag, algorithmArray: algList });
             expect(buildStatusAlg.status).to.be.equal("completed");
             const result = await runAlgGetResult(algName, [4]);
-            await deleteAlgorithm(algName, true);
             expect(result.data[0].result.commit).to.be.equal("A5");
         }).timeout(1000 * 60 * 20);
 
@@ -460,7 +465,7 @@ describe('Algorithm build test', () => {
             console.log(newVersion.body);
             console.log("~~~~~~~~~~~~~~~~~~~");
             //v2.body.algorithm.version
-            const updateVersion = await updateAlgorithmVersion(algName, newVersion.body[0].version, true);
+            await updateAlgorithmVersion(algName, newVersion.body[0].version, true);
             await delay(5000);
             const resultAfterCommit = await runAlgGetResult(algName, [4]);
             //  await deleteAlgorithm(algName,true)   
@@ -484,7 +489,6 @@ describe('Algorithm build test', () => {
             expect(buildStatusAlg.status).to.be.equal("completed");
             const result = await runAlgGetResult(algName, [4]);
             expect(result.data[0].result.commit).to.be.equal("A6");
-            await deleteAlgorithm(algName, true);
         }).timeout(1000 * 60 * 20);
 
         it('github repository authentication', async () => {
@@ -504,11 +508,10 @@ describe('Algorithm build test', () => {
             expect(buildStatusAlg.status).to.be.equal("completed");
             const result = await runAlgGetResult(algName, [4]);
             expect(result.data[0].commit).to.be.equal("A6");
-            await deleteAlgorithm(algName, true);
         }).timeout(1000 * 60 * 20);
 
         describe('git hub/lab versions tests', () => {
-            it("changing commit  trigger new build", async () => {
+            it("changing commit trigger new build", async () => {
                 const algName = pipelineRandomName(8).toLowerCase();
                 const entry = 'main';
                 const gitUrl = "https://gitlab.com/tamir321/hkube.git";
@@ -528,7 +531,7 @@ describe('Algorithm build test', () => {
                 //deleteAlgorithm(algName)
             }).timeout(1000 * 60 * 20);
 
-            it("changing branch  trigger new build", async () => {
+            it("changing branch trigger new build", async () => {
                 const algName = pipelineRandomName(8).toLowerCase();
                 const entry = 'main';
                 const gitUrl = "https://gitlab.com/tamir321/hkube.git";
@@ -538,16 +541,19 @@ describe('Algorithm build test', () => {
                     "id": "3d85086db8f5a842391a8c1f6cd88d8150670b68"
                 }
 
-                await buildGitAlgorithm(algName, gitUrl, gitKind, entry, branch, 'python', commit, algList);
+                const language = 'python';
+                const buildStatusAlg = await buildGitAlgorithm({ algName, gitUrl, gitKind, entry, branch, language, commit, algorithmArray: algList });
 
-                const Alg = {
+                const alg = {
                     name: algName,
                     gitRepository: {
                         url: gitUrl,
                         branch: "branch1"
                     }
                 }
-                await storeAlgorithmApply(Alg);
+                const buildStatusAlg2 = await storeAlgorithmApply(alg);
+
+                expect(buildStatusAlg2.body.buildId).to.be.not.equal(buildStatusAlg.buildId);
             }).timeout(1000 * 60 * 20);
         });
     });
