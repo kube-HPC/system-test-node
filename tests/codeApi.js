@@ -54,6 +54,14 @@ chai.use(assertArrays);
 describe('code api tests ', () => {
     let algList = [];
 
+    const createAlg = async (obj) => {
+        obj.algorithmArray = algList;
+        await deleteAlgorithm(obj.name, true);
+        const buildStatusAlg = await buildAlgorithmAndWait(obj);
+        expect(buildStatusAlg.status).to.be.equal("completed");
+        return buildStatusAlg;
+    }
+
     after(async function () {
         this.timeout(2 * 60 * 1000);
         console.log("sater after");
@@ -91,29 +99,23 @@ describe('code api tests ', () => {
 
     describe("python code API", () => {
         const algName = pipelineRandomName(8).toLowerCase();
-        let algExsis = false;
-        const createAlg = async () => {
-            if (!algExsis) {
-                const code = path.join(process.cwd(), 'additionalFiles/pythonAlg/pythonApi.tar.gz'); //pythonApi.tar.gz
-                const entry = 'main';
-                const pythonVersion = "python:3.7";
-                const buildStatusAlg = await buildAlgorithmAndWait({ code: code, algName: algName, entry: entry, baseVersion: pythonVersion });
-                expect(buildStatusAlg.status).to.be.equal("completed");
-                algExsis = true;
-                algList.push(algName);
-            }
-        }
+        const obj = { 
+            algName,
+            code: path.join(process.cwd(), 'additionalFiles/pythonAlg/pythonApi.tar.gz'), //pythonApi.tar.gz
+            entry: 'main',
+            pythonVersion: "python:3.7"
+        };
+
+        before(async function () {
+            this.timeout(1000 * 60 * 15);
+            await createAlg(obj); // All tests use this algorithm - building it once, for the tests to take less time.
+        });
 
         // const getResultFromStorage = async (storagePath) => {
         //     const res = await chai.request(config.apiServerUrl)
         //         .get(`/storage/values/${storagePath}`);
         //     return res;
         // }
-
-        before(async function () {
-            this.timeout(1000 * 60 * 15);
-            await createAlg();
-        });
 
         it("start algorithm", async () => {
             const startAlg = [
@@ -186,7 +188,6 @@ describe('code api tests ', () => {
                 }
             ];
             const result = await runAlgGetResult(algName, startPipe);
-
             expect(result.data[0].result.result).to.be.equal('links-1');
         }).timeout(1000 * 60 * 10);
 
@@ -221,26 +222,20 @@ describe('code api tests ', () => {
         }).timeout(1000 * 60 * 10);
     });
 
-    describe("Node JS  code API", () => {
+    describe("Node JS code API", () => {
         const algName = pipelineRandomName(8).toLowerCase();
-        let algExsis = false;
-        const createAlg = async () => {
-            if (!algExsis) {
-                const entry = 'hkubeApi';
-                const language = 'nodejs';
-                const gitUrl = "https://github.com/tamir321/hkube-js-algorithm.git";
-                const branch = "main";
-                const gitKind = "github";
-                const buildStatusAlg = await buildGitAlgorithm({ algName, gitUrl, gitKind, entry, branch, language });
-                expect(buildStatusAlg.status).to.be.equal("completed");
-                algExsis = true;;
-                algList.push(algName);
-            }
+        const obj = {
+            algName,
+            entry: 'hkubeApi',
+            language: 'nodejs',
+            gitUrl: "https://github.com/tamir321/hkube-js-algorithm.git",
+            branch: "main",
+            gitKind: "github"
         }
 
         before(async function () {
             this.timeout(1000 * 60 * 15);
-            await createAlg();
+            await createAlg(obj); // All tests use this algorithm - building it once, for the tests to take less time.
         });
 
         it("Node start algorithm", async () => {
@@ -288,21 +283,14 @@ describe('code api tests ', () => {
     });
 
     xdescribe("Java code API", () => {
-        //buildGitAlgorithm({algName,gitUrl,gitKind ,entry , branch,language,  algorithmArray:algList})
         const algName = pipelineRandomName(8).toLowerCase();
-        let algExsis = false;
-        const createAlg = async () => {
-            if (!algExsis) {
-                const entry = 'javaApi';
-                const language = 'java';
-                const gitUrl = "https://github.com/tamir321/hkubeJava.git";
-                const branch = "master";
-                const gitKind = "github";
-                const buildStatusAlg = await buildGitAlgorithm({ algName, gitUrl, gitKind, entry, branch, language });
-                expect(buildStatusAlg.status).to.be.equal("completed");
-                algExsis = true;
-                algList.push(algName);
-            }
+        const obj = {
+            algName,
+            entry: 'javaApi',
+            language: 'java',
+            gitUrl: "https://github.com/tamir321/hkubeJava.git",
+            branch: "master",
+            gitKind: "github"
         }
 
         // const r = {
@@ -313,7 +301,7 @@ describe('code api tests ', () => {
 
         before(async function () {
             this.timeout(1000 * 60 * 15);
-            await createAlg();
+            await createAlg(obj);
         });
 
         it("Java start algorithm", async () => {
