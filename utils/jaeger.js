@@ -1,9 +1,6 @@
 const chai = require('chai');
 const path = require('path')
 const config = require(path.join(process.cwd(), 'config/config'))
-const logger = require('../utils/logger')
-
-
 
 const getSpansByJodid = async (jobId) => {
     const res = await chai.request(config.baseUrl).
