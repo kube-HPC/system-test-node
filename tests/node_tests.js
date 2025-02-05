@@ -48,7 +48,7 @@ const {
 chai.use(chaiHttp);
 
 describe("Node Tests git 660", () => {
-  describe("singel node batch input", () => {
+  describe("single node batch input", () => {
     const pipe = {
       name: "Athos-Cartesian",
       nodes: [

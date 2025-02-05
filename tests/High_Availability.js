@@ -16,7 +16,7 @@ const {
 } = require('../utils/socketGet');
 
 const {
-    FailSingelPod,
+    FailSinglePod,
     deletePod,
     filterPodsByName,
     getPodNode
@@ -218,34 +218,34 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
     }).timeout(1000 * 60 * 60);
 
     it('Fail API server  ', async () => {
-        await FailSingelPod("api-server");
+        await FailSinglePod("api-server");
     }).timeout(1000 * 60 * 60);
 
     it('Fail simulator  ', async () => {
-        await FailSingelPod("simulator");
+        await FailSinglePod("simulator");
     }).timeout(1000 * 60 * 60);
 
     it('Fail task-executor  ', async () => {
-        await FailSingelPod("task-executor");
+        await FailSinglePod("task-executor");
     }).timeout(1000 * 60 * 60);
 
     it('Fail resource-manager  ', async () => {
-        await FailSingelPod("resource-manager");
+        await FailSinglePod("resource-manager");
     }).timeout(1000 * 60 * 60);
 
     it('Fail algorithm-operator  ', async () => {
-        await FailSingelPod("algorithm-operator");
+        await FailSinglePod("algorithm-operator");
     }).timeout(1000 * 60 * 60);
 
     it('Fail trigger-service  ', async () => {
-        await FailSingelPod("trigger-service");
+        await FailSinglePod("trigger-service");
     }).timeout(1000 * 60 * 60);
 
     it.skip('Fail prometheus  ', async () => {
-        await FailSingelPod("prometheus-node", "monitoring");
+        await FailSinglePod("prometheus-node", "monitoring");
     }).timeout(1000 * 60 * 60);
 
     it.skip('Fail monitoring-grafana  ', async () => {
-        await FailSingelPod("monitoring-grafana", "monitoring");
+        await FailSinglePod("monitoring-grafana", "monitoring");
     }).timeout(1000 * 60 * 60);
 });

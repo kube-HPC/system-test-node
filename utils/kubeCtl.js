@@ -103,7 +103,7 @@ const getPodSpecByContainer = async (podName, containerName = 'worker', namespac
     }
 }
 
-const FailSingelPod = async (podName, namespace = 'default') => {
+const FailSinglePod = async (podName, namespace = 'default') => {
     //set test data to testData1
     const d = deconstructTestData(testData1)
 
@@ -132,7 +132,7 @@ const FailSingelPod = async (podName, namespace = 'default') => {
 }
 
 module.exports = {
-    FailSingelPod,
+    FailSinglePod,
     client,
     deletePod,
     filterPodsByName,
