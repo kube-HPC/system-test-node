@@ -146,7 +146,7 @@ describe('Alrogithm Tests', () => {
             z += 3;
             console.log("j=" + j + ",z=" + z);
         }
-        algList = [];
+        algList = []; // Since it rans after EACH test. Need to clear the list!
     });
 
     after(function () {
