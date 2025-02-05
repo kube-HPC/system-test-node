@@ -88,6 +88,8 @@ describe('Alrogithm Tests', () => {
     let algList = [];
     let selectedNodeAlgName = "";
 
+    // se one of the following methods to apply algorithms, as these methods ensure that the algorithms are inserted into the algList.
+    // This, in turn, guarantees that no unnecessary data is left behind by properly removing those algorithms.
     const applyAlg = async (alg) => {
         await deleteAlgorithm(alg.name, true);
         if (!algList.includes(alg.name)) {
@@ -97,16 +99,17 @@ describe('Alrogithm Tests', () => {
         return res;
     }
 
-    const applyAlgList = async (algList) => {
-        algList.forEach(async alg => {
+    const applyAlgList = async (givenAlgList) => {
+        await Promise.all(givenAlgList.map(async (alg) => {
+            await deleteAlgorithm(alg.name, true);
             if (!algList.includes(alg.name)) {
-                await deleteAlgorithm(alg.name, true);
                 algList.push(alg.name);
             }
-        });
-        const res = await storeAlgorithms(algList);
+        }));
+        const res = await storeAlgorithms(givenAlgList);
         return res;
     }
+    // End of apply algorithms section
 
     beforeEach(function () {
         console.log('\n-----------------------------------------------\n');
@@ -126,8 +129,16 @@ describe('Alrogithm Tests', () => {
             console.log("delAlg-", JSON.stringify(delAlg, null, 2));
             const delResult = await Promise.all(del);
             delResult.forEach(result => {
-                if (result && result.text && !delResult.error) {
-                    console.log("Delete Result Message:", result.text.message);
+                if (result && result.text) {
+                    try { 
+                        const parsedText = JSON.parse(result.text);
+                        if (parsedText.message) {
+                            console.log("Delete Result Message:", parsedText.message);
+                        }
+                    }
+                    catch (error) { 
+                        console.error(error);
+                    }
                 }
             });
             await delay(2000);
@@ -398,7 +409,6 @@ describe('Alrogithm Tests', () => {
             const code1 = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
             const entry = 'main27';
             const algName = "python3.7-test-1";
-            algList.push(algName); // List removes algs in .after
             const pythonVersion = "python:3.7";
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algList });
             expect(buildStatusAlg.status).to.be.equal("completed");
@@ -929,7 +939,7 @@ describe('Alrogithm Tests', () => {
 
         describe('insert algorithm array', () => {
             it('should succeed to store an array of algorithms', async () => {
-                let algList = [
+                let algorithmsList = [
                     {
                         name: "alg1",
                         cpu: 0.1,
@@ -960,7 +970,7 @@ describe('Alrogithm Tests', () => {
                     }
                 ];
 
-                const response = await applyAlgList(algList);
+                const response = await applyAlgList(algorithmsList);
                 const listOfAlgorithmResponse = response.body;
                 expect(listOfAlgorithmResponse).to.be.an('array');
                 expect(listOfAlgorithmResponse.length).to.be.equal(2);
@@ -986,7 +996,7 @@ describe('Alrogithm Tests', () => {
                 }
                 await applyAlg(existingAlg);
 
-                let algList = [
+                let algorithmsList = [
                     {
                         "name": "alg1",
                         "cpu": 0.1,
@@ -1015,7 +1025,7 @@ describe('Alrogithm Tests', () => {
                         workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
                     }
                 ];
-                const response = await storeAlgorithms(algList);
+                const response = await storeAlgorithms(algorithmsList);
                 const listOfAlgorithmResponse = response.body;
                 expect(response.statusCode).to.be.equal(201);
                 expect(listOfAlgorithmResponse).to.be.an('array');
@@ -1041,7 +1051,7 @@ describe('Alrogithm Tests', () => {
                 }
                 await applyAlg(existingAlg);
 
-                let algList = [
+                let algorithmsList = [
                     {
                         "name": "alg1",
                         "cpu": 0.1,
@@ -1070,7 +1080,7 @@ describe('Alrogithm Tests', () => {
                         workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
                     }
                 ];
-                const response = await storeOrUpdateAlgorithms(algList);
+                const response = await storeOrUpdateAlgorithms(algorithmsList);
                 const listOfAlgorithmResponse = response.body;
                 expect(response.statusCode).to.be.equal(201);
                 expect(listOfAlgorithmResponse).to.be.an('array');
