@@ -85,19 +85,31 @@ describe('Hkubectl Tests', () => {
         z = 3
 
         while (j < algList.length) {
-            delAlg = algList.slice(j, z)
+            delAlg = algList.slice(j, z);
             const del = delAlg.map((e) => {
-                return deleteAlgorithm(e)
-            })
-            console.log("delAlg-" + delAlg)
-            const delResult = await Promise.all(del)
-            console.log("delResult-" + delResult)
-            await delay(2000)
-            j += 3
-            z += 3
-            console.log("j=" + j + ",z=" + z)
+                return deleteAlgorithm(e, true);
+            });
+            console.log("delAlg-", JSON.stringify(delAlg, null, 2));
+            const delResult = await Promise.all(del);
+            delResult.forEach(result => {
+                if (result && result.text) {
+                    try { 
+                        const parsedText = JSON.parse(result.text);
+                        if (parsedText.message) {
+                            console.log("Delete Result Message:", parsedText.message);
+                        }
+                    }
+                    catch (error) { 
+                        console.error(error);
+                    }
+                }
+            });
+            await delay(2000);
+            j += 3;
+            z += 3;
+            console.log("j=" + j + ",z=" + z);
         }
-        console.log("end -----")
+        console.log("----------------------- end -----------------------");
     });
 
     describe('hkubecl algorithm tests', () => {
