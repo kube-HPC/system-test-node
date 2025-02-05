@@ -3,6 +3,7 @@ const path = require('path');
 const chaiHttp = require('chai-http');
 const expect = chai.expect;
 const assertArrays = require('chai-arrays');
+const delay = require('delay');
 
 const {
     pipelineRandomName
@@ -54,10 +55,10 @@ chai.use(assertArrays);
 describe('code api tests ', () => {
     let algList = [];
 
-    const createAlg = async (obj) => {
+    const createAlg = async (obj, isGit = false) => {
         obj.algorithmArray = algList;
         await deleteAlgorithm(obj.name, true);
-        const buildStatusAlg = await buildAlgorithmAndWait(obj);
+        const buildStatusAlg = isGit ? await buildGitAlgorithm(obj) : await buildAlgorithmAndWait(obj);
         expect(buildStatusAlg.status).to.be.equal("completed");
         return buildStatusAlg;
     }
@@ -239,7 +240,7 @@ describe('code api tests ', () => {
 
         before(async function () {
             this.timeout(1000 * 60 * 15);
-            await createAlg(obj); // All tests use this algorithm - building it once, for the tests to take less time.
+            await createAlg(obj, true); // All tests use this algorithm - building it once, for the tests to take less time.
         });
 
         it("Node start algorithm", async () => {
