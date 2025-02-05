@@ -41,8 +41,8 @@ describe('Datasource  Tests', () => {
 
         it("upload files ", async () => {
             const DsName = pipelineRandomName(8).toLowerCase();
-            const data = await createInternalDS(DsName);
-            const commit = await UploadFilesToDs(DsName);
+            await createInternalDS(DsName);
+            await UploadFilesToDs(DsName);
             const ds = await getDatasourceByName(DsName);
             expect(ds.data.files.length).to.be.equal(7);
             await deleteDataSource(DsName);
@@ -50,10 +50,10 @@ describe('Datasource  Tests', () => {
 
         it("upload files change folder", async () => {
             const DsName = pipelineRandomName(8).toLowerCase();
-            const data = await createInternalDS(DsName);
-            const commit = await UploadFilesToDs(DsName);
+            await createInternalDS(DsName);
+            await UploadFilesToDs(DsName);
             //  const ds =await getDatasourceByName(DsName)       
-            const res = await changeFolder(DsName, "jnk", "file_6.txt");
+            await changeFolder(DsName, "jnk", "file_6.txt");
             const newDs = await getDatasourceByName(DsName);
             const file = newDs.data.files.find(o => o.name == "file_6.txt");
             expect(file.path).to.be.contain("jnk");
@@ -64,8 +64,8 @@ describe('Datasource  Tests', () => {
             const snapName = "first files";
             const snapName2 = "last files";
             const DsName = pipelineRandomName(8).toLowerCase();
-            const data = await createInternalDS(DsName);
-            const commit = await UploadFilesToDs(DsName);
+            await createInternalDS(DsName);
+            await UploadFilesToDs(DsName);
             const snap = await createSnapshot(DsName, snapName, "first");
             const snap2 = await createSnapshot(DsName, snapName2, "last 4");
             expect(snap.data.filteredFilesList.length).to.be.equal(3);
