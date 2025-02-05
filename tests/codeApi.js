@@ -1,10 +1,8 @@
 const chai = require('chai');
 const path = require('path');
 const chaiHttp = require('chai-http');
-const config = require(path.join(process.cwd(), 'config/config'));
 const expect = chai.expect;
 const assertArrays = require('chai-arrays');
-const execSync = require('child_process').execSync;
 
 const {
     pipelineRandomName
@@ -23,37 +21,36 @@ const { buildAlgorithmAndWait,
 chai.use(chaiHttp);
 chai.use(assertArrays);
 
-const yaml = require('js-yaml');
+// const exceSyncString = async (command) => {
+//     console.log("start- " + command);
+//     output = execSync(command);
+//     const noColor = output.toString('utf8').replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
+//     console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+//     console.log(noColor);
+//     console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+//     return noColor;
+// }
 
-const exceSyncString = async (command) => {
-    console.log("start- " + command);
-    output = execSync(command);
-    const noColor = output.toString('utf8').replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
-    console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-    console.log(noColor);
-    console.log("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-    return noColor;
-}
+// const execSyncReturenJSON = async (command) => {
+//     const noColor = await exceSyncString(command);
+//     const obj = yaml.load(noColor);
+//     const result = JSON.stringify(obj, null, 2);
+//     const jsonResult = JSON.parse(result);
+//     console.log("execSyncReturenJSON return typeof jsonResult = " + typeof jsonResult);
+//     return jsonResult;
+// }
 
-const execSyncReturenJSON = async (command) => {
-    const noColor = await exceSyncString(command);
-    const obj = yaml.load(noColor);
-    const result = JSON.stringify(obj, null, 2);
-    const jsonResult = JSON.parse(result);
-    console.log("execSyncReturenJSON return typeof jsonResult = " + typeof jsonResult);
-    return jsonResult;
-}
+// const createErrorAlg = async () => {
+//     if (!errorExsis) {
+//         const code = path.join(process.cwd(), 'additionalFiles/pythonAlg/erroralg.zip'); //pythonApi.tar.gz
+//         const entry = 'main';
+//         const pythonVersion = "python:3.7";
+//         const buildStatusAlg = await buildAlgorithmAndWait({ code: code, algName: "error-alg", entry: entry, baseVersion: pythonVersion });
+//         expect(buildStatusAlg.status).to.be.equal("completed");
+//         errorExsis = true;
+//     }
+// }
 
-const createErrorAlg = async () => {
-    if (!errorExsis) {
-        const code = path.join(process.cwd(), 'additionalFiles/pythonAlg/erroralg.zip'); //pythonApi.tar.gz
-        const entry = 'main';
-        const pythonVersion = "python:3.7";
-        const buildStatusAlg = await buildAlgorithmAndWait({ code: code, algName: "error-alg", entry: entry, baseVersion: pythonVersion });
-        expect(buildStatusAlg.status).to.be.equal("completed");
-        errorExsis = true;
-    }
-}
 describe('code api tests ', () => {
     let algList = [];
 
@@ -107,11 +104,11 @@ describe('code api tests ', () => {
             }
         }
 
-        const getResultFromStorage = async (storagePath) => {
-            const res = await chai.request(config.apiServerUrl)
-                .get(`/storage/values/${storagePath}`);
-            return res;
-        }
+        // const getResultFromStorage = async (storagePath) => {
+        //     const res = await chai.request(config.apiServerUrl)
+        //         .get(`/storage/values/${storagePath}`);
+        //     return res;
+        // }
 
         before(async function () {
             this.timeout(1000 * 60 * 15);
@@ -193,15 +190,15 @@ describe('code api tests ', () => {
             expect(result.data[0].result.result).to.be.equal('links-1');
         }).timeout(1000 * 60 * 10);
 
-        const y = {
-            "action": "start_stored_subpipeline",
-            "name": "simple",
-            "flowInput": {
-                "files": {
-                    "link": "links-1"
-                }
-            }
-        }
+        // const y = {
+        //     "action": "start_stored_subpipeline",
+        //     "name": "simple",
+        //     "flowInput": {
+        //         "files": {
+        //             "link": "links-1"
+        //         }
+        //     }
+        // }
 
         it("start raw pipelien", async () => {
             const startRaw = [
@@ -308,11 +305,11 @@ describe('code api tests ', () => {
             }
         }
 
-        const r = {
-            "action": "startAlg",
-            "algName": "green-alg",
-            "alginput": ["4"]
-        }
+        // const r = {
+        //     "action": "startAlg",
+        //     "algName": "green-alg",
+        //     "alginput": ["4"]
+        // }
 
         before(async function () {
             this.timeout(1000 * 60 * 15);
