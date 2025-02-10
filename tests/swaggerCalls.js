@@ -302,7 +302,7 @@ describe('all swagger calls test ', () => {
             await getResult(jobId, 200);
         }).timeout(1000 * 60 * 5)
 
-        it.only('test the POST exec/pause/{jobId} and exec/resume/{jobId} rest call', async () => {
+        it('test the POST exec/pause/{jobId} and exec/resume/{jobId} rest call', async () => {
             const pausePipe = {
                 name: "pausePipe",
                 nodes: [
@@ -344,7 +344,7 @@ describe('all swagger calls test ', () => {
             await getResult(jobId, 200);
         }).timeout(1000 * 60 * 5);
 
-        it.only(`test the GET /exec/tree/{jobId} rest call`, async () => {
+        it(`test the GET /exec/tree/{jobId} rest call`, async () => {
             await deletePipeline('pipe1');
             await deletePipeline('pipe2');
             await delay(1000);
