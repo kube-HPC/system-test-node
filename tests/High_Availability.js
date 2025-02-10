@@ -46,6 +46,33 @@ const {
 } = require('../utils/elasticsearch');
 
 describe('TID-161- High Availability for HKube infrastructure services', () => {
+    let pipeList = [];
+
+    after(async function () {
+    this.timeout(2 * 60 * 1000);
+    console.log("pipeList = " + pipeList);
+    j = 0;
+    z = 3;
+
+    while (j < pipeList.length) {
+        delPipe = pipeList.slice(j, z);
+        const del = delPipe.map((e) => {
+            return deletePipeline(e);
+        });
+        console.log("delPipe-", JSON.stringify(delPipe, null, 2));
+        const delResult = await Promise.all(del);
+        delResult.forEach(result => {
+            if (result && result.text) {
+                console.log("Delete Result Message:", result.text);
+            }
+        });
+        await delay(2000);
+        j += 3;
+        z += 3;
+        console.log("j=" + j + ",z=" + z);
+    }
+    console.log("----------------------- end -----------------------");
+    });
 
     beforeEach(function () {
         console.log('\n-----------------------------------------------\n');
@@ -57,7 +84,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
             const d = deconstructTestData(testData1);
             await deletePipeline(d);
             //store pipeline evalwait
-            await storePipeline(d);
+            await storePipeline(d, pipeList);
             //run the pipeline evalwait
             const res = await runStored(d);
             const jobId = res.body.jobId;
@@ -90,7 +117,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
             }
             await delay(2000);
             await deletePipeline(d.name);
-            await storePipeline(d);
+            await storePipeline(d, pipeList);
             const res = await runStored(pipe);
             const jobId = res.body.jobId;
             await delay(15000);
@@ -114,7 +141,8 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
         it('kill pipeline driver  multiple batch', async () => {
             const e = deconstructTestData(testData2);
 
-            await storePipeline(e);
+            await deletePipeline(e.name);
+            await storePipeline(e, pipeList);
 
             const res = await runStored(e);
             const jobId = res.body.jobId;
@@ -136,7 +164,8 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
 
         it('kill pipeline driver   batch on batch', async () => {
             const e = deconstructTestData(testData4);
-            await storePipeline(e);
+            await deletePipeline(e.name);
+            await storePipeline(e, pipeList);
 
             const res = await runStored(e);
             const jobId = res.body.jobId;
@@ -170,7 +199,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
         const d = deconstructTestData(testData1);
         await deletePipeline(d);
         //store pipeline evalwait
-        await storePipeline(d);
+        await storePipeline(d, pipeList);
 
         //run the pipeline evalwait
         const res = await runStored(pipe);
@@ -197,7 +226,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
         const d = deconstructTestData(testData1);
         //store pipeline evalwait
         await deletePipeline(d);
-        await storePipeline(d);
+        await storePipeline(d, pipeList);
         //run the pipeline evalwait
         const res = await runStored(d);
         const jobId = res.body.jobId;
