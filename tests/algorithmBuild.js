@@ -47,9 +47,9 @@ describe('Algorithm build test', () => {
             algList.push(alg.name);
         }
         const res = await chai.request(config.apiServerUrl)
-        .post('/store/algorithms/apply')
-        .field('payload', JSON.stringify(alg))
-        .attach('file', fse.readFileSync(code), entry);
+            .post('/store/algorithms/apply')
+            .field('payload', JSON.stringify(alg))
+            .attach('file', fse.readFileSync(code), entry);
         return res;
     }
 
