@@ -13,7 +13,8 @@ const {
     getRawGraph
 } = require('../utils/results')
 
-const { buildAlgorithmAndWait,
+const { 
+    buildAlgorithmAndWait,
     runAlgGetResult,
     deleteAlgorithm,
     buildGitAlgorithm
