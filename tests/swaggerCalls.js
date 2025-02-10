@@ -48,6 +48,17 @@ chai.use(chaiHttp);
 chai.use(assertArrays);
 
 describe('all swagger calls test ', () => {
+    let algList = [];
+
+    const applyAlg = async (alg) => {
+        await deleteAlgorithm(alg.name, true);
+        if (!algList.includes(alg.name)) {
+            algList.push(alg.name);
+        }
+        const res = await storeAlgorithmApply(alg);
+        return res;
+    }
+
     describe('Execution 647', () => {
         //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/647
 
@@ -505,8 +516,7 @@ describe('all swagger calls test ', () => {
         const algorithmV1 = algJson(algorithmName, algorithmImageV1);
         const algorithmV2 = algJson(algorithmName, algorithmImageV2);
         it('Get /versions/algorithms/{name}', async () => {
-            await deleteAlgorithm(algorithmName, true);
-            await storeAlgorithmApply(algorithmV1);
+            await applyAlg(algorithmV1);
             const algVersion = await getAlgorithmVersion(algorithmName);
             const versionAmount = algVersion.body.length;
             expect(versionAmount).to.be.greaterThan(0);
@@ -514,44 +524,34 @@ describe('all swagger calls test ', () => {
             //validate there are two images
             const algVersion2 = await getAlgorithmVersion(algorithmName);
 
-            expect(algVersion2.body.length).to.be.equal(versionAmount + 1)
-            await deleteAlgorithm(algorithmName, true)
-
+            expect(algVersion2.body.length).to.be.equal(versionAmount + 1);
         }).timeout(1000 * 60 * 5);
 
         it('Delete /versions/algorithms/{name}', async () => {
-            await deleteAlgorithm(algorithmName, true)
-            let v1 = await storeAlgorithmApply(algorithmV1);
+            await applyAlg(algorithmV1);
             let v2 = await storeAlgorithmApply(algorithmV2);
             //validate there are two images
 
             let algVersion = await getAlgorithmVersion(algorithmName);
             expect(algVersion.body.length).to.be.equal(2)
-            const del = await deleteAlgorithmVersion(algorithmName, v2.body.algorithm.version)
+            await deleteAlgorithmVersion(algorithmName, v2.body.algorithm.version)
             await delay(2000)
             algVersion = await getAlgorithmVersion(algorithmName);
             expect(algVersion.body.length).to.be.equal(1)
-            await deleteAlgorithm(algorithmName, true)
-
         }).timeout(1000 * 60 * 5);
-
 
         it('Post Apply algorithm version', async () => {
-            await deleteAlgorithm(algorithmName, true)
-            await storeAlgorithmApply(algorithmV1);
+            await applyAlg(algorithmV1);
             let v2 = await storeAlgorithmApply(algorithmV2);
-            let alg = await getAlgorithm(algorithmName)
-            expect(alg.body.algorithmImage).to.be.equal("tamir321/algoversion:v1")
+            let alg = await getAlgorithm(algorithmName);
+            expect(alg.body.algorithmImage).to.be.equal("tamir321/algoversion:v1");
 
-            let jnk = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, true)
-            alg = await getAlgorithm(algorithmName)
+            await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, true);
+            alg = await getAlgorithm(algorithmName);
 
-            expect(alg.body.algorithmImage).to.be.equal("tamir321/algoversion:v2")
-            await deleteAlgorithm(algorithmName, true)
+            expect(alg.body.algorithmImage).to.be.equal("tamir321/algoversion:v2");
         }).timeout(1000 * 60 * 5);
-
-    })
-
+    });
 
     describe('ReadMe file', () => {
         const readMeFile = {
@@ -865,9 +865,8 @@ describe('all swagger calls test ', () => {
             const testalg = 'pyeyemat';
             const algName = pipelineRandomName(8).toLowerCase();
             const code1 = path.join(process.cwd(), 'additionalFiles/eyeMat.tar.gz');
-            const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: testalg });
+            const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: testalg, algorithmArray: algList });
             expect(buildStatusAlg.status).to.be.equal("completed");
-            await deleteAlgorithm(algName, true);
         }).timeout(1000 * 60 * 20);
     });
 });
