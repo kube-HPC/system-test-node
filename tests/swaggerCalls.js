@@ -59,6 +59,36 @@ describe('all swagger calls test ', () => {
         return res;
     }
 
+    beforeEach(function () {
+        console.log('\n-----------------------------------------------\n');
+    });
+
+    after(async function () {
+        this.timeout(2 * 60 * 1000);
+        console.log("algList = " + algList);
+        j = 0;
+        z = 3;
+
+        while (j < algList.length) {
+            delAlg = algList.slice(j, z);
+            const del = delAlg.map((e) => {
+                return deleteAlgorithm(e);
+            });
+            console.log("delAlg-", JSON.stringify(delAlg, null, 2));
+            const delResult = await Promise.all(del);
+            delResult.forEach(result => {
+                if (result && result.text) {
+                    console.log("Delete Result Message:", result.text);
+                }
+            });
+            await delay(2000);
+            j += 3;
+            z += 3;
+            console.log("j=" + j + ",z=" + z);
+        }
+        console.log("----------------------- end -----------------------");
+    });
+
     describe('Execution 647', () => {
         //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/647
 
