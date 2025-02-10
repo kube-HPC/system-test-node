@@ -952,7 +952,7 @@ describe("Node Tests git 660", () => {
     }).timeout(5000000);
   });
 
-  it("output node", async () => {
+  it.only("output node", async () => {
     const testData = outputPipe;
     const d = deconstructTestData(testData);
     await deletePipeline(d);
@@ -960,6 +960,8 @@ describe("Node Tests git 660", () => {
 
     const jobId = await runStoredAndWaitForResults(d);
     const result = await getResult(jobId, 200);
+    const outputAlgorithmName = `${d.name}-output`;
+    await deleteAlgorithm(outputAlgorithmName);
     expect(result.data[1].result[0]).to.be.equal('yellow-input')
     expect(result.data[1].result[1]).to.be.equal(42)
     expect(result.data[0].nodeName).to.be.equal('black')
