@@ -887,7 +887,7 @@ describe('Hkubectl Tests', () => {
         });
 
         describe('hkubecl import tests', () => {
-            it.only('import algoritms from a local directory to hkube env', async () => {
+            it('import algoritms from a local directory to hkube env', async () => {
                 const fs = require('fs');
                 await deleteAlgorithm('6o5yjjiy')
                 await deleteAlgorithm('7i59t2ad')
