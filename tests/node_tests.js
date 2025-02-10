@@ -952,7 +952,7 @@ describe("Node Tests git 660", () => {
     }).timeout(5000000);
   });
 
-  it.only("output node", async () => {
+  it("output node", async () => {
     const testData = outputPipe;
     const d = deconstructTestData(testData);
     await deletePipeline(d);
