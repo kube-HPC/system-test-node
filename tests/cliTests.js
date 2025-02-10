@@ -65,6 +65,7 @@ const execSyncReturenJSON = async (command) => {
 
 describe('Hkubectl Tests', () => {
     let algList = [];
+    let pipeList = [];
 
     // Use this method to apply algorithms, as it ensures that the algorithms are inserted into the algList.
     // This, in turn, guarantees that no unnecessary data is left behind by properly removing those algorithms.
@@ -104,7 +105,30 @@ describe('Hkubectl Tests', () => {
             z += 3;
             console.log("j=" + j + ",z=" + z);
         }
-        console.log("----------------------- end -----------------------");
+        
+        console.log("-----------------------------------------------");
+            console.log("pipeList = " + pipeList);
+            j = 0;
+            z = 3;
+        
+            while (j < pipeList.length) {
+                delPipe = pipeList.slice(j, z);
+                const del = delPipe.map((e) => {
+                    return deletePipeline(e);
+                });
+                console.log("delPipe-", JSON.stringify(delPipe, null, 2));
+                const delResult = await Promise.all(del);
+                delResult.forEach(result => {
+                    if (result && result.text) {
+                        console.log("Delete Result Message:", result.text);
+                    }
+                });
+                await delay(2000);
+                j += 3;
+                z += 3;
+                console.log("j=" + j + ",z=" + z);
+            }
+            console.log("----------------------- end -----------------------");
     });
 
     describe('hkubecl algorithm tests', () => {
@@ -625,7 +649,7 @@ describe('Hkubectl Tests', () => {
             const devContainerFolder = testData.descriptor.nodes[0].input[0].devFolder;
             const devPipeline = deconstructTestData(testData);
             await deletePipeline(devPipeline);
-            await storePipeline(devPipeline);
+            await storePipeline(devPipeline, pipeList);
             // start the sync process
             const startCommand = ` hkubectl sync start` +
                 ` --algorithmName ${algName}` +
