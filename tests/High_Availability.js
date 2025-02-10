@@ -46,6 +46,11 @@ const {
 } = require('../utils/elasticsearch');
 
 describe('TID-161- High Availability for HKube infrastructure services', () => {
+
+    beforeEach(function () {
+        console.log('\n-----------------------------------------------\n');
+    });
+    
     describe('pipeline driver fail over', () => {
         it('Fail pipeline driver  ', async () => {
             //set test data to testData1

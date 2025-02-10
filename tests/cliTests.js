@@ -77,6 +77,10 @@ describe('Hkubectl Tests', () => {
         return res;
     }
 
+    beforeEach(function () {
+        console.log('\n-----------------------------------------------\n');
+    });
+
     after(async function () {
         this.timeout(2 * 60 * 1000);
         console.log("sater after")
