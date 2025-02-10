@@ -82,13 +82,12 @@ const generateRandomJson = (maxDepth)=> {
 
     function generateRandomKeyName () {
         var maxKeyLength = 10;
-        var keyLength = 1 + parseInt(Math.random()*maxKeyLength);
+        var keyLength = 1 + Math.floor(Math.random()*maxKeyLength);
         var randomString = generateRandomString();
-        return randomString.substr(0,keyLength)
+        return randomString.slice(0, keyLength);
     }
 }
 
 module.exports = {
     generateRandomJson 
-
 }
