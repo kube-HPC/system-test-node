@@ -48,10 +48,37 @@ const {
 chai.use(chaiHttp);
 
 describe("Node Tests git 660", () => {
+  let pipeList = [];
 
   beforeEach(function () {
     console.log('\n-----------------------------------------------\n');
   });
+
+    after(async function () {
+      this.timeout(2 * 60 * 1000);
+      console.log("pipeList = " + pipeList);
+      j = 0;
+      z = 3;
+  
+      while (j < pipeList.length) {
+          delPipe = pipeList.slice(j, z);
+          const del = delPipe.map((e) => {
+              return deletePipeline(e);
+          });
+          console.log("delPipe-", JSON.stringify(delPipe, null, 2));
+          const delResult = await Promise.all(del);
+          delResult.forEach(result => {
+              if (result && result.text) {
+                  console.log("Delete Result Message:", result.text);
+              }
+          });
+          await delay(2000);
+          j += 3;
+          z += 3;
+          console.log("j=" + j + ",z=" + z);
+      }
+      console.log("----------------------- end -----------------------");
+    });
 
   describe("single node batch input", () => {
     const pipe = {
@@ -585,7 +612,7 @@ describe("Node Tests git 660", () => {
       const testData = testData3;
       const d = deconstructTestData(testData);
       await deletePipeline(d);
-      await storePipeline(d);
+      await storePipeline(d, pipeList);
       const jobId = await runStoredAndWaitForResults(d);
 
       const graph = await getRawGraph(jobId);
@@ -597,7 +624,7 @@ describe("Node Tests git 660", () => {
       const testData = testData1;
       const d = deconstructTestData(testData);
       await deletePipeline(d);
-      await storePipeline(d);
+      await storePipeline(d, pipeList);
       const jobId = await runStored(d);
       await delay(15000);
       const jobs = await filterjobsByName("green-alg");
@@ -633,7 +660,7 @@ describe("Node Tests git 660", () => {
       };
 
       //store pipeline addmuldiv
-      await storePipeline(d);
+      await storePipeline(d, pipeList);
       const res = await runStored(pipe);
       const jobId = res.body.jobId;
       const result = await getResult(jobId, 200);
@@ -654,7 +681,7 @@ describe("Node Tests git 660", () => {
       };
 
       //store pipeline addmuldiv
-      await storePipeline(d);
+      await storePipeline(d, pipeList);
       const res = await runStored(pipe);
       const jobId = res.body.jobId;
       const result = await getResult(jobId, 200);
@@ -674,7 +701,7 @@ describe("Node Tests git 660", () => {
       };
 
       //store pipeline addmuldiv
-      await storePipeline(d);
+      await storePipeline(d, pipeList);
       const res = await runStored(pipe);
       const jobId = res.body.jobId;
       const result = await getResult(jobId, 200);
@@ -694,13 +721,12 @@ describe("Node Tests git 660", () => {
       };
 
       //store pipeline addmuldiv
-      await storePipeline(d);
+      await storePipeline(d, pipeList);
       const res = await runStored(pipe);
       const jobId = res.body.jobId;
       const result = await getResult(jobId, 200);
       // let diff = []
       expect(result.data[0].result).to.be.equal(true);
-      await deletePipeline(d);
     }).timeout(1000 * 60 * 5);
 
     it("bool false", async () => {
@@ -715,13 +741,12 @@ describe("Node Tests git 660", () => {
       };
 
       //store pipeline addmuldiv
-      await storePipeline(d);
+      await storePipeline(d, pipeList);
       const res = await runStored(pipe);
       const jobId = res.body.jobId;
       const result = await getResult(jobId, 200);
       // let diff = []
       expect(result.data[0].result).to.be.equal(false);
-      await deletePipeline(d);
     }).timeout(1000 * 60 * 5);
 
     it("bool object type", async () => {
@@ -740,13 +765,12 @@ describe("Node Tests git 660", () => {
       };
 
       //store pipeline addmuldiv
-      await storePipeline(d);
+      await storePipeline(d, pipeList);
       const res = await runStored(pipe);
       const jobId = res.body.jobId;
       const result = await getResult(jobId, 200);
       // let diff = []
       expect(result.data[0].result).to.be.deep.equal(pipe.flowInput.inputs);
-      await deletePipeline(d);
     }).timeout(1000 * 60 * 5);
   });
 
@@ -772,7 +796,8 @@ describe("Node Tests git 660", () => {
 
       const d = testData2.descriptor;
       //store pipeline
-      await storePipeline(d);
+      await deletePipeline(d);
+      await storePipeline(d, pipeList);
 
       const res = await runStored(d.name);
 
@@ -794,7 +819,8 @@ describe("Node Tests git 660", () => {
       dataSort(obj);
       const d = testData2.descriptor;
 
-      await storePipeline(d);
+      await deletePipeline(d);
+      await storePipeline(d, pipeList);
       const res = await runStored(d.name);
 
       await checkResults(res, 200, "failed", d, true);
@@ -815,7 +841,8 @@ describe("Node Tests git 660", () => {
       dataSort(obj);
       const d = testData2.descriptor;
 
-      await storePipeline(d);
+      await deletePipeline(d);
+      await storePipeline(d, pipeList);
       const res = await runStored(d.name);
 
       await checkResults(res, 200, "completed", d, true);
@@ -836,7 +863,8 @@ describe("Node Tests git 660", () => {
       dataSort(obj);
       const d = testData2.descriptor;
 
-      const res = await storePipeline(d);
+      await deletePipeline(d);
+      const res = await storePipeline(d, pipeList);
 
       expect(res.status).to.eql(400);
       expect(res.body).to.have.property("error");
@@ -844,7 +872,6 @@ describe("Node Tests git 660", () => {
         "batchTolerance should be >= 0"
       );
 
-      await deletePipeline(d);
     }).timeout(5000000);
 
     it("should fail the pipeline, 101 percent tolerance with one fail", async () => {
@@ -862,7 +889,8 @@ describe("Node Tests git 660", () => {
       dataSort(obj);
       const d = testData2.descriptor;
 
-      const res = await storePipeline(d);
+      await deletePipeline(d);
+      const res = await storePipeline(d, pipeList);
 
       expect(res.status).to.eql(400);
       expect(res.body).to.have.property("error");
@@ -870,7 +898,6 @@ describe("Node Tests git 660", () => {
         "batchTolerance should be <= 100"
       );
 
-      await deletePipeline(d);
     }).timeout(5000000);
 
     it("should fail the pipeline, 20.6 percent tolerance with one fail", async () => {
@@ -888,7 +915,8 @@ describe("Node Tests git 660", () => {
       dataSort(obj);
       const d = testData2.descriptor;
 
-      const res = await storePipeline(d);
+      await deletePipeline(d);
+      const res = await storePipeline(d, pipeList);
       expect(res.status).to.eql(400);
 
       expect(res.body).to.have.property("error");
@@ -896,7 +924,6 @@ describe("Node Tests git 660", () => {
         "batchTolerance should be integer"
       );
 
-      await deletePipeline(d);
     }).timeout(5000000);
 
     it('should fail the pipeline, "twenty" percent tolerance with one fail', async () => {
@@ -914,14 +941,14 @@ describe("Node Tests git 660", () => {
       dataSort(obj);
       const d = testData2.descriptor;
 
-      const res = await storePipeline(d);
+      await deletePipeline(d);
+      const res = await storePipeline(d, pipeList);
       expect(res.status).to.eql(400);
       expect(res.body).to.have.property("error");
       expect(res.body.error.message).to.include(
         "batchTolerance should be integer"
       );
 
-      await deletePipeline(d);
     }).timeout(5000000);
   });
 
@@ -929,7 +956,7 @@ describe("Node Tests git 660", () => {
     const testData = outputPipe;
     const d = deconstructTestData(testData);
     await deletePipeline(d);
-    await storePipeline(d);
+    await storePipeline(d, pipeList);
 
     const jobId = await runStoredAndWaitForResults(d);
     const result = await getResult(jobId, 200);
