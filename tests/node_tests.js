@@ -54,31 +54,31 @@ describe("Node Tests git 660", () => {
     console.log('\n-----------------------------------------------\n');
   });
 
-    after(async function () {
-      this.timeout(2 * 60 * 1000);
-      console.log("pipeList = " + pipeList);
-      j = 0;
-      z = 3;
-  
-      while (j < pipeList.length) {
-          delPipe = pipeList.slice(j, z);
-          const del = delPipe.map((e) => {
-              return deletePipeline(e);
-          });
-          console.log("delPipe-", JSON.stringify(delPipe, null, 2));
-          const delResult = await Promise.all(del);
-          delResult.forEach(result => {
-              if (result && result.text) {
-                  console.log("Delete Result Message:", result.text);
-              }
-          });
-          await delay(2000);
-          j += 3;
-          z += 3;
-          console.log("j=" + j + ",z=" + z);
-      }
-      console.log("----------------------- end -----------------------");
-    });
+  after(async function () {
+    this.timeout(2 * 60 * 1000);
+    console.log("pipeList = " + pipeList);
+    j = 0;
+    z = 3;
+
+    while (j < pipeList.length) {
+        delPipe = pipeList.slice(j, z);
+        const del = delPipe.map((e) => {
+            return deletePipeline(e);
+        });
+        console.log("delPipe-", JSON.stringify(delPipe, null, 2));
+        const delResult = await Promise.all(del);
+        delResult.forEach(result => {
+            if (result && result.text) {
+                console.log("Delete Result Message:", result.text);
+            }
+        });
+        await delay(2000);
+        j += 3;
+        z += 3;
+        console.log("j=" + j + ",z=" + z);
+    }
+    console.log("----------------------- end -----------------------");
+  });
 
   describe("single node batch input", () => {
     const pipe = {
