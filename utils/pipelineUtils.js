@@ -58,7 +58,7 @@ const getPipelineTriggerTree = async (pielineName) => {
     logResult(res, 'PipelineUtils getPipelineTriggerTree');
     return res;
 }
-const storePipeline = async (pipeObj) => {
+const storePipeline = async (pipeObj, pipelineList = []) => {
     let pipeline = pipeObj;
     let res;
     if (typeof pipeline != 'string') {
@@ -70,6 +70,7 @@ const storePipeline = async (pipeObj) => {
         res = await storeNewPipeLine(pipeline);
     }
     logResult(res, 'PipelineUtils storePipeline');
+    pipelineList.push(res.body.name);
     return res;
 }
 

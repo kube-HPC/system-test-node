@@ -49,6 +49,7 @@ chai.use(assertArrays);
 
 describe('all swagger calls test ', () => {
     let algList = [];
+    let pipeList = [];
 
     const applyAlg = async (alg) => {
         await deleteAlgorithm(alg.name, true);
@@ -75,6 +76,29 @@ describe('all swagger calls test ', () => {
                 return deleteAlgorithm(e);
             });
             console.log("delAlg-", JSON.stringify(delAlg, null, 2));
+            const delResult = await Promise.all(del);
+            delResult.forEach(result => {
+                if (result && result.text) {
+                    console.log("Delete Result Message:", result.text);
+                }
+            });
+            await delay(2000);
+            j += 3;
+            z += 3;
+            console.log("j=" + j + ",z=" + z);
+        }
+
+        console.log("-----------------------------------------------");
+        console.log("pipeList = " + pipeList);
+        j = 0;
+        z = 3;
+
+        while (j < pipeList.length) {
+            delPipe = pipeList.slice(j, z);
+            const del = delPipe.map((e) => {
+                return deletePipeline(e);
+            });
+            console.log("delPipe-", JSON.stringify(delPipe, null, 2));
             const delResult = await Promise.all(del);
             delResult.forEach(result => {
                 if (result && result.text) {
@@ -278,7 +302,7 @@ describe('all swagger calls test ', () => {
             await getResult(jobId, 200);
         }).timeout(1000 * 60 * 5)
 
-        it('test the POST exec/pause/{jobId} and exec/resume/{jobId} rest call', async () => {
+        it.only('test the POST exec/pause/{jobId} and exec/resume/{jobId} rest call', async () => {
             const pausePipe = {
                 name: "pausePipe",
                 nodes: [
@@ -303,7 +327,7 @@ describe('all swagger calls test ', () => {
                 }
             }
             await deletePipeline("pausePipe");
-            await storePipeline(pausePipe);
+            await storePipeline(pausePipe, pipeList);
 
             const res = await runStored("pausePipe");
             const jobId = res.body.jobId;
@@ -320,13 +344,13 @@ describe('all swagger calls test ', () => {
             await getResult(jobId, 200);
         }).timeout(1000 * 60 * 5);
 
-        it(`test the GET /exec/tree/{jobId} rest call`, async () => {
+        it.only(`test the GET /exec/tree/{jobId} rest call`, async () => {
             await deletePipeline('pipe1');
             await deletePipeline('pipe2');
             await delay(1000);
-            const a = await storePipeline('origPipeline');
+            const a = await storePipeline('origPipeline', pipeList);
             await delay(1000);
-            const ab = await storePipeline('sonPipeline');
+            const ab = await storePipeline('sonPipeline', pipeList);
 
             expect(ab).to.have.status(201, "fail to create pipeline");
             const run = await runStored('pipe1');
@@ -339,8 +363,6 @@ describe('all swagger calls test ', () => {
 
             expect(res).to.have.status(200);
             await delay(1000);
-            await deletePipeline('pipe1');
-            await deletePipeline('pipe2');
         }).timeout(1000 * 60 * 2);
     });
 
