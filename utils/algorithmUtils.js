@@ -6,13 +6,16 @@ chai.use(chaiHttp);
 const path = require('path');
 const config = require(path.join(process.cwd(), 'config/config'));
 const logger = require('../utils/logger');
+
 const {
     getResult,
     idGen,
-    getStatusall } = require('../utils/results');
+    getStatusall
+} = require('../utils/results');
 
 const {
-    write_log } = require('../utils/misc_utils');
+    write_log
+} = require('../utils/misc_utils');
 
 const fse = require('fs');
 
@@ -307,7 +310,6 @@ const normalizeCpuValue = (value) =>{
 }
 
 module.exports = {
-
     runAlgGetResult,
     StoreDebugAlgorithm,
     runAlgorithm,

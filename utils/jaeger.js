@@ -1,5 +1,5 @@
 const chai = require('chai');
-const path = require('path')
+const path = require('path');
 const config = require(path.join(process.cwd(), 'config/config'))
 
 const getSpansByJodid = async (jobId) => {

@@ -1,14 +1,14 @@
-const path = require('path')
-const config = require(path.join(process.cwd(), 'config/config'))
+const path = require('path');
+const config = require(path.join(process.cwd(), 'config/config'));
 const fs = require('fs');
 
-const axios = require('axios').default
+const axios = require('axios').default;
 const FormData = require('form-data');
 const { stringify } = require('querystring');
 
 
 
-const createInternalDS =  async (name)=>{
+const createInternalDS =  async (name) => {
 
     const formData = new FormData();
     formData.append("name",name);
@@ -23,93 +23,89 @@ const createInternalDS =  async (name)=>{
     }; 
     try {
         const jnk =await axios(options);
-        return jnk
+        return jnk;
     } catch (error) {
-        console.error(error)
-    }
-   
+        console.error(error);
+    }  
 }
-const uploadFileToDataSource = async (dataSourceName,FilePath,CommitMessage)=>{
+
+const uploadFileToDataSource = async (dataSourceName,FilePath,CommitMessage) => {
         const formData = new FormData();
-        formData.append( "versionDescription",CommitMessage)
-        if (Array.isArray(FilePath)){
+        formData.append( "versionDescription",CommitMessage);
+        if (Array.isArray(FilePath)) {
             FilePath.forEach(element => {
-                const t = fs.createReadStream(element)
-                formData.append('files', fs.createReadStream(element) );
-               
+                const t = fs.createReadStream(element);
+                formData.append('files', fs.createReadStream(element));
             });
         }
-        else{
+        else {
             formData.append('files', fs.createReadStream(FilePath));
         }       
         const url = config.DsServerUrl+"/"+dataSourceName;
-        const res = await axios.post(url, formData, {  headers: formData.getHeaders()});
+        const res = await axios.post(url, formData, { headers: formData.getHeaders()});
         return res;
-        
-    }
+}
 
-
-const changeFolder = async (DSname,folderName,fileName)=>{
-    const dataSourceName =DSname
-    const ds = await getDatasourceByName(DSname)
-    const file = ds.data.files.find(o=>o.name===fileName)
-    file.path = `/${folderName}`
+const changeFolder = async (DSname,folderName,fileName) => {
+    const dataSourceName = DSname;
+    const ds = await getDatasourceByName(DSname);
+    const file = ds.data.files.find(o=>o.name===fileName);
+    file.path = `/${folderName}`;
     const formData = new FormData();
-    formData.append("name",dataSourceName)
-    formData.append( "versionDescription","Change folder CommitMessage")
-    const  mapping = file
-    formData.append( "mapping", JSON.stringify(mapping))
+    formData.append("name",dataSourceName);
+    formData.append( "versionDescription","Change folder CommitMessage");
+    const  mapping = file;
+    formData.append( "mapping", JSON.stringify(mapping));
     const url = config.DsServerUrl+"/"+dataSourceName;
     const res = await axios.post(url, formData, {  headers: formData.getHeaders()});
     return res;
 }
 
-
-
-
-const deleteDataSource = async (dataSourceName)=>{
+const deleteDataSource = async (dataSourceName) => {
     const url = config.DsServerUrl+"/"+dataSourceName;
-    res = await axios.delete(url)
+    res = await axios.delete(url);
 }
-const getDatasource =  async ()=>{
-    const url = config.DsServerUrl
-    const res = await axios.get(url)
+
+const getDatasource =  async () => {
+    const url = config.DsServerUrl;
+    const res = await axios.get(url);
     return res;
 }
 
-const getDatasourceByName =  async (name)=>{
-    const url = `${config.DsServerUrl}/${name}`
-    const res = await axios.get(url)
+const getDatasourceByName =  async (name) => {
+    const url = `${config.DsServerUrl}/${name}`;
+    const res = await axios.get(url);
     return res;
 }
 
-const createSnapshot =  async (DsName,SnapName,query)=>{
+const createSnapshot =  async (DsName,SnapName,query) => {
     const snap = {"snapshot": {
         "name":SnapName,
         "query": query
-        }}            
-    const res = await axios.post(`${config.DsServerUrl}/${DsName}/snapshot`,snap)  
-    return res    
+    }}            
+    const res = await axios.post(`${config.DsServerUrl}/${DsName}/snapshot`,snap);
+    return res;
 }
 
-const createSnapshotOnId =  async (commitId,SnapName,query)=>{
+const createSnapshotOnId =  async (commitId,SnapName,query) => {
     const snap = {"snapshot": {
         "name":SnapName,
         "query": query
-        }}  
-    const res = await axios.post(`${config.DsServerUrl}/id/${commitId}/snapshot`,snap)      
-    return res
+    }}  
+    const res = await axios.post(`${config.DsServerUrl}/id/${commitId}/snapshot`,snap);
+    return res;
 }
 
-const getSnapshot = async (DsName,SnapName)=>{
-    const res = await axios.get(`${config.DsServerUrl}/${DsName}/snapshot/${SnapName}`)
-    return res
+const getSnapshot = async (DsName,SnapName) => {
+    const res = await axios.get(`${config.DsServerUrl}/${DsName}/snapshot/${SnapName}`);
+    return res;
 }
 
-const getDsSnapshots = async (DsName)=>{
-    const res = await axios.get(`${config.DsServerUrl}/${DsName}/snapshot`)
-    return res
+const getDsSnapshots = async (DsName) => {
+    const res = await axios.get(`${config.DsServerUrl}/${DsName}/snapshot`);
+    return res;
 }
+
 module.exports = {
     createInternalDS,
     uploadFileToDataSource,
@@ -121,5 +117,4 @@ module.exports = {
     getSnapshot,
     getDsSnapshots,
     changeFolder
-    
 }
