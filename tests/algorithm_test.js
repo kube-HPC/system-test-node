@@ -106,14 +106,24 @@ describe('Alrogithm Tests', () => {
         return res;
     }
 
-    const applyAlgList = async (givenAlgList) => {
+    const applyAlgList = async (givenAlgList, shouldDelete = false) => {
         await Promise.all(givenAlgList.map(async (alg) => {
-            await deleteAlgorithm(alg.name, true);
+            if (shouldDelete) await deleteAlgorithm(alg.name, true);
             if (!algList.includes(alg.name)) {
                 algList.push(alg.name);
             }
         }));
         const res = await storeAlgorithms(givenAlgList);
+        return res;
+    }
+
+    const applyOrUpdateAlgList = async (givenAlgList) => {
+        await Promise.all(givenAlgList.map(async (alg) => {
+            if (!algList.includes(alg.name)) {
+                algList.push(alg.name);
+            }
+        }));
+        const res = await storeOrUpdateAlgorithms(givenAlgList);
         return res;
     }
     // End of apply algorithms section
@@ -495,7 +505,7 @@ describe('Alrogithm Tests', () => {
         }).timeout(1000 * 60 * 5);
 
 
-        it('Delete  Algorithm deletes versions', async () => {
+        it('Delete Algorithm deletes versions', async () => {
             //validate that after delete old algorith, version are deleted.
             await applyAlg(algorithmV1);
             await applyAlg(algorithmV2);
@@ -663,7 +673,7 @@ describe('Alrogithm Tests', () => {
     })
 
     describe('Test algorithm workerCustomResources', () => {
-        it(' algorithm with workerCustomResources should run with stated workerCustomValues values', async () => {
+        it('algorithm with workerCustomResources should run with stated workerCustomValues values', async () => {
             let alg = {
                 name: "workercustom",
                 cpu: 0.1,
@@ -709,7 +719,7 @@ describe('Alrogithm Tests', () => {
             expect(containerSpec.resources.limits.memory).to.be.equal(alg.workerCustomResources.limits.memory);
         }).timeout(1000 * 10 * 60)
 
-        it(' algorithm with workerCustomResources should run with stated workerCustomValues cpu and default memory ', async () => {
+        it('algorithm with workerCustomResources should run with stated workerCustomValues cpu and default memory', async () => {
             let alg = {
                 name: "workercustomnomem",
                 cpu: 0.1,
@@ -977,7 +987,7 @@ describe('Alrogithm Tests', () => {
                     }
                 ];
 
-                const response = await applyAlgList(algorithmsList);
+                const response = await applyAlgList(algorithmsList, true);
                 const listOfAlgorithmResponse = response.body;
                 expect(listOfAlgorithmResponse).to.be.an('array');
                 expect(listOfAlgorithmResponse.length).to.be.equal(2);
@@ -1032,7 +1042,7 @@ describe('Alrogithm Tests', () => {
                         workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
                     }
                 ];
-                const response = await storeAlgorithms(algorithmsList);
+                const response = await applyAlgList(algorithmsList);
                 const listOfAlgorithmResponse = response.body;
                 expect(response.statusCode).to.be.equal(201);
                 expect(listOfAlgorithmResponse).to.be.an('array');
@@ -1087,7 +1097,7 @@ describe('Alrogithm Tests', () => {
                         workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
                     }
                 ];
-                const response = await storeOrUpdateAlgorithms(algorithmsList);
+                const response = await applyOrUpdateAlgList(algorithmsList);
                 const listOfAlgorithmResponse = response.body;
                 expect(response.statusCode).to.be.equal(201);
                 expect(listOfAlgorithmResponse).to.be.an('array');
@@ -1122,7 +1132,7 @@ describe('Alrogithm Tests', () => {
                         workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
                     },
                 ];
-                const response = await applyAlgList(invalidAlgorithmData);
+                const response = await applyAlgList(invalidAlgorithmData, true);
                 const listOfAlgorithmResponse = response.body;
                 expect(listOfAlgorithmResponse).to.be.an('array');
                 expect(listOfAlgorithmResponse.length).to.be.equal(2);
