@@ -1425,5 +1425,5 @@ describe("pipeline Tests 673", () => {
       expect(listOfPipelineResponse[1].error.code).to.be.equal(404, 'Expected status code to be NOT FOUND');
       await deletePipeline(d);
     }).timeout(1000 * 60 * 5);
-  })
+  });
 });
