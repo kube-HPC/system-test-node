@@ -62,7 +62,7 @@ describe('jagear', () => {
     }).timeout(1000 * 10 * 60);
 });
 
-describe.skip('Test worker cache 576', () => {
+describe.skip('Test worker cache 576', () => { // IF THIS TESTS RETURNS, PLEASE MAKE SURE ALGORITHM AND PIPELINE ARE REMOVED AFTER ITS DONE
     //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/576
     it('storage get amount ', async () => {
         const alg = await storeAlgorithm("lonstringv1");
