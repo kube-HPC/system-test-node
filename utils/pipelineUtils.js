@@ -58,19 +58,22 @@ const getPipelineTriggerTree = async (pielineName) => {
     logResult(res, 'PipelineUtils getPipelineTriggerTree');
     return res;
 }
-const storePipeline = async (pipeObj, pipelineList = []) => {
+
+const storePipeline = async (pipeObj, pipelineList = []) => { // pipelineList is dedicated for managing deletion of added tests.
     let pipeline = pipeObj;
     let res;
     if (typeof pipeline != 'string') {
         if ('pipeline' in pipeline) {
             pipeline = pipeline.pipeline;
         }
-        res = await storePipelinesWithDescriptor(pipeline);
+        res = await storePipelinesWithDescriptor(pipeline, pipelineList);
     } else {
         res = await storeNewPipeLine(pipeline);
+        if (!pipelineList.includes(pipeline)) {
+            pipelineList.push(pipeline);
+        }
     }
     logResult(res, 'PipelineUtils storePipeline');
-    pipelineList.push(res.body.name);
     return res;
 }
 
@@ -82,19 +85,41 @@ const putStorePipelinesWithDescriptor = async (descriptor) => {
     return res;
 }
 
-const storePipelinesWithDescriptor = async (descriptor) => {
+const storePipelinesWithDescriptor = async (descriptor, pipelineList = []) => { // // pipelineList is dedicated for managing deletion of added tests.
     const res = await chai.request(config.apiServerUrl)
         .post('/store/pipelines')
         .send(descriptor);
     logResult(res, 'PipelineUtils storePipelinesWithDescriptor');
+    if (Array.isArray(res.body)) { 
+        res.body.forEach(pipeline => { 
+            if (pipeline.name && !pipelineList.includes(pipeline.name)) {
+                pipelineList.push(pipeline.name);
+            }
+        });
+    } else { 
+        if (res.body.name && !pipelineList.includes(res.body.name)) {
+            pipelineList.push(res.body.name);
+        }
+    }
     return res;
 }
 
-const storeOrUpdatePipelines= async (descriptor) => {
+const storeOrUpdatePipelines= async (descriptor, pipelineList = []) => {
     const res = await chai.request(config.apiServerUrl)
         .post('/store/pipelines?overwrite=true')
         .send(descriptor);
     logResult(res, 'PipelineUtils storeOrUpdatePipelines');
+    if (Array.isArray(res.body)) { 
+        res.body.forEach(pipeline => { 
+            if (!pipelineList.includes(pipeline.name)) {
+                pipelineList.push(pipeline.name);
+            }
+        });
+    } else { 
+        if (res.body.name && !pipelineList.includes(res.body.name)) {
+            pipelineList.push(res.body.name);
+        }
+    }
     return res;
 }
 
