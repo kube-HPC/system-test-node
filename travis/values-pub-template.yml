@@ -1,6 +1,7 @@
 global:
   production: true
   clusterName: test
+  hkube_url: https://cicd-test.hkube.org/hkube
   registry: ""
   storage:
     binary: true
@@ -9,7 +10,7 @@ global:
          name: 'hkube-storage'
          capacity: '50Gi'
          nfs_server: '172.20.45.142'
-         nfs_root: '/nfs/storageclass/test-new'
+         nfs_root: '/nfs/storageclass/test'
       base_directory: '/hkubedata'
   ingress:
     use_regex: true
