@@ -31,9 +31,10 @@ const getPiplineNodes = async (id) => {
     return res;
 }
 
-const getPipeline = async (name) => {
+const getPipeline = async (name, token = {}) => {
     const res = await chai.request(config.apiServerUrl)
-        .get(`/store/pipelines/${name}`);
+        .get(`/store/pipelines/${name}`)
+        .set('Authorization', `Bearer ${token}`);
     logResult(res, 'PipelineUtils getPipeline');
     return res;
 }
@@ -45,9 +46,10 @@ const getAllPipeline = async () => {
     return res;
 }
 
-const getPipelineStatus = async (id) => {
+const getPipelineStatus = async (id, token = {}) => {
     const res = await chai.request(config.apiServerUrl)
-        .get(`/exec/status/${id}`);
+        .get(`/exec/status/${id}`)
+        .set('Authorization', `Bearer ${token}`);
     logResult(res, 'PipelineUtils getPipelineStatus');
     return res;
 }
@@ -59,16 +61,16 @@ const getPipelineTriggerTree = async (pielineName) => {
     return res;
 }
 
-const storePipeline = async (pipeObj, pipelineList = []) => { // pipelineList is dedicated for managing deletion of added tests.
+const storePipeline = async (pipeObj, token = {}, pipelineList = []) => { // pipelineList is dedicated for managing deletion of added tests.
     let pipeline = pipeObj;
     let res;
     if (typeof pipeline != 'string') {
         if ('pipeline' in pipeline) {
             pipeline = pipeline.pipeline;
         }
-        res = await storePipelinesWithDescriptor(pipeline, pipelineList);
+        res = await storePipelinesWithDescriptor(pipeline, token, pipelineList);
     } else {
-        res = await storeNewPipeLine(pipeline);
+        res = await storeNewPipeLine(pipeline, token);
         if (!pipelineList.includes(pipeline)) {
             pipelineList.push(pipeline);
         }
@@ -85,9 +87,10 @@ const putStorePipelinesWithDescriptor = async (descriptor) => {
     return res;
 }
 
-const storePipelinesWithDescriptor = async (descriptor, pipelineList = []) => { // // pipelineList is dedicated for managing deletion of added tests.
+const storePipelinesWithDescriptor = async (descriptor, token = {}, pipelineList = []) => { // // pipelineList is dedicated for managing deletion of added tests.
     const res = await chai.request(config.apiServerUrl)
         .post('/store/pipelines')
+        .set('Authorization', `Bearer ${token}`)
         .send(descriptor);
     logResult(res, 'PipelineUtils storePipelinesWithDescriptor');
     if (Array.isArray(res.body)) { 
@@ -123,8 +126,8 @@ const storeOrUpdatePipelines= async (descriptor, pipelineList = []) => {
     return res;
 }
 
-const storeNewPipeLine = async (name) => {
-    const pipeline = await getPipeline(name);
+const storeNewPipeLine = async (name, token = {}) => {
+    const pipeline = await getPipeline(name, token);
     if (pipeline.status === 404) {
         write_log("pipe was not found");
         const {
@@ -133,11 +136,12 @@ const storeNewPipeLine = async (name) => {
 
         const array = pipe.nodes.map(async (element) => {
             const algName = element.algorithmName
-            storeAlgorithm(algName)
+            storeAlgorithm(algName, token);
         });
         await Promise.all(array);
         const res1 = await chai.request(config.apiServerUrl)
             .post('/store/pipelines')
+            .set('Authorization', `Bearer ${token}`)
             .send(pipe);
         logResult(res1, 'storeNewPipeLine');
         return res1;
@@ -145,7 +149,7 @@ const storeNewPipeLine = async (name) => {
     return pipeline;
 }
 
-const deletePipeline = async (pipelineName) => {
+const deletePipeline = async (pipelineName, token = {}) => {
     let name = pipelineName;
     if (typeof name != 'string') {
         if ('name' in pipelineName) {
@@ -154,12 +158,13 @@ const deletePipeline = async (pipelineName) => {
     }
 
     const res = await chai.request(config.apiServerUrl)
-        .delete(`/store/pipelines/${name}`);
+        .delete(`/store/pipelines/${name}`)
+        .set('Authorization', `Bearer ${token}`);
     logResult(res, 'PipelineUtils deletePipeline');
     return res;
 }
 
-const runStored = async (descriptor) => {
+const runStored = async (descriptor, token = {}) => {
     let body = descriptor;
     if (typeof body != 'string') {
         if ("inputData" in descriptor) {
@@ -173,6 +178,7 @@ const runStored = async (descriptor) => {
     }
     const res = await chai.request(config.apiServerUrl)
         .post('/exec/stored')
+        .set('Authorization', `Bearer ${token}`)
         .send(body);
     logResult(res, 'PipelineUtils runStored');
     return res;
@@ -193,13 +199,14 @@ const runRaw = async (body) => {
     return res;
 }
 
-const resumePipeline = async (jobid) => {
+const resumePipeline = async (jobid, token = {}) => {
     let body = {
         jobId: jobid
     }
 
     const res = await chai.request(config.apiServerUrl)
         .post('/exec/resume')
+        .set('Authorization', `Bearer ${token}`)
         .send(body);
     logResult(res, 'PipelineUtils resumePipeline');
     return res;
@@ -212,23 +219,24 @@ const getExecPipeline = async (jobId) => {
     return res;
 }
 
-const pausePipeline = async (jobid) => {
+const pausePipeline = async (jobid, token = {}) => {
     let body = {
         jobId: jobid
     }
 
     const res = await chai.request(config.apiServerUrl)
         .post('/exec/pause')
+        .set('Authorization', `Bearer ${token}`)
         .send(body);
     logResult(res, 'PipelineUtils pausePipeline');
     return res;
 }
 
-const runStoredAndWaitForResults = async (pipe) => {
-    const res = await runStored(pipe);
+const runStoredAndWaitForResults = async (pipe, token = {}) => {
+    const res = await runStored(pipe, token);
     const jobId = res.body.jobId;
     write_log(jobId);
-    const result = await getResult(jobId, 200);
+    const result = await getResult(jobId, 200, token);
     return jobId;
 }
 

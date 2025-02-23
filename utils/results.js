@@ -7,14 +7,15 @@ const logger = require('../utils/logger');
 const { getWorkers } = require('../utils/socketGet');
 
 // chai.use(chaiHttp);
-const getJobResult = async (jobId) => {
+const getJobResult = async (jobId, token) => {
     const res = await chai.request(config.apiServerUrl)
-        .get(`/exec/results/${jobId}`);
+        .get(`/exec/results/${jobId}`)
+        .set('Authorization', `Bearer ${token}`);
     logger.info(`${res.status}, ${JSON.stringify(res.body)}`);
     return res;
 }
 
-const getResult = async (jobId, expectedStatus, timeout = 60 * 1000 * 10, interval = 5000) => {
+const getResult = async (jobId, expectedStatus,token = {}, timeout = 60 * 1000 * 10, interval = 5000) => {
     
     if (typeof jobId != 'string') {
         jobId = jobId.body.jobId;
@@ -23,7 +24,7 @@ const getResult = async (jobId, expectedStatus, timeout = 60 * 1000 * 10, interv
     const start = Date.now();
     do {
         process.stdout.write(`\rWaiting for jobId: ${jobId} to get status: ${expectedStatus}, time passed: ${Date.now() - start}/${timeout} ms...`);
-        const res = await getJobResult(jobId);
+        const res = await getJobResult(jobId, token);
         if (res.status == expectedStatus) {
             console.log(`\njobId: ${jobId} has status: ${expectedStatus}`);
             return res.body;
@@ -80,12 +81,13 @@ const toString = (fun) => {
 }
 
 // p6
-const getStatusall = async (id, url, expectedCode, expectedStatus, timeout = 60 * 1000 * 3, interval = 1000) => {
+const getStatusall = async (id, url, expectedCode, expectedStatus, token = {}, timeout = 60 * 1000 * 3, interval = 1000) => {
     const start = Date.now();
     do {
         process.stdout.write(`\rWaiting for buildId: ${id} to get status: ${expectedStatus}, time passed: ${Date.now() - start}/${timeout} ms...`);
         const res = await chai.request(config.apiServerUrl)
-            .get(`${url}/${id}`);
+            .get(`${url}/${id}`)
+            .set('Authorization', `Bearer ${token}`);
 
         logger.info(`${res.status}, ${JSON.stringify(res.body)}`);
         if (res.status == expectedCode && res.body.status == expectedStatus) {
@@ -101,7 +103,7 @@ const getStatusall = async (id, url, expectedCode, expectedStatus, timeout = 60 
     expect.fail(`\ntimeout exceeded trying to get ${expectedStatus} status for buildId ${id}`);
 };
 
-const runRaw = async (time = 15000) => {
+const runRaw = async (token = {}, time = 15000) => {
     const rawPipe = {
         name: "rawPipe",
         nodes: [{
@@ -119,6 +121,7 @@ const runRaw = async (time = 15000) => {
 
     const res = await chai.request(config.apiServerUrl)
         .post('/exec/raw')
+        .set('Authorization', `Bearer ${token}`)
         .send(rawPipe);
 
     const jobId = res.body.jobId;
@@ -139,16 +142,18 @@ const idGen = (MaxLen = 5) => {
     return arr.join('.');
 }
 
-const getRawGraph = async (jobId) => {
+const getRawGraph = async (jobId, token = {}) => {
     const res = await chai.request(config.apiServerUrl)
-        .get(`/graph/raw/${jobId}`);
+        .get(`/graph/raw/${jobId}`)
+        .set('Authorization', `Bearer ${token}`);
     logger.info(`${res.status}, ${JSON.stringify(res.body)}`);
     return res;
 }
 
-const getParsedGraph = async (jobId) => {
+const getParsedGraph = async (jobId, token = {}) => {
     const res = await chai.request(config.apiServerUrl)
-        .get(`/graph/parsed/${jobId}`);
+        .get(`/graph/parsed/${jobId}`)
+        .set('Authorization', `Bearer ${token}`);
     logger.info(`${res.status}, ${JSON.stringify(res.body)}`);
     return res;
 }
