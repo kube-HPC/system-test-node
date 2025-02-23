@@ -4,33 +4,28 @@ const chaiHttp = require('chai-http');
 
 const expect = chai.expect;
 const assertArrays = require('chai-arrays');
+
 const {
     deletePipeline,
     storePipeline,
-    runStored,
     deconstructTestData,
     runStoredAndWaitForResults
-} = require('../utils/pipelineUtils')
+} = require('../utils/pipelineUtils');
 
-
-
-const { getWebSocketData } = require('../utils/socketGet')
-const { storeAlgorithm } = require('../utils/algorithmUtils')
+const { storeAlgorithm } = require('../utils/algorithmUtils');
 
 const {
     getSpansByJodid
-} = require('../utils/jaeger')
+} = require('../utils/jaeger');
+
 chai.use(chaiHttp);
 chai.use(assertArrays);
-const { deleteAlgorithm,
-    storeAlgorithmApply } = require('../utils/algorithmUtils')
+
 const {
-    testData1,
     testData2
-} = require(path.join(process.cwd(), 'config/index')).jagearTest
+} = require(path.join(process.cwd(), 'config/index')).jagearTest;
 
 describe('jagear', () => {
-
     let alg = {
         name: "versatile",
         cpu: 1,
@@ -46,9 +41,8 @@ describe('jagear', () => {
         workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
     }
 
-    it('test jagear  start algorithms', async () => {
-
-        const algName = "black-alg"
+    it('test jagear start algorithms', async () => {
+        const algName = "black-alg";
         const pipe = {
             name: "simple",
             flowInput: {
@@ -58,51 +52,39 @@ describe('jagear', () => {
             },
             priority: 1
         }
-        const jobId = await runStoredAndWaitForResults(pipe)
-        const data = await getSpansByJodid(jobId)
-        const startsAlgs = ["yellow-alg start", "black-alg start", "green-alg start"]
-        const dataOperations = data.map(item => item.operationName).filter((value, index, self) => self.indexOf(value) === index)
-        const found = startsAlgs.every(r => dataOperations.includes(r))
+        const jobId = await runStoredAndWaitForResults(pipe);
+        const data = await getSpansByJodid(jobId);
+        const startsAlgs = ["yellow-alg start", "black-alg start", "green-alg start"];
+        const dataOperations = data.map(item => item.operationName).filter((value, index, self) => self.indexOf(value) === index);
+        const found = startsAlgs.every(r => dataOperations.includes(r));
 
-        expect(found).to.be.true
+        expect(found).to.be.true;
+    }).timeout(1000 * 10 * 60);
+});
 
-    }).timeout(1000 * 10 * 60)
-
-})
-
-
-describe.skip('Test worker cache 576', () => {
-
+describe.skip('Test worker cache 576', () => { // IF THIS TESTS RETURNS, PLEASE MAKE SURE ALGORITHM AND PIPELINE ARE REMOVED AFTER ITS DONE
     //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/576
     it('storage get amount ', async () => {
-
-
         const alg = await storeAlgorithm("lonstringv1");
         //set test data to testData1
-        const d = deconstructTestData(testData2)
-        await deletePipeline(d)
+        const d = deconstructTestData(testData2);
+        await deletePipeline(d);
         //store pipeline evalwait
-        await storePipeline(d)
+        await storePipeline(d);
 
         //run the pipeline 
+        const jobId = await runStoredAndWaitForResults(d);
 
-        const jobId = await runStoredAndWaitForResults(d)
+        const WSdata = await getWorkers();
+        const pods = WSdata.discovery.worker.filter(worker => worker.algorithmName == "eval-alg");
 
-        const WSdata = await getWorkers()
-        const pods = WSdata.discovery.worker.filter(worker => worker.algorithmName == "eval-alg")
+        const data = await getSpansByJodid(jobId);
+        let setJobResult = data.filter(obj => obj.operationName.includes("set job result"));
+        let storageGet = data.filter(obj => obj.operationName == "storage-get").filter(obj => obj.references.length > 0);
 
+        let wz = storageGet.filter(obj => obj.references[0].spanID != setJobResult[0].spanID);
 
-        const data = await getSpansByJodid(jobId)
-        let setJobResult = data.filter(obj => obj.operationName.includes("set job result"))
-        let storageGet = data.filter(obj => obj.operationName == "storage-get").filter(obj => obj.references.length > 0)
-
-        let wz = storageGet.filter(obj => obj.references[0].spanID != setJobResult[0].spanID)
-
-        const a = Math.abs(pods.length - wz.length / 2)
-        expect(a).to.be.lessThan(30)
+        const a = Math.abs(pods.length - wz.length / 2);
+        expect(a).to.be.lessThan(30);
     }).timeout(1000 * 60 * 5);
-
-
-
-
 });

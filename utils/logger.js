@@ -1,17 +1,16 @@
 const {
   createLogger,
-  format,
-  transports
+  format
 } = require('winston');
+
 const {
   combine,
   timestamp,
-  label,
-  prettyPrint,
   printf
 } = format;
+
 const path = require('path');
-const winston = require('winston')
+const winston = require('winston');
 require('winston-daily-rotate-file');
 
 // const { combine, timestamp, label, printf } = format
@@ -21,6 +20,7 @@ require('winston-daily-rotate-file');
 // let mm = today.getMonth() + 1
 // let yy = today.getFullYear()
 // let date = `${dd}-${mm}-${yy}`
+
 const custumLevels = {
   levels: {
     result: -1,
@@ -51,6 +51,7 @@ var combinedLevel = new(winston.transports.DailyRotateFile)({
   datePattern: 'DD-MM-YYYY',
   maxFiles: '7d'
 });
+
 var errorLevel = new(winston.transports.DailyRotateFile)({
   filename: 'error-%DATE%.log',
   level: 'error',
@@ -88,5 +89,5 @@ const logger = createLogger({
     exceptionLevel
   ]
 
-})
-module.exports = logger
+});
+module.exports = logger;

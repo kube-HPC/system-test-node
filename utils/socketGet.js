@@ -8,10 +8,9 @@ const ERROR_LOG_QUERY = require('../utils/graphql/queries/error-log-query');
 const ALL_ALGORITHMS_QUERY = require('../utils/graphql/queries/all-algorithms');
 const PIPELINE_DRIVER_QUERY = require('./graphql/queries/pipeline-driver-query');
 const delay = require('delay')
-const { setDefaultEncoding } = require('winston-daily-rotate-file');
+// const { setDefaultEncoding } = require('winston-daily-rotate-file');
 
 const Graphql_URL = process.env.BASE_URL + "/hkube/api-server/graphql";
-
 
 const getDriverIdByJobId = async (jobId, experimentName = 'main') => {
     data = await request(Graphql_URL, PIPELINE_DRIVER_QUERY);
@@ -55,7 +54,6 @@ const getWorkers = async (experimentName = 'main') => {
 }
 
 const waitForWorkers = async (algName, count, waitCycles = 10) => {
-    let found = false;
     let workers = [];
     for (let i = 0; i < waitCycles; i++) {
         const data = await getWorkers()

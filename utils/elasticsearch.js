@@ -3,8 +3,9 @@ const chai = require('chai');
 const delay = require('delay');
 const path = require('path')
 const expect = chai.expect;
-const config = require(path.join(process.cwd(), 'config/config'))
+const config = require(path.join(process.cwd(), 'config/config'));
 let _client = null;
+
 const getClient = () => {
     if (!_client) {
         _client = new elasticsearch.Client({
@@ -48,8 +49,6 @@ const waitForLog = async (message, tags = {}, timeout = 5 * 60 * 1000, interval 
         await delay(interval);
     } while (Date.now() - start < timeout);
     expect.fail(`timeout exceeded trying to get ${message} from logs`);
-
-
 }
 
 
@@ -69,10 +68,9 @@ const getLogByJobId = async (jobId)=>{
             "@timestamp"
             ]
     }
-   
-    })
+    });
 
-    return res
+    return res;
 }
 
 
@@ -111,12 +109,9 @@ const getLogByJobId = async (jobId)=>{
 //     return res
 // }
 
-
-
 const getLogByPodName= async (podName)=>{
     const client = getClient();
     
-   
     const query = {       
         bool: {  
             must:[{
@@ -143,12 +138,10 @@ const getLogByPodName= async (podName)=>{
         index: 'logstash-*',
     });
 
-    return res
+    return res;
 }
 
-
 module.exports = {
-    
     getClient,
     waitForLog,
     getLogByJobId,

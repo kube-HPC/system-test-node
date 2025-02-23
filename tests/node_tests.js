@@ -1,13 +1,9 @@
 const chai = require("chai");
 const expect = chai.expect;
 const chaiHttp = require("chai-http");
-const path = require("path");
 const delay = require("delay");
-const { pipe } = require("winston-daily-rotate-file");
-var diff = require("deep-diff").diff;
 
 const {
-
   deletePod,
   filterPodsByName,
   deleteJob,
@@ -17,34 +13,20 @@ const {
 const {
   runAlgorithm,
   deleteAlgorithm,
-  storeAlgorithm,
-  getAlgorithm,
-  getAlgorithmVersion,
-  updateAlgorithmVersion,
   storeAlgorithmApply,
-  deleteAlgorithmVersion,
-  getAlgorithim,
 } = require("../utils/algorithmUtils");
 
-const {
-  getWebSocketJobs,
-  getWebSocketlogs,
-  getDriverIdByJobId,
-} = require("../utils/socketGet");
+const { 
+  intervalDelay,
+} = require('../utils/misc_utils');
 
 const {
   testData1,
   testData2,
   testData3,
-  testData401,
   testData402,
   testData403,
-  testData404,
-  testData404a,
   testData405,
-  testData406,
-  testData407,
-  testData408,
   outputPipe,
 } = require("../config/index").nodeTest;
 
@@ -66,7 +48,39 @@ const {
 chai.use(chaiHttp);
 
 describe("Node Tests git 660", () => {
-  describe("singel node batch input", () => {
+  let pipeList = [];
+
+  beforeEach(function () {
+    console.log('\n-----------------------------------------------\n');
+  });
+
+  after(async function () {
+    this.timeout(2 * 60 * 1000);
+    console.log("pipeList = " + pipeList);
+    j = 0;
+    z = 3;
+
+    while (j < pipeList.length) {
+        delPipe = pipeList.slice(j, z);
+        const del = delPipe.map((e) => {
+            return deletePipeline(e);
+        });
+        console.log("delPipe-", JSON.stringify(delPipe, null, 2));
+        const delResult = await Promise.all(del);
+        delResult.forEach(result => {
+            if (result && result.text) {
+                console.log("Delete Result Message:", result.text);
+            }
+        });
+        await delay(2000);
+        j += 3;
+        z += 3;
+        console.log("j=" + j + ",z=" + z);
+    }
+    console.log("----------------------- end -----------------------");
+  });
+
+  describe("single node batch input", () => {
     const pipe = {
       name: "Athos-Cartesian",
       nodes: [
@@ -79,8 +93,8 @@ describe("Node Tests git 660", () => {
       ],
     };
 
-    it("singel batch indexed", async () => {
-      pipe.name = "singel_batch_index";
+    it("single batch indexed", async () => {
+      pipe.name = "single_batch_index";
       pipe.nodes[0].input = ["#[0...9]"];
       pipe.nodes[0].batchOperation = "indexed";
       const res = await runRaw(pipe);
@@ -89,7 +103,7 @@ describe("Node Tests git 660", () => {
       expect(result.data.length).to.be.equal(10);
     }).timeout(1000 * 60 * 2);
 
-    it("two batch indexed  ", async () => {
+    it("two batch indexed", async () => {
       pipe.nodes[0].input = ["#[0...9]", "#[10,20,30]"];
       pipe.name = "two_batch_index";
       pipe.nodes[0].batchOperation = "indexed";
@@ -99,7 +113,7 @@ describe("Node Tests git 660", () => {
       expect(result.data.length).to.be.equal(10);
     }).timeout(1000 * 60 * 2);
 
-    it("two batch one object  indexed", async () => {
+    it("two batch one object indexed", async () => {
       pipe.name = "two_batch_one_object_index";
       pipe.nodes[0].input = [{ data: "stam" }, "#[0...9]", "#[10,20,30]"];
       pipe.nodes[0].batchOperation = "indexed";
@@ -109,8 +123,8 @@ describe("Node Tests git 660", () => {
       expect(result.data.length).to.be.equal(10);
     }).timeout(1000 * 60 * 2);
 
-    it("singel batch cartesian", async () => {
-      pipe.name = "singel_batch_cartesian";
+    it("single batch cartesian", async () => {
+      pipe.name = "single_batch_cartesian";
       pipe.nodes[0].input = ["#[0...9]"];
       pipe.nodes[0].batchOperation = "cartesian";
       const res = await runRaw(pipe);
@@ -129,7 +143,7 @@ describe("Node Tests git 660", () => {
       expect(result.data.length).to.be.equal(30);
     }).timeout(1000 * 60 * 2);
 
-    it("two batch one object  cartesian", async () => {
+    it("two batch one object cartesian", async () => {
       pipe.name = "two_batch_one_object_cartesian";
       pipe.nodes[0].input = [{ data: "stam" }, "#[0...9]", "#[10,20,30]"];
       pipe.nodes[0].batchOperation = "cartesian";
@@ -139,7 +153,7 @@ describe("Node Tests git 660", () => {
       expect(result.data.length).to.be.equal(30);
     }).timeout(1000 * 60 * 2);
 
-    it("two batch two object  cartesian", async () => {
+    it("two batch two object cartesian", async () => {
       pipe.name = "two_batch_two_object_cartesian";
       pipe.nodes[0].input = [
         { date: "now" },
@@ -169,6 +183,7 @@ describe("Node Tests git 660", () => {
       expect(result.data.length).to.be.equal(10);
     }).timeout(1000 * 60 * 2);
   });
+
   describe("pipe line cach input data", () => {
     const pipe = {
       name: "nodeAdd19",
@@ -210,7 +225,7 @@ describe("Node Tests git 660", () => {
       priority: 3,
     };
 
-    it(" run node get data from flowInput", async () => {
+    it("run node get data from flowInput", async () => {
       const expectedResult = 29;
       const res = await runRaw(pipe);
       const jobId = res.body.jobId;
@@ -250,7 +265,7 @@ describe("Node Tests git 660", () => {
       ],
     };
 
-    it(" batch indexed", async () => {
+    it("batch indexed", async () => {
       pipe.nodes[0].input = ["#[0...9]"];
       pipe.nodes[1].input = ["#[10...19]"];
       const res = await runRaw(pipe);
@@ -262,7 +277,7 @@ describe("Node Tests git 660", () => {
       );
     }).timeout(1000 * 60 * 2);
 
-    it(" batch cartesian", async () => {
+    it("batch cartesian", async () => {
       pipe.nodes[0].input = ["#[0...9]"];
       pipe.nodes[1].input = ["#[10...14]"];
       pipe.nodes[2].input = ["#@one", "#@two"];
@@ -279,7 +294,7 @@ describe("Node Tests git 660", () => {
       );
     }).timeout(1000 * 60 * 2);
 
-    it(" batch + fix cartesian", async () => {
+    it("batch + fix cartesian", async () => {
       pipe.nodes[0].input = ["#[0...9]"];
       pipe.nodes[1].input = ["#[10...14]"];
       pipe.nodes[2].input = ["99", "#@one", "#@two"];
@@ -297,7 +312,7 @@ describe("Node Tests git 660", () => {
       );
     }).timeout(1000 * 60 * 2);
 
-    it(" batch + fix indexed", async () => {
+    it("batch + fix indexed", async () => {
       pipe.nodes[0].input = ["#[0...9]"];
       pipe.nodes[1].input = ["#[10...14]"];
       pipe.nodes[2].input = ["99", "#@one", "#@two"];
@@ -373,7 +388,7 @@ describe("Node Tests git 660", () => {
       );
     }).timeout(1000 * 60 * 2);
 
-    it(" flowInput batch index", async () => {
+    it("flowInput batch index", async () => {
       pipe.nodes[0].input = ["#@flowInput.one", "#@flowInput.two"];
       pipe.nodes[0].batchOperation = "cartesian";
       pipe.nodes[2].batchOperation = "indexed";
@@ -445,10 +460,10 @@ describe("Node Tests git 660", () => {
       pipe.flowInput.two = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
       const res = await runRaw(pipe);
       const jobId = res.body.jobId;
-      const result = await getResult(jobId, 200);
+      await getResult(jobId, 200);
     }).timeout(1000 * 60 * 2);
 
-    it("caching (Run Node) batch index ", async () => {
+    it("caching (Run Node) batch index", async () => {
       pipe.nodes[0].input = ["#@flowInput.one", "#@flowInput.two"];
       pipe.nodes[0].batchOperation = "cartesian";
       pipe.nodes[2].input = ["#@one", "#@two"];
@@ -502,6 +517,7 @@ describe("Node Tests git 660", () => {
       expect(JSON.stringify(orgRes.data) == JSON.stringify(cachRes.data)).to.be
         .true;
     }).timeout(1000 * 60 * 2);
+
     it("caching (Run Node) batch + fix indexed", async () => {
       pipe.nodes[0].input = ["#[0...9]"];
       pipe.nodes[1].input = ["#[10...15]"];
@@ -517,7 +533,8 @@ describe("Node Tests git 660", () => {
       expect(JSON.stringify(orgRes.data) == JSON.stringify(cachRes.data)).to.be
         .true;
     }).timeout(1000 * 60 * 2);
-    it("caching (Run Node) batch +any ", async () => {
+
+    it("caching (Run Node) batch + any", async () => {
       pipe.nodes[0].input = ["#@flowInput.one", "#@flowInput.two"];
       pipe.nodes[0].batchOperation = "cartesian";
       pipe.nodes[2].input = ["*@one", "#@two"];
@@ -535,7 +552,7 @@ describe("Node Tests git 660", () => {
       );
     }).timeout(1000 * 60 * 2);
 
-    it("caching (Run Node) on cached pipeline ", async () => {
+    it("caching (Run Node) on cached pipeline", async () => {
       pipe.nodes[0].input = ["#@flowInput.one", "#@flowInput.two"];
       pipe.nodes[0].batchOperation = "cartesian";
       pipe.nodes[1].input = ["#@one"];
@@ -560,9 +577,9 @@ describe("Node Tests git 660", () => {
     }).timeout(1000 * 60 * 2);
   });
 
-  describe("Fail schdualing", () => {
+  describe("Fail scheduling", () => {
     const algName = pipelineRandomName(8).toLowerCase();
-    const alg15cpu = {
+    const alg8cpu = {
       name: `${algName}`,
       algorithmImage: "hkube/algorunner",
       cpu: 8,
@@ -576,15 +593,18 @@ describe("Node Tests git 660", () => {
       workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
     };
 
-    it("node Fail schdualing due to lack of resource", async () => {
-      const jnk = await storeAlgorithmApply(alg15cpu);
+    it("node fail scheduling due to lack of resource", async () => {
+      await storeAlgorithmApply(alg8cpu);
       const alg = { name: algName, input: [] };
       const res = await runAlgorithm(alg);
-      await delay(90000);
+      await intervalDelay("Waiting", 90 * 1000);
       const graph = await getRawGraph(res.body.jobId);
-      await deleteAlgorithm(algName);
       expect(graph.body.nodes[0].status).to.be.equal("failedScheduling");
     }).timeout(1000 * 60 * 3);
+
+    after(async () => {
+      await deleteAlgorithm(algName);
+    });
   });
 
   describe("some test", () => {
@@ -592,7 +612,7 @@ describe("Node Tests git 660", () => {
       const testData = testData3;
       const d = deconstructTestData(testData);
       await deletePipeline(d);
-      await storePipeline(d);
+      await storePipeline(d, pipeList);
       const jobId = await runStoredAndWaitForResults(d);
 
       const graph = await getRawGraph(jobId);
@@ -604,7 +624,7 @@ describe("Node Tests git 660", () => {
       const testData = testData1;
       const d = deconstructTestData(testData);
       await deletePipeline(d);
-      await storePipeline(d);
+      await storePipeline(d, pipeList);
       const jobId = await runStored(d);
       await delay(15000);
       const jobs = await filterjobsByName("green-alg");
@@ -640,7 +660,7 @@ describe("Node Tests git 660", () => {
       };
 
       //store pipeline addmuldiv
-      await storePipeline(d);
+      await storePipeline(d, pipeList);
       const res = await runStored(pipe);
       const jobId = res.body.jobId;
       const result = await getResult(jobId, 200);
@@ -661,7 +681,7 @@ describe("Node Tests git 660", () => {
       };
 
       //store pipeline addmuldiv
-      await storePipeline(d);
+      await storePipeline(d, pipeList);
       const res = await runStored(pipe);
       const jobId = res.body.jobId;
       const result = await getResult(jobId, 200);
@@ -669,7 +689,7 @@ describe("Node Tests git 660", () => {
       expect(result.data[0].result).to.be.closeTo(7.965, 0.001);
     }).timeout(1000 * 60 * 5);
 
-    it(" string", async () => {
+    it("string", async () => {
       //set test data to testData1
       const d = deconstructTestData(testData405);
       await deletePipeline(d);
@@ -681,7 +701,7 @@ describe("Node Tests git 660", () => {
       };
 
       //store pipeline addmuldiv
-      await storePipeline(d);
+      await storePipeline(d, pipeList);
       const res = await runStored(pipe);
       const jobId = res.body.jobId;
       const result = await getResult(jobId, 200);
@@ -689,7 +709,7 @@ describe("Node Tests git 660", () => {
       expect(result.data[0].result).to.be.equal("hello earth");
     }).timeout(1000 * 60 * 5);
 
-    it(" bool true", async () => {
+    it("bool true", async () => {
       //set test data to testData1
       const d = deconstructTestData(testData403);
       await deletePipeline(d);
@@ -701,16 +721,15 @@ describe("Node Tests git 660", () => {
       };
 
       //store pipeline addmuldiv
-      await storePipeline(d);
+      await storePipeline(d, pipeList);
       const res = await runStored(pipe);
       const jobId = res.body.jobId;
       const result = await getResult(jobId, 200);
       // let diff = []
       expect(result.data[0].result).to.be.equal(true);
-      await deletePipeline(d);
     }).timeout(1000 * 60 * 5);
 
-    it(" bool false", async () => {
+    it("bool false", async () => {
       //set test data to testData1
       const d = deconstructTestData(testData403);
       await deletePipeline(d);
@@ -722,16 +741,15 @@ describe("Node Tests git 660", () => {
       };
 
       //store pipeline addmuldiv
-      await storePipeline(d);
+      await storePipeline(d, pipeList);
       const res = await runStored(pipe);
       const jobId = res.body.jobId;
       const result = await getResult(jobId, 200);
       // let diff = []
       expect(result.data[0].result).to.be.equal(false);
-      await deletePipeline(d);
     }).timeout(1000 * 60 * 5);
 
-    it(" bool object type", async () => {
+    it("bool object type", async () => {
       //set test data to testData1
       const d = deconstructTestData(testData403);
       await deletePipeline(d);
@@ -747,17 +765,16 @@ describe("Node Tests git 660", () => {
       };
 
       //store pipeline addmuldiv
-      await storePipeline(d);
+      await storePipeline(d, pipeList);
       const res = await runStored(pipe);
       const jobId = res.body.jobId;
       const result = await getResult(jobId, 200);
       // let diff = []
       expect(result.data[0].result).to.be.deep.equal(pipe.flowInput.inputs);
-      await deletePipeline(d);
     }).timeout(1000 * 60 * 5);
   });
 
-  describe("TID_110 - batchTolerance  -  algorithm completed with failure (git 60 86)", () => {
+  describe("TID_110 - batchTolerance - algorithm completed with failure (git 60 86)", () => {
     const dataSort = (obj) => {
       testData2.descriptor.options = obj.options;
       testData2.descriptor.flowInput = obj.flowInput;
@@ -779,7 +796,8 @@ describe("Node Tests git 660", () => {
 
       const d = testData2.descriptor;
       //store pipeline
-      await storePipeline(d);
+      await deletePipeline(d);
+      await storePipeline(d, pipeList);
 
       const res = await runStored(d.name);
 
@@ -801,7 +819,8 @@ describe("Node Tests git 660", () => {
       dataSort(obj);
       const d = testData2.descriptor;
 
-      await storePipeline(d);
+      await deletePipeline(d);
+      await storePipeline(d, pipeList);
       const res = await runStored(d.name);
 
       await checkResults(res, 200, "failed", d, true);
@@ -822,7 +841,8 @@ describe("Node Tests git 660", () => {
       dataSort(obj);
       const d = testData2.descriptor;
 
-      await storePipeline(d);
+      await deletePipeline(d);
+      await storePipeline(d, pipeList);
       const res = await runStored(d.name);
 
       await checkResults(res, 200, "completed", d, true);
@@ -843,7 +863,8 @@ describe("Node Tests git 660", () => {
       dataSort(obj);
       const d = testData2.descriptor;
 
-      const res = await storePipeline(d);
+      await deletePipeline(d);
+      const res = await storePipeline(d, pipeList);
 
       expect(res.status).to.eql(400);
       expect(res.body).to.have.property("error");
@@ -851,7 +872,6 @@ describe("Node Tests git 660", () => {
         "batchTolerance should be >= 0"
       );
 
-      await deletePipeline(d);
     }).timeout(5000000);
 
     it("should fail the pipeline, 101 percent tolerance with one fail", async () => {
@@ -869,7 +889,8 @@ describe("Node Tests git 660", () => {
       dataSort(obj);
       const d = testData2.descriptor;
 
-      const res = await storePipeline(d);
+      await deletePipeline(d);
+      const res = await storePipeline(d, pipeList);
 
       expect(res.status).to.eql(400);
       expect(res.body).to.have.property("error");
@@ -877,7 +898,6 @@ describe("Node Tests git 660", () => {
         "batchTolerance should be <= 100"
       );
 
-      await deletePipeline(d);
     }).timeout(5000000);
 
     it("should fail the pipeline, 20.6 percent tolerance with one fail", async () => {
@@ -895,7 +915,8 @@ describe("Node Tests git 660", () => {
       dataSort(obj);
       const d = testData2.descriptor;
 
-      const res = await storePipeline(d);
+      await deletePipeline(d);
+      const res = await storePipeline(d, pipeList);
       expect(res.status).to.eql(400);
 
       expect(res.body).to.have.property("error");
@@ -903,7 +924,6 @@ describe("Node Tests git 660", () => {
         "batchTolerance should be integer"
       );
 
-      await deletePipeline(d);
     }).timeout(5000000);
 
     it('should fail the pipeline, "twenty" percent tolerance with one fail', async () => {
@@ -921,14 +941,14 @@ describe("Node Tests git 660", () => {
       dataSort(obj);
       const d = testData2.descriptor;
 
-      const res = await storePipeline(d);
+      await deletePipeline(d);
+      const res = await storePipeline(d, pipeList);
       expect(res.status).to.eql(400);
       expect(res.body).to.have.property("error");
       expect(res.body.error.message).to.include(
         "batchTolerance should be integer"
       );
 
-      await deletePipeline(d);
     }).timeout(5000000);
   });
 
@@ -936,10 +956,12 @@ describe("Node Tests git 660", () => {
     const testData = outputPipe;
     const d = deconstructTestData(testData);
     await deletePipeline(d);
-    await storePipeline(d);
+    await storePipeline(d, pipeList);
 
     const jobId = await runStoredAndWaitForResults(d);
     const result = await getResult(jobId, 200);
+    const outputAlgorithmName = `${d.name}-output`;
+    await deleteAlgorithm(outputAlgorithmName);
     expect(result.data[1].result[0]).to.be.equal('yellow-input')
     expect(result.data[1].result[1]).to.be.equal(42)
     expect(result.data[0].nodeName).to.be.equal('black')

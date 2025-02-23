@@ -43,7 +43,7 @@ const {
     getLogByPodName
 } = require('../../../utils/elasticsearch')
 
-const FailSingelPod = async (podName, namespace = 'default') => {
+const FailSinglePod = async (podName, namespace = 'default') => {
     //set test data to testData1
     const d = deconstructTestData(testData1)
 
