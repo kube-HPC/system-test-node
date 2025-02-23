@@ -103,16 +103,16 @@ const getPodSpecByContainer = async (podName, containerName = 'worker', namespac
     }
 }
 
-const FailSingelPod = async (podName, namespace = 'default') => {
+const FailSingelPod = async (podName, token = {}, namespace = 'default') => {
     //set test data to testData1
     const d = deconstructTestData(testData1)
 
     //store pipeline evalwait
-    await deletePipeline(d)
-    await storePipeline(d)
+    await deletePipeline(d,token)
+    await storePipeline(d, token)
 
     //run the pipeline evalwait
-    const res = await runStored(d)
+    const res = await runStored(d, token)
     const jobId = res.body.jobId
     await delay(5000)
     const ServewrPod = await filterPodsByName(podName, namespace)
@@ -120,7 +120,7 @@ const FailSingelPod = async (podName, namespace = 'default') => {
     const deleted = await deletePod(ServewrPod[0].metadata.name, namespace)
     await delay(15000)
 
-    const result = await getResult(jobId, 200)
+    const result = await getResult(jobId, 200, token)
 
     expect(result.status).to.be.equal('completed');
 

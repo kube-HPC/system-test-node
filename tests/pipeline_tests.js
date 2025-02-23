@@ -2,6 +2,7 @@ const chai = require("chai");
 const expect = chai.expect;
 const chaiHttp = require("chai-http");
 const path = require("path");
+const config = require(path.join(process.cwd(), 'config/config'));
 const delay = require("delay");
 var diff = require("deep-diff").diff;
 
@@ -116,36 +117,55 @@ const timeout = (ms) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 describe("pipeline Tests 673", () => {
+  before(async function () {
+    this.timeout(1000 * 60 * 15);
+    let testUserBody ={
+        username: "dev-placeholder",
+        password: "dev-placeholder"
+    }
+    const response = await chai.request(config.apiServerUrl)
+    .post('/auth/login')
+    .send(testUserBody)
+    
+    if (response.status === 200) {
+        console.log('guest login success');
+        dev_token = response.body.token;
+    }
+    else {
+        throw new Error("Failed to fetch Keycloak token");
+    }
+});
+let dev_token;
   describe("pipeline includeInResults (git 673)", () => {
     //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/673
 
     it("yellow node includeInResults = true", async () => {
       const testData = testData2;
       const d = deconstructTestData(testData);
-      await deletePipeline(d);
-      await storePipeline(d);
-      const jobId = await runStoredAndWaitForResults(d);
-      const result = await getResult(jobId, 200);
+      await deletePipeline(d, dev_token);
+      await storePipeline(d, dev_token);
+      const jobId = await runStoredAndWaitForResults(d, dev_token);
+      const result = await getResult(jobId, 200, dev_token);
       const yellow = result.data.filter((obj) => obj.nodeName == "yellow");
       expect(yellow.length).to.be.equal(7);
       const black = result.data.filter((obj) => obj.nodeName == "black");
       expect(black.length).to.be.equal(1);
-      await deletePipeline(d);
+      await deletePipeline(d, dev_token);
     }).timeout(1000 * 60 * 2);
 
     it("yellow node includeInResults = false", async () => {
       const testData = testData2;
       const d = deconstructTestData(testData);
-      await deletePipeline(d);
+      await deletePipeline(d, dev_token);
       d.pipeline.nodes[1].includeInResults = false;
-      await storePipeline(d);
-      const jobId = await runStoredAndWaitForResults(d);
-      const result = await getResult(jobId, 200);
+      await storePipeline(d, dev_token);
+      const jobId = await runStoredAndWaitForResults(d, dev_token);
+      const result = await getResult(jobId, 200, dev_token);
       const yellow = result.data.filter((obj) => obj.nodeName == "yellow");
       expect(yellow.length).to.be.equal(0);
       const black = result.data.filter((obj) => obj.nodeName == "black");
       expect(black.length).to.be.equal(1);
-      await deletePipeline(d);
+      await deletePipeline(d, dev_token);
     }).timeout(1000 * 60 * 2);
   });
   describe("pipeline Types (git 614)", () => {
@@ -167,31 +187,31 @@ describe("pipeline Tests 673", () => {
     };
 
     it("type= raw", async () => {
-      const res = await runRaw(rawPipe);
+      const res = await runRaw(rawPipe, dev_token);
 
       // write_log(res.body)
       expect(res).to.have.status(200);
 
       const jobId = res.body.jobId;
       await delay(3 * 1000);
-      await getResult(jobId, 200);
+      await getResult(jobId, 200, dev_token);
       //result.status.should.equal('completed')
-      const status = await getExecPipeline(jobId);
+      const status = await getExecPipeline(jobId, dev_token);
       expect(status.body.types[0]).to.be.equal("raw");
     }).timeout(1000 * 60 * 2);
 
     it("type= caching", async () => {
-      const res = await runRaw(rawPipe);
+      const res = await runRaw(rawPipe, dev_token);
       // write_log(res.body)
       expect(res).to.have.status(200);
       const jobId = res.body.jobId;
       await delay(3 * 1000);
-      await getResult(jobId, 200);
+      await getResult(jobId, 200, dev_token);
 
-      const res2 = await exceCachPipeline(jobId, "node2");
+      const res2 = await exceCachPipeline(jobId, "node2", dev_token);
       const jobId2 = res2.body.jobId;
-      await getResult(jobId2, 200);
-      const status = await getExecPipeline(jobId2);
+      await getResult(jobId2, 200, dev_token);
+      const status = await getExecPipeline(jobId2, dev_token);
       expect(status.body.types).includes("raw");
       expect(status.body.types).includes("node");
     }).timeout(1000 * 60 * 2);
@@ -201,26 +221,26 @@ describe("pipeline Tests 673", () => {
 
       const simpleName = testData.descriptor.name;
       const simple = deconstructTestData(testData);
-      await deletePipeline(simple);
-      await storePipeline(simple);
+      await deletePipeline(simple, dev_token);
+      await storePipeline(simple, dev_token);
       const triggeredPipe = pipelineRandomName(8);
       testData.descriptor.name = triggeredPipe;
       testData.descriptor.triggers.pipelines = [simpleName];
       testData.descriptor.nodes[0].input[0] = "jnk";
       const d = deconstructTestData(testData);
-      await deletePipeline(d);
-      const y = await storePipeline(d);
-      await runStoredAndWaitForResults(simple);
+      await deletePipeline(d, dev_token);
+      const y = await storePipeline(d, dev_token);
+      await runStoredAndWaitForResults(simple, dev_token);
       await delay(3 * 1000);
-      await deletePipeline(d);
+      await deletePipeline(d, dev_token);
       jobs = await getWebSocketJobs();
       jobId = jobs.filter((obj) => obj.pipeline.triggers)[0].key;
-      const status = await getExecPipeline(jobId);
+      const status = await getExecPipeline(jobId, dev_token);
       expect(status.body.types).includes("trigger");
       expect(status.body.types).includes("stored");
       expect(status.body.types).includes("internal");
-      await deletePipeline(d);
-      await deletePipeline(simple);
+      await deletePipeline(d, dev_token);
+      await deletePipeline(simple, dev_token);
     }).timeout(1000 * 60 * 7);
 
     it("type= Sub-pipeline", async () => {
@@ -239,21 +259,21 @@ describe("pipeline Tests 673", () => {
           ],
         },
       };
-      await storeAlgorithm("versatile");
+      await storeAlgorithm("versatile", dev_token);
       testData.descriptor.name = pipelineName;
       const d = deconstructTestData(testData);
-      await storePipeline(d);
+      await storePipeline(d, dev_token);
       // testData4 = versatile-pipe
       const e = deconstructTestData(versatilePipe);
-      await storePipeline(e);
-      await runStoredAndWaitForResults(pipe);
-      const res = await getPipelinestatusByName(pipelineName);
-      const status = await getExecPipeline(res.body[0].jobId);
+      await storePipeline(e, dev_token);
+      await runStoredAndWaitForResults(pipe, dev_token);
+      const res = await getPipelinestatusByName(pipelineName, dev_token);
+      const status = await getExecPipeline(res.body[0].jobId, dev_token);
       expect(status.body.types).includes("stored");
       expect(status.body.types).includes("sub-pipeline");
       expect(status.body.types).includes("internal");
-      await deletePipeline(d);
-      await deletePipeline(e);
+      await deletePipeline(d, dev_token);
+      await deletePipeline(e, dev_token);
     }).timeout(1000 * 60 * 30);
 
     it("type= stored", async () => {
@@ -266,25 +286,25 @@ describe("pipeline Tests 673", () => {
         },
         priority: 4,
       };
-      const res = await runStored(pipe);
+      const res = await runStored(pipe, dev_token);
 
       // write_log(res.body)
       expect(res).to.have.status(200);
 
       const jobId = res.body.jobId;
       await delay(3 * 1000);
-      await getResult(jobId, 200);
+      await getResult(jobId, 200, dev_token);
       //result.status.should.equal('completed')
-      const status = await getExecPipeline(jobId);
+      const status = await getExecPipeline(jobId, dev_token);
       expect(status.body.types[0]).to.be.equal("stored");
     }).timeout(1000 * 60 * 2);
 
     it("type = algorithm ", async () => {
       const alg = { name: "green-alg", input: [1] };
-      const res = await runAlgorithm(alg);
+      const res = await runAlgorithm(alg, dev_token);
       const jobId = res.body.jobId;
-      await getResult(jobId, 200);
-      const status = await getExecPipeline(jobId);
+      await getResult(jobId, 200, dev_token);
+      const status = await getExecPipeline(jobId, dev_token);
       expect(status.body.types[0]).to.be.equal("algorithm");
     }).timeout(1000 * 60 * 2);
 
@@ -293,7 +313,7 @@ describe("pipeline Tests 673", () => {
       const tensorAlgPath = "docker.io/hkubedevtest/tensor11:v1.0.0"; //"docker.io/hkubedev/tensor1:v1.0.1"
       const tensorAlg = algJson(algorithmName, tensorAlgPath);
       tensorAlg.mem = "5Gi";
-      await storeAlgorithmApply(tensorAlg);
+      await storeAlgorithmApply(tensorAlg, dev_token);
       const tensorRawPipe = {
         name: "tesorPipe",
         nodes: [
@@ -308,16 +328,16 @@ describe("pipeline Tests 673", () => {
         ],
       };
 
-      const res = await runRaw(tensorRawPipe);
+      const res = await runRaw(tensorRawPipe, dev_token);
 
       // write_log(res.body)
       expect(res).to.have.status(200);
 
       const jobId = res.body.jobId;
       await delay(3 * 1000);
-      await getResult(jobId, 200);
+      await getResult(jobId, 200, dev_token);
       //result.status.should.equal('completed')
-      const status = await getExecPipeline(jobId);
+      const status = await getExecPipeline(jobId, dev_token);
       expect(status.body.types[1]).to.be.equal("tensorboard");
       expect(status.body.types[0]).to.be.equal("raw");
     }).timeout(1000 * 60 * 10);
@@ -326,13 +346,13 @@ describe("pipeline Tests 673", () => {
       const testData = testData3;
       testData.descriptor.name = pipelineRandomName(8);
       const d = deconstructTestData(testData);
-      await storePipeline(d);
+      await storePipeline(d, dev_token);
       await delay(1000 * 90);
 
-      const result = await getCronResult(d.name, 5);
+      const result = await getCronResult(d.name, 5, dev_token);
       const jobId = result.body[0].jobId;
-      const status = await getExecPipeline(jobId);
-      await deletePipeline(d);
+      const status = await getExecPipeline(jobId, dev_token);
+      await deletePipeline(d, dev_token);
 
       const types = status.body.types;
       const expected = ["cron", "internal", "stored"];
@@ -367,21 +387,21 @@ describe("pipeline Tests 673", () => {
         },
       };
 
-      const res = await runRaw(pipe_in_pipe);
-      const result = await getResult(res.body.jobId, 200);
-      const graph = await getRawGraph(res.body.jobId);
+      const res = await runRaw(pipe_in_pipe, dev_token);
+      const result = await getResult(res.body.jobId, 200, dev_token);
+      const graph = await getRawGraph(res.body.jobId, dev_token);
       expect(graph.body.nodes.length).to.be.equal(6);
     }).timeout(1000 * 60 * 7);
 
     it.skip("type = Debug ", async () => {
       const algName = pipelineRandomName(8).toLowerCase();
 
-      const debugAlg = await StoreDebugAlgorithm(algName);
+      const debugAlg = await StoreDebugAlgorithm(algName, dev_token);
       const alg = { name: algName, input: [1] };
-      const res = await runAlgorithm(alg);
+      const res = await runAlgorithm(alg, dev_token);
       const jobId = res.body.jobId;
-      const status = await getExecPipeline(jobId);
-      await deleteAlgorithm(algName, true);
+      const status = await getExecPipeline(jobId, dev_token);
+      await deleteAlgorithm(algName, true, dev_token);
       expect(status.body.types[1]).to.be.equal("debug");
     }).timeout(1000 * 60 * 7);
 
@@ -394,9 +414,9 @@ describe("pipeline Tests 673", () => {
           },
         },
       };
-      const res = await runStoredAndWaitForResults(pipe);
-      const reRun = await exceRerun(res);
-      const rePipe = await getExecPipeline(reRun.body.jobId);
+      const res = await runStoredAndWaitForResults(pipe, dev_token);
+      const reRun = await exceRerun(res, dev_token);
+      const rePipe = await getExecPipeline(reRun.body.jobId, dev_token);
       expect(rePipe.body.flowInput.files.link).to.be.equal(
         pipe.flowInput.files.link
       );
@@ -423,21 +443,21 @@ describe("pipeline Tests 673", () => {
       const triggerd = testData7;
       const simpleName = testData.descriptor.name;
       const simple = deconstructTestData(testData);
-      await deletePipeline(simple);
-      await storePipeline(simple);
+      await deletePipeline(simple, dev_token);
+      await storePipeline(simple, dev_token);
       const triggeredPipe = pipelineRandomName(8);
       triggerd.descriptor.name = triggeredPipe;
       triggerd.descriptor.triggers.pipelines = [simpleName];
 
       const d = deconstructTestData(triggerd);
-      await deletePipeline(d);
-      await storePipeline(d);
-      await runStoredAndWaitForResults(simple);
+      await deletePipeline(d, dev_token);
+      await storePipeline(d, dev_token);
+      await runStoredAndWaitForResults(simple, dev_token);
       await delay(3 * 1000);
       jobs = await getWebSocketJobs();
       jobId = jobs.filter((obj) => obj.pipeline.triggers)[0].key;
-      const pipelineData = await getExecPipeline(jobId);
-      await deletePipeline(d);
+      const pipelineData = await getExecPipeline(jobId, dev_token);
+      await deletePipeline(d, dev_token);
       const rr = validateDefault(triggerd.descriptor, pipelineData.body);
       console.log("there are diffrance in :" + rr);
       expect(rr.length).to.be.equal(0);
@@ -459,18 +479,18 @@ describe("pipeline Tests 673", () => {
           ],
         },
       };
-      await storeAlgorithm("versatile");
+      await storeAlgorithm("versatile", dev_token);
       testData.descriptor.name = pipelineName;
       const d = deconstructTestData(testData);
-      await storePipeline(d);
+      await storePipeline(d, dev_token);
       // testData4 = versatile-pipe
       const e = deconstructTestData(versatilePipe);
-      await storePipeline(e);
-      await runStoredAndWaitForResults(pipe);
-      const res = await getPipelinestatusByName(pipelineName);
-      const pipelineData = await getExecPipeline(res.body[0].jobId);
+      await storePipeline(e, dev_token);
+      await runStoredAndWaitForResults(pipe, dev_token);
+      const res = await getPipelinestatusByName(pipelineName, dev_token);
+      const pipelineData = await getExecPipeline(res.body[0].jobId, dev_token);
 
-      await deletePipeline(d);
+      await deletePipeline(d, dev_token);
       const rr = validateDefault(testData.descriptor, pipelineData.body);
       console.log("there are diffrance in :" + rr);
       expect(rr.length).to.be.equal(0);
@@ -481,13 +501,13 @@ describe("pipeline Tests 673", () => {
       testData.descriptor.name = pipelineRandomName(8);
       testData.descriptor.triggers.cron.enabled = true;
       const d = deconstructTestData(testData);
-      await storePipeline(d);
+      await storePipeline(d, dev_token);
       await delay(1000 * 90);
 
-      const result = await getCronResult(d.name, 5, "main");
+      const result = await getCronResult(d.name, 5, dev_token, "main");
       const jobId = result.body[0].jobId;
-      const pipelineData = await getExecPipeline(jobId);
-      await deletePipeline(d);
+      const pipelineData = await getExecPipeline(jobId, dev_token);
+      await deletePipeline(d, dev_token);
       const rr = validateDefault(testData.descriptor, pipelineData.body);
       console.log("there are diffrance in :" + rr);
       expect(rr.length).to.be.equal(0);
@@ -511,8 +531,8 @@ describe("pipeline Tests 673", () => {
       };
       const simpleStored = deconstructTestData(simpletestData);
 
-      await storePipeline(simpleStored);
-      const res = await runStored(pipe);
+      await storePipeline(simpleStored, dev_token);
+      const res = await runStored(pipe, dev_token);
 
       expect(res.text).to.include("unable to find flowInput.inp");
     }).timeout(1000 * 60 * 2);
@@ -546,7 +566,7 @@ describe("pipeline Tests 673", () => {
         },
         priority: 3,
       };
-      const res = await runRaw(pipe);
+      const res = await runRaw(pipe, dev_token);
 
       expect(res.text).to.include("unable to find flowInput.two");
     }).timeout(1000 * 60 * 2);
@@ -557,13 +577,13 @@ describe("pipeline Tests 673", () => {
       testData.descriptor.name = pipelineName;
       testData.descriptor.nodes[0].input[0] = "@flowInput.inputs";
       const d = deconstructTestData(testData);
-      await storePipeline(d);
+      await storePipeline(d, dev_token);
       await delay(1000 * 120);
 
       const me = `pipeline ${pipelineName} failed sending to api server, error: unable to find flowInput.inputs`;
       const log = await getWebSocketlogs();
       const error = log.filter((obj) => obj.message == me);
-      await deletePipeline(d);
+      await deletePipeline(d, dev_token);
       expect(error.length).to.be.greaterThan(0);
     }).timeout(1000 * 60 * 7);
     //undefined
@@ -572,20 +592,20 @@ describe("pipeline Tests 673", () => {
       const triggerTestData = testData2;
       const simpleName = simpleTestdata.descriptor.name;
       const simple = deconstructTestData(simpleTestdata);
-      await deletePipeline(simple);
-      await storePipeline(simple);
+      await deletePipeline(simple, dev_token);
+      await storePipeline(simple, dev_token);
       const triggerdName = pipelineRandomName(8);
       triggerTestData.descriptor.name = triggerdName;
       triggerTestData.descriptor.triggers.pipelines = [simpleName];
       const d = deconstructTestData(triggerTestData);
-      await deletePipeline(d);
-      await storePipeline(d);
-      await runStoredAndWaitForResults(simple);
+      await deletePipeline(d, dev_token);
+      await storePipeline(d, dev_token);
+      await runStoredAndWaitForResults(simple, dev_token);
       await delay(1000 * 20);
       const log = await getWebSocketlogs();
       const me = `pipeline ${triggerdName} failed sending to api server, error: unable to find flowInput.inp`;
       const error = log.filter((obj) => obj.message == me);
-      await deletePipeline(d);
+      await deletePipeline(d, dev_token);
       expect(error.length).to.be.greaterThan(0);
     }).timeout(1000 * 60 * 7);
     //undefined
@@ -595,22 +615,22 @@ describe("pipeline Tests 673", () => {
       triggerTestData.descriptor.name = triggerdName;
       const triggered = deconstructTestData(triggerTestData);
       const trigger = deconstructTestData(testData8);
-      await deletePipeline(trigger);
-      await storePipeline(trigger);
+      await deletePipeline(trigger, dev_token);
+      await storePipeline(trigger, dev_token);
 
-      await deletePipeline(triggered);
-      await storePipeline(triggered);
-      await runStoredAndWaitForResults(trigger);
+      await deletePipeline(triggered, dev_token);
+      await storePipeline(triggered, dev_token);
+      await runStoredAndWaitForResults(trigger, dev_token);
       await delay(1000 * 20);
       jobs = await getWebSocketJobs();
       jobId = jobs.filter((obj) => obj.pipeline.triggers)[0].key;
-      const result = await getResult(jobId, 200);
-      await deletePipeline(triggered);
+      const result = await getResult(jobId, 200, dev_token);
+      await deletePipeline(triggered, dev_token);
       expect(result.data.length).to.be.equal(10);
       const expected = [46, 47, 48, 49, 50, 51, 52, 53, 54, 45];
       const a = result.data.filter((obj) => !expected.includes(obj.result));
       expect(a.length).to.be.equal(0);
-      await deletePipeline(trigger);
+      await deletePipeline(trigger, dev_token);
     }).timeout(1000 * 60 * 7);
 
     it(" Sub-pipeline does not have flowInput", async () => {
@@ -641,14 +661,14 @@ describe("pipeline Tests 673", () => {
           ],
         },
       };
-      await storeAlgorithm("versatile");
+      await storeAlgorithm("versatile", dev_token);
       simple2TestData.descriptor.name = pipelineName;
       const d = deconstructTestData(simple2TestData);
-      await storePipeline(d);
+      await storePipeline(d, dev_token);
 
       const e = deconstructTestData(versatileTestData);
-      await storePipeline(e);
-      const res = await runStored(pipe);
+      await storePipeline(e, dev_token);
+      const res = await runStored(pipe, dev_token);
       await delay(1000 * 20);
       const dr = await getDriverIdByJobId(res.body.jobId);
       const log = await getWebSocketlogs();
@@ -659,8 +679,8 @@ describe("pipeline Tests 673", () => {
             "SubPipeline job error: unable to find flowInput.inp, alg subPipelineId"
           )
         ).length;
-      await deletePipeline(d);
-      await deletePipeline(e);
+      await deletePipeline(d, dev_token);
+      await deletePipeline(e, dev_token);
       expect(after).to.be.greaterThan(before);
     }).timeout(1000 * 60 * 7);
 
@@ -669,14 +689,14 @@ describe("pipeline Tests 673", () => {
       const printAndReturnAlg = algJson(algorithm.name, algorithm.image);
       printAndReturnAlg["env"] = "python";
       printAndReturnAlg["entryPoint"] = "print-and-return.py";
-      await deleteAlgorithm(algorithm.name);
-      await storeAlgorithmApply(printAndReturnAlg);
-      await deletePipeline(pipeline["name"]);
-      await storePipeline(pipeline);
-      const jobId = await runStoredAndWaitForResults(pipeline);
-      await deletePipeline(pipeline["name"]);
-      await deleteAlgorithm(algorithm.name);
-      const result = await getResult(jobId, 200);
+      await deleteAlgorithm(algorithm.name, true, dev_token);
+      await storeAlgorithmApply(printAndReturnAlg, dev_token);
+      await deletePipeline(pipeline["name"], dev_token);
+      await storePipeline(pipeline, dev_token);
+      const jobId = await runStoredAndWaitForResults(pipeline, dev_token);
+      await deletePipeline(pipeline["name"], dev_token);
+      await deleteAlgorithm(algorithm.name, true, dev_token);
+      const result = await getResult(jobId, 200, dev_token);
       expect(result.data).to.have.lengthOf(8);
       result.data.forEach(output => {
         expect(Object.keys(output.result)).to.have.lengthOf(2);
@@ -701,39 +721,39 @@ describe("pipeline Tests 673", () => {
           inp: 15000,
         },
       };
-      await deleteAlgorithm(algorithmName, true);
-      await storeAlgorithmApply(algorithmV1);
+      await deleteAlgorithm(algorithmName, true, dev_token);
+      await storeAlgorithmApply(algorithmV1, dev_token);
 
       await delay(2000);
-      await storePipeline(d);
-      const res = await runStored(pipe);
+      await storePipeline(d, dev_token);
+      const res = await runStored(pipe, dev_token);
       const jobId = res.body.jobId;
       await delay(3000);
 
-      const pause = await pausePipeline(jobId);
+      const pause = await pausePipeline(jobId, dev_token);
       await delay(3000);
-      let pipelineStatus = await getPipelineStatus(jobId);
+      let pipelineStatus = await getPipelineStatus(jobId, dev_token);
       expect(pipelineStatus.body.status).to.be.equal("paused");
-      const resume = await resumePipeline(jobId);
-      const result = await getResult(jobId, 200);
+      const resume = await resumePipeline(jobId, dev_token);
+      const result = await getResult(jobId, 200, dev_token);
     }).timeout(1000 * 60 * 5);
 
     it("pause resume pipeline multiple batch", async () => {
       const e = deconstructTestData(testData5);
-      await deletePipeline(e);
-      await storePipeline(e);
+      await deletePipeline(e, dev_token);
+      await storePipeline(e, dev_token);
 
-      const res = await runStored(e);
+      const res = await runStored(e, dev_token);
       const jobId = res.body.jobId;
       await delay(3000);
 
-      const pause = await pausePipeline(jobId);
+      const pause = await pausePipeline(jobId, dev_token);
       await delay(60000);
-      let pipelineStatus = await getPipelineStatus(jobId);
+      let pipelineStatus = await getPipelineStatus(jobId, dev_token);
       expect(pipelineStatus.body.status).to.be.equal("paused");
-      const resume = await resumePipeline(jobId);
-      const result = await getResult(jobId, 200);
-      await deletePipeline(e);
+      const resume = await resumePipeline(jobId, dev_token);
+      const result = await getResult(jobId, 200, dev_token);
+      await deletePipeline(e, dev_token);
     }).timeout(1000 * 60 * 20);
 
     it("pause stop pipeline", async () => {
@@ -743,25 +763,25 @@ describe("pipeline Tests 673", () => {
           inp: 15000,
         },
       };
-      await deleteAlgorithm(algorithmName, true);
-      await storeAlgorithmApply(algorithmV1);
+      await deleteAlgorithm(algorithmName, true, dev_token);
+      await storeAlgorithmApply(algorithmV1, dev_token);
 
       await delay(2000);
-      await storePipeline(d);
-      const res = await runStored(pipe);
+      await storePipeline(d, dev_token);
+      const res = await runStored(pipe, dev_token);
       const jobId = res.body.jobId;
       await delay(3000);
 
-      const pause = await pausePipeline(jobId);
+      const pause = await pausePipeline(jobId, dev_token);
       await delay(3000);
-      let pipelineStatus = await getPipelineStatus(jobId);
+      let pipelineStatus = await getPipelineStatus(jobId, dev_token);
 
-      const stop = await stopPipeline(jobId);
-      const result = await getPipelineStatus(jobId);
+      const stop = await stopPipeline(jobId, dev_token);
+      const result = await getPipelineStatus(jobId, dev_token);
       expect(result.body.status).to.be.equal("stopped");
     }).timeout(1000 * 60 * 5);
 
-    it("delete pipeline stop all pipeline", async () => {
+    it.only("delete pipeline stop all pipeline", async () => {
       function timeout(ms) {
         return new Promise((resolve) => setTimeout(resolve, ms));
       }
@@ -792,27 +812,27 @@ describe("pipeline Tests 673", () => {
           inputs: 25000,
         },
       };
-      await deletePipeline(d);
-      await storePipeline(d);
+      await deletePipeline(d, dev_token);
+      await storePipeline(d, dev_token);
 
       for (i = 0; i < 20; i++) {
         var parents = await Promise.all([
-          runStored(pipe3),
-          runStored(pipe3),
-          runStored(pipe3),
-          runStored(pipe3),
+          runStored(pipe3, dev_token),
+          runStored(pipe3, dev_token),
+          runStored(pipe3, dev_token),
+          runStored(pipe3, dev_token),
           timeout(900),
         ]);
         pipe3JobId.push(parents);
       }
 
-      const first = await getPipelineStatus(getJobId(pipe3JobId[0]));
-      const last = await getPipelineStatus(getJobId(pipe3JobId[19]));
+      const first = await getPipelineStatus(getJobId(pipe3JobId[0]), dev_token);
+      const last = await getPipelineStatus(getJobId(pipe3JobId[19]), dev_token);
 
-      await deletePipeline(d);
+      await deletePipeline(d, dev_token);
 
-      const firstAfter = await getPipelineStatus(getJobId(pipe3JobId[0]));
-      const lastAfter = await getPipelineStatus(getJobId(pipe3JobId[19]));
+      const firstAfter = await getPipelineStatus(getJobId(pipe3JobId[0], dev_token));
+      const lastAfter = await getPipelineStatus(getJobId(pipe3JobId[19]), dev_token);
 
       expect(first.body.status).to.be.equal("active");
       expect(last.body.status).to.be.equal("pending");
@@ -823,8 +843,8 @@ describe("pipeline Tests 673", () => {
       const d = deconstructTestData(ttlPipe);
 
       it("pipeline ttl ", async () => {
-        await deletePipeline(d);
-        await storePipeline(d);
+        await deletePipeline(d, dev_token);
+        await storePipeline(d, dev_token);
         const ttl = {
           name: d.name,
           flowInput: {
@@ -835,23 +855,23 @@ describe("pipeline Tests 673", () => {
             activeTtl: 130,
           },
         };
-        const runStoredResult = await runStored(ttl); //should be stoped  due to ttl
-        let getStatusResultBody = await getStatus(runStoredResult.body.jobId, 200, "active");
+        const runStoredResult = await runStored(ttl, dev_token); //should be stoped  due to ttl
+        let getStatusResultBody = await getStatus(runStoredResult.body.jobId, 200, "active", dev_token);
         await timeout(10500)
-        const cealn = await cleanPipeLines();
-        getStatusResultBody = await getStatus(runStoredResult.body.jobId, 200, "stopped");
+        const cealn = await cleanPipeLines(dev_token);
+        getStatusResultBody = await getStatus(runStoredResult.body.jobId, 200, "stopped", dev_token);
         expect(getStatusResultBody.reason).to.be.equal("pipeline expired");
       }).timeout(1000 * 60 * 5);
 
       it("pipeline active ttl", async () => {
         const algorithmName = "algo-not-image";
 
-        await deletePipeline(d);
-        await deleteAlgorithm(algorithmName, true);
+        await deletePipeline(d, dev_token);
+        await deleteAlgorithm(algorithmName, true, dev_token);
 
         const testAlgPath = "docker.io/hkubedevtest/test";
         const testAlg = algJson(algorithmName, testAlgPath);
-        await storeAlgorithmApply(testAlg);
+        await storeAlgorithmApply(testAlg, dev_token);
         await delay(2000);
 
         d.nodes = [
@@ -863,7 +883,7 @@ describe("pipeline Tests 673", () => {
           }
         ]
 
-        await storePipeline(d);
+        await storePipeline(d, dev_token);
 
         const ttl = {
           name: d.name,
@@ -876,11 +896,11 @@ describe("pipeline Tests 673", () => {
           },
         };
 
-        const runStoredResult = await runStored(ttl);
-        let getStatusResultBody = await getStatus(runStoredResult.body.jobId, 200, "active");
+        const runStoredResult = await runStored(ttl, dev_token);
+        let getStatusResultBody = await getStatus(runStoredResult.body.jobId, 200, "active", dev_token);
         await timeout(5500)
         const cealn = await cleanPipeLines();
-        getStatusResultBody = await getStatus(runStoredResult.body.jobId, 200, "stopped");
+        getStatusResultBody = await getStatus(runStoredResult.body.jobId, 200, "stopped", dev_token);
         expect(getStatusResultBody.reason).to.be.equal(
           "pipeline active TTL expired"
         );
@@ -888,7 +908,7 @@ describe("pipeline Tests 673", () => {
       it(" concurrentPipelines - pending  pipeline", async () => {
         //set test data to testData1
         const d = deconstructTestData(testData12);
-        await deletePipeline(d.name);
+        await deletePipeline(d.name, dev_token);
         d.pipeline.options = {
           concurrentPipelines: {
             amount: 1,
@@ -896,17 +916,17 @@ describe("pipeline Tests 673", () => {
           },
         };
         //store pipeline evalwait
-        await storePipeline(d);
+        await storePipeline(d, dev_token);
         //run the pipeline evalwait  twice the second time will be pending till the first exection completed
-        await runStored(d);
+        await runStored(d, dev_token);
 
-        const res = await runStored(d);
+        const res = await runStored(d, dev_token);
         const jobId = res.body.jobId;
-        const currentStatus = await getPipelineStatus(jobId);
+        const currentStatus = await getPipelineStatus(jobId, dev_token);
 
         expect(currentStatus.body.status).to.have.equal("pending");
 
-        await deletePipeline(d.name);
+        await deletePipeline(d.name, dev_token);
       }).timeout(1000 * 60 * 5);
 
       it(" concurrentPipelines - continu to complete pending   pipeline", async () => {
@@ -914,7 +934,7 @@ describe("pipeline Tests 673", () => {
 
         //set test data to testData1
         const d = deconstructTestData(testData12);
-        await deletePipeline(d.name);
+        await deletePipeline(d.name, dev_token);
         d.pipeline.options = {
           concurrentPipelines: {
             amount: 4,
@@ -922,23 +942,23 @@ describe("pipeline Tests 673", () => {
           },
         };
         //store pipeline evalwait
-        await storePipeline(d);
+        await storePipeline(d, dev_token);
         let pipe3JobId = "";
         for (i = 0; i < 5; i++) {
           var parents = await Promise.all([
-            runStored(d),
-            runStored(d),
-            runStored(d),
-            runStored(d),
+            runStored(d, dev_token),
+            runStored(d, dev_token),
+            runStored(d, dev_token),
+            runStored(d, dev_token),
             timeout(900),
           ]);
           pipe3JobId = parents;
         }
 
-        const result2 = await getResult(getJobId(pipe3JobId), 200);
+        const result2 = await getResult(getJobId(pipe3JobId), 200, dev_token);
 
         expect(result2.status).to.be.equal("completed");
-        await deletePipeline(d.name);
+        await deletePipeline(d.name, dev_token);
       }).timeout(1000 * 60 * 5);
     });
   });
@@ -948,27 +968,27 @@ describe("pipeline Tests 673", () => {
 
       const simpleName = testData.descriptor.name.toString();
       const simple = deconstructTestData(testData);
-      await deletePipeline(simple);
-      await storePipeline(simple);
+      await deletePipeline(simple, dev_token);
+      await storePipeline(simple, dev_token);
       const triggeredPipe = pipelineRandomName(8);
       const triggeredPipe2 = pipelineRandomName(8);
       testData.descriptor.name = triggeredPipe;
       testData.descriptor.triggers.pipelines = [simpleName];
       testData.descriptor.nodes[0].input[0] = "[1,2]";
       const d = deconstructTestData(testData);
-      await deletePipeline(d);
-      await storePipeline(d);
+      await deletePipeline(d, dev_token);
+      await storePipeline(d, dev_token);
 
       testData.descriptor.name = triggeredPipe2;
       testData.descriptor.triggers.pipelines = [triggeredPipe];
       testData.descriptor.nodes[0].input[0] = "[1,2]";
       const e = deconstructTestData(testData);
-      await deletePipeline(e);
-      await storePipeline(e);
-      const tree = await getPipelineTriggerTree(simpleName);
+      await deletePipeline(e, dev_token);
+      await storePipeline(e, dev_token);
+      const tree = await getPipelineTriggerTree(simpleName, dev_token );
 
-      await deletePipeline(triggeredPipe);
-      await deletePipeline(triggeredPipe2);
+      await deletePipeline(triggeredPipe, dev_token);
+      await deletePipeline(triggeredPipe2, dev_token);
       expect(tree.text).to.include(triggeredPipe);
       expect(tree.text).to.include(triggeredPipe2);
     }).timeout(1000 * 60 * 7);
@@ -978,39 +998,39 @@ describe("pipeline Tests 673", () => {
 
       const simpleName = testData.descriptor.name;
       const simple = deconstructTestData(testData);
-      await deletePipeline(simple);
-      await storePipeline(simple);
+      await deletePipeline(simple, dev_token);
+      await storePipeline(simple, dev_token);
       const triggeredPipe = pipelineRandomName(8);
       const triggeredPipe2 = pipelineRandomName(8);
       testData.descriptor.name = triggeredPipe;
       testData.descriptor.triggers.pipelines = [simpleName];
       testData.descriptor.nodes[0].input[0] = "[1,2]";
       const d = deconstructTestData(testData);
-      await deletePipeline(d);
-      await storePipeline(d);
+      await deletePipeline(d, dev_token);
+      await storePipeline(d, dev_token);
 
       testData.descriptor.name = triggeredPipe2;
       testData.descriptor.triggers.pipelines = [triggeredPipe];
       testData.descriptor.nodes[0].input[0] = "[1,2]";
       const e = deconstructTestData(testData);
-      await deletePipeline(e);
-      await storePipeline(e);
+      await deletePipeline(e, dev_token);
+      await storePipeline(e, dev_token);
       //getJobIdsTree
-      const jobId = await runStoredAndWaitForResults(simple);
+      const jobId = await runStoredAndWaitForResults(simple, dev_token);
 
-      const tree = await getJobIdsTree(jobId);
+      const tree = await getJobIdsTree(jobId, dev_token);
       const firstChildJobId = tree.body.children.filter(
         (a) => a.name == triggeredPipe
       )[0].jobId;
-      await getResult(firstChildJobId, 200);
-      const tree1 = await getJobIdsTree(jobId);
+      await getResult(firstChildJobId, 200, dev_token);
+      const tree1 = await getJobIdsTree(jobId, dev_token);
       const secondChild = tree1.body.children
         .filter((a) => a.name == triggeredPipe)
         .filter((a) => (a.name = triggeredPipe2));
       expect(secondChild.length).to.be.equal(1);
-      await deletePipeline(triggeredPipe);
-      await deletePipeline(triggeredPipe2);
-      await deletePipeline(e);
+      await deletePipeline(triggeredPipe, dev_token);
+      await deletePipeline(triggeredPipe2, dev_token);
+      await deletePipeline(e, dev_token);
     }).timeout(1000 * 60 * 7);
 
     it("Trigger cycle pipeline tree", async () => {
@@ -1020,33 +1040,33 @@ describe("pipeline Tests 673", () => {
       testData.descriptor.triggers.pipelines = [triggeredPipe2];
       const simpleName = testData.descriptor.name;
       const simple = deconstructTestData(testData);
-      await deletePipeline(simple);
-      await storePipeline(simple);
+      await deletePipeline(simple, dev_token);
+      await storePipeline(simple, dev_token);
 
       testData.descriptor.name = triggeredPipe;
       testData.descriptor.triggers.pipelines = [simpleName];
       testData.descriptor.nodes[0].input[0] = "[1,2]";
       const d = deconstructTestData(testData);
-      await deletePipeline(d);
-      await storePipeline(d);
+      await deletePipeline(d, dev_token);
+      await storePipeline(d, dev_token);
 
       testData.descriptor.name = triggeredPipe2;
       testData.descriptor.triggers.pipelines = [triggeredPipe];
       testData.descriptor.nodes[0].input[0] = "[1,2]";
       const e = deconstructTestData(testData);
-      await deletePipeline(e);
-      await storePipeline(e);
+      await deletePipeline(e, dev_token);
+      await storePipeline(e,  dev_token);
 
-      const tree = await getPipelineTriggerTree("");
-      await deletePipeline(triggeredPipe);
-      await deletePipeline(triggeredPipe2);
-      await deletePipeline(simpleName);
+      const tree = await getPipelineTriggerTree("",  dev_token);
+      await deletePipeline(triggeredPipe, dev_token);
+      await deletePipeline(triggeredPipe2, dev_token);
+      await deletePipeline(simpleName, dev_token);
       expect(tree.status).to.be.equal(400);
       expect(tree.body.error.message).to.be.equal(
         "the pipelines triggers is cyclic"
       );
-      await deletePipeline(d);
-      await deletePipeline(e);
+      await deletePipeline(d, dev_token);
+      await deletePipeline(e, dev_token);
     }).timeout(1000 * 60 * 7);
   });
   describe("TID-440 Pipeline priority tests (git 58)~", () => {
@@ -1085,20 +1105,20 @@ describe("pipeline Tests 673", () => {
           jnk: result,
         },
       };
-      await deletePipeline(d);
-      const a = await storePipeline(d);
+      await deletePipeline(d, dev_token);
+      const a = await storePipeline(d, dev_token);
 
       d.pipeline.name = d.name = priority1;
       d.pipeline.priority = 1;
-      await deletePipeline(d);
-      const ab = await storePipeline(d);
+      await deletePipeline(d, dev_token);
+      const ab = await storePipeline(d, dev_token);
 
       for (i = 0; i < 4; i++) {
         var parents = await Promise.all([
-          runStored(pipe3),
-          runStored(pipe3),
-          runStored(pipe3),
-          runStored(pipe3),
+          runStored(pipe3, dev_token),
+          runStored(pipe3, dev_token),
+          runStored(pipe3, dev_token),
+          runStored(pipe3, dev_token),
           timeout(900),
         ]);
         printJobId(parents);
@@ -1107,19 +1127,19 @@ describe("pipeline Tests 673", () => {
 
       for (i = 0; i < 4; i++) {
         var parents = await Promise.all([
-          runStored(pipe1),
-          runStored(pipe1),
-          runStored(pipe1),
-          runStored(pipe1),
+          runStored(pipe1, dev_token),
+          runStored(pipe1, dev_token),
+          runStored(pipe1, dev_token),
+          runStored(pipe1, dev_token),
           timeout(900),
         ]);
         pipe1JobId = parents;
       }
       //timeout!!
-      const result1 = await getResult(getJobId(pipe1JobId), 200);
-      const result2 = await getResult(getJobId(pipe3JobId), 200);
+      const result1 = await getResult(getJobId(pipe1JobId), 200, dev_token);
+      const result2 = await getResult(getJobId(pipe3JobId), 200, dev_token);
       expect(result1.timeTook).to.be.lessThan(result2.timeTook);
-      await deletePipeline(d);
+      await deletePipeline(d, dev_token);
     }).timeout(1000 * 60 * 35);
 
     it.skip("fast load ", async () => {
@@ -1134,7 +1154,7 @@ describe("pipeline Tests 673", () => {
       };
 
       for (i = 0; i < 500; i++) {
-        loadRunStored(load);
+        loadRunStored(load, dev_token);
       }
     });
 
@@ -1154,7 +1174,7 @@ describe("pipeline Tests 673", () => {
         console.log("start - loop");
         for (i = 0; i < 50; i++) {
           for (z = 0; z < pipesForSec; z++) {
-            loadRunStored(pipe3);
+            loadRunStored(pipe3,  dev_token);
             //await timeout(delay)
           }
           let date_ob = new Date();
@@ -1166,7 +1186,7 @@ describe("pipeline Tests 673", () => {
         console.log("start buresr loop ");
         for (i = 0; i < 10; i++) {
           for (z = 0; z < pipesForSec; z++) {
-            loadRunStored(pipe3);
+            loadRunStored(pipe3,  dev_token);
             await timeout(delayBurst);
           }
           let date_ob = new Date();
@@ -1186,26 +1206,26 @@ describe("pipeline Tests 673", () => {
         },
         priority: 3,
       };
-      await deletePipeline(d);
-      await storePipeline(d);
-      const res2 = await runStored(pipe);
+      await deletePipeline(d, dev_token);
+      await storePipeline(d, dev_token);
+      const res2 = await runStored(pipe, dev_token);
       await delay(2000);
       pipe.priority = 1;
-      const res1 = await runStored(pipe);
+      const res1 = await runStored(pipe, dev_token);
       // write_log(res.body)
       const jobId1 = res1.body.jobId;
       const jobId2 = res2.body.jobId;
 
-      const result1 = await getResult(jobId1, 200);
-      const result2 = await getResult(jobId2, 200);
+      const result1 = await getResult(jobId1, 200, dev_token);
+      const result2 = await getResult(jobId2, 200, dev_token);
       expect(result1.timeTook).to.be.lessThan(result2.timeTook);
     }).timeout(1000 * 60 * 2);
 
     it("Different priority Pipelines with Different algorithm", async () => {
       const testDataA = testData11;
       const d = deconstructTestData(testData11);
-      await deletePipeline(d);
-      await storePipeline(d);
+      await deletePipeline(d, dev_token);
+      await storePipeline(d, dev_token);
       const pipe = {
         name: d.name,
         flowInput: {
@@ -1216,18 +1236,18 @@ describe("pipeline Tests 673", () => {
       };
       testData11.descriptor.name = testData11.descriptor.name + "2";
       const d2 = deconstructTestData(testDataA);
-      await deletePipeline(d2);
-      const r = await storePipeline(d2);
-      const res2 = await runStored(pipe);
+      await deletePipeline(d2, dev_token);
+      const r = await storePipeline(d2, dev_token);
+      const res2 = await runStored(pipe, dev_token);
       await delay(5000);
       pipe.name = d2.name;
       pipe.priority = 1;
-      const res1 = await runStored(pipe);
+      const res1 = await runStored(pipe, dev_token);
       const jobId1 = res1.body.jobId;
       const jobId2 = res2.body.jobId;
 
-      const result1 = await getResult(jobId1, 200, 1000 * 60 * 19);
-      const result2 = await getResult(jobId2, 200, 1000 * 60 * 19);
+      const result1 = await getResult(jobId1, 200, dev_token, 1000 * 60 * 19);
+      const result2 = await getResult(jobId2, 200, dev_token ,1000 * 60 * 19);
       expect(result1.timeTook).to.be.lessThan(result2.timeTook);
     }).timeout(1000 * 60 * 20);
 
@@ -1241,27 +1261,27 @@ describe("pipeline Tests 673", () => {
         },
         priority: 3,
       };
-      await deletePipeline(d);
-      await storePipeline(d);
-      const res2 = await runStored(pipe);
+      await deletePipeline(d, dev_token);
+      await storePipeline(d, dev_token);
+      const res2 = await runStored(pipe, dev_token);
       await delay(1000);
       pipe.flowInput.range = 100;
-      const res1 = await runStored(pipe);
+      const res1 = await runStored(pipe, dev_token);
       const jobId1 = res1.body.jobId;
       const jobId2 = res2.body.jobId;
 
-      const result1 = await getResult(jobId1, 200, 1000 * 60 * 19);
-      const result2 = await getResult(jobId2, 200, 1000 * 60 * 19);
+      const result1 = await getResult(jobId1, 200, dev_token, 1000 * 60 * 19);
+      const result2 = await getResult(jobId2, 200, dev_token, 1000 * 60 * 19);
       expect(result1.timeTook).to.be.lessThan(result2.timeTook);
-      await deletePipeline(d);
+      await deletePipeline(d, dev_token);
     }).timeout(1000 * 60 * 20);
   });
   describe('insert pipeline array', () => {
     it('should succeed to store an array of pipelines', async () => {
       const p = deconstructTestData(testData11);
       const d = deconstructTestData(testData10);
-      await deletePipeline(d.name);
-      await deletePipeline(p.name);
+      await deletePipeline(d.name, dev_token);
+      await deletePipeline(p.name, dev_token);
       let pipelineList = [
         {
           name: d.name,
@@ -1272,23 +1292,23 @@ describe("pipeline Tests 673", () => {
           nodes: d.pipeline.nodes
         }
       ];
-      const response = await storePipelinesWithDescriptor(pipelineList);
+      const response = await storePipelinesWithDescriptor(pipelineList, dev_token);
       const listOfPipelineResponse = response.body
       expect(listOfPipelineResponse).to.be.an('array');
       expect(listOfPipelineResponse.length).to.be.equal(2);
       expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
       expect(listOfPipelineResponse[0].name).to.be.equal(d.name);
       expect(listOfPipelineResponse[1].name).to.be.equal(p.name);
-      await deletePipeline(d.name);
-      await deletePipeline(p.name);
+      await deletePipeline(d.name, dev_token);
+      await deletePipeline(p.name, dev_token);
     }).timeout(1000 * 60 * 5);
 
     it('should succeed creating an array containing a 409 Conflict status & 200 Created', async () => {
       const p = deconstructTestData(testData11);
       const d = deconstructTestData(testData10);
-      await deletePipeline(d.name);
-      await deletePipeline(p.name);
-      await storePipeline(p)
+      await deletePipeline(d.name, dev_token);
+      await deletePipeline(p.name, dev_token);
+      await storePipeline(p, dev_token)
       let pipelineList = [
         {
           name: d.name,
@@ -1299,24 +1319,24 @@ describe("pipeline Tests 673", () => {
           nodes: d.pipeline.nodes
         }
       ];
-      const response = await storePipelinesWithDescriptor(pipelineList);
+      const response = await storePipelinesWithDescriptor(pipelineList, dev_token);
       const listOfPipelineResponse = response.body
       expect(listOfPipelineResponse).to.be.an('array');
       expect(listOfPipelineResponse.length).to.be.equal(2);
       expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
       expect(listOfPipelineResponse[0].name).to.be.equal(d.name);
       expect(listOfPipelineResponse[1].error.code).to.be.equal(409, 'Expected status code to be CONFLICT');
-      await deletePipeline(d);
-      await deletePipeline(p);
+      await deletePipeline(d, dev_token);
+      await deletePipeline(p, dev_token);
     }).timeout(1000 * 60 * 5);
 
     it('should succeed insertting pipelines due to overwrite=true flag', async () => {
       const p = deconstructTestData(testData11);
       const d = deconstructTestData(testData10);
-      await deletePipeline(d.name);
-      await deletePipeline(p.name);
+      await deletePipeline(d.name, dev_token);
+      await deletePipeline(p.name, dev_token);
       p.pipeline.nodes[1].nodeName = "not-overwritten";
-      await storePipeline(p)
+      await storePipeline(p, dev_token)
       let pipelineList = [
         {
           name: d.name,
@@ -1327,7 +1347,7 @@ describe("pipeline Tests 673", () => {
           nodes: d.pipeline.nodes
         }
       ];
-      const response = await storeOrUpdatePipelines(pipelineList);
+      const response = await storeOrUpdatePipelines(pipelineList,  dev_token);
       const listOfPipelineResponse = response.body
       expect(listOfPipelineResponse).to.be.an('array');
       expect(listOfPipelineResponse.length).to.be.equal(2);
@@ -1335,13 +1355,13 @@ describe("pipeline Tests 673", () => {
       expect(listOfPipelineResponse[0].name).to.be.equal(d.name);
       expect(listOfPipelineResponse[1].name).to.be.equal(p.name);
       expect(listOfPipelineResponse[1].nodes[1].nodeName).to.be.equal(listOfPipelineResponse[0].nodes[1].nodeName);
-      await deletePipeline(d);
-      await deletePipeline(p);
+      await deletePipeline(d, dev_token);
+      await deletePipeline(p, dev_token);
     }).timeout(1000 * 60 * 5);
 
     it('should succeed creating an array containing a pipeline with a 404 algorithm Not Found status', async () => {
       const d = deconstructTestData(testData10);
-      await deletePipeline(d.name);
+      await deletePipeline(d.name, dev_token);
       let pipelineList = [
         {
           name: d.name,
@@ -1364,14 +1384,14 @@ describe("pipeline Tests 673", () => {
           flowInput: { inp: 0 }
         }
       ];
-      const response = await storePipelinesWithDescriptor(pipelineList);
+      const response = await storePipelinesWithDescriptor(pipelineList, dev_token);
       const listOfPipelineResponse = response.body
       expect(listOfPipelineResponse).to.be.an('array');
       expect(listOfPipelineResponse.length).to.be.equal(2);
       expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
       expect(listOfPipelineResponse[0].name).to.be.equal(d.name);
       expect(listOfPipelineResponse[1].error.code).to.be.equal(404, 'Expected status code to be NOT FOUND');
-      await deletePipeline(d);
+      await deletePipeline(d, dev_token);
     }).timeout(1000 * 60 * 5);
   })
 });

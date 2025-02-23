@@ -5,9 +5,10 @@ const logger = require('../utils/logger')
 
 
 
-const getSpansByJodid = async (jobId) => {
+const getSpansByJodid = async (jobId, token = {}) => {
     const res = await chai.request(config.baseUrl).
         get(`/hkube/api-server//api/v1/jaeger?jobId=${jobId}`)
+        .set("Authorization", `Bearer ${token}`)
 
     return JSON.parse(res.text).data[0].spans
 }

@@ -3,6 +3,7 @@ const expect = chai.expect;
 const chaiHttp = require('chai-http');
 const path = require('path')
 const delay = require('delay')
+const config = require('../config/config');
 
 
 const {
@@ -47,19 +48,37 @@ const {
 } = require('../utils/elasticsearch')
 
 describe('TID-161- High Availability for HKube infrastructure services', () => {
+    before(async function () {
+        this.timeout(1000 * 60 * 15);
+        let testUserBody ={
+            username: "dev-placeholder",
+            password: "dev-placeholder"
+        }
+        const response = await chai.request(config.apiServerUrl)
+        .post('/auth/login')
+        .send(testUserBody)
+        
+        if (response.status === 200) {
+            console.log('guest login success');
+            dev_token = response.body.token;
+        }
+        else {
+            throw new Error("Failed to fetch Keycloak token");
+        }
+    });
+    let dev_token;
     describe('pipeline driver fail over', () => {
 
 
         it('Fail pipeline driver  ', async () => {
 
-
             //set test data to testData1
             const d = deconstructTestData(testData1)
-            await deletePipeline(d)
+            await deletePipeline(d, dev_token)
             //store pipeline evalwait
-            await storePipeline(d)
+            await storePipeline(d, dev_token)
             //run the pipeline evalwait
-            const res = await runStored(d)
+            const res = await runStored(d, dev_token)
             const jobId = res.body.jobId
             console.log("jobId = " + jobId);
             let drivers = [];
@@ -74,7 +93,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
             write_log('podName-' + podName)
             const pod = await deletePod(podName)
             //get result
-            const result = await getResult(jobId, 200)
+            const result = await getResult(jobId, 200, dev_token)
             write_log(result.status)
             write_log(result.error, 'error')
             expect(result.status).to.be.equal('completed');
@@ -90,9 +109,9 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
             }
 
             await delay(2000)
-            await deletePipeline(d.name)
-            await storePipeline(d)
-            const res = await runStored(pipe)
+            await deletePipeline(d.name, dev_token)
+            await storePipeline(d, dev_token)
+            const res = await runStored(pipe, dev_token)
             const jobId = res.body.jobId
             await delay(15000)
             const driver = await getDriverIdByJobId(jobId)
@@ -109,7 +128,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
 
             await delay(3000)
 
-            const result = await getResult(jobId, 200)
+            const result = await getResult(jobId, 200, dev_token)
 
 
         }).timeout(1000 * 60 * 5);
@@ -117,9 +136,9 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
         it('kill pipeline driver  multiple batch', async () => {
             const e = deconstructTestData(testData2)
 
-            await storePipeline(e)
+            await storePipeline(e, dev_token)
 
-            const res = await runStored(e)
+            const res = await runStored(e, dev_token)
             const jobId = res.body.jobId
             await delay(3000)
 
@@ -135,16 +154,16 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
             await delay(10000)
             const newdriver = await getDriverIdByJobId(jobId)
             console.log("new driver =" + newdriver)
-            const result = await getResult(jobId, 200)
+            const result = await getResult(jobId, 200, dev_token)
         }).timeout(1000 * 60 * 10);
 
 
 
         it('kill pipeline driver   batch on batch', async () => {
             const e = deconstructTestData(testData4)
-            await storePipeline(e)
+            await storePipeline(e, dev_token)
 
-            const res = await runStored(e)
+            const res = await runStored(e, dev_token)
             const jobId = res.body.jobId
             await delay(7000)
 
@@ -160,7 +179,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
             await delay(15000)
             const newdriver = await getDriverIdByJobId(jobId)
             console.log("new driver =" + newdriver)
-            const result = await getResult(jobId, 200)
+            const result = await getResult(jobId, 200, dev_token)
         }).timeout(1000 * 60 * 10);
 
 
@@ -180,12 +199,12 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
         }
         //set test data to testData1
         const d = deconstructTestData(testData1)
-        await deletePipeline(d)
+        await deletePipeline(d, dev_token)
         //store pipeline evalwait
-        await storePipeline(d)
+        await storePipeline(d, dev_token)
 
         //run the pipeline evalwait
-        const res = await runStored(pipe)
+        const res = await runStored(pipe, dev_token)
 
         const jobId = res.body.jobId
 
@@ -212,10 +231,10 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
     it('Fail jaeger   ', async () => {
         const d = deconstructTestData(testData1)
         //store pipeline evalwait
-        await deletePipeline(d)
-        const a = await storePipeline(d)
+        await deletePipeline(d, dev_token)
+        const a = await storePipeline(d, dev_token)
         //run the pipeline evalwait
-        const res = await runStored(d)
+        const res = await runStored(d, dev_token)
         const jobId = res.body.jobId
         let driver = undefined
         while (!driver) {
@@ -234,57 +253,57 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
             }
         }
         await delay(20000)
-        const result = await getResult(jobId, 200)
+        const result = await getResult(jobId, 200, dev_token)
         expect(result.status).to.be.equal('completed');
     }).timeout(1000 * 60 * 60);
 
     it('Fail API server  ', async () => {
 
-        await FailSingelPod("api-server")
+        await FailSingelPod("api-server", dev_token)
 
     }).timeout(1000 * 60 * 60);
 
 
     it('Fail simulator  ', async () => {
 
-        await FailSingelPod("simulator")
+        await FailSingelPod("simulator", dev_token)
 
     }).timeout(1000 * 60 * 60);
 
     it('Fail task-executor  ', async () => {
 
-        await FailSingelPod("task-executor")
+        await FailSingelPod("task-executor", dev_token)
 
     }).timeout(1000 * 60 * 60);
 
     it('Fail resource-manager  ', async () => {
 
-        await FailSingelPod("resource-manager")
+        await FailSingelPod("resource-manager", dev_token)
 
     }).timeout(1000 * 60 * 60);
 
     it('Fail algorithm-operator  ', async () => {
 
-        await FailSingelPod("algorithm-operator")
+        await FailSingelPod("algorithm-operator", dev_token)
 
     }).timeout(1000 * 60 * 60);
 
     it('Fail trigger-service  ', async () => {
 
-        await FailSingelPod("trigger-service")
+        await FailSingelPod("trigger-service", dev_token)
 
     }).timeout(1000 * 60 * 60);
 
     it.skip('Fail prometheus  ', async () => {
 
-        await FailSingelPod("prometheus-node", "monitoring")
+        await FailSingelPod("prometheus-node", dev_token, "monitoring")
 
     }).timeout(1000 * 60 * 60);
 
 
     it.skip('Fail monitoring-grafana  ', async () => {
 
-        await FailSingelPod("monitoring-grafana", "monitoring")
+        await FailSingelPod("monitoring-grafana", dev_token, "monitoring")
 
     }).timeout(1000 * 60 * 60);
 

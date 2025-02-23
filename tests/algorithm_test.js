@@ -89,7 +89,25 @@ const algJson = (algName, imageName, algMinHotWorkers = 0, algCPU = 0.001, algGP
 
 const { waitForWorkers, getJobsByNameAndVersion, getJobById, getAllAlgorithms } = require('../utils/socketGet')
 describe('Alrogithm Tests', () => {
-
+    before(async function () {
+        this.timeout(1000 * 60 * 15);
+        let testUserBody ={
+            username: "dev-placeholder",
+            password: "dev-placeholder"
+        }
+        const response = await chai.request(config.apiServerUrl)
+        .post('/auth/login')
+        .send(testUserBody)
+        
+        if (response.status === 200) {
+            console.log('guest login success');
+            dev_token = response.body.token;
+        }
+        else {
+            throw new Error("Failed to fetch Keycloak token");
+        }
+    });
+    let dev_token;
 
     it("get nodes", async () => {
         console.log("~~~~~~~~~~~~get nodes~~~~~~~~~~~~")
@@ -111,7 +129,7 @@ describe('Alrogithm Tests', () => {
         while (j < algList.length) {
             delAlg = algList.slice(j, z)
             const del = delAlg.map((e) => {
-                return deleteAlgorithm(e)
+                return deleteAlgorithm(e, true, dev_token)
             })
             console.log("delAlg-" + delAlg)
             const delResult = await Promise.all(del)
@@ -133,27 +151,27 @@ describe('Alrogithm Tests', () => {
         // p1
         it('ttl = 3 one of the inputs = 5 seconds ', async () => {
             const d = deconstructTestData(testData3)
-            await deletePipeline(d)
-            await storePipeline(d)
-            const jobId = await runStoredAndWaitForResults(d)
-            const graph = await getRawGraph(jobId)
+            await deletePipeline(d, dev_token)
+            await storePipeline(d, dev_token)
+            const jobId = await runStoredAndWaitForResults(d, dev_token)
+            const graph = await getRawGraph(jobId, dev_token)
             const nodesStatus = graph.body.nodes[0].batch
             const nodesError = nodesStatus.filter(obj => obj.error == "Algorithm TTL expired")
             expect(nodesError.length).to.be.equal(1)
-            await deletePipeline(d)
+            await deletePipeline(d, dev_token)
         }).timeout(1000 * 60 * 5);
 
         it('ttl =0 one of the inputs = 5 seconds', async () => {
             const d = deconstructTestData(testData3)
-            await deletePipeline(d)
+            await deletePipeline(d, dev_token)
             d.pipeline.nodes[0].ttl = 0
-            await storePipeline(d)
-            const jobId = await runStoredAndWaitForResults(d)
-            const graph = await getRawGraph(jobId)
+            await storePipeline(d, dev_token)
+            const jobId = await runStoredAndWaitForResults(d, dev_token)
+            const graph = await getRawGraph(jobId, dev_token)
             const nodesStatus = graph.body.nodes[0].batch
             const nodesError = nodesStatus.filter(obj => obj.error == "Algorithm TTL expired")
             expect(nodesError.length).to.be.equal(0)
-            await deletePipeline(d)
+            await deletePipeline(d, dev_token)
         }).timeout(1000 * 60 * 5);
 
     })
@@ -168,11 +186,11 @@ describe('Alrogithm Tests', () => {
 
         it('should run algorithm and verify it has no unscheduledReason', async () => {
             const algorithm = { name: algorithmSatisfied.name, input: [] };
-            await storeAlgorithmApply(algorithmSatisfied);
-            await runAlgorithm(algorithm);
+            await storeAlgorithmApply(algorithmSatisfied, dev_token);
+            await runAlgorithm(algorithm, dev_token);
             await delay(45000);
             const allAlgorithms = await getAllAlgorithms();
-            await deleteAlgorithm(algorithm.name, true)
+            await deleteAlgorithm(algorithm.name, true, dev_token);
             const algo = allAlgorithms.find(algo => algo.name === algorithm.name);
             if (!algo) {
                 throw new Error(`Algorithm ${algorithm.name} not found`)
@@ -183,11 +201,11 @@ describe('Alrogithm Tests', () => {
 
         it('should run algorithm and verify it has an unscheduledReason', async () => {
             const algorithm = { name: algorithmNotSatisfied.name, input: [] };
-            await storeAlgorithmApply(algorithmNotSatisfied);
-            await runAlgorithm(algorithm);
+            await storeAlgorithmApply(algorithmNotSatisfied, dev_token);
+            await runAlgorithm(algorithm, dev_token);
             await delay(45000);
             const allAlgorithms = await getAllAlgorithms();
-            await deleteAlgorithm(algorithm.name);
+            await deleteAlgorithm(algorithm.name, true, dev_token);
             const algo = allAlgorithms.find(algo => algo.name === algorithm.name);
             if (!algo) {
                 throw new Error(`Algorithm ${algorithm.name} not found`);
@@ -235,16 +253,16 @@ describe('Alrogithm Tests', () => {
         //store pipeline
 
         it('algorithm change creates a new version', async () => {
-            await deleteAlgorithm(algorithmName, true)
-            let v1 = await storeAlgorithmApply(algorithmV1);
+            await deleteAlgorithm(algorithmName, true, dev_token)
+            let v1 = await storeAlgorithmApply(algorithmV1, dev_token);
             algorithmV1.algorithmEnv = { "FOO": "123456" }
-            let v2 = await storeAlgorithmApply(algorithmV1);
-            const algVersion2 = await getAlgorithmVersion(algorithmName);
+            let v2 = await storeAlgorithmApply(algorithmV1, dev_token);
+            const algVersion2 = await getAlgorithmVersion(algorithmName, dev_token);
             expect(algVersion2.body.length).to.be.equal(2)
-            let alg = await getAlgorithm(algorithmName)
+            let alg = await getAlgorithm(algorithmName, dev_token)
             expect(JSON.parse(alg.text).version).to.be.equal(v1.body.algorithm.version)
-            const update = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, true);
-            alg = await getAlgorithm(algorithmName)
+            const update = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, dev_token, true);
+            alg = await getAlgorithm(algorithmName, dev_token)
             expect(JSON.parse(alg.text).algorithmEnv.FOO).to.be.equal('123456')
 
         }).timeout(1000 * 60 * 10);
@@ -252,17 +270,17 @@ describe('Alrogithm Tests', () => {
 
         it('algorithm version can have tag  ', async () => {
 
-            await deleteAlgorithm(algorithmName, true)
-            const v1 = await storeAlgorithmApply(algorithmV1);
+            await deleteAlgorithm(algorithmName, true, dev_token)
+            const v1 = await storeAlgorithmApply(algorithmV1, dev_token);
 
-            const tag = await tagAlgorithmVersion(algorithmName, v1.body.algorithm.version, "myTag1")
-            const v1Tag = await getAlgVersion(algorithmName, v1.body.algorithm.version)
+            const tag = await tagAlgorithmVersion(algorithmName, v1.body.algorithm.version, "myTag1", dev_token)
+            const v1Tag = await getAlgVersion(algorithmName, v1.body.algorithm.version, dev_token)
             algorithmV1.cpu = 2
-            const v2 = await storeAlgorithmApply(algorithmV1);
-            const algVersion2 = await getAlgorithmVersion(algorithmName);
+            const v2 = await storeAlgorithmApply(algorithmV1, dev_token);
+            const algVersion2 = await getAlgorithmVersion(algorithmName, dev_token);
             expect(algVersion2.body.length).to.be.equal(2)
-            await tagAlgorithmVersion(algorithmName, v2.body.algorithm.version, "myTag2")
-            const v2Tag = await getAlgVersion(algorithmName, v2.body.algorithm.version)
+            await tagAlgorithmVersion(algorithmName, v2.body.algorithm.version, "myTag2", dev_token)
+            const v2Tag = await getAlgVersion(algorithmName, v2.body.algorithm.version, dev_token)
 
             expect(JSON.parse(v1Tag.text).tags[0]).to.be.equal("myTag1")
             expect(JSON.parse(v2Tag.text).tags[0]).to.be.equal("myTag2")
@@ -279,16 +297,16 @@ describe('Alrogithm Tests', () => {
             algV1.minHotWorkers = 1; // get a pod running
             algV1.labels = { "group": "test" }
 
-            let v1 = await storeAlgorithmApply(algV1);
+            let v1 = await storeAlgorithmApply(algV1, dev_token);
             let times = 0;
             let pods = [];
             while (pods.length == 0 && times < 15) {
-                await delay(1000);
+                await delay(1500);
                 pods = await filterPodsByName(algName);
                 times++;
             }
             expect(pods[0].metadata.labels["group"]).to.be.eqls("hkube")
-            deleteAlgorithm(algName)
+            deleteAlgorithm(algName, true, dev_token)
         }).timeout(1000 * 60 * 10);
 
 
@@ -298,7 +316,7 @@ describe('Alrogithm Tests', () => {
             const algV1 = algJson(algName, algorithmImageV1)
             algV1.minHotWorkers = 1; // get a pod running
             algV1.labels = { "created-by": "test" }
-            let v1 = await storeAlgorithmApply(algV1);
+            let v1 = await storeAlgorithmApply(algV1, dev_token);
             await delay(10000)
             let times = 0;
             let pods = [];
@@ -308,7 +326,7 @@ describe('Alrogithm Tests', () => {
                 times++;
             }
             expect(pods[0].metadata.labels["created-by"]).to.be.eqls("test")
-            deleteAlgorithm(algName)
+            deleteAlgorithm(algName, true, dev_token)
         }).timeout(1000 * 60 * 10);
 
         //p3
@@ -322,7 +340,7 @@ describe('Alrogithm Tests', () => {
             algV1.minHotWorkers = 1; // get a pod running
             algV1.annotations = { "annotations-by": "test" }
 
-            let v1 = await storeAlgorithmApply(algV1);
+            let v1 = await storeAlgorithmApply(algV1, dev_token);
             let times = 0;
             let pods = [];
             while (pods.length == 0 && times < 15) {
@@ -331,7 +349,7 @@ describe('Alrogithm Tests', () => {
                 times++;
             }
             expect(pods[0].metadata.annotations["annotations-by"]).to.be.eqls("test")
-            deleteAlgorithm(algName)
+            deleteAlgorithm(algName, true, dev_token)
         }).timeout(1000 * 60 * 10);
 
         it('update algorithm nodeSelector', async () => {
@@ -344,7 +362,7 @@ describe('Alrogithm Tests', () => {
             const algV1 = algJson(algName, algorithmImageV1);
             algV1.minHotWorkers = 1; // get a pod running
             algV1.nodeSelector = { "kubernetes.io/hostname": nodes[1] }
-            let v1 = await storeAlgorithmApply(algV1);
+            let v1 = await storeAlgorithmApply(algV1, dev_token);
             algList.push(algName); // List removes algs in .after
             console.log(`Alg stored, selected node : ${nodes[1]}`);
             let times = 0;
@@ -364,8 +382,8 @@ describe('Alrogithm Tests', () => {
             algV1.minHotWorkers = 1;
             console.log(`New Selected node : ${nodes[0]}`);
             //store and update the new algorithm with a new version + a different selected node nodes[1];
-            v1 = await storeAlgorithmApply(algV1);
-            const update = await updateAlgorithmVersion(algName, v1.body.algorithm.version, true);
+            v1 = await storeAlgorithmApply(algV1, dev_token);
+            const update = await updateAlgorithmVersion(algName, v1.body.algorithm.version, dev_token, true);
 
             times = 0;
             let podsNamesAfter = [];
@@ -385,7 +403,7 @@ describe('Alrogithm Tests', () => {
             //var filteredAry = ary.filter(e => e !== 'seven')
             const podNodeAfter = await getPodNode(podsNamesAfter[0].metadata.name)
             expect(podNodeAfter).to.be.equal(nodes[0])
-            deleteAlgorithm(algName)
+            deleteAlgorithm(algName, true, dev_token)
         }).timeout(1000 * 60 * 10);
 
         it(`change baseImage trigger new Build`, async () => {
@@ -393,16 +411,16 @@ describe('Alrogithm Tests', () => {
             const entry = 'main27'
             const algName = "python3.7-test-1"
             const pythonVersion = "python:3.7"
-            await deleteAlgorithm(algName)
-            const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algList })
+            await deleteAlgorithm(algName, true, dev_token)
+            const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, token: dev_token, baseVersion: pythonVersion, algorithmArray: algList })
             expect(buildStatusAlg.status).to.be.equal("completed")
             expect(buildStatusAlg.algorithmImage).to.contain(buildStatusAlg.imageTag) //.endsWith(buildStatusAlg.imageTag)
-            let alg = await getAlgorithm(algName)
+            let alg = await getAlgorithm(algName, dev_token)
 
             let algJson = JSON.parse(alg.text);
-            alg = await getAlgorithm(algName)
+            alg = await getAlgorithm(algName, dev_token)
             algJson.baseImage = "python:3.8"
-            let v2 = await storeAlgorithmApply(algJson);
+            let v2 = await storeAlgorithmApply(algJson, dev_token);
             //expect(v2.algorithmImage).to.contain(v2.imageTag)
             expect(v2.imageTag).to.not.be.equal(buildStatusAlg.imageTag)
             expect(v2.body.messages[0].startsWith("a build was triggered due to change in baseImage")).to.be.true
@@ -415,67 +433,67 @@ describe('Alrogithm Tests', () => {
             const entry = 'main27'
             const algName = "python3.7-test-1"
             const pythonVersion = "python:3.7"
-            await deleteAlgorithm(algName)
-            const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algList })
+            await deleteAlgorithm(algName, true, dev_token)
+            const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, token: dev_token, baseVersion: pythonVersion, algorithmArray: algList })
             expect(buildStatusAlg.status).to.be.equal("completed")
             expect(buildStatusAlg.algorithmImage).to.contain(buildStatusAlg.imageTag)//.endsWith(buildStatusAlg.imageTag)
-            let alg = await getAlgorithm(algName)
+            let alg = await getAlgorithm(algName, dev_token)
 
             let algJson = JSON.parse(alg.text);
-            alg = await getAlgorithm(algName)
+            alg = await getAlgorithm(algName, dev_token)
             algJson.env = "nodejs"
-            let v2 = await storeAlgorithmApply(algJson);
+            let v2 = await storeAlgorithmApply(algJson, dev_token);
             //expect(v2.algorithmImage).to.contain(v2.imageTag)
             expect(v2.imageTag).to.not.be.equal(buildStatusAlg.imageTag)
             expect(v2.body.messages[0].startsWith("a build was triggered due to change in env")).to.be.true
         }).timeout(1000 * 60 * 20)
 
         it('Update  Algorithm version', async () => {
-            await deleteAlgorithm(algorithmName, true)
-            await storeAlgorithmApply(algorithmV1);
-            const algVersion = await getAlgorithmVersion(algorithmName);
+            await deleteAlgorithm(algorithmName, true, dev_token)
+            await storeAlgorithmApply(algorithmV1, dev_token);
+            const algVersion = await getAlgorithmVersion(algorithmName, dev_token);
             expect(algVersion.body.length).to.be.equal(1)
-            let v2 = await storeAlgorithmApply(algorithmV2);
+            let v2 = await storeAlgorithmApply(algorithmV2, dev_token);
             //validate there are two images
-            const algVersion2 = await getAlgorithmVersion(algorithmName);
+            const algVersion2 = await getAlgorithmVersion(algorithmName, dev_token);
             expect(algVersion2.body.length).to.be.equal(2)
 
             //store pipeline algorithm-version-test
-            await storePipeline(d)
-            const jobId = await runStoredAndWaitForResults(d)
+            await storePipeline(d, dev_token)
+            const jobId = await runStoredAndWaitForResults(d, dev_token)
             // result should be (v1)        
-            const result1 = await getResult(jobId, 200)
+            const result1 = await getResult(jobId, 200, dev_token)
             expect(result1.data[0].result.vaerion).to.be.equal("v1")
 
-            const update = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, true);
+            const update = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, dev_token, true);
             await delay(2000)
-            const jobId2 = await runStoredAndWaitForResults(d)
+            const jobId2 = await runStoredAndWaitForResults(d, dev_token)
             //validate result should be (v2)
-            const result2 = await getResult(jobId2, 200)
+            const result2 = await getResult(jobId2, 200, dev_token)
             expect(result2.data[0].result.vaerion).to.be.equal("v2")
 
-            await deleteAlgorithm(algorithmName, true)
+            await deleteAlgorithm(algorithmName, true, dev_token)
         }).timeout(1000 * 60 * 10);
 
 
 
         it('Delete  Algorithm deletes pipeline', async () => {
 
-            await deleteAlgorithm(algorithmName, true)
-            await storeAlgorithmApply(algorithmV1);
+            await deleteAlgorithm(algorithmName, true, dev_token)
+            await storeAlgorithmApply(algorithmV1, dev_token);
 
             //store pipeline algorithm-version-test
-            await storePipeline(d)
-            // const jobId = await runStoredAndWaitForResults(d)        
-            await storeAlgorithmApply(algorithmV2);
+            await storePipeline(d, dev_token)
+            // const jobId = await runStoredAndWaitForResults(d, dev_token)        
+            await storeAlgorithmApply(algorithmV2, dev_token);
             //const update = await updateAlgorithmVersion(algorithmName,algorithmImageV2,true);
             await delay(2000)
-            //const jobId2 = await runStoredAndWaitForResults(d)       
-            const alg = await deleteAlgorithm(algorithmName, true)
+            //const jobId2 = await runStoredAndWaitForResults(d, dev_token)       
+            const alg = await deleteAlgorithm(algorithmName, true, dev_token)
             await delay(2000)
-            const pipeline = await getPipeline(d.name)
+            const pipeline = await getPipeline(d.name, dev_token)
             expect(pipeline.body.error.message).to.include("Not Found")
-            const getAlg = await getAlgorithm(algorithmName)
+            const getAlg = await getAlgorithm(algorithmName, dev_token)
             expect(getAlg.body.error.message).to.include("Not Found")
 
         }).timeout(1000 * 60 * 5);
@@ -483,16 +501,16 @@ describe('Alrogithm Tests', () => {
 
         it('Delete  Algorithm deletes versions', async () => {
             //validate that after delete old algorith, version are deleted.
-            await deleteAlgorithm(algorithmName, true)
-            await storeAlgorithmApply(algorithmV1);
-            await storeAlgorithmApply(algorithmV2);
+            await deleteAlgorithm(algorithmName, true, dev_token)
+            await storeAlgorithmApply(algorithmV1, dev_token);
+            await storeAlgorithmApply(algorithmV2, dev_token);
             await delay(2000)
 
-            await deleteAlgorithm(algorithmName, true)
-            await storeAlgorithmApply(algorithmV1);
-            const algVersion1 = await getAlgorithmVersion(algorithmName);
+            await deleteAlgorithm(algorithmName, true, dev_token)
+            await storeAlgorithmApply(algorithmV1, dev_token);
+            const algVersion1 = await getAlgorithmVersion(algorithmName, dev_token);
             expect(algVersion1.body.length).to.be.equal(1)
-            await deleteAlgorithm(algorithmName, true)
+            await deleteAlgorithm(algorithmName, true, dev_token)
 
         }).timeout(1000 * 60 * 5);
 
@@ -503,22 +521,22 @@ describe('Alrogithm Tests', () => {
                     inp: 30000
                 }
             }
-            await deleteAlgorithm(algorithmName, true)
-            await storeAlgorithmApply(algorithmV1);
-            let v2 = await storeAlgorithmApply(algorithmV2);
+            await deleteAlgorithm(algorithmName, true, dev_token)
+            await storeAlgorithmApply(algorithmV1, dev_token);
+            let v2 = await storeAlgorithmApply(algorithmV2, dev_token);
             await delay(2000)
-            await storePipeline(d)
-            const res = await runStored(pipe)
+            await storePipeline(d, dev_token)
+            const res = await runStored(pipe, dev_token)
             const jobId = res.body.jobId
             await delay(15000)
-            const update = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, true);
+            const update = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, dev_token, true);
             expect(update.status).to.be.equal(201);
             await delay(5000);
-            const status = await getPipelineStatus(jobId)
+            const status = await getPipelineStatus(jobId, dev_token)
             expect(status.body.status).to.be.equal("failed")
-            const alg = await getAlgorithm(algorithmName)
+            const alg = await getAlgorithm(algorithmName, dev_token)
             expect(alg.body.algorithmImage).to.be.equal(algorithmImageV2)
-            await deleteAlgorithm(algorithmName, true)
+            await deleteAlgorithm(algorithmName, true, dev_token)
 
 
 
@@ -533,22 +551,22 @@ describe('Alrogithm Tests', () => {
                 }
             }
 
-            await deleteAlgorithm(algorithmName, true)
-            await storeAlgorithmApply(algorithmV1);
-            let v2 = await storeAlgorithmApply(algorithmV2);
+            await deleteAlgorithm(algorithmName, true, dev_token)
+            await storeAlgorithmApply(algorithmV1, dev_token);
+            let v2 = await storeAlgorithmApply(algorithmV2, dev_token);
             await delay(2000)
-            await storePipeline(d)
-            const res = await runStored(pipe)
+            await storePipeline(d, dev_token)
+            const res = await runStored(pipe, dev_token)
             const jobId = res.body.jobId
             await delay(10000)
-            const update = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, false);
+            const update = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, dev_token, false);
             expect(update.status).to.be.equal(400);
             await delay(3000)
-            const result2 = await getResult(jobId, 200)
+            const result2 = await getResult(jobId, 200, dev_token)
             expect(result2.data[0].result.vaerion).to.be.equal("v1")
-            const alg = await getAlgorithm(algorithmName)
+            const alg = await getAlgorithm(algorithmName, dev_token)
             expect(alg.body.algorithmImage).to.be.equal(algorithmImageV1)
-            await deleteAlgorithm(algorithmName, true)
+            await deleteAlgorithm(algorithmName, true, dev_token)
 
 
 
@@ -560,20 +578,20 @@ describe('Alrogithm Tests', () => {
         it('Delete  algorithm current version ', async () => {
 
 
-            await deleteAlgorithm(algorithmName, true)
-            let v1 = await storeAlgorithmApply(algorithmV1);
-            let v2 = await storeAlgorithmApply(algorithmV2);
+            await deleteAlgorithm(algorithmName, true, dev_token)
+            let v1 = await storeAlgorithmApply(algorithmV1, dev_token);
+            let v2 = await storeAlgorithmApply(algorithmV2, dev_token);
             await delay(2000)
 
-            const update = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, false);
-            let deleteAlg = await deleteAlgorithmVersion(algorithmName, v2.body.algorithm.version);
+            const update = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, dev_token, false);
+            let deleteAlg = await deleteAlgorithmVersion(algorithmName, v2.body.algorithm.version, dev_token);
             expect(deleteAlg.body.error.message).to.be.equal("unable to remove used version")
-            deleteAlg = await deleteAlgorithmVersion(algorithmName, v1.body.algorithm.version);
+            deleteAlg = await deleteAlgorithmVersion(algorithmName, v1.body.algorithm.version, dev_token);
             expect(deleteAlg.status).to.be.equal(200)
-            const algVersion = await getAlgorithmVersion(algorithmName)
+            const algVersion = await getAlgorithmVersion(algorithmName, dev_token)
             expect(algVersion.body.length).to.be.equal(1)
 
-            await deleteAlgorithm(algorithmName, true)
+            await deleteAlgorithm(algorithmName, true, dev_token)
 
 
 
@@ -581,30 +599,31 @@ describe('Alrogithm Tests', () => {
 
         it('check save current version algorithem after update and no delete versions after delete algorithm', async () => {
 
-            await deleteAlgorithm(algorithmName, true);
-            await storeAlgorithmApply(algorithmV1);
+            await deleteAlgorithm(algorithmName, true, dev_token);
+            await storeAlgorithmApply(algorithmV1, dev_token);
 
             const resAlgorithmV1 = await runAlgorithm(
                 {
                     "name": algorithmV1.name,
                     "input": [],
                     "debug": false
-                }
+                },
+                dev_token
             );
 
             await delay(2000);
-            await storeAlgorithmApply(algorithmV2);
+            await storeAlgorithmApply(algorithmV2, dev_token);
 
             const { job } = await getJobById(resAlgorithmV1.body.jobId);
             const versionranAlgorithm = await getJobsByNameAndVersion(job.graph.nodes[0].algorithmName, job.graph.nodes[0].algorithmVersion);
             expect(algorithmV1.algorithmImage).to.be.equal(versionranAlgorithm.algorithmsByVersion.algorithm.algorithmImage)
 
-            await deleteAlgorithm(algorithmName, true, true)
+            await deleteAlgorithm(algorithmName, true, dev_token, true)
             const ranAlgorithmAfterDelete = await getJobsByNameAndVersion(job.graph.nodes[0].algorithmName, job.graph.nodes[0].algorithmVersion);
             expect(algorithmV1.algorithmImage).to.be.equal(ranAlgorithmAfterDelete.algorithmsByVersion.algorithm.algorithmImage)
 
-            await storeAlgorithmApply(algorithmV1);
-            await deleteAlgorithm(algorithmName, true);
+            await storeAlgorithmApply(algorithmV1, dev_token);
+            await deleteAlgorithm(algorithmName, true, dev_token);
         }).timeout(1000 * 60 * 5);
 
     })
@@ -663,23 +682,23 @@ describe('Alrogithm Tests', () => {
                 experimentName: "main",
 
             }
-            await deleteAlgorithm(alg.name, true)
+            await deleteAlgorithm(alg.name, true, dev_token)
             alg.reservedMemory = "3Gi"
-            await storeAlgorithmApply(alg);
-            // const jnk = await storeAlgorithmApply(alg);
-            const res = await runRaw(pipe)
+            await storeAlgorithmApply(alg, dev_token);
+            // const jnk = await storeAlgorithmApply(alg, dev_token);
+            const res = await runRaw(pipe, dev_token)
             const jobId = res.body.jobId
-            const result = await getResult(jobId, 200)
+            const result = await getResult(jobId, 200, dev_token)
             console.log(result)
             expect(result.data[0].result).to.be.equal("3072")
             alg.name = "env1"
             alg.reservedMemory = "512Mi"
             pipe.nodes[0].algorithmName = "env1"
-            await deleteAlgorithm(alg.name, true)
-            await storeAlgorithmApply(alg);
-            const res2 = await runRaw(pipe)
+            await deleteAlgorithm(alg.name, true, dev_token)
+            await storeAlgorithmApply(alg, dev_token);
+            const res2 = await runRaw(pipe, dev_token)
             const jobId2 = res2.body.jobId
-            const result2 = await getResult(jobId2, 200)
+            const result2 = await getResult(jobId2, 200, dev_token)
             expect(result2.data[0].result).to.be.equal("512")
             console.log(result2)
         }).timeout(1000 * 10 * 60)
@@ -722,10 +741,10 @@ describe('Alrogithm Tests', () => {
                 ],
                 debug: false
             }
-            await deleteAlgorithm(alg.name, true)
+            await deleteAlgorithm(alg.name, true, dev_token)
             algList.push(alg.name);
-            await storeAlgorithmApply(alg);
-            const res = await runAlgorithm(algRun)
+            await storeAlgorithmApply(alg, dev_token);
+            const res = await runAlgorithm(algRun, dev_token)
             await delay(15000);
             const expectedPod = await filterPodsByName(alg.name);
             const containerSpec = await getPodSpecByContainer(expectedPod[0].metadata.name);
@@ -770,10 +789,10 @@ describe('Alrogithm Tests', () => {
             ],
             debug: false
         }
-        await deleteAlgorithm(alg.name, true)
+        await deleteAlgorithm(alg.name, true, dev_token)
         algList.push(alg.name);
-        await storeAlgorithmApply(alg);
-        const res = await runAlgorithm(algRun)
+        await storeAlgorithmApply(alg, dev_token);
+        const res = await runAlgorithm(algRun, dev_token)
         await delay(15000);
         const expectedPod = await filterPodsByName(alg.name);
         const containerSpec = await getPodSpecByContainer(expectedPod[0].metadata.name);
@@ -835,10 +854,10 @@ describe('Alrogithm Tests', () => {
 
         }
         let algCreated = false
-        const createAlg = async () => {
+        const createAlg = async (token = {}) => {
             if (!algCreated) {
-                await deleteAlgorithm(alg.name, true)
-                await storeAlgorithmApply(alg);
+                await deleteAlgorithm(alg.name, true, token)
+                await storeAlgorithmApply(alg, token);
                 algCreated = true
 
             }
@@ -846,16 +865,16 @@ describe('Alrogithm Tests', () => {
         }
 
         it('algorithm Environment Variables ', async () => {
-            await createAlg()
+            await createAlg(dev_token)
             const algRun = {
                 name: alg.name,
                 input: ["FOO"]
             }
             //input:[{"action":"env","EnvironmentVariable":"FOO"}]}
 
-            const res = await runAlgorithm(algRun)
+            const res = await runAlgorithm(algRun, dev_token)
             const jobId = res.body.jobId
-            const result = await getResult(jobId, 200)
+            const result = await getResult(jobId, 200, dev_token)
             expect(result.data[0].result).to.be.equal(alg.algorithmEnv.FOO)
         }).timeout(1000 * 5 * 60)
 
@@ -867,9 +886,9 @@ describe('Alrogithm Tests', () => {
                 input: ["SECRET"]
             }
 
-            const res = await runAlgorithm(algRun)
+            const res = await runAlgorithm(algRun, dev_token)
             const jobId = res.body.jobId
-            const result = await getResult(jobId, 200)
+            const result = await getResult(jobId, 200, dev_token)
             expect(result.data[0].result).to.contain("Hkube")
         }).timeout(1000 * 5 * 60)
 
@@ -881,9 +900,9 @@ describe('Alrogithm Tests', () => {
             }
             // input:[{"action":"env","EnvironmentVariable":"CM"}]}
 
-            const res = await runAlgorithm(algRun)
+            const res = await runAlgorithm(algRun, dev_token)
             const jobId = res.body.jobId
-            const result = await getResult(jobId, 200)
+            const result = await getResult(jobId, 200, dev_token)
             expect(result.data[0].result).to.be.equal("fs")
         }).timeout(1000 * 5 * 60)
 
@@ -895,9 +914,9 @@ describe('Alrogithm Tests', () => {
             }
             // input:[{"action":"env","EnvironmentVariable":"REASOURCE"}]}
 
-            const res = await runAlgorithm(algRun)
+            const res = await runAlgorithm(algRun, dev_token)
             const jobId = res.body.jobId
-            const result = await getResult(jobId, 200)
+            const result = await getResult(jobId, 200, dev_token)
             expect(result.data[0].result).to.be.equal("1")
         }).timeout(1000 * 5 * 60)
 
@@ -911,9 +930,9 @@ describe('Alrogithm Tests', () => {
             }
             //input:[{"action":"env","EnvironmentVariable":"FR"}]}
 
-            const res = await runAlgorithm(algRun)
+            const res = await runAlgorithm(algRun, dev_token)
             const jobId = res.body.jobId
-            const result = await getResult(jobId, 200)
+            const result = await getResult(jobId, 200, dev_token)
             expect(result.data[0].result).to.contain("compute.internal")
         }).timeout(1000 * 5 * 60)
 
@@ -934,11 +953,11 @@ describe('Alrogithm Tests', () => {
                 },
                 workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
             }
-            await deleteAlgorithm(alg.name, true);
-            await storeAlgorithmApply(alg);
+            await deleteAlgorithm(alg.name, true, dev_token);
+            await storeAlgorithmApply(alg, dev_token);
             await delay(40000);
             const workers = await waitForWorkers(alg.name, alg.minHotWorkers);
-            await deleteAlgorithm(alg.name, true)
+            await deleteAlgorithm(alg.name, true, dev_token)
             expect(workers.length).to.be.equal(alg.minHotWorkers)
         }).timeout(1000 * 5 * 60)
 
@@ -961,8 +980,8 @@ describe('Alrogithm Tests', () => {
                         },
                         workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
                     }
-                    const aa = await deleteAlgorithm("versatile", true)
-                    const bb = await storeAlgorithmApply(alg);
+                    const aa = await deleteAlgorithm("versatile", true, dev_token)
+                    const bb = await storeAlgorithmApply(alg, dev_token);
                     //need to add alg versatile-pipe
                     const algName = "black-alg"
                     const pipe = {
@@ -978,14 +997,14 @@ describe('Alrogithm Tests', () => {
                     const d = deconstructTestData(testData4)
 
                     //store pipeline evalwait
-                    const a = await storePipeline(d)
+                    const a = await storePipeline(d, dev_token)
 
                     //run the pipeline evalwait
 
 
-                    const jobId = await runStoredAndWaitForResults(pipe)
+                    const jobId = await runStoredAndWaitForResults(pipe, dev_token)
 
-                    const graph = await getRawGraph(jobId)
+                    const graph = await getRawGraph(jobId, dev_token)
                     expect(graph.body.nodes.length).to.be.equal(2)
 
                 }).timeout(1000 * 5 * 60)
@@ -995,8 +1014,8 @@ describe('Alrogithm Tests', () => {
 
         describe('insert algorithm array', () => {
             it('should succeed to store an array of algorithms', async () => {
-                const deletedAlg1 = await deleteAlgorithm("alg1", true)
-                const deletedAlg2 = await deleteAlgorithm("alg2", true)
+                const deletedAlg1 = await deleteAlgorithm("alg1", true, dev_token)
+                const deletedAlg2 = await deleteAlgorithm("alg2", true, dev_token)
                 let algList = [
                     {
                         name: "alg1",
@@ -1028,7 +1047,7 @@ describe('Alrogithm Tests', () => {
                     }
                 ];
 
-                const response = await storeAlgorithms(algList);
+                const response = await storeAlgorithms(algList, dev_token);
                 const listOfAlgorithmResponse = response.body
                 expect(listOfAlgorithmResponse).to.be.an('array');
                 expect(listOfAlgorithmResponse.length).to.be.equal(2);
@@ -1038,8 +1057,8 @@ describe('Alrogithm Tests', () => {
             }).timeout(1000 * 60 * 5);
 
             it('create an algorithm array containing a 409 Conflict status and error message for existing algorithms', async () => {
-                const deleteAlg1 = await deleteAlgorithm("alg1", true)
-                const deleteAlg2 = await deleteAlgorithm("alg2", true)
+                const deleteAlg1 = await deleteAlgorithm("alg1", true, dev_token)
+                const deleteAlg2 = await deleteAlgorithm("alg2", true, dev_token)
                 let existingAlg = {
                     name: "alg1",
                     cpu: 0.1,
@@ -1054,7 +1073,7 @@ describe('Alrogithm Tests', () => {
                     },
                     workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
                 }
-                const responseOfExists = await storeAlgorithms(existingAlg)
+                const responseOfExists = await storeAlgorithms(existingAlg, dev_token)
 
                 let algList = [
                     {
@@ -1085,7 +1104,7 @@ describe('Alrogithm Tests', () => {
                         workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
                     }
                 ];
-                const response = await storeAlgorithms(algList);
+                const response = await storeAlgorithms(algList, dev_token);
                 const listOfAlgorithmResponse = response.body
                 expect(response.statusCode).to.be.equal(201);
                 expect(listOfAlgorithmResponse).to.be.an('array');
@@ -1095,8 +1114,8 @@ describe('Alrogithm Tests', () => {
             }).timeout(1000 * 60 * 5);
 
             it('overwrite an algorithm', async () => {
-                const deleteAlg1 = await deleteAlgorithm("alg1", true)
-                const deleteAlg2 = await deleteAlgorithm("alg2", true)
+                const deleteAlg1 = await deleteAlgorithm("alg1", true, dev_token)
+                const deleteAlg2 = await deleteAlgorithm("alg2", true, dev_token)
                 let existingAlg = {
                     name: "alg1",
                     cpu: 0.1,
@@ -1111,7 +1130,7 @@ describe('Alrogithm Tests', () => {
                     },
                     workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
                 }
-                const responseOfExists = await storeAlgorithms(existingAlg)
+                const responseOfExists = await storeAlgorithms(existingAlg, dev_token)
 
                 let algList = [
                     {
@@ -1148,7 +1167,7 @@ describe('Alrogithm Tests', () => {
                 expect(listOfAlgorithmResponse).to.be.an('array');
                 expect(listOfAlgorithmResponse.length).to.be.equal(2);
                 expect(listOfAlgorithmResponse[1].name).to.be.equal('alg2');
-                alg2Response = await getAlgorithm('alg2');
+                alg2Response = await getAlgorithm('alg2', dev_token);
                 expect(alg2Response.body.cpu).to.eq(0.2);
 
             }).timeout(1000 * 60 * 5);
@@ -1156,7 +1175,7 @@ describe('Alrogithm Tests', () => {
 
 
             it('should succeed creating an array containing a 400 Bad Request status and error message for invalid data', async () => {
-                const deleteAlg1 = await deleteAlgorithm("alg1", true)
+                const deleteAlg1 = await deleteAlgorithm("alg1", true, dev_token)
                 const invalidAlgorithmData = [
                     {
                         name: 'Invalid Algorithm NAME-',
@@ -1180,7 +1199,7 @@ describe('Alrogithm Tests', () => {
                         workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
                     },
                 ];
-                const response = await storeAlgorithms(invalidAlgorithmData);
+                const response = await storeAlgorithms(invalidAlgorithmData, dev_token);
                 const listOfAlgorithmResponse = response.body
                 expect(listOfAlgorithmResponse).to.be.an('array');
                 expect(listOfAlgorithmResponse.length).to.be.equal(2);
@@ -1197,78 +1216,78 @@ describe('Alrogithm Tests', () => {
                 input: []
             }
             it('should apply selector when given one, and find no pods to stop', async () => {
-                const response = await deleteAlgorithmPods("anyName", "mySelector");
+                const response = await deleteAlgorithmPods("anyName", "mySelector", dev_token);
                 expect(response.statusCode).to.be.equal(404);
                 expect(response.body).to.be.equal('No pods found with selector mySelector');
             }).timeout(1000 * 60 * 5);
             it('should find one pod to delete', async () => {
-                await deleteAlgorithm(stayupAlgName, true)
+                await deleteAlgorithm(stayupAlgName, true, dev_token)
                 let suffix = pipelineRandomName(4).toLowerCase();
                 stayUpAlg.name += `-${suffix}`;
                 stayUpSkeleton.name = stayUpAlg.name;
-                let storeResult = await storeAlgorithmApply(stayUpAlg);
+                let storeResult = await storeAlgorithmApply(stayUpAlg, dev_token);
                 stayUpAlg.name = stayupAlgName;
                 algList.push(stayUpSkeleton.name);
-                const result = await runAlgorithm(stayUpSkeleton);
+                const result = await runAlgorithm(stayUpSkeleton, dev_token);
                 await delay(20000); // wait for creation
-                const response = await deleteAlgorithmPods(stayUpSkeleton.name);
+                const response = await deleteAlgorithmPods(stayUpSkeleton.name,'', dev_token);
                 await delay(1000);
-                await stopPipeline(result.body.jobId);
+                await stopPipeline(result.body.jobId, dev_token);
                 expect(response.statusCode).to.be.equal(200);
                 expect(response.body.message.length).to.be.equal(1);
-                await deleteAlgorithmJobs(stayUpSkeleton.name);
+                await deleteAlgorithmJobs(stayUpSkeleton.name,'', dev_token);
             }).timeout(1000 * 60 * 5);
             it('should find multiple pods to delete', async () => {
-                await deleteAlgorithm(stayupAlgName, true)
+                await deleteAlgorithm(stayupAlgName, true, dev_token)
                 const statelessPipeline = deconstructTestData(statelessPipe);
-                await deletePipeline(statelessPipeline.name)
-                let storeResult = await storeAlgorithmApply(stayUpAlg);
+                await deletePipeline(statelessPipeline.name, dev_token);
+                let storeResult = await storeAlgorithmApply(stayUpAlg, dev_token);
                 algList.push(stayUpSkeleton.name);
-                storeResult = await storePipeline(statelessPipeline);
-                let runResult = await runStored(statelessPipeline);
+                storeResult = await storePipeline(statelessPipeline, dev_token);
+                let runResult = await runStored(statelessPipeline, dev_token);
                 await delay(30000);
-                const response = await deleteAlgorithmPods("yellow-alg");
+                const response = await deleteAlgorithmPods("yellow-alg",'', dev_token);
                 expect(response.statusCode).to.be.equal(200);
                 expect(response.body.message.length).to.be.greaterThan(2);
-                await deleteAlgorithmJobs(stayUpSkeleton.name);
-                await deleteAlgorithmJobs(statelessAlgName);
-                await deletePipeline(statelessPipeline.name)
-                await deleteAlgorithm(stayupAlgName, true)
+                await deleteAlgorithmJobs(stayUpSkeleton.name,'', dev_token);
+                await deleteAlgorithmJobs(statelessAlgName,'', dev_token);
+                await deletePipeline(statelessPipeline.name, dev_token);
+                await deleteAlgorithm(stayupAlgName, true, dev_token);
             }).timeout(1000 * 60 * 5);
             it('should apply selector when given one, and find no jobs to stop', async () => {
-                const response = await deleteAlgorithmJobs("anyName", "mySelector");
+                const response = await deleteAlgorithmJobs("anyName", "mySelector", dev_token);
                 expect(response.statusCode).to.be.equal(404);
                 expect(response.body).to.be.equal('No jobs found with selector mySelector');
             }).timeout(1000 * 60 * 5);
             it('should find one job to delete', async () => {
-                await deleteAlgorithm(stayupAlgName, true)
+                await deleteAlgorithm(stayupAlgName, true, dev_token)
                 let suffix = pipelineRandomName(4).toLowerCase();
                 stayUpAlg.name += `-${suffix}`;
                 stayUpSkeleton.name = stayUpAlg.name;
-                let storeResult = await storeAlgorithmApply(stayUpAlg);
+                let storeResult = await storeAlgorithmApply(stayUpAlg, dev_token);
                 stayUpAlg.name = stayupAlgName;
                 algList.push(stayUpSkeleton.name);
-                const result = await runAlgorithm(stayUpSkeleton);
+                const result = await runAlgorithm(stayUpSkeleton, dev_token);
                 await delay(20000); // wait for creation
-                const response = await deleteAlgorithmJobs(stayUpSkeleton.name);
+                const response = await deleteAlgorithmJobs(stayUpSkeleton.name,'', dev_token);
                 await delay(1000);
-                await stopPipeline(result.body.jobId);
+                await stopPipeline(result.body.jobId, dev_token);
                 expect(response.statusCode).to.be.equal(200);
                 expect(response.body.message.length).to.be.equal(1);
             }).timeout(1000 * 60 * 5);
             it('should find multiple jobs to delete', async () => {
-                await deleteAlgorithm(stayupAlgName, true)
+                await deleteAlgorithm(stayupAlgName, true, dev_token)
                 const statelessPipeline = deconstructTestData(statelessPipe);
-                await deletePipeline(statelessPipeline.name)
-                let storeResult = await storeAlgorithmApply(stayUpAlg);
+                await deletePipeline(statelessPipeline.name, dev_token);
+                let storeResult = await storeAlgorithmApply(stayUpAlg, dev_token);
                 algList.push(stayUpSkeleton.name);
-                storeResult = await storePipeline(statelessPipeline);
-                let runResult = await runStored(statelessPipeline);
+                storeResult = await storePipeline(statelessPipeline, dev_token);
+                let runResult = await runStored(statelessPipeline, dev_token);
                 await delay(30000);
-                const response = await deleteAlgorithmJobs("yellow-alg");
+                const response = await deleteAlgorithmJobs("yellow-alg",'', dev_token);
                 expect(response.statusCode).to.be.equal(200);
                 expect(response.body.message.length).to.be.greaterThan(2);
-                await deleteAlgorithmJobs(stayUpSkeleton.name);       
+                await deleteAlgorithmJobs(stayUpSkeleton.name,'', dev_token);       
             }).timeout(1000 * 60 * 5);
             
 

@@ -45,10 +45,28 @@ const tos = require('../utils/results'.toString())
 chai.use(chaiHttp);
 
 chai.use(assertArrays);
-
-
+let dev_token;
+let guest_token;
 
 describe('all swagger calls test ', () => {
+    before(async function () {
+        this.timeout(1000 * 60 * 15);
+        let testUserBody ={
+            username: "dev-placeholder",
+            password: "dev-placeholder"
+        }
+        const response = await chai.request(config.apiServerUrl)
+        .post('/auth/login')
+        .send(testUserBody)
+        
+        if (response.status === 200) {
+            console.log('dev login success');
+            dev_token = response.body.token;
+        }
+        else {
+            throw new Error("Failed to fetch Keycloak token");
+        }
+    });
 
     describe('Execution 647', () => {
         //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/647
@@ -58,11 +76,11 @@ describe('all swagger calls test ', () => {
                 name: 'green-alg',
                 input: [42]
             }
-            const res = await runAlgorithm(alg)
+            const res = await runAlgorithm(alg, dev_token)
             const jobId = res.body.jobId
-            const result = await getResult(jobId, 200)
+            const result = await getResult(jobId, 200, dev_token)
             expect(result.data[0].result).to.be.equal(42)
-        }).timeout(1000 * 60 * 2)
+        }).timeout(1000 * 60 * 20)
 
         it('test the POST exec/raw rest call', async () => {
             const rawPipe = {
@@ -82,6 +100,7 @@ describe('all swagger calls test ', () => {
 
             const res = await chai.request(config.apiServerUrl)
                 .post('/exec/raw')
+                .set("Authorization", `Bearer ${dev_token}`)
                 .send(rawPipe)
 
             // write_log(res.body)
@@ -89,7 +108,7 @@ describe('all swagger calls test ', () => {
 
             const jobId = res.body.jobId
             await delay(3 * 1000)
-            const result = await getResult(jobId, 200)
+            const result = await getResult(jobId, 200, dev_token)
             //result.status.should.equal('completed')
             expect(result.status).to.be.equal('completed')
         }).timeout(1000 * 60 * 2)
@@ -109,13 +128,14 @@ describe('all swagger calls test ', () => {
 
             const res = await chai.request(config.apiServerUrl)
                 .post('/exec/stored')
+                .set("Authorization", `Bearer ${dev_token}`)
                 .send(pipe)
 
             expect(res).to.have.status(200)
 
             const jobId = res.body.jobId
 
-            const result = await getResult(jobId, 200)
+            const result = await getResult(jobId, 200, dev_token)
 
         }).timeout(1000 * 60 * 2)
 
@@ -135,12 +155,13 @@ describe('all swagger calls test ', () => {
 
             const res = await chai.request(config.apiServerUrl)
                 .post('/exec/stored')
+                .set("Authorization", `Bearer ${dev_token}`)
                 .send(pipe)
 
             const jobId = res.body.jobId
 
 
-            const result = await getResult(jobId, 200);
+            const result = await getResult(jobId, 200, dev_token);
 
             const data = {
                 jobId: jobId,
@@ -149,6 +170,7 @@ describe('all swagger calls test ', () => {
 
             const res2 = await chai.request(config.apiServerUrl)
                 .post('/exec/caching')
+                .set("Authorization", `Bearer ${dev_token}`)
                 .send(data)
 
             // write_log(res2)
@@ -157,7 +179,7 @@ describe('all swagger calls test ', () => {
 
             const jobId2 = res2.body.jobId
 
-            const result2 = await getResult(jobId2, 200)
+            const result2 = await getResult(jobId2, 200, dev_token)
 
 
 
@@ -165,7 +187,7 @@ describe('all swagger calls test ', () => {
 
 
         it('test the POST exec/stop rest call', async () => {
-            const jobId = await runRaw(30000)
+            const jobId = await runRaw(30000, dev_token)
 
 
             // const jobId = res.body.jobId
@@ -179,6 +201,7 @@ describe('all swagger calls test ', () => {
 
             const res2 = await chai.request(config.apiServerUrl)
                 .post('/exec/stop')
+                .set("Authorization", `Bearer ${dev_token}`)
                 .send(data)
 
 
@@ -199,6 +222,7 @@ describe('all swagger calls test ', () => {
 
             const res = await chai.request(config.apiServerUrl)
                 .post('/exec/stored')
+                .set("Authorization", `Bearer ${dev_token}`)
                 .send(pipe)
 
             const jobId = res.body.jobId
@@ -206,6 +230,7 @@ describe('all swagger calls test ', () => {
 
             const res2 = await chai.request(config.apiServerUrl)
                 .get(`/exec/pipelines/${jobId}`)
+                .set("Authorization", `Bearer ${dev_token}`);
 
 
 
@@ -213,7 +238,7 @@ describe('all swagger calls test ', () => {
 
             const jobId2 = res2.body.jobId
 
-            const result2 = await getResult(jobId2, 200)
+            const result2 = await getResult(jobId2, 200, dev_token)
 
         }).timeout(1000 * 60 * 2)
 
@@ -223,7 +248,7 @@ describe('all swagger calls test ', () => {
 
             const ids = []
             for (let i = 0; i < 5; i++) {
-                const jobId = await runRaw(30000)
+                const jobId = await runRaw(30000, dev_token)
 
                 ids.push(jobId)
                 await delay(1000 * 3)
@@ -234,12 +259,13 @@ describe('all swagger calls test ', () => {
             await delay(2 * 1000)
             const res = await chai.request(config.apiServerUrl)
                 .get(`/exec/pipeline/list`)
+                .set("Authorization", `Bearer ${dev_token}`);
 
             expect(res).to.have.status(200)
             expect(res.body).to.have.lengthOf.above(4)
 
             for (let i = 0; i < ids.length; i++) {
-                await getResult(ids[i], 200);
+                await getResult(ids[i], 200, dev_token);
             }
 
 
@@ -265,6 +291,7 @@ describe('all swagger calls test ', () => {
 
             const res = await chai.request(config.apiServerUrl)
                 .post('/exec/raw')
+                .set("Authorization", `Bearer ${dev_token}`)
                 .send(rawPipe)
 
 
@@ -274,9 +301,10 @@ describe('all swagger calls test ', () => {
 
             const res2 = await chai.request(config.apiServerUrl)
                 .get(`/exec/status/${jobId}`)
+                .set("Authorization", `Bearer ${dev_token}`);
 
             expect(res2).to.have.status(200)
-            const result = await getResult(jobId, 200);
+            const result = await getResult(jobId, 200, dev_token);
 
 
         }).timeout(1000 * 60 * 5)
@@ -306,47 +334,48 @@ describe('all swagger calls test ', () => {
                     ]
                 }
             }
-            await deletePipeline("pausePipe")
-            const tt = await storePipeline(pausePipe)
+            await deletePipeline("pausePipe", dev_token)
+            const tt = await storePipeline(pausePipe, dev_token)
 
-            const res = await runStored("pausePipe")
+            const res = await runStored("pausePipe", dev_token)
             const jobId = res.body.jobId
 
             await delay(1000 * 3)
 
-            const pause = await pausePipeline(jobId);
+            const pause = await pausePipeline(jobId, dev_token);
             await delay(2000)
-            let pipelineStatus = await getPipelineStatus(jobId)
+            let pipelineStatus = await getPipelineStatus(jobId, dev_token)
             expect(pipelineStatus.body.status).to.be.equal("paused")
             await delay(10000)
-            const resume = await resumePipeline(jobId);
+            const resume = await resumePipeline(jobId, dev_token);
             expect(resume.status).to.be.equal(200)
-            const result = await getResult(jobId, 200)
+            const result = await getResult(jobId, 200, dev_token)
 
 
         }).timeout(1000 * 60 * 5)
         it(`test the GET /exec/tree/{jobId} rest call`, async () => {
 
-            await deletePipeline('pipe1')
-            await deletePipeline('pipe2')
+            await deletePipeline('pipe1', dev_token)
+            await deletePipeline('pipe2', dev_token)
             await delay(1000);
-            const a = await storePipeline('origPipeline')
+            const a = await storePipeline('origPipeline', dev_token)
             await delay(1000);
-            const ab = await storePipeline('sonPipeline')
+            const ab = await storePipeline('sonPipeline', dev_token)
 
             expect(ab).to.have.status(201, "fail to create pipeline")
-            const run = await runStored('pipe1')
+            const run = await runStored('pipe1', dev_token)
             const jobId = run.body.jobId
 
-            const result = await getResult(jobId, 200);
+            const result = await getResult(jobId, 200, dev_token);
             await delay(1000);
             const res = await chai.request(config.apiServerUrl)
                 .get(`/exec/tree/${jobId}`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             expect(res).to.have.status(200)
             await delay(1000);
-            await deletePipeline('pipe1')
-            await deletePipeline('pipe2')
+            await deletePipeline('pipe1', dev_token)
+            await deletePipeline('pipe2', dev_token)
 
         }).timeout(1000 * 60 * 2)
 
@@ -371,12 +400,13 @@ describe('all swagger calls test ', () => {
 
             const res = await chai.request(config.apiServerUrl)
                 .post('/exec/stored')
+                .set("Authorization", `Bearer ${dev_token}`)
                 .send(pipe)
 
             const jobId = res.body.jobId
-            await getResult(jobId, 200);
+            await getResult(jobId, 200, dev_token);
             //await delay(1000);
-            const rawGraph = await getRawGraph(jobId)
+            const rawGraph = await getRawGraph(jobId, dev_token)
             expect(rawGraph.body.edges.length).to.be.equal(2)
 
 
@@ -386,11 +416,12 @@ describe('all swagger calls test ', () => {
 
             const res = await chai.request(config.apiServerUrl)
                 .post('/exec/stored')
+                .set("Authorization", `Bearer ${dev_token}`)
                 .send(pipe)
 
             const jobId = res.body.jobId
-            await getResult(jobId, 200);
-            const ParsedGraph = await getParsedGraph(jobId)
+            await getResult(jobId, 200, dev_token);
+            const ParsedGraph = await getParsedGraph(jobId, dev_token)
             expect(ParsedGraph.body.nodes.length).to.be.equal(3)
         }).timeout(1000 * 60 * 2)
 
@@ -407,6 +438,7 @@ describe('all swagger calls test ', () => {
 
             const res = await chai.request(config.apiServerUrl)
                 .get(`/storage/info`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             expect(res).to.have.status(200)
 
@@ -417,6 +449,7 @@ describe('all swagger calls test ', () => {
 
             const res = await chai.request(config.apiServerUrl)
                 .get(`/storage/prefix/types`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             expect(res).to.have.status(200)
 
@@ -428,11 +461,13 @@ describe('all swagger calls test ', () => {
 
             const res = await chai.request(config.apiServerUrl)
                 .get(`/storage/prefix/types`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             const path = res.body[1]
 
             const res1 = await chai.request(config.apiServerUrl)
                 .get(`/storage/prefixes/${path}`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             expect(res1).to.have.status(200)
 
@@ -447,11 +482,13 @@ describe('all swagger calls test ', () => {
 
             const res = await chai.request(config.apiServerUrl)
                 .get(`/storage/prefix/types`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             const path = res.body[6]
 
             const res1 = await chai.request(config.apiServerUrl)
                 .get(`/storage/keys/${path}`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             expect(res1).to.have.status(200)
 
@@ -465,16 +502,19 @@ describe('all swagger calls test ', () => {
 
             const res = await chai.request(config.apiServerUrl)
                 .get(`/storage/prefix/types`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             const path = res.body[6]
 
             const res1 = await chai.request(config.apiServerUrl)
                 .get(`/storage/keys/${path}`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             const storagePath = res1.body.keys[0].path
 
             const res2 = await chai.request(config.apiServerUrl)
                 .get(`/storage/values/${storagePath}`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             expect(res2).to.have.status(200)
 
@@ -488,16 +528,19 @@ describe('all swagger calls test ', () => {
 
             const res = await chai.request(config.apiServerUrl)
                 .get(`/storage/prefix/types`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             const path = res.body[6]
 
             const res1 = await chai.request(config.apiServerUrl)
                 .get(`/storage/keys/${path}`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             const storagePath = res1.body.keys[0].path
 
             const res2 = await chai.request(config.apiServerUrl)
                 .get(`/storage/stream/${storagePath}`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             expect(res2).to.have.status(200)
 
@@ -512,16 +555,19 @@ describe('all swagger calls test ', () => {
 
             const res = await chai.request(config.apiServerUrl)
                 .get(`/storage/prefix/types`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             const path = res.body[6]
 
             const res1 = await chai.request(config.apiServerUrl)
                 .get(`/storage/keys/${path}`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             const storagePath = res1.body.keys[0].path
 
             const res2 = await chai.request(config.apiServerUrl)
                 .get(`/storage/download/${storagePath}`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             expect(res2).to.have.status(200)
 
@@ -539,11 +585,13 @@ describe('all swagger calls test ', () => {
 
             const res = await chai.request(config.apiServerUrl)
                 .get(`/pipelines/results?name=${name}`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             expect(res).to.have.status(200)
 
             const res2 = await chai.request(config.apiServerUrl)
                 .get(`/pipelines/results?name=${name}&limit=5`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             expect(res2).to.have.status(200)
             expect(res2.body).to.have.lengthOf(5)
@@ -556,11 +604,13 @@ describe('all swagger calls test ', () => {
 
             const res = await chai.request(config.apiServerUrl)
                 .get(`/pipelines/status?name=${name}`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             expect(res).to.have.status(200)
 
             const res2 = await chai.request(config.apiServerUrl)
                 .get(`/pipelines/status?name=${name}&limit=5`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             expect(res2).to.have.status(200)
             expect(res2.body).to.have.lengthOf(5)
@@ -574,11 +624,13 @@ describe('all swagger calls test ', () => {
 
             const res = await chai.request(config.apiServerUrl)
                 .get(`/pipelines/status/raw/${name}`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             expect(res).to.have.status(200)
 
             const res2 = await chai.request(config.apiServerUrl)
                 .get(`/pipelines/status/raw/${name}?limit=5`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             expect(res2).to.have.status(200)
             expect(res2.body).to.have.lengthOf(5)
@@ -591,11 +643,13 @@ describe('all swagger calls test ', () => {
 
             const res = await chai.request(config.apiServerUrl)
                 .get(`/pipelines/status/stored/${name}`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             expect(res).to.have.status(200)
 
             const res2 = await chai.request(config.apiServerUrl)
                 .get(`/pipelines/status/stored/${name}?limit=5`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             expect(res2).to.have.status(200)
             expect(res2.body).to.have.lengthOf(5)
@@ -634,49 +688,48 @@ describe('all swagger calls test ', () => {
         const algorithmV1 = algJson(algorithmName, algorithmImageV1)
         const algorithmV2 = algJson(algorithmName, algorithmImageV2)
         it('Get   /versions/algorithms/{name}', async () => {
-            await deleteAlgorithm(algorithmName, true)
-            await storeAlgorithmApply(algorithmV1);
-            const algVersion = await getAlgorithmVersion(algorithmName);
+            await deleteAlgorithm(algorithmName, true, dev_token)
+            await storeAlgorithmApply(algorithmV1, dev_token);
+            const algVersion = await getAlgorithmVersion(algorithmName, dev_token);
             const versionAmount = algVersion.body.length
             expect(versionAmount).to.be.greaterThan(0)
-            await storeAlgorithmApply(algorithmV2);
+            await storeAlgorithmApply(algorithmV2, dev_token);
             //validate there are two images
-            const algVersion2 = await getAlgorithmVersion(algorithmName);
-
+            const algVersion2 = await getAlgorithmVersion(algorithmName, dev_token)
             expect(algVersion2.body.length).to.be.equal(versionAmount + 1)
-            await deleteAlgorithm(algorithmName, true)
+            await deleteAlgorithm(algorithmName, true, dev_token)
 
         }).timeout(1000 * 60 * 5);
 
         it('Delete /versions/algorithms/{name}', async () => {
-            await deleteAlgorithm(algorithmName, true)
-            let v1 = await storeAlgorithmApply(algorithmV1);
-            let v2 = await storeAlgorithmApply(algorithmV2);
+            await deleteAlgorithm(algorithmName, true, dev_token)
+            let v1 = await storeAlgorithmApply(algorithmV1,dev_token);
+            let v2 = await storeAlgorithmApply(algorithmV2,dev_token);
             //validate there are two images
 
-            let algVersion = await getAlgorithmVersion(algorithmName);
+            let algVersion = await getAlgorithmVersion(algorithmName,dev_token);
             expect(algVersion.body.length).to.be.equal(2)
-            const del = await deleteAlgorithmVersion(algorithmName, v2.body.algorithm.version)
+            const del = await deleteAlgorithmVersion(algorithmName, v2.body.algorithm.version, dev_token)
             await delay(2000)
-            algVersion = await getAlgorithmVersion(algorithmName);
+            algVersion = await getAlgorithmVersion(algorithmName, dev_token);
             expect(algVersion.body.length).to.be.equal(1)
-            await deleteAlgorithm(algorithmName, true)
+            await deleteAlgorithm(algorithmName, true, dev_token)
 
         }).timeout(1000 * 60 * 5);
 
 
         it('Post Apply algorithm version', async () => {
-            await deleteAlgorithm(algorithmName, true)
-            await storeAlgorithmApply(algorithmV1);
-            let v2 = await storeAlgorithmApply(algorithmV2);
-            let alg = await getAlgorithm(algorithmName)
+            await deleteAlgorithm(algorithmName, true, dev_token)
+            await storeAlgorithmApply(algorithmV1, dev_token);
+            let v2 = await storeAlgorithmApply(algorithmV2, dev_token);
+            let alg = await getAlgorithm(algorithmName, dev_token)
             expect(alg.body.algorithmImage).to.be.equal("tamir321/algoversion:v1")
 
-            let jnk = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, true)
-            alg = await getAlgorithm(algorithmName)
+            let jnk = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, dev_token, true)
+            alg = await getAlgorithm(algorithmName, dev_token)
 
             expect(alg.body.algorithmImage).to.be.equal("tamir321/algoversion:v2")
-            await deleteAlgorithm(algorithmName, true)
+            await deleteAlgorithm(algorithmName, true, dev_token)
         }).timeout(1000 * 60 * 5);
 
     })
@@ -700,12 +753,14 @@ describe('all swagger calls test ', () => {
 
                 const res = await chai.request(config.apiServerUrl)
                     .post(`/readme/pipelines/${pipelineName}`)
+                    .set("Authorization", `Bearer ${dev_token}`)
                     .attach("README.md", fs.readFileSync(readMeFile.FilePath), "README.md");
 
                 expect(res).to.have.status(201)
 
                 const readme = await chai.request(config.apiServerUrl)
                     .get(`/readme/pipelines/${pipelineName}`)
+                    .set("Authorization", `Bearer ${dev_token}`)
 
                 // readme.body.readme.startsWith(readMeFile.startWith).should.be.true;
                 const text = readme.body.readme.startsWith(readMeFile.startWith)
@@ -713,6 +768,7 @@ describe('all swagger calls test ', () => {
 
                 await chai.request(config.apiServerUrl)
                     .delete(`/readme/pipelines/${pipelineName}`)
+                    .set("Authorization", `Bearer ${dev_token}`)
 
             }).timeout(1000 * 60 * 3)
 
@@ -721,10 +777,12 @@ describe('all swagger calls test ', () => {
 
                 const post = await chai.request(config.apiServerUrl)
                     .post(`/readme/pipelines/${pipelineName}`)
+                    .set("Authorization", `Bearer ${dev_token}`)
                     .attach("README.md", fs.readFileSync(readMeFile.FilePath), "README.md");
                 const timeout = await delay(1000 * 3);
                 const res = await chai.request(config.apiServerUrl)
                     .get(`/readme/pipelines/${pipelineName}`)
+                    .set("Authorization", `Bearer ${dev_token}`)
                 expect(res).to.have.status(200)
 
                 //res.body.readme.startsWith(readMeFile.startWith).should.be.true;
@@ -734,6 +792,7 @@ describe('all swagger calls test ', () => {
 
                 await chai.request(config.apiServerUrl)
                     .delete(`/readme/pipelines/${pipelineName}`)
+                    .set("Authorization", `Bearer ${dev_token}`)
 
             }).timeout(1000 * 60 * 3)
 
@@ -744,11 +803,13 @@ describe('all swagger calls test ', () => {
 
                 const post = await chai.request(config.apiServerUrl)
                     .post(`/readme/pipelines/${pipelineName}`)
+                    .set("Authorization", `Bearer ${dev_token}`)
                     .attach("README.md", fs.readFileSync(readMeFile.FilePath), "README.md");
 
 
                 const res = await chai.request(config.apiServerUrl)
                     .put(`/readme/pipelines/${pipelineName}`)
+                    .set("Authorization", `Bearer ${dev_token}`)
                     .attach("README.md", fs.readFileSync(readMeSecondFile.FilePath), "README.md");
 
 
@@ -756,6 +817,7 @@ describe('all swagger calls test ', () => {
                 const timeout = await delay(1000 * 3);
                 const readme = await chai.request(config.apiServerUrl)
                     .get(`/readme/pipelines/${pipelineName}`)
+                    .set("Authorization", `Bearer ${dev_token}`)
 
                 //readme.body.readme.startsWith(readMeSecondFile.startWith).should.be.true;
                 const text = readme.body.readme.startsWith(readMeSecondFile.startWith)
@@ -763,6 +825,7 @@ describe('all swagger calls test ', () => {
 
                 await chai.request(config.apiServerUrl)
                     .delete(`/readme/pipelines/${pipelineName}`)
+                    .set("Authorization", `Bearer ${dev_token}`)
 
             }).timeout(1000 * 60 * 3)
 
@@ -772,15 +835,18 @@ describe('all swagger calls test ', () => {
 
                 await chai.request(config.apiServerUrl)
                     .post(`/readme/pipelines/${pipelineName}`)
+                    .set("Authorization", `Bearer ${dev_token}`)
                     .attach("README.md", fs.readFileSync(readMeFile.FilePath), "README.md");
 
 
                 const res = await chai.request(config.apiServerUrl)
                     .delete(`/readme/pipelines/${pipelineName}`)
+                    .set("Authorization", `Bearer ${dev_token}`)
                 expect(res).to.have.status(200)
 
                 const readme = await chai.request(config.apiServerUrl)
                     .get(`/readme/pipelines/${pipelineName}`)
+                    .set("Authorization", `Bearer ${dev_token}`)
 
                 expect(readme).to.have.status(404)
 
@@ -796,12 +862,14 @@ describe('all swagger calls test ', () => {
 
                 const res = await chai.request(config.apiServerUrl)
                     .post(`/readme/algorithms/${algName}`)
+                    .set("Authorization", `Bearer ${dev_token}`)
                     .attach("README.md", fs.readFileSync(readMeFile.FilePath), "README.md");
 
                 expect(res).to.have.status(201)
                 const timeout = await delay(1000 * 3);
                 const readme = await chai.request(config.apiServerUrl)
                     .get(`/readme/algorithms/${algName}`)
+                    .set("Authorization", `Bearer ${dev_token}`)
 
                 //readme.body.readme.startsWith(readMeFile.startWith).should.be.true;
                 const text = readme.body.readme.startsWith(readMeFile.startWith)
@@ -809,6 +877,7 @@ describe('all swagger calls test ', () => {
 
                 const del = await chai.request(config.apiServerUrl)
                     .delete(`/readme/algorithms/${algName}`)
+                    .set("Authorization", `Bearer ${dev_token}`)
 
 
             }).timeout(1000 * 60 * 3)
@@ -817,10 +886,12 @@ describe('all swagger calls test ', () => {
 
                 const post = await chai.request(config.apiServerUrl)
                     .post(`/readme/algorithms/${algName}`)
+                    .set("Authorization", `Bearer ${dev_token}`)
                     .attach("README.md", fs.readFileSync(readMeFile.FilePath), "README.md");
                 const timeout = await delay(1000 * 2);
                 const res = await chai.request(config.apiServerUrl)
                     .get(`/readme/algorithms/${algName}`)
+                    .set("Authorization", `Bearer ${dev_token}`)
 
                 expect(res).to.have.status(200)
 
@@ -828,6 +899,7 @@ describe('all swagger calls test ', () => {
                 expect(text).to.be.true
                 const del = await chai.request(config.apiServerUrl)
                     .delete(`/readme/algorithms/${algName}`)
+                    .set("Authorization", `Bearer ${dev_token}`)
 
             }).timeout(1000 * 60 * 3)
 
@@ -837,10 +909,12 @@ describe('all swagger calls test ', () => {
 
                 const post = await chai.request(config.apiServerUrl)
                     .post(`/readme/algorithms/${algName}`)
+                    .set("Authorization", `Bearer ${dev_token}`)
                     .attach("README.md", fs.readFileSync(readMeFile.FilePath), "README.md");
 
                 const res = await chai.request(config.apiServerUrl)
                     .put(`/readme/algorithms/${algName}`)
+                    .set("Authorization", `Bearer ${dev_token}`)
                     .attach("README.md", fs.readFileSync(readMeSecondFile.FilePath), "README.md");
 
                 write_log("res result =" + res.status)
@@ -848,6 +922,7 @@ describe('all swagger calls test ', () => {
                 const timeout = await delay(1000 * 2);
                 const readme = await chai.request(config.apiServerUrl)
                     .get(`/readme/algorithms/${algName}`)
+                    .set("Authorization", `Bearer ${dev_token}`)
 
                 const text = readme.body.readme.startsWith(readMeSecondFile.startWith)
                 expect(text).to.be.true
@@ -855,6 +930,7 @@ describe('all swagger calls test ', () => {
 
                 const del = await chai.request(config.apiServerUrl)
                     .delete(`/readme/algorithms/${algName}`)
+                    .set("Authorization", `Bearer ${dev_token}`)
 
 
             }).timeout(1000 * 60 * 3)
@@ -865,14 +941,17 @@ describe('all swagger calls test ', () => {
 
                 const post = await chai.request(config.apiServerUrl)
                     .post(`/readme/algorithms/${algName}`)
+                    .set("Authorization", `Bearer ${dev_token}`)
                     .attach("README.md", fs.readFileSync(readMeFile.FilePath), "README.md");
 
                 const res = await chai.request(config.apiServerUrl)
                     .delete(`/readme/algorithms/${algName}`)
+                    .set("Authorization", `Bearer ${dev_token}`)
                 expect(res).to.have.status(200)
 
                 const readme = await chai.request(config.apiServerUrl)
                     .get(`/readme/algorithms/${algName}`)
+                    .set("Authorization", `Bearer ${dev_token}`)
 
                 expect(readme).to.have.status(404)
 
@@ -891,21 +970,23 @@ describe('all swagger calls test ', () => {
 
         it('test the Get webhooks/status/{jobId}', async () => {
 
-            const jobId = await runStoredAndWaitForResults(pipe)
+            const jobId = await runStoredAndWaitForResults(pipe, dev_token)
             const timeout = await delay(1000 * 10);
             const res = await chai.request(config.apiServerUrl)
                 .get(`/webhooks/status/${jobId}`)
+                .set("Authorization", `Bearer ${dev_token}`)
             expect(res).to.have.status(200)
 
         }).timeout(1000 * 60 * 3)
 
         it('test the Get webhooks/results/{jobId}', async () => {
 
-            const jobId = await runStoredAndWaitForResults(pipe)
+            const jobId = await runStoredAndWaitForResults(pipe, dev_token)
 
             const timeout = await delay(1000 * 10);
             const res = await chai.request(config.apiServerUrl)
                 .get(`/webhooks/results/${jobId}`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             expect(res).to.have.status(200)
 
@@ -913,10 +994,11 @@ describe('all swagger calls test ', () => {
         }).timeout(1000 * 60 * 3)
 
         it('test the Get webhooks/list/{jobId}', async () => {
-            const jobId = await runStoredAndWaitForResults(pipe)
+            const jobId = await runStoredAndWaitForResults(pipe, dev_token)
             const timeout = await delay(1000 * 10);
             const res = await chai.request(config.apiServerUrl)
                 .get(`/webhooks/list/${jobId}`)
+                .set("Authorization", `Bearer ${dev_token}`)
             expect(res).to.have.status(200)
 
 
@@ -929,10 +1011,12 @@ describe('all swagger calls test ', () => {
             const name = 'addmultForTest'
             const res = await chai.request(config.apiServerUrl)
                 .get(`/store/pipeline/${name}`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             if (res.status != 404) {
                 await chai.request(config.apiServerUrl)
                     .delete('/store/pipelines/${name')
+                    .set("Authorization", `Bearer ${dev_token}`)
 
             }
         })
@@ -942,6 +1026,7 @@ describe('all swagger calls test ', () => {
 
             const res = await chai.request(config.apiServerUrl)
                 .get(`/store/pipelines/${name}`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             expect(res).to.have.status(200)
 
@@ -986,6 +1071,7 @@ describe('all swagger calls test ', () => {
 
             const res = await chai.request(config.apiServerUrl)
                 .post('/store/pipelines')
+                .set("Authorization", `Bearer ${dev_token}`)
                 .send(pipe)
 
             expect(res).to.have.status(201)
@@ -998,6 +1084,7 @@ describe('all swagger calls test ', () => {
 
             const res = await chai.request(config.apiServerUrl)
                 .delete(`/store/pipelines/${name}`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             expect(res).to.have.status(200)
 
@@ -1006,6 +1093,7 @@ describe('all swagger calls test ', () => {
         it('test the GET /store/pipelines', async () => {
             const res = await chai.request(config.apiServerUrl)
                 .get('/store/pipelines')
+                .set("Authorization", `Bearer ${dev_token}`)
 
             expect(res).to.have.status(200)
             expect(res.body).to.have.lengthOf.above(1)
@@ -1023,6 +1111,7 @@ describe('all swagger calls test ', () => {
             const name = "main"
             const res = await chai.request(config.apiServerUrl)
                 .get(`/experiment/${name}`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             expect(res).to.have.status(200)
             expect(res.body.name).to.be.equal(name)
@@ -1035,14 +1124,17 @@ describe('all swagger calls test ', () => {
 
             const res = await chai.request(config.apiServerUrl)
                 .post(`/experiment`)
+                .set("Authorization", `Bearer ${dev_token}`)
                 .send(experiment)
 
             expect(res).to.have.status(200)
             const ResDelete = await chai.request(config.apiServerUrl)
                 .delete(`/experiment/${experiment.name}`)
+                .set("Authorization", `Bearer ${dev_token}`)
             expect(ResDelete).to.have.status(200)
             const resGet = await chai.request(config.apiServerUrl)
                 .get(`/experiment/${experiment.name}`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             expect(resGet).to.have.status(404)
 
@@ -1056,6 +1148,7 @@ describe('all swagger calls test ', () => {
 
             const res = await chai.request(config.apiServerUrl)
                 .get(`/experiment`)
+                .set("Authorization", `Bearer ${dev_token}`)
 
             expect(res).to.have.status(200)
 
@@ -1071,15 +1164,48 @@ describe('all swagger calls test ', () => {
 
 
 
-        it(`build python algorithm from tra.gz`, async () => {
+        it(`build python algorithm from tar.gz`, async () => {
             const testalg = 'pyeyemat'
             const algName = pipelineRandomName(8).toLowerCase()
             const code1 = path.join(process.cwd(), 'additionalFiles/eyeMat.tar.gz');
-            const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: testalg })
+            const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: testalg, token: dev_token })
             expect(buildStatusAlg.status).to.be.equal("completed")
-            await deleteAlgorithm(algName, true)
+            await deleteAlgorithm(algName, true, dev_token)
         }).timeout(1000 * 60 * 20)
 
     })
+
+    describe('No correct role', () => {
+        before(async function () {
+            this.timeout(1000 * 60 * 15);
+            let testUserBody ={
+                username: "guest-placeholder",
+                password: "guest-placeholder"
+            }
+            const response = await chai.request(config.apiServerUrl)
+            .post('/auth/login')
+            .send(testUserBody)
+            
+            if (response.status === 200) {
+                console.log('guest login success');
+                guest_token = response.body.token;
+            }
+            else {
+                throw new Error("Failed to fetch Keycloak token");
+            }
+        });
+        it('should fail to DELETE /store/pipelines/{name}', async () => {
+            const name = 'addmultForTest'
+
+            const res = await chai.request(config.apiServerUrl)
+                .delete(`/store/pipelines/${name}`)
+                .set("Authorization", `Bearer ${guest_token}`)
+
+            expect(res.text).to.eql("Access denied")
+            expect(res).to.have.status(403)
+
+        })
+    })
+
 
 })

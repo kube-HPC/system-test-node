@@ -72,6 +72,25 @@ const execSyncReturenJSON = async (command) => {
 
 describe('Hkubectl Tests', () => {
     let algList = []
+    before(async function () {
+        this.timeout(1000 * 60 * 15);
+        let testUserBody ={
+            username: "dev-placeholder",
+            password: "dev-placeholder"
+        }
+        const response = await chai.request(config.apiServerUrl)
+        .post('/auth/login')
+        .send(testUserBody)
+        
+        if (response.status === 200) {
+            console.log('guest login success');
+            dev_token = response.body.token;
+        }
+        else {
+            throw new Error("Failed to fetch Keycloak token");
+        }
+    });
+    let dev_token;
 
     after(async function () {
         this.timeout(2 * 60 * 1000);
@@ -83,7 +102,7 @@ describe('Hkubectl Tests', () => {
         while (j < algList.length) {
             delAlg = algList.slice(j, z)
             const del = delAlg.map((e) => {
-                return deleteAlgorithm(e)
+                return deleteAlgorithm(e, dev_token)
             })
             console.log("delAlg-" + delAlg)
             const delResult = await Promise.all(del)
@@ -134,8 +153,8 @@ describe('Hkubectl Tests', () => {
 
             const buildResult = await exceSyncString(runBulid);
 
-            const result = await runAlgGetResult(algName, [4])
-            await deleteAlgorithm(algName, true)
+            const result = await runAlgGetResult(algName, [4], dev_token)
+            await deleteAlgorithm(algName, true, dev_token)
             expect(result.data[0].result.version.toString()).to.be.equal("3.5")
 
         }).timeout(1000 * 60 * 6)
@@ -155,14 +174,14 @@ describe('Hkubectl Tests', () => {
                 `-f ${algFile}`
             const buildResult = await exceSyncString(runBulid);
             delay(5000)
-            const result = await runAlgGetResult(algName, [4])
+            const result = await runAlgGetResult(algName, [4], dev_token)
 
             expect(result.data[0].result.version.toString()).to.be.equal("3.5")
 
             const deleteAlg = `hkubectl algorithm delete ${algName}`
             const deleteResult = await exceSyncString(deleteAlg);
 
-            const alg = await getAlgorithm(algName)
+            const alg = await getAlgorithm(algName, dev_token)
             console.log(alg.body)
             expect(alg.status).to.be.equal(404)
         }).timeout(1000 * 60 * 10)
@@ -194,7 +213,7 @@ describe('Hkubectl Tests', () => {
             const buildResult = await exceSyncString(runBulid);
             console.log("start build 2")
             const buildResult2 = await exceSyncString(runBulidV2);
-            const result = await runAlgGetResult(algName, [4])
+            const result = await runAlgGetResult(algName, [4], dev_token)
             expect(result.data[0].result.version.toString()).to.be.equal("1.1")
         }).timeout(1000 * 60 * 15)
 
@@ -224,7 +243,7 @@ describe('Hkubectl Tests', () => {
             console.log("start build 2")
             const buildResult2 = await exceSyncString(runBulidV2);
 
-            const result = await runAlgGetResult(algName, [4])
+            const result = await runAlgGetResult(algName, [4], dev_token)
 
             expect(result.data[0].result.version.toString()).to.be.equal("1.1")
         }).timeout(1000 * 60 * 10)
@@ -243,11 +262,11 @@ describe('Hkubectl Tests', () => {
 
             const buildResult = await exceSyncString(runBulid);
 
-            const builds = await getBuildList(algName)
+            const builds = await getBuildList(algName, dev_token)
             console.log(builds)
-            const buildStatusAlg = await getStatusall(builds[0].buildId, `/builds/status/`, 200, "completed", 1000 * 60 * 10)
-            const result = await runAlgGetResult(algName, [4])
-            await deleteAlgorithm(algName, true)
+            const buildStatusAlg = await getStatusall(builds[0].buildId, `/builds/status/`, 200, "completed", dev_token, 1000 * 60 * 10)
+            const result = await runAlgGetResult(algName, [4], dev_token)
+            await deleteAlgorithm(algName, true, dev_token)
             expect(result.data[0].result.version.toString()).to.be.equal("3.5")
 
         }).timeout(1000 * 60 * 6)
@@ -282,9 +301,9 @@ describe('Hkubectl Tests', () => {
             const store = `hkubectl pipeline store -f ` + pipelineTemp
             const output = await exceSyncString(store);
 
-            const pipe = await getPipeline(pipelineName)
+            const pipe = await getPipeline(pipelineName, dev_token)
             expect(pipe.body.name).to.be.equal(pipelineName)
-            await deletePipeline(pipelineName)
+            await deletePipeline(pipelineName, dev_token)
         }).timeout(1000 * 60 * 6)
     })
     describe('hkubecl exec tests', () => {
@@ -305,7 +324,7 @@ describe('Hkubectl Tests', () => {
             const jsonResult = await execSyncReturenJSON(runSimple)
 
             console.log(jsonResult)
-            const result = await getResult(jsonResult.jobId, 200)
+            const result = await getResult(jsonResult.jobId, 200, dev_token)
             console.log(result)
             expect(result.data[0].result).to.be.equal('links-1')
         }).timeout(1000 * 60 * 6)
@@ -319,7 +338,7 @@ describe('Hkubectl Tests', () => {
             console.log(jsonResult)
             const js = JSON.parse(jsonResult)
             console.log("jobId =" + js.jobId)
-            const result = await getResult(js.jobId, 200)
+            const result = await getResult(js.jobId, 200, dev_token)
             console.log(result)
             expect(result.data[0].result).to.be.equal('links-1')
         }).timeout(1000 * 60 * 6)
@@ -341,7 +360,7 @@ describe('Hkubectl Tests', () => {
             const jsonResult = await execSyncReturenJSON(runSimple)
 
             console.log(jsonResult)
-            const result = await getResult(jsonResult.jobId, 200)
+            const result = await getResult(jsonResult.jobId, 200, dev_token)
             console.log(result)
             expect(result.data[0].result).to.be.equal(null)
         }).timeout(1000 * 60 * 6)
@@ -356,7 +375,7 @@ describe('Hkubectl Tests', () => {
 
             const stopResult = await execSyncReturenJSON(stop)
             console.log(stopResult)
-            const result = await getResult(jsonResult.jobId, 200)
+            const result = await getResult(jsonResult.jobId, 200, dev_token)
             console.log(result)
             expect(result.status).to.be.equal("stopped")
         }).timeout(1000 * 60 * 6)
@@ -371,7 +390,7 @@ describe('Hkubectl Tests', () => {
             const status = `hkubectl exec status ${jsonResult.jobId}`
             const array = []
             array.push(execSyncReturenJSON(status))
-            array.push(getJobIdStatus(jsonResult.jobId))
+            array.push(getJobIdStatus(jsonResult.jobId, dev_token))
             const statuses = await Promise.all(array)
             expect(statuses[0].result.status).to.be.equal(statuses[1].body.status)
 
@@ -397,7 +416,7 @@ describe('Hkubectl Tests', () => {
             const runSimple = "hkubectl exec stored simple --noWait"
             const jsonResult = await execSyncReturenJSON(runSimple)
             console.log(jsonResult)
-            const result = await getResult(jsonResult.jobId, 200)
+            const result = await getResult(jsonResult.jobId, 200, dev_token)
             console.log(result)
 
 
@@ -460,7 +479,7 @@ describe('Hkubectl Tests', () => {
             console.log("4")
             await delay(20 * 1000)
             console.log("5")
-            const result = await runAlgGetResult(algName, [4])
+            const result = await runAlgGetResult(algName, [4], dev_token)
 
             //  await deleteAlgorithm(algName,true)    
             expect(result.data[0].result.version.toString()).to.be.equal("1")
@@ -471,8 +490,8 @@ describe('Hkubectl Tests', () => {
             console.log("7")
             await delay(20 * 1000)
 
-            const result2 = await runAlgGetResult(algName, [4])
-            await deleteAlgorithm(algName, true)
+            const result2 = await runAlgGetResult(algName, [4], dev_token)
+            await deleteAlgorithm(algName, true, dev_token)
             expect(result2.data[0].result.version.toString()).to.be.equal("2")
 
         }).timeout(1000 * 60 * 10)
@@ -505,9 +524,9 @@ describe('Hkubectl Tests', () => {
 
             await delay(40 * 1000)
 
-            const result = await runAlgGetResult(algName, [4])
+            const result = await runAlgGetResult(algName, [4], dev_token)
             console.log(result)
-            deleteAlgorithm(algName)
+            deleteAlgorithm(algName, dev_token)
         }).timeout(1000 * 60 * 10)
 
 
@@ -541,12 +560,12 @@ describe('Hkubectl Tests', () => {
 
             await delay(20 * 1000)
 
-            const result = await runAlgGetResult(algName, [4])
+            const result = await runAlgGetResult(algName, [4], dev_token)
             console.log(result)
             //when running from local there are 6 txt file
             expect(result.data[0].result).to.be.equal(6)
 
-            const alg = await getAlgorithm(algName)
+            const alg = await getAlgorithm(algName, dev_token)
             const image = alg.body.algorithmImage
 
 
@@ -567,9 +586,9 @@ describe('Hkubectl Tests', () => {
 
             }
 
-            const res = await storeAlgorithmApply(alg1);
+            const res = await storeAlgorithmApply(alg1, dev_token);
             algList.push(newName)
-            const result1 = await runAlgGetResult(newName, [4])
+            const result1 = await runAlgGetResult(newName, [4], dev_token)
             console.log(result)
             expect(result1.data[0].result).to.be.equal(0)
 
@@ -589,8 +608,8 @@ describe('Hkubectl Tests', () => {
                     pending: false
                 }
             }
-            await deleteAlgorithm(somealg.name)
-            const storeresult = await storeAlgorithmApply(somealg);
+            await deleteAlgorithm(somealg.name, dev_token)
+            const storeresult = await storeAlgorithmApply(somealg, dev_token);
             console.log(storeresult.result)
             algList.push("somealg")
 
@@ -603,7 +622,7 @@ describe('Hkubectl Tests', () => {
            
             await delay(10 * 1000)
 
-            const alg = await getAlgorithm(somealg.name)
+            const alg = await getAlgorithm(somealg.name, dev_token)
             const  { devMode, devFolder } = alg.body.options
 
             expect(devFolder).to.be.equal(process.cwd());
@@ -624,8 +643,8 @@ describe('Hkubectl Tests', () => {
                     pending: false
                 }
             }
-            await deleteAlgorithm(somealg.name)
-            const storeresult = await storeAlgorithmApply(somealg);
+            await deleteAlgorithm(somealg.name, dev_token)
+            const storeresult = await storeAlgorithmApply(somealg, dev_token);
             console.log(storeresult.result)
             algList.push("somealg")
 
@@ -637,7 +656,7 @@ describe('Hkubectl Tests', () => {
            
             await delay(10 * 1000)
 
-            const alg = await getAlgorithm(somealg.name)
+            const alg = await getAlgorithm(somealg.name, dev_token)
             const  { devMode, devFolder } = alg.body.options
 
             expect(devFolder).to.be.equal(null);
@@ -649,7 +668,7 @@ describe('Hkubectl Tests', () => {
             const algName = "sync-dev-folder"+randomName;
             syncAlg.name = algName;
             algList.push(algName);
-            await storeAlgorithmApply(syncAlg);
+            await storeAlgorithmApply(syncAlg, dev_token);
             const localFolder = path.join(process.cwd(), 'additionalFiles/file1');
             // create and push pipeline with sync-dev-folder alg, input being devFolder = "/somePath"
             const testData = pipelineDevFolder;
@@ -657,8 +676,8 @@ describe('Hkubectl Tests', () => {
             testData.descriptor.name = algName;
             const devContainerFolder = testData.descriptor.nodes[0].input[0].devFolder;
             const devPipeline = deconstructTestData(testData);
-            await deletePipeline(devPipeline);
-            await storePipeline(devPipeline);
+            await deletePipeline(devPipeline, dev_token);
+            await storePipeline(devPipeline, dev_token);
             // start the sync process
             const startCommand = ` hkubectl sync start` +
                 ` --algorithmName ${algName}` +
@@ -666,10 +685,10 @@ describe('Hkubectl Tests', () => {
         
                 console.log(startCommand)
               await exceSyncString(startCommand)
-            let res = await runStored(devPipeline);
+            let res = await runStored(devPipeline, dev_token);
             await delay(45 * 1000)
             // get status before watch
-            let pipelineData = await getPipelineStatus(res.body.jobId);
+            let pipelineData = await getPipelineStatus(res.body.jobId, dev_token);
             expect(pipelineData.body.status).be.equal('failed');
 
             // // sync watch
@@ -679,10 +698,10 @@ describe('Hkubectl Tests', () => {
                 console.log("watch-" + watch)
                 execShellCommand(watch)
 
-            res = await runStored(devPipeline);
+            res = await runStored(devPipeline, dev_token);
             await delay(40 * 1000)
             // get status
-            pipelineData = await getPipelineStatus(res.body.jobId);
+            pipelineData = await getPipelineStatus(res.body.jobId, dev_token);
             expect(pipelineData.body.status).be.equal('completed');
         }).timeout(1000 * 60 * 10)
 
@@ -891,70 +910,70 @@ describe('Hkubectl Tests', () => {
         describe('hkubecl import tests', () => {
             it('import algoritms from a local directory to hkube env', async () => {
                 const fs = require('fs');
-                await deleteAlgorithm('6o5yjjiy')
-                await deleteAlgorithm('7i59t2ad')
+                await deleteAlgorithm('6o5yjjiy',true , dev_token)
+                await deleteAlgorithm('7i59t2ad',true , dev_token)
                 const folderPath = './additionalFiles/importAlgorithms';
                 const importAlgoCommand = `hkubectl import algorithms ${folderPath}`;
                 const importedAlgorithms = await execSync(importAlgoCommand);
                 expect(importedAlgorithms.toString()).to.include("Successfully imported 6o5yjjiy");
                 expect(importedAlgorithms.toString()).to.include("Successfully imported 7i59t2ad");
-                await deleteAlgorithm('6o5yjjiy')
-                await deleteAlgorithm('7i59t2ad')
+                await deleteAlgorithm('6o5yjjiy',true , dev_token)
+                await deleteAlgorithm('7i59t2ad',true , dev_token)
             }).timeout(1000 * 60 * 6);
 
             it('import algoritms from a local directory to hkube env, switch cpu from 1 to 2', async () => {
                 const fs = require('fs');
-                await deleteAlgorithm('6o5yjjiy')
-                await deleteAlgorithm('7i59t2ad')
+                await deleteAlgorithm('6o5yjjiy',true , dev_token)
+                await deleteAlgorithm('7i59t2ad',true , dev_token)
                 const folderPath = './additionalFiles/importAlgorithms';
                 const importAlgoCommand = `hkubectl import algorithms ${folderPath} -r \"\\"cpu\\": 1^\\"cpu\\": 2\"`;
                 const importedAlgorithms = await execSync(importAlgoCommand);
-                alg2 = await getAlgorithm('7i59t2ad')
+                alg2 = await getAlgorithm('7i59t2ad', dev_token)
                 expect(importedAlgorithms.toString()).to.include('1 occurrences of ""cpu": 1" found and changed');
                 expect(importedAlgorithms.toString()).to.include("Successfully imported 6o5yjjiy");
                 expect(importedAlgorithms.toString()).to.include("Successfully imported 7i59t2ad");
                 expect(alg2.body.cpu).to.be.equal(2)
-                await deleteAlgorithm('6o5yjjiy')
-                await deleteAlgorithm('7i59t2ad')
+                await deleteAlgorithm('6o5yjjiy',true , dev_token)
+                await deleteAlgorithm('7i59t2ad',true , dev_token)
             }).timeout(1000 * 60 * 6);
 
             it('import algoritms from a local directory to hkube env. use ; decorator to change 2 values', async () => {
                 const fs = require('fs');
-                await deleteAlgorithm('6o5yjjiy')
-                await deleteAlgorithm('7i59t2ad')
+                await deleteAlgorithm('6o5yjjiy',true , dev_token)
+                await deleteAlgorithm('7i59t2ad',true , dev_token)
                 const folderPath = './additionalFiles/importAlgorithms';
                 const importAlgoCommand = `hkubectl import algorithms ${folderPath} -r \"\\"cpu\\": 1^\\"cpu\\": 2\"";"52Mi\"^\"60Mi\""`;
                 const importedAlgorithms = await execSync(importAlgoCommand);
-                alg2 = await getAlgorithm('7i59t2ad')
+                alg2 = await getAlgorithm('7i59t2ad', dev_token)
                 expect(importedAlgorithms.toString()).to.include('1 occurrences of ""cpu": 1" found and changed');
                 expect(importedAlgorithms.toString()).to.include('1 occurrences of "52Mi" found and changed');
                 expect(importedAlgorithms.toString()).to.include("Successfully imported 6o5yjjiy");
                 expect(importedAlgorithms.toString()).to.include("Successfully imported 7i59t2ad");
                 expect(alg2.body.cpu).to.be.equal(2)
                 expect(alg2.body.reservedMemory).to.be.equal('60Mi')
-                await deleteAlgorithm('6o5yjjiy')
-                await deleteAlgorithm('7i59t2ad')
+                await deleteAlgorithm('6o5yjjiy',true , dev_token)
+                await deleteAlgorithm('7i59t2ad',true , dev_token)
             }).timeout(1000 * 60 * 6);
 
             it('import pipelines from a local directory to hkube env', async () => {
                 const fs = require('fs');
-                await deletePipeline('0aIWYOaR')
-                await deletePipeline('0lAzCLWk')
+                await deletePipeline('0aIWYOaR', dev_token)
+                await deletePipeline('0lAzCLWk', dev_token)
                 const folderPath = './additionalFiles/importPipelines';
                 const importPipeCommand = `hkubectl import pipelines ${folderPath}`;
                 const importedPipelines = await execSync(importPipeCommand);
                 expect(importedPipelines.toString()).to.include("Successfully imported 0aIWYOaR");
                 expect(importedPipelines.toString()).to.include("Successfully imported 0lAzCLWk");
-                await deletePipeline('0aIWYOaR')
-                await deletePipeline('0lAzCLWk')
+                await deletePipeline('0aIWYOaR', dev_token)
+                await deletePipeline('0lAzCLWk', dev_token)
             }).timeout(1000 * 60 * 6);
 
             it('import all data from a local directory to hkube env', async () => {
                 const fs = require('fs');
-                await deletePipeline('0aIWYOaR')
-                await deletePipeline('0lAzCLWk')
-                await deleteAlgorithm('6o5yjjiy')
-                await deleteAlgorithm('7i59t2ad')
+                await deletePipeline('0aIWYOaR', dev_token)
+                await deletePipeline('0lAzCLWk', dev_token)
+                await deleteAlgorithm('6o5yjjiy',true , dev_token)
+                await deleteAlgorithm('7i59t2ad',true , dev_token)
                 const folderPath = './additionalFiles/importAllData';
                 const importAllCommand = `hkubectl import all ${folderPath}`;
                 const importedAllFiles = await execSync(importAllCommand);
@@ -962,19 +981,19 @@ describe('Hkubectl Tests', () => {
                 expect(importedAllFiles.toString()).to.include("Successfully imported 0lAzCLWk");
                 expect(importedAllFiles.toString()).to.include("Successfully imported 6o5yjjiy");
                 expect(importedAllFiles.toString()).to.include("Successfully imported 7i59t2ad");
-                await deletePipeline('0aIWYOaR')
-                await deletePipeline('0lAzCLWk')
-                await deleteAlgorithm('6o5yjjiy')
-                await deleteAlgorithm('7i59t2ad')
+                await deletePipeline('0aIWYOaR', dev_token)
+                await deletePipeline('0lAzCLWk', dev_token)
+                await deleteAlgorithm('6o5yjjiy',true , dev_token)
+                await deleteAlgorithm('7i59t2ad',true , dev_token)
             }).timeout(1000 * 60 * 6);
 
 
             it('import existing pipeline using overwrite', async () => {
                 const fs = require('fs');
-                await deletePipeline('0aIWYOaR')
-                await deletePipeline('0lAzCLWk')
-                await deleteAlgorithm('6o5yjjiy')
-                await deleteAlgorithm('7i59t2ad')
+                await deletePipeline('0aIWYOaR', dev_token)
+                await deletePipeline('0lAzCLWk', dev_token)
+                await deleteAlgorithm('6o5yjjiy',true , dev_token)
+                await deleteAlgorithm('7i59t2ad',true , dev_token)
                 const pipelineFile = './pipelines/simpelraw.json'
                 const pipelineTemp = './pipelines/temp.json'
                 let fileContents = fs.readFileSync(pipelineFile, 'utf8');
@@ -984,7 +1003,7 @@ describe('Hkubectl Tests', () => {
                 fs.writeFileSync(pipelineTemp, jsonStr, 'utf8');
                 const store = `hkubectl pipeline store -f ` + pipelineTemp
                 const output = await exceSyncString(store);
-                const pipe = await getPipeline(data.name)
+                const pipe = await getPipeline(data.name, dev_token)
                 expect(pipe.body.name).to.be.equal(data.name)
                 const folderPath = './additionalFiles/importAllData';
                 const importAllCommand = `hkubectl import all --overwrite=true ${folderPath}`;
@@ -993,17 +1012,17 @@ describe('Hkubectl Tests', () => {
                 expect(importedAllFiles.toString()).to.include("Successfully imported 0lAzCLWk");
                 expect(importedAllFiles.toString()).to.include("Successfully imported 6o5yjjiy");
                 expect(importedAllFiles.toString()).to.include("Successfully imported 7i59t2ad");
-                await deletePipeline('0aIWYOaR')
-                await deletePipeline('0lAzCLWk')
-                await deleteAlgorithm('6o5yjjiy')
-                await deleteAlgorithm('7i59t2ad')
+                await deletePipeline('0aIWYOaR', dev_token)
+                await deletePipeline('0lAzCLWk', dev_token)
+                await deleteAlgorithm('6o5yjjiy',true , dev_token)
+                await deleteAlgorithm('7i59t2ad',true , dev_token)
             }).timeout(1000 * 60 * 6);
             it('import existing pipeline', async () => {
                 const fs = require('fs');
-                await deletePipeline('0aIWYOaR')
-                await deletePipeline('0lAzCLWk')
-                await deleteAlgorithm('6o5yjjiy')
-                await deleteAlgorithm('7i59t2ad')
+                await deletePipeline('0aIWYOaR', dev_token)
+                await deletePipeline('0lAzCLWk', dev_token)
+                await deleteAlgorithm('6o5yjjiy',true , dev_token)
+                await deleteAlgorithm('7i59t2ad',true , dev_token)
                 const pipelineFile = './pipelines/simpelraw.json'
                 const pipelineTemp = './pipelines/temp.json'
                 let fileContents = fs.readFileSync(pipelineFile, 'utf8');
@@ -1013,7 +1032,7 @@ describe('Hkubectl Tests', () => {
                 fs.writeFileSync(pipelineTemp, jsonStr, 'utf8');
                 const store = `hkubectl pipeline store -f ` + pipelineTemp
                 const output = await exceSyncString(store);
-                const pipe = await getPipeline(data.name)
+                const pipe = await getPipeline(data.name, dev_token)
                 expect(pipe.body.name).to.be.equal(data.name)
                 const folderPath = './additionalFiles/importAllData';
                 const importAllCommand = `hkubectl import all  ${folderPath}`;
@@ -1022,17 +1041,17 @@ describe('Hkubectl Tests', () => {
                 expect(importedAllFiles.toString()).to.include("Successfully imported 0lAzCLWk");
                 expect(importedAllFiles.toString()).to.include("Successfully imported 6o5yjjiy");
                 expect(importedAllFiles.toString()).to.include("Successfully imported 7i59t2ad");
-                await deletePipeline('0aIWYOaR')
-                await deletePipeline('0lAzCLWk')
-                await deleteAlgorithm('6o5yjjiy')
-                await deleteAlgorithm('7i59t2ad')
+                await deletePipeline('0aIWYOaR', dev_token)
+                await deletePipeline('0lAzCLWk', dev_token)
+                await deleteAlgorithm('6o5yjjiy',true , dev_token)
+                await deleteAlgorithm('7i59t2ad',true , dev_token)
             }).timeout(1000 * 60 * 6);
             it('import all data from a local directory to hkube env. change one param in an algo', async () => {
                 const fs = require('fs');
-                await deletePipeline('0aIWYOaR')
-                await deletePipeline('0lAzCLWk')
-                await deleteAlgorithm('6o5yjjiy')
-                await deleteAlgorithm('7i59t2ad')
+                await deletePipeline('0aIWYOaR', dev_token)
+                await deletePipeline('0lAzCLWk', dev_token)
+                await deleteAlgorithm('6o5yjjiy',true , dev_token)
+                await deleteAlgorithm('7i59t2ad',true , dev_token)
                 const folderPath = './additionalFiles/importAllData';
                 const importAllCommand = `hkubectl import all ${folderPath} -r \"\\"cpu\\": 1^\\"cpu\\": 2\"`;
                 const importedAllFiles = await execSync(importAllCommand);
@@ -1041,18 +1060,18 @@ describe('Hkubectl Tests', () => {
                 expect(importedAllFiles.toString()).to.include("Successfully imported 0lAzCLWk");
                 expect(importedAllFiles.toString()).to.include("Successfully imported 6o5yjjiy");
                 expect(importedAllFiles.toString()).to.include("Successfully imported 7i59t2ad");
-                await deletePipeline('0aIWYOaR')
-                await deletePipeline('0lAzCLWk')
-                await deleteAlgorithm('6o5yjjiy')
-                await deleteAlgorithm('7i59t2ad')
+                await deletePipeline('0aIWYOaR', dev_token)
+                await deletePipeline('0lAzCLWk', dev_token)
+                await deleteAlgorithm('6o5yjjiy',true , dev_token)
+                await deleteAlgorithm('7i59t2ad',true , dev_token)
             }).timeout(1000 * 60 * 6);
 
             it('import all data from a local directory to hkube env. use ; decorator to change 2 values', async () => {
                 const fs = require('fs');
-                await deletePipeline('0aIWYOaR')
-                await deletePipeline('0lAzCLWk')
-                await deleteAlgorithm('6o5yjjiy')
-                await deleteAlgorithm('7i59t2ad')
+                await deletePipeline('0aIWYOaR', dev_token)
+                await deletePipeline('0lAzCLWk', dev_token)
+                await deleteAlgorithm('6o5yjjiy',true , dev_token)
+                await deleteAlgorithm('7i59t2ad',true , dev_token)
                 const folderPath = './additionalFiles/importAllData';
                 const importAllCommand = `hkubectl import all ${folderPath} -r \"\\"cpu\\": 1^\\"cpu\\": 2\"";"52Mi\"^\"60Mi\""`;
                 const importedAllFiles = await execSync(importAllCommand);
@@ -1062,10 +1081,10 @@ describe('Hkubectl Tests', () => {
                 expect(importedAllFiles.toString()).to.include("Successfully imported 0lAzCLWk");
                 expect(importedAllFiles.toString()).to.include("Successfully imported 6o5yjjiy");
                 expect(importedAllFiles.toString()).to.include("Successfully imported 7i59t2ad");
-                await deletePipeline('0aIWYOaR')
-                await deletePipeline('0lAzCLWk')
-                await deleteAlgorithm('6o5yjjiy')
-                await deleteAlgorithm('7i59t2ad')
+                await deletePipeline('0aIWYOaR', dev_token)
+                await deletePipeline('0lAzCLWk',dev_token)
+                await deleteAlgorithm('6o5yjjiy',true , dev_token)
+                await deleteAlgorithm('7i59t2ad',true , dev_token)
             }).timeout(1000 * 60 * 6);
 
             it('import using a non-existing directory', () => {

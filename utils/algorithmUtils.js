@@ -24,30 +24,32 @@ const logResult = (result, text = '') => {
     }
 }
 
-const StoreDebugAlgorithm = async (algorithmName) => {
+const StoreDebugAlgorithm = async (algorithmName, token = {}) => {
     const debudAlg = {
         "name": algorithmName
     }
     const res = await chai.request(config.apiServerUrl)
         .post('/store/algorithms/debug')
+        .set("Authorization", `Bearer ${token}`)
         .send(debudAlg);
     logResult(res, 'algorithmUtils StoreDebugAlgorithm');
     return res;
 }
 
-const getAlgorithm = async (name) => {
+const getAlgorithm = async (name, token = {}) => {
     const res = await chai.request(config.apiServerUrl)
-        .get(`/store/algorithms/${name}`);
+        .get(`/store/algorithms/${name}`)
+        .set("Authorization", `Bearer ${token}`);
     logResult(res, "algorithmUtils getAlgorithm");
     return res;
 }
 
-const storeAlgorithm = async (algName) => {
-    const res = await getAlgorithm(algName);
+const storeAlgorithm = async (algName, token = {}) => {
+    const res = await getAlgorithm(algName, token);
     write_log(res.status + " " + algName);
     if (res.status === 404) {
         const { alg } = require(path.join(process.cwd(), `additionalFiles/defaults/algorithms/${algName}`));
-        const res1 = storeAlgorithmApply(alg);
+        const res1 = storeAlgorithmApply(alg, token);
         logResult(res1, "algorithmUtils storeAlgorithm");
         await delay(1000 * 3);
         return res1;
@@ -62,30 +64,33 @@ const updateAlgorithm = async (algfile) => {
     return res;
 }
 
-const storeAlgorithmApply = async (alg) => {
+const storeAlgorithmApply = async (alg, token = {}) => {
     const res = await chai.request(config.apiServerUrl)
         .post('/store/algorithms/apply')
+        .set("Authorization", `Bearer ${token}`)
         .field('payload', JSON.stringify(alg));
     return res;
 }
 
-const storeAlgorithms = async (alg) => {
+const storeAlgorithms = async (alg, token = {}) => {
     const res = await chai.request(config.apiServerUrl)
         .post('/store/algorithms')
+        .set("Authorization", `Bearer ${token}`)
         .send(alg)
         .set('Content-Type', 'application/json');
     return res;
 };
 
-const storeOrUpdateAlgorithms = async (alg) => {
+const storeOrUpdateAlgorithms = async (alg, token = {}) => {
     const res = await chai.request(config.apiServerUrl)
         .post('/store/algorithms?overwrite=true')
+        .set("Authorization", `Bearer ${token}`)
         .send(alg)
         .set('Content-Type', 'application/json');
     return res;
 };
 
-const buildAlgorithm = async ({ code, algName, entry, baseVersion = 'python:3.7.16', algorithmArray = [] }) => {
+const buildAlgorithm = async ({ code, algName, entry, token = {}, baseVersion = 'python:3.7.16', algorithmArray = [] }) => {
     const data = {
         name: algName,
         env: 'python',
@@ -102,6 +107,7 @@ const buildAlgorithm = async ({ code, algName, entry, baseVersion = 'python:3.7.
     algorithmArray.push(algName);
     const res = await chai.request(config.apiServerUrl)
         .post('/store/algorithms/apply')
+        .set("Authorization", `Bearer ${token}`)
         .field('payload', JSON.stringify(data))
         .attach('file', fse.readFileSync(code), entry);
 
@@ -114,13 +120,13 @@ const buildAlgorithm = async ({ code, algName, entry, baseVersion = 'python:3.7.
     return buildIdAlg;
 }
 
-const buildAlgorithmAndWait = async ({ code, algName, entry, baseVersion = 'python:3.7', algorithmArray = [] }) => {
-    const buildIdAlg = await buildAlgorithm({ code: code, algName: algName, entry: entry, baseVersion: baseVersion, algorithmArray: algorithmArray });
-    const buildStatusAlg = await getStatusall(buildIdAlg, `/builds/status/`, 200, "completed", 1000 * 60 * 15);
+const buildAlgorithmAndWait = async ({ code, algName, entry,token = {}, baseVersion = 'python:3.7', algorithmArray = [] }) => {
+    const buildIdAlg = await buildAlgorithm({ code: code, algName: algName,token: token, entry: entry, baseVersion: baseVersion, algorithmArray: algorithmArray });
+    const buildStatusAlg = await getStatusall(buildIdAlg, `/builds/status/`, 200, "completed", token, 1000 * 60 * 15);
     return buildStatusAlg;
 }
 
-const buildGitAlgorithm = async ({ algName, gitUrl, gitKind, entry, branch, language = 'python', commit = "null", tag = "null", token = "null", algorithmArray = [] }) => {
+const buildGitAlgorithm = async ({ algName, gitUrl, gitKind, entry, branch, kc_token = {}, language = 'python', commit = "null", tag = "null", token = "null", algorithmArray = [] }) => {
     const data = {
         name: algName,
         env: language,
@@ -152,6 +158,7 @@ const buildGitAlgorithm = async ({ algName, gitUrl, gitKind, entry, branch, lang
     console.log(data);
     const res = await chai.request(config.apiServerUrl)
         .post('/store/algorithms/apply')
+        .set("Authorization", `Bearer ${kc_token}`)
         .field('payload', JSON.stringify(data));
     logger.info(JSON.stringify(res.body));
     if (res.status != 200) {
@@ -161,53 +168,57 @@ const buildGitAlgorithm = async ({ algName, gitUrl, gitKind, entry, branch, lang
     // res.should.have.status(200)
     expect(res.status).to.eql(200);
     const buildIdAlg = res.body.buildId;
-    const buildStatusAlg = await getStatusall(buildIdAlg, `/builds/status/`, 200, "completed", 1000 * 60 * 14);
+    const buildStatusAlg = await getStatusall(buildIdAlg, `/builds/status/`, 200, "completed",token, 1000 * 60 * 14);
 
     return buildStatusAlg;
 }
 
-const runAlgGetResult = async (algName, inupts) => {
+const runAlgGetResult = async (algName, inupts, token = {}) => {
     const alg = {
         name: algName,
         input: inupts
     }
-    const res = await runAlgorithm(alg);
+    const res = await runAlgorithm(alg, token);
     const jobId = res.body.jobId;
-    const result = await getResult(jobId, 200);
+    const result = await getResult(jobId, 200, token);
     return result;
     // expect(result.data[0].result).to.be.equal(42)
 }
 
-const runAlgorithm = async (body) => {
+const runAlgorithm = async (body, token = {}) => {
     const res = await chai.request(config.apiServerUrl)
         .post('/exec/algorithm')
+        .set("Authorization", `Bearer ${token}`)
         .send(body);
     logResult(res, 'algorithmUtils runAlgorithm');
     return res;
 }
 
-const getBuildList = async (name) => {
+const getBuildList = async (name, token = {}) => {
     const res = await chai.request(config.apiServerUrl)
-        .get(`/builds/list/${name}`);
+        .get(`/builds/list/${name}`)
+        .set("Authorization", `Bearer ${token}`);
     logResult(res, "algorithmUtils getBuildList");
     return res.body;
 }
 
-const getAlgorithmVersion = async (name) => {
+const getAlgorithmVersion = async (name, token = {}) => {
     const res = await chai.request(config.apiServerUrl)
-        .get(`/versions/algorithms/${name}`);
+        .get(`/versions/algorithms/${name}`)
+        .set("Authorization", `Bearer ${token}`);
     logResult(res, "algorithmUtils getAlgorithimVersion");
     return res;
 }
 
-const getAlgVersion = async (name, version) => {
+const getAlgVersion = async (name, version, token = {}) => {
     const res = await chai.request(config.apiServerUrl)
-        .get(`/versions/algorithms/${name}/${version}`);
+        .get(`/versions/algorithms/${name}/${version}`)
+        .set("Authorization", `Bearer ${token}`);
     logResult(res, "algorithmUtils getAlgorithimVersion");
     return res;;
 }
 
-const tagAlgorithmVersion = async (algName, algVersion, algTag) => {
+const tagAlgorithmVersion = async (algName, algVersion, algTag, token = {}) => {
     let alg = {
         name: algName,
         version: algVersion,
@@ -217,15 +228,17 @@ const tagAlgorithmVersion = async (algName, algVersion, algTag) => {
 
     const res = await chai.request(config.apiServerUrl)
         .post(`/versions/algorithms/tag`)
+        .set("Authorization", `Bearer ${token}`)
         .send(alg);
     logResult(res, "algorithmUtils tagAlgorithmVersion");
 
     return res;;
 }
 
-const deleteAlgorithm = async (name, force = true, keepOldVersions = false) => {
+const deleteAlgorithm = async (name, force = true,token = {}, keepOldVersions = false) => {
     const res = await chai.request(config.apiServerUrl)
-        .delete(`/store/algorithms/${name}?force=${force}&keepOldVersions=${keepOldVersions}`);
+        .delete(`/store/algorithms/${name}?force=${force}&keepOldVersions=${keepOldVersions}`)
+        .set("Authorization", `Bearer ${token}`);
     logResult(res, "algorithmUtils deleteAlgorithm");
     return res;
 }
@@ -237,30 +250,33 @@ const deleteAlgorithm = async (name, force = true, keepOldVersions = false) => {
 //     return res
 // }
 
-const deleteAlgorithmVersion = async (name, version) => {
+const deleteAlgorithmVersion = async (name, version, token = {}) => {
     const res = await chai.request(config.apiServerUrl)
-        .delete(`/versions/algorithms/${name}/${version}`);
+        .delete(`/versions/algorithms/${name}/${version}`)
+        .set("Authorization", `Bearer ${token}`);
     logResult(res, "algorithmUtils deleteAlgorithm");
     return res;
 }
 
-const deleteAlgorithmJobs = async (name, selector) => {
+const deleteAlgorithmJobs = async (name, selector, token = {}) => {
     let endpointUrl = selector ? `${name}?selector=${selector}` : `${name}`;
     const res = await chai.request(config.apiServerUrl)
-        .delete(`/kubernetes/algorithms/jobs/${endpointUrl}`);
+        .delete(`/kubernetes/algorithms/jobs/${endpointUrl}`)
+        .set("Authorization", `Bearer ${token}`);
     logResult(res, "algorithmUtils deleteAlgorithmJobs");
     return res;
 }
 
-const deleteAlgorithmPods = async (name, selector) => {
+const deleteAlgorithmPods = async (name, selector, token = {}) => {
     let endpointUrl = selector ? `${name}?selector=${selector}` : `${name}`;
     const res = await chai.request(config.apiServerUrl)
-        .delete(`/kubernetes/algorithms/pods/${endpointUrl}`);
+        .delete(`/kubernetes/algorithms/pods/${endpointUrl}`)
+        .set("Authorization", `Bearer ${token}`);
     logResult(res, "algorithmUtils deleteAlgorithmPods");
     return res;
 }
 
-const updateAlgorithmVersion = async (Algname, algVersion, Force = true) => {
+const updateAlgorithmVersion = async (Algname, algVersion, token = {}, Force = true) => {
     let value = {
         name: Algname,
         version: algVersion,
@@ -268,6 +284,7 @@ const updateAlgorithmVersion = async (Algname, algVersion, Force = true) => {
     }
     const res = await chai.request(config.apiServerUrl)
         .post(`/versions/algorithms/apply`)
+        .set("Authorization", `Bearer ${token}`)
         .send(value);
 
     return res;
