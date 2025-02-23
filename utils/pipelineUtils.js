@@ -54,9 +54,10 @@ const getPipelineStatus = async (id, token = {}) => {
     return res;
 }
 
-const getPipelineTriggerTree = async (pielineName) => {
+const getPipelineTriggerTree = async (pipelineName, token = {}) => {
     const res = await chai.request(config.apiServerUrl)
-        .get(`/pipelines/triggers/tree?name=${pielineName}`);
+        .get(`/pipelines/triggers/tree?name=${pipelineName}`)
+        .set('Authorization', `Bearer ${token}`);
     logResult(res, 'PipelineUtils getPipelineTriggerTree');
     return res;
 }
@@ -107,9 +108,10 @@ const storePipelinesWithDescriptor = async (descriptor, token = {}, pipelineList
     return res;
 }
 
-const storeOrUpdatePipelines= async (descriptor, pipelineList = []) => {
+const storeOrUpdatePipelines= async (descriptor, token = {},  pipelineList = []) => {
     const res = await chai.request(config.apiServerUrl)
         .post('/store/pipelines?overwrite=true')
+        .set('Authorization', `Bearer ${token}`)
         .send(descriptor);
     logResult(res, 'PipelineUtils storeOrUpdatePipelines');
     if (Array.isArray(res.body)) { 
@@ -184,16 +186,18 @@ const runStored = async (descriptor, token = {}) => {
     return res;
 }
 
-const loadRunStored = async (data) => {
+const loadRunStored = async (data, token = {}) => {
     const res = await chai.request(config.apiServerUrl)
         .post('/exec/stored')
+        .set('Authorization', `Bearer ${token}`)
         .send(data);
     return res;
 }
 
-const runRaw = async (body) => {
+const runRaw = async (body, token = {}) => {
     const res = await chai.request(config.apiServerUrl)
         .post('/exec/raw')
+        .set('Authorization', `Bearer ${token}`)
         .send(body);
     logResult(res, 'PipelineUtils runRaw');
     return res;
@@ -212,9 +216,10 @@ const resumePipeline = async (jobid, token = {}) => {
     return res;
 }
 
-const getExecPipeline = async (jobId) => {
+const getExecPipeline = async (jobId, token = {}) => {
     const res = await chai.request(config.apiServerUrl)
-        .get(`/exec/pipelines/${jobId}`);
+        .get(`/exec/pipelines/${jobId}`)
+        .set('Authorization', `Bearer ${token}`);
     logResult(res, 'PipelineUtils getExecPipeline');
     return res;
 }
@@ -254,12 +259,12 @@ const deconstructTestData = (testDataOgr) => {
     }
 }
 
-const checkResults = async (res, expectedStatusCode, expectedStatus, testData, shouldDeletePipeline = true) => {
+const checkResults = async (res, expectedStatusCode, expectedStatus, testData, token = {}, shouldDeletePipeline = true) => {
     expect(res.status).to.eql(expectedStatusCode);
     expect(res.body).to.have.property('jobId');
     const jobId = res.body.jobId;;
 
-    const result = await getResult(jobId, expectedStatusCode);
+    const result = await getResult(jobId, expectedStatusCode, token);
     if (result.error) {
         process.stdout.write(result.error);
     }
@@ -280,7 +285,7 @@ const checkResults = async (res, expectedStatusCode, expectedStatus, testData, s
     }
 }
 
-const stopPipeline = async (jobid) => {
+const stopPipeline = async (jobid, token = {}) => {
     const data = {
         jobId: jobid,
         reason: "from test"
@@ -288,25 +293,27 @@ const stopPipeline = async (jobid) => {
 
     const res = await chai.request(config.apiServerUrl)
         .post('/exec/stop')
+        .set('Authorization', `Bearer ${token}`)
         .send(data);
 
     logResult(res, 'PipelineUtils pausePipeline');
     return res;
 }
 
-const exceRerun = async (jobId) => {
+const exceRerun = async (jobId, token = {}) => {
     const data = {
         jobId: jobId,
     }
 
     const res = await chai.request(config.apiServerUrl)
         .post('/exec/rerun')
+        .set('Authorization', `Bearer ${token}`)
         .send(data);
     logResult(res, 'PipelineUtils exceRerun');
     return res;
 }
 
-const exceCachPipeline = async (jobId, nodeName) => {
+const exceCachPipeline = async (jobId, nodeName, token = {}) => {
     const data = {
         jobId: jobId,
         nodeName: nodeName
@@ -314,6 +321,7 @@ const exceCachPipeline = async (jobId, nodeName) => {
 
     const res = await chai.request(config.apiServerUrl)
         .post('/exec/caching')
+        .set('Authorization', `Bearer ${token}`)
         .send(data);
     logResult(res, 'PipelineUtils exceCachPipeline');
     return res;
@@ -325,9 +333,10 @@ const getPipelineResultsByName = async (name, limit = 5) => {
     return res;
 }
 
-const getPipelinestatusByName = async (name, limit = 5) => {
+const getPipelinestatusByName = async (name, token = {}, limit = 5) => {
     const res = await chai.request(config.apiServerUrl)
-        .get(`/pipelines/status?name=${name}&limit=${limit}`);
+        .get(`/pipelines/status?name=${name}&limit=${limit}`)
+        .set('Authorization', `Bearer ${token}`);
     return res;
 }
 

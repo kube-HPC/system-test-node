@@ -7,7 +7,7 @@ const logger = require('../utils/logger');
 const { getWorkers } = require('../utils/socketGet');
 
 // chai.use(chaiHttp);
-const getJobResult = async (jobId, token) => {
+const getJobResult = async (jobId, token = {}) => {
     const res = await chai.request(config.apiServerUrl)
         .get(`/exec/results/${jobId}`)
         .set('Authorization', `Bearer ${token}`);
@@ -15,7 +15,7 @@ const getJobResult = async (jobId, token) => {
     return res;
 }
 
-const getResult = async (jobId, expectedStatus,token = {}, timeout = 60 * 1000 * 10, interval = 5000) => {
+const getResult = async (jobId, expectedStatus, token = {}, timeout = 60 * 1000 * 10, interval = 5000) => {
     
     if (typeof jobId != 'string') {
         jobId = jobId.body.jobId;
@@ -40,12 +40,13 @@ const getJobIdStatus = async (jobId) => {
     return res;
 }
 
-const getStatus = async (jobId, expectedCode, expectedStatus, timeout = 60 * 1000 * 3, interval = 1000) => {
+const getStatus = async (jobId, expectedCode, expectedStatus, token = {}, timeout = 60 * 1000 * 3, interval = 1000) => {
     const start = Date.now();
     do {
         process.stdout.write(`\rWaiting for jobId: ${jobId} to get status: ${expectedStatus}, time passed: ${Date.now() - start}/${timeout} ms...`);
         const res = await chai.request(config.apiServerUrl)
-            .get(`/exec/status/${jobId}`);
+            .get(`/exec/status/${jobId}`)
+            .set('Authorization', `Bearer ${token}`);
 
         logger.info(`${res.status}, ${JSON.stringify(res.body)}`);
         if (res.status == expectedCode && res.body.status == expectedStatus) {
@@ -63,9 +64,10 @@ const getStates = async (jobId) => {
     return res.data.states;
 }
 
-const getJobIdsTree = async (jobId) => {
+const getJobIdsTree = async (jobId, token = {}) => {
     const res = await chai.request(config.apiServerUrl)
-        .get(`/exec/tree/${jobId}`);
+        .get(`/exec/tree/${jobId}`)
+        .set('Authorization', `Bearer ${token}`);
     return res;
 }
 
@@ -158,9 +160,10 @@ const getParsedGraph = async (jobId, token = {}) => {
     return res;
 }
 
-const getCronResult = async (jobId, limit, experimentName = "main") => {
+const getCronResult = async (jobId, limit,token = {}, experimentName = "main") => {
     const res = await chai.request(config.apiServerUrl)
-        .get(`/cron/results/?name=${jobId}&experimentName=${experimentName}&limit=${limit}`);
+        .get(`/cron/results/?name=${jobId}&experimentName=${experimentName}&limit=${limit}`)
+        .set('Authorization', `Bearer ${token}`);
     logger.info(`${res.status}, ${JSON.stringify(res.body)}`);
     return res;
 }

@@ -1,6 +1,7 @@
 const chai = require('chai');
 const path = require('path');
 const chaiHttp = require('chai-http');
+const config = require(path.join(process.cwd(), 'config/config'));
 
 const expect = chai.expect;
 const assertArrays = require('chai-arrays');
@@ -26,6 +27,25 @@ const {
 } = require(path.join(process.cwd(), 'config/index')).jagearTest;
 
 describe('jagear', () => {
+    before(async function () {
+        this.timeout(1000 * 60 * 15);
+        let testUserBody ={
+            username: config.keycloakDevUser,
+            password: config.keycloakDevPass
+        }
+        const response = await chai.request(config.apiServerUrl)
+        .post('/auth/login')
+        .send(testUserBody)
+        
+        if (response.status === 200) {
+            console.log('dev login success');
+            dev_token = response.body.token;
+        }
+        else {
+            console.log('dev login failed - no keycloak/bad credentials');
+        }
+    });
+    let dev_token;
     let alg = {
         name: "versatile",
         cpu: 1,
@@ -52,8 +72,8 @@ describe('jagear', () => {
             },
             priority: 1
         }
-        const jobId = await runStoredAndWaitForResults(pipe);
-        const data = await getSpansByJodid(jobId);
+        const jobId = await runStoredAndWaitForResults(pipe, dev_token);
+        const data = await getSpansByJodid(jobId, dev_token);
         const startsAlgs = ["yellow-alg start", "black-alg start", "green-alg start"];
         const dataOperations = data.map(item => item.operationName).filter((value, index, self) => self.indexOf(value) === index);
         const found = startsAlgs.every(r => dataOperations.includes(r));
@@ -65,20 +85,20 @@ describe('jagear', () => {
 describe.skip('Test worker cache 576', () => { // IF THIS TESTS RETURNS, PLEASE MAKE SURE ALGORITHM AND PIPELINE ARE REMOVED AFTER ITS DONE
     //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/576
     it('storage get amount ', async () => {
-        const alg = await storeAlgorithm("lonstringv1");
+        const alg = await storeAlgorithm("lonstringv1", dev_token);
         //set test data to testData1
         const d = deconstructTestData(testData2);
-        await deletePipeline(d);
+        await deletePipeline(d, dev_token);
         //store pipeline evalwait
-        await storePipeline(d);
+        await storePipeline(d, dev_token);
 
         //run the pipeline 
-        const jobId = await runStoredAndWaitForResults(d);
+        const jobId = await runStoredAndWaitForResults(d, dev_token);
 
         const WSdata = await getWorkers();
         const pods = WSdata.discovery.worker.filter(worker => worker.algorithmName == "eval-alg");
 
-        const data = await getSpansByJodid(jobId);
+        const data = await getSpansByJodid(jobId, dev_token);
         let setJobResult = data.filter(obj => obj.operationName.includes("set job result"));
         let storageGet = data.filter(obj => obj.operationName == "storage-get").filter(obj => obj.references.length > 0);
 

@@ -27,12 +27,13 @@ const logResult = (result, text = '') => {
     }
 }
 
-const StoreDebugAlgorithm = async (algorithmName) => {
+const StoreDebugAlgorithm = async (algorithmName, token = {}) => {
     const debudAlg = {
         "name": algorithmName
     }
     const res = await chai.request(config.apiServerUrl)
         .post('/store/algorithms/debug')
+        .set('Authorization', `Bearer ${token}`)
         .send(debudAlg);
     logResult(res, 'algorithmUtils StoreDebugAlgorithm');
     return res;
