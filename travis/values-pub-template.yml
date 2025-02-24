@@ -55,3 +55,5 @@ api_server:
     rate_limit_ms: 60000
     pipeline_driver_cpu: '0.6'
     pipeline_driver_mem: '850'
+keycloak:
+  enable: false
