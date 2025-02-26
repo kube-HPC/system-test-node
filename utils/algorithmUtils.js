@@ -127,7 +127,7 @@ const buildAlgorithmAndWait = async ({ code, algName, entry, kc_token = {}, base
     return buildStatusAlg;
 }
 
-const buildGitAlgorithm = async ({ algName, gitUrl, gitKind, entry, branch, language = 'python', commit = "null", tag = "null", token = "null", algorithmArray = [] }) => {
+const buildGitAlgorithm = async ({ algName, gitUrl, gitKind, entry, branch, kc_token = {}, language = 'python', commit = "null", tag = "null", token = "null", algorithmArray = [] }) => {
     const data = {
         name: algName,
         env: language,
@@ -159,6 +159,7 @@ const buildGitAlgorithm = async ({ algName, gitUrl, gitKind, entry, branch, lang
     console.log(data);
     const res = await chai.request(config.apiServerUrl)
         .post('/store/algorithms/apply')
+        .set("Authorization", `Bearer ${kc_token}`)
         .field('payload', JSON.stringify(data));
     logger.info(JSON.stringify(res.body));
     if (res.status != 200) {
@@ -168,19 +169,19 @@ const buildGitAlgorithm = async ({ algName, gitUrl, gitKind, entry, branch, lang
     // res.should.have.status(200)
     expect(res.status).to.eql(200);
     const buildIdAlg = res.body.buildId;
-    const buildStatusAlg = await getStatusall(buildIdAlg, `/builds/status/`, 200, "completed", 1000 * 60 * 14);
+    const buildStatusAlg = await getStatusall(buildIdAlg, `/builds/status/`, 200, "completed", kc_token, 1000 * 60 * 14);
 
     return buildStatusAlg;
 }
 
-const runAlgGetResult = async (algName, inupts) => {
+const runAlgGetResult = async (algName, inupts, token = {}) => {
     const alg = {
         name: algName,
         input: inupts
     }
-    const res = await runAlgorithm(alg);
+    const res = await runAlgorithm(alg, token);
     const jobId = res.body.jobId;
-    const result = await getResult(jobId, 200);
+    const result = await getResult(jobId, 200, token);
     return result;
     // expect(result.data[0].result).to.be.equal(42)
 }
@@ -194,9 +195,10 @@ const runAlgorithm = async (body, token = {}) => {
     return res;
 }
 
-const getBuildList = async (name) => {
+const getBuildList = async (name, token = {}) => {
     const res = await chai.request(config.apiServerUrl)
-        .get(`/builds/list/${name}`);
+        .get(`/builds/list/${name}`)
+        .set('Authorization', `Bearer ${token}`);
     logResult(res, "algorithmUtils getBuildList");
     return res.body;
 }

@@ -34,9 +34,10 @@ const getResult = async (jobId, expectedStatus, token = {}, timeout = 60 * 1000 
     expect.fail(`\ntimeout exceeded trying to get ${expectedStatus} status in result for jobId ${jobId}`);
 };
 
-const getJobIdStatus = async (jobId) => {
+const getJobIdStatus = async (jobId, token = {}) => {
     const res = await chai.request(config.apiServerUrl)
-        .get(`/exec/status/${jobId}`);
+        .get(`/exec/status/${jobId}`)
+        .set('Authorization', `Bearer ${token}`);
     return res;
 }
 
