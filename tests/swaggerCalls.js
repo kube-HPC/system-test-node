@@ -1043,9 +1043,13 @@ describe('all swagger calls test ', () => {
             const res = await chai.request(config.apiServerUrl)
                 .delete(`/store/pipelines/${name}`)
                 .set("Authorization", `Bearer ${guest_token}`)
-
-            expect(res.text).to.eql("Access denied")
-            expect(res).to.have.status(403)
+            if (dev_token) {
+                expect(res.text).to.eql("Access denied")
+                expect(res).to.have.status(403)
+            }
+            else { // no kc
+                expect(res).to.have.status(404)
+            }
 
         })
     })
