@@ -14,7 +14,11 @@ const config = {
     baseUrl,
     webhookUrl,
     githubToken,
-    gitlabToken
+    gitlabToken,
+    keycloakDevUser: process.env.KEYCLOAK_DEV_USER,
+    keycloakDevPass: process.env.KEYCLOAK_DEV_PASS,
+    keycloakGuestUser: process.env.KEYCLOAK_GUEST_USER,
+    keycloakGuestPass: process.env.KEYCLOAK_GUEST_PASS
 }
 
 config.etcd = {
