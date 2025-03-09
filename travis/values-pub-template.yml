@@ -62,3 +62,4 @@ api_server:
     pipeline_driver_mem: '850'
 keycloak:
   enable: false
+
