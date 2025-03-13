@@ -680,7 +680,7 @@ let dev_token;
     }).timeout(1000 * 60 * 7);
 
     //undefined
-    it.only("Trigger get input from parent", async () => {
+    it("Trigger get input from parent", async () => {
       const triggerTestData = testData9;
       const triggeredName = pipelineRandomName(8);
       triggerTestData.descriptor.name = triggeredName;
