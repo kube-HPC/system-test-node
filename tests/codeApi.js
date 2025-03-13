@@ -250,7 +250,7 @@ describe('code api tests ', () => {
         }).timeout(1000 * 60 * 10);
     });
 
-    describe("Node JS code API", () => {
+    describe.only("Node JS code API", () => {
         const algName = pipelineRandomName(8).toLowerCase();
         const obj = {
             algName,

@@ -88,6 +88,7 @@ const toString = (fun) => {
 // p6
 const getStatusall = async (id, url, expectedCode, expectedStatus, token = {}, timeout = 60 * 1000 * 3, interval = 1000) => {
     const start = Date.now();
+    let actualStatus = '';
     do {
         process.stdout.write(`\rWaiting for buildId: ${id} to get status: ${expectedStatus}, time passed: ${Date.now() - start}/${timeout} ms...`);
         const res = await chai.request(config.apiServerUrl)
@@ -95,7 +96,8 @@ const getStatusall = async (id, url, expectedCode, expectedStatus, token = {}, t
             .set('Authorization', `Bearer ${token}`);
 
         logger.info(`${res.status}, ${JSON.stringify(res.body)}`);
-        if (res.status == expectedCode && res.body.status == expectedStatus) {
+        actualStatus = res.body.status;
+        if (res.status == expectedCode && actualStatus == expectedStatus) {
             console.log(`\nbuildId: ${id} has status: ${expectedStatus}`);
             return res.body;
         }
@@ -105,7 +107,7 @@ const getStatusall = async (id, url, expectedCode, expectedStatus, token = {}, t
         }
         await delay(interval);
     } while (Date.now() - start < timeout);
-    expect.fail(`\ntimeout exceeded trying to get ${expectedStatus} status for buildId ${id}`);
+    expect.fail(`\ntimeout exceeded trying to get ${expectedStatus} status for buildId ${id}, actual status: ${actualStatus}`);
 };
 
 const runRaw = async (token = {}, time = 15000) => {
