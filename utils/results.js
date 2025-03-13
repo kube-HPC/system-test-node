@@ -91,6 +91,7 @@ const toString = (fun) => {
 const getStatusall = async (id, url, expectedCode, expectedStatus, token = {}, timeout = 60 * 1000 * 3, interval = 1000) => {
     const start = Date.now();
     let actualStatus = '';
+    let failureReason = 'Unknown Reason';
     do {
         process.stdout.write(`\rWaiting for buildId: ${id} to get status: ${expectedStatus}, time passed: ${Date.now() - start}/${timeout} ms...`);
         const res = await chai.request(config.apiServerUrl)
@@ -99,17 +100,18 @@ const getStatusall = async (id, url, expectedCode, expectedStatus, token = {}, t
 
         logger.info(`${res.status}, ${JSON.stringify(res.body)}`);
         actualStatus = res.body.status;
-        if (res.status == expectedCode && actualStatus == expectedStatus) {
+        if (res.status === expectedCode && actualStatus === expectedStatus) {
             console.log(`\nbuildId: ${id} has status: ${expectedStatus}`);
             return res.body;
         }
-        if (res.body.status == "failed") {
+        if (res.body.status === "failed") {
+            failureReason = res.body.reason || JSON.stringify(res.body); // Try to extract 'reason' field or log the entire body
             console.log(`\nbuildId: ${id} has status: failed`);
             return res.body;
         }
         await delay(interval);
     } while (Date.now() - start < timeout);
-    expect.fail(`\ntimeout exceeded trying to get ${expectedStatus} status for buildId ${id}, actual status: ${actualStatus}`);
+    expect.fail(`\ntimeout exceeded trying to get ${expectedStatus} status for buildId ${id}, actual status: ${actualStatus}, failure reason: ${failureReason}`);
 };
 
 const runRaw = async (token = {}, time = 15000) => {
