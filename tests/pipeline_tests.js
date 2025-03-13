@@ -117,8 +117,8 @@ describe("pipeline Tests 673", () => {
   before(async function () {
     this.timeout(1000 * 60 * 15);
     let testUserBody ={
-        username: config.keycloakDevUser,
-        password: config.keycloakDevPass
+        username: 'test-guest',// config.keycloakDevUser,
+        password: 'test-guest'//config.keycloakDevPass
     }
     const response = await chai.request(config.apiServerUrl)
     .post('/auth/login')
@@ -680,10 +680,10 @@ let dev_token;
     }).timeout(1000 * 60 * 7);
 
     //undefined
-    it("Trigger get input from parent", async () => {
+    it.only("Trigger get input from parent", async () => {
       const triggerTestData = testData9;
-      const triggerdName = pipelineRandomName(8);
-      triggerTestData.descriptor.name = triggerdName;
+      const triggeredName = pipelineRandomName(8);
+      triggerTestData.descriptor.name = triggeredName;
       const triggered = deconstructTestData(triggerTestData);
       const trigger = deconstructTestData(testData8);
       await deletePipeline(trigger, dev_token);
@@ -694,7 +694,8 @@ let dev_token;
       await runStoredAndWaitForResults(trigger, dev_token);
       await delay(1000 * 20);
       jobs = await getWebSocketJobs();
-      jobId = jobs.filter((obj) => obj.pipeline.triggers)[0].key;
+      const jobWithTriggers = jobs.filter((obj) => obj.pipeline.triggers);
+      const jobId = jobWithTriggers.filter((obj) => obj.pipeline.name === triggeredName)[0].key;
       const result = await getResult(jobId, 200, dev_token);
       expect(result.data.length).to.be.equal(10);
       const expected = [46, 47, 48, 49, 50, 51, 52, 53, 54, 45];
