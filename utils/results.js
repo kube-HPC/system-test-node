@@ -22,16 +22,18 @@ const getResult = async (jobId, expectedStatus, token = {}, timeout = 60 * 1000 
     }
 
     const start = Date.now();
+    let actualStatus = '';
     do {
         process.stdout.write(`\rWaiting for jobId: ${jobId} to get status: ${expectedStatus}, time passed: ${Date.now() - start}/${timeout} ms...`);
         const res = await getJobResult(jobId, token);
-        if (res.status == expectedStatus) {
+        actualStatus = res.status;
+        if (actualStatus === expectedStatus) {
             console.log(`\njobId: ${jobId} has status: ${expectedStatus}`);
             return res.body;
         }
         await delay(interval);
     } while (Date.now() - start < timeout);
-    expect.fail(`\ntimeout exceeded trying to get ${expectedStatus} status in result for jobId ${jobId}`);
+    expect.fail(`\ntimeout exceeded trying to get ${expectedStatus} status in result for jobId ${jobId}. Status is ${actualStatus}`);
 };
 
 const getJobIdStatus = async (jobId, token = {}) => {
