@@ -773,7 +773,7 @@ let dev_token;
     }).timeout(1000 * 60 * 2);
   });
 
-  describe("pause_resume_pipelineas (git 529 344)", () => {
+  describe("pause_resume_pipelines (git 529 344)", () => {
     //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/529
     const algorithmName = "algorithm-version-test";
     const algorithmImageV1 = "tamir321/algoversion:v1";
@@ -910,7 +910,7 @@ let dev_token;
     describe("pipeline options", async () => {
       const d = deconstructTestData(ttlPipe);
 
-      it("pipeline ttl ", async () => {
+      it("pipeline ttl", async () => {
         await deletePipeline(d, dev_token);
         await storePipeline(d, dev_token, pipeList);
         const ttl = {
