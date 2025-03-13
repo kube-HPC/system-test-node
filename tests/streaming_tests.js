@@ -61,7 +61,7 @@ describe("streaming pipeline test", () => {
     const algList = [];
 
     const createAlg = async (alg, cpu) => {
-        await deleteAlgorithm(alg.name, true, true);
+        await deleteAlgorithm(alg.name, true);
         if (cpu) {
             alg.cpu = cpu;
         }
