@@ -49,6 +49,10 @@ jobs:
         env:
           BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
+          KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
+          KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
+          KEYCLOAK_GUEST_PASS: ${{ secrets.KEYCLOAK_GUEST_PASS }}
+          KEYCLOAK_GUEST_USER: ${{ secrets.KEYCLOAK_GUEST_USER }}
   pipelineTest:
     runs-on: ubuntu-latest
     needs: tests
@@ -66,6 +70,8 @@ jobs:
         env:
           BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
+          KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
+          KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
   nodeTest:
     runs-on: ubuntu-latest
     needs: tests
@@ -83,6 +89,8 @@ jobs:
         env:
           BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
+          KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
+          KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
           KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
           K8S_VERSION: 1.13
           K8S_CONFIG_PATH: /tmp/config  
@@ -103,6 +111,8 @@ jobs:
         env:
           BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
+          KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
+          KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
   codeApiTest:
     runs-on: ubuntu-latest
     needs: tests
@@ -120,6 +130,8 @@ jobs:
         env:
           BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
+          KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
+          KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
  
   # algorithmBuild:
   #   runs-on: ubuntu-latest
@@ -174,6 +186,8 @@ jobs:
           BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
           KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
+          KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
+          KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
           K8S_VERSION: 1.13
           K8S_CONFIG_PATH: /tmp/config
   datsourceTest:
@@ -224,6 +238,8 @@ jobs:
           BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
           KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
+          KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
+          KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
           K8S_VERSION: 1.13
           K8S_CONFIG_PATH: /tmp/config
   HighAvailability:
@@ -248,5 +264,7 @@ jobs:
           BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
           KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
+          KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
+          KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
           K8S_VERSION: 1.13
           K8S_CONFIG_PATH: /tmp/config

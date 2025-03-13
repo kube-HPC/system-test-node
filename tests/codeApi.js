@@ -4,6 +4,8 @@ const chaiHttp = require('chai-http');
 const expect = chai.expect;
 const assertArrays = require('chai-arrays');
 const delay = require('delay');
+const config = require('../config/config');
+
 
 const {
     pipelineRandomName
@@ -54,11 +56,31 @@ chai.use(assertArrays);
 // }
 
 describe('code api tests ', () => {
+    before(async function () {
+        this.timeout(1000 * 60 * 15);
+        let testUserBody ={
+            username: config.keycloakDevUser,
+            password: config.keycloakDevPass
+        }
+        const response = await chai.request(config.apiServerUrl)
+        .post('/auth/login')
+        .send(testUserBody)
+        
+        if (response.status === 200) {
+            console.log('dev login success');
+            dev_token = response.body.token;
+        }
+        else {
+            console.log('dev login failed - no keycloak/bad credentials');
+        }
+    });
+    let dev_token;
     let algList = [];
 
-    const createAlg = async (obj, isGit = false) => {
+    const createAlg = async (obj, token = {}, isGit = false) => {
         obj.algorithmArray = algList;
-        await deleteAlgorithm(obj.name, true);
+        obj.kc_token = token;
+        await deleteAlgorithm(obj.name, token, true);
         const buildStatusAlg = isGit ? await buildGitAlgorithm(obj) : await buildAlgorithmAndWait(obj);
         expect(buildStatusAlg.status).to.be.equal("completed");
         return buildStatusAlg;
@@ -78,7 +100,7 @@ describe('code api tests ', () => {
         while (j < algList.length) {
             delAlg = algList.slice(j, z);
             const del = delAlg.map((e) => {
-                return deleteAlgorithm(e, true);
+                return deleteAlgorithm(e, dev_token, true);
             });
             console.log("delAlg-", JSON.stringify(delAlg, null, 2));
             const delResult = await Promise.all(del);
@@ -114,7 +136,7 @@ describe('code api tests ', () => {
 
         before(async function () {
             this.timeout(1000 * 60 * 15);
-            await createAlg(obj); // All tests use this algorithm - building it once, for the tests to take less time.
+            await createAlg(obj, dev_token); // All tests use this algorithm - building it once, for the tests to take less time.
         });
 
         // const getResultFromStorage = async (storagePath) => {
@@ -131,10 +153,10 @@ describe('code api tests ', () => {
                     input: [42]
                 }
             ];
-            const result = await runAlgGetResult(algName, startAlg);
+            const result = await runAlgGetResult(algName, startAlg, dev_token);
             console.log(result);
             expect(result.data[0].result).to.be.equal(42);
-            const graph = await getRawGraph(result.jobId);
+            const graph = await getRawGraph(result.jobId, dev_token);
             expect(graph.body.nodes.length).to.be.equal(2);
         }).timeout(1000 * 60 * 10);
 
@@ -161,7 +183,7 @@ describe('code api tests ', () => {
                     ]
                 }
             ];
-            const result = await runAlgGetResult(algName, startAlg);
+            const result = await runAlgGetResult(algName, startAlg, dev_token);
             console.log(result);
         }).timeout(1000 * 60 * 10);
 
@@ -177,7 +199,7 @@ describe('code api tests ', () => {
                     ]
                 }
             ];
-            const result = await runAlgGetResult(algName, startAlg);
+            const result = await runAlgGetResult(algName, startAlg, dev_token);
             console.log(result);
         }).timeout(1000 * 60 * 10);
 
@@ -193,7 +215,7 @@ describe('code api tests ', () => {
                     }
                 }
             ];
-            const result = await runAlgGetResult(algName, startPipe);
+            const result = await runAlgGetResult(algName, startPipe, dev_token);
             expect(result.data[0].result.result).to.be.equal('links-1');
         }).timeout(1000 * 60 * 10);
 
@@ -222,7 +244,7 @@ describe('code api tests ', () => {
                     flowInput: {}
                 }
             ];
-            const result = await runAlgGetResult(algName, startRaw);
+            const result = await runAlgGetResult(algName, startRaw, dev_token);
             console.log(result);
             expect(result.data[0].result[0].result).to.be.equal(42);
         }).timeout(1000 * 60 * 10);
@@ -241,7 +263,7 @@ describe('code api tests ', () => {
 
         before(async function () {
             this.timeout(1000 * 60 * 15);
-            await createAlg(obj, true); // All tests use this algorithm - building it once, for the tests to take less time.
+            await createAlg(obj, dev_token, true); // All tests use this algorithm - building it once, for the tests to take less time.
         });
 
         it("Node start algorithm", async () => {
@@ -252,10 +274,10 @@ describe('code api tests ', () => {
                     "input": [42]
                 }
             ];
-            const result = await runAlgGetResult(algName, startAlg);
+            const result = await runAlgGetResult(algName, startAlg, dev_token);
             console.log(result);
             expect(result.data[0].result).to.be.equal(42);
-            const graph = await getRawGraph(result.jobId);
+            const graph = await getRawGraph(result.jobId, dev_token);
             expect(graph.body.nodes.length).to.be.equal(2);
         }).timeout(1000 * 60 * 10);
 
@@ -269,7 +291,7 @@ describe('code api tests ', () => {
                     }
                 }
             ];
-            const result = await runAlgGetResult(algName, startPipe);
+            const result = await runAlgGetResult(algName, startPipe, dev_token);
             console.log(result);
             expect(result.data[0].result[0].result).to.be.equal('links-1');
         }).timeout(1000 * 60 * 10);
@@ -282,7 +304,7 @@ describe('code api tests ', () => {
                     , "input": { "bar": { "size": "3", "batch": "4" } }
                 }
             ];
-            const result = await runAlgGetResult(algName, startRaw);
+            const result = await runAlgGetResult(algName, startRaw, dev_token);
             console.log(result.data[0]);
             expect(result.data[0].result[0].result.size).to.be.equal("3");
         }).timeout(1000 * 60 * 10);
@@ -307,7 +329,7 @@ describe('code api tests ', () => {
 
         before(async function () {
             this.timeout(1000 * 60 * 15);
-            await createAlg(obj);
+            await createAlg(obj, dev_token);
         });
 
         it("Java start algorithm", async () => {
@@ -318,10 +340,10 @@ describe('code api tests ', () => {
                     alginput: [42]
                 }
             ];
-            const result = await runAlgGetResult(algName, startAlg);
+            const result = await runAlgGetResult(algName, startAlg, dev_token);
             console.log(result);
             expect(result.data[0].result.response).to.be.equal(42);
-            const graph = await getRawGraph(result.jobId);
+            const graph = await getRawGraph(result.jobId, dev_token);
             expect(graph.body.nodes.length).to.be.equal(2);
         }).timeout(1000 * 60 * 10);
 
@@ -333,10 +355,10 @@ describe('code api tests ', () => {
                     alginput: [42]
                 }
             ];
-            const result = await runAlgGetResult(algName, startAlg); //await runAlgGetResult(algName,startAlg)
+            const result = await runAlgGetResult(algName, startAlg, dev_token); //await runAlgGetResult(algName,startAlg)
             console.log(result);
             expect(result.data[0].info.size).to.be.greaterThan(300000); // should returen an image size (337 kB)  
-            const graph = await getRawGraph(result.jobId);
+            const graph = await getRawGraph(result.jobId, dev_token);
             expect(graph.body.nodes.length).to.be.equal(2);
         }).timeout(1000 * 60 * 10);
 
@@ -348,7 +370,7 @@ describe('code api tests ', () => {
                     PipeInput: [42]
                 }
             ];
-            const result = await runAlgGetResult(algName, startPipe);
+            const result = await runAlgGetResult(algName, startPipe, dev_token);
             console.log(result);
 
             expect(result.data[0].result[0].result).to.be.equal('links-1');
@@ -361,7 +383,7 @@ describe('code api tests ', () => {
                     PipeName: "raw-simple"
                 }
             ];
-            const result = await runAlgGetResult(algName, startRaw);
+            const result = await runAlgGetResult(algName, startRaw, dev_token);
             console.log(result);
             expect(result.data[0].result[0].result.empty).to.be.equal(false);
             //const path = result.data[0].result.result.storageInfo.path;

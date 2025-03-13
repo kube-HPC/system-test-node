@@ -12,6 +12,11 @@ global:
          nfs_server: '172.20.45.142'
          nfs_root: '/nfs/storageclass/test'
       base_directory: '/hkubedata'
+      dev_pvc:
+        name: hkube-dev-sources
+        capacity: 10Gi
+        storage_class: "nfs-client"
+        enabled: true
   ingress:
     use_regex: true
     # hostname: ${CICD_HOSTNAME}
@@ -57,3 +62,4 @@ api_server:
     pipeline_driver_mem: '850'
 keycloak:
   enable: false
+

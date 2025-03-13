@@ -2,6 +2,8 @@ const chai = require("chai");
 const expect = chai.expect;
 const chaiHttp = require("chai-http");
 const delay = require("delay");
+const config = require('../config/config');
+
 
 const {
   deletePod,
@@ -48,6 +50,25 @@ const {
 chai.use(chaiHttp);
 
 describe("Node Tests git 660", () => {
+  before(async function () {
+    this.timeout(1000 * 60 * 15);
+    let testUserBody ={
+        username: config.keycloakDevUser,
+        password: config.keycloakDevPass
+    }
+    const response = await chai.request(config.apiServerUrl)
+    .post('/auth/login')
+    .send(testUserBody)
+    
+    if (response.status === 200) {
+        console.log('dev login success');
+        dev_token = response.body.token;
+    }
+    else {
+        console.log('dev login failed - no keycloak/bad credentials');
+    }
+});
+let dev_token;
   let pipeList = [];
 
   beforeEach(function () {
@@ -63,7 +84,7 @@ describe("Node Tests git 660", () => {
     while (j < pipeList.length) {
         delPipe = pipeList.slice(j, z);
         const del = delPipe.map((e) => {
-            return deletePipeline(e);
+            return deletePipeline(e, dev_token);
         });
         console.log("delPipe-", JSON.stringify(delPipe, null, 2));
         const delResult = await Promise.all(del);
@@ -97,9 +118,9 @@ describe("Node Tests git 660", () => {
       pipe.name = "single_batch_index";
       pipe.nodes[0].input = ["#[0...9]"];
       pipe.nodes[0].batchOperation = "indexed";
-      const res = await runRaw(pipe);
+      const res = await runRaw(pipe, dev_token);
       const jobId = res.body.jobId;
-      const result = await getResult(jobId, 200);
+      const result = await getResult(jobId, 200, dev_token);
       expect(result.data.length).to.be.equal(10);
     }).timeout(1000 * 60 * 2);
 
@@ -107,9 +128,9 @@ describe("Node Tests git 660", () => {
       pipe.nodes[0].input = ["#[0...9]", "#[10,20,30]"];
       pipe.name = "two_batch_index";
       pipe.nodes[0].batchOperation = "indexed";
-      const res = await runRaw(pipe);
+      const res = await runRaw(pipe, dev_token);
       const jobId = res.body.jobId;
-      const result = await getResult(jobId, 200);
+      const result = await getResult(jobId, 200, dev_token);
       expect(result.data.length).to.be.equal(10);
     }).timeout(1000 * 60 * 2);
 
@@ -117,9 +138,9 @@ describe("Node Tests git 660", () => {
       pipe.name = "two_batch_one_object_index";
       pipe.nodes[0].input = [{ data: "stam" }, "#[0...9]", "#[10,20,30]"];
       pipe.nodes[0].batchOperation = "indexed";
-      const res = await runRaw(pipe);
+      const res = await runRaw(pipe, dev_token);
       const jobId = res.body.jobId;
-      const result = await getResult(jobId, 200);
+      const result = await getResult(jobId, 200, dev_token);
       expect(result.data.length).to.be.equal(10);
     }).timeout(1000 * 60 * 2);
 
@@ -127,9 +148,9 @@ describe("Node Tests git 660", () => {
       pipe.name = "single_batch_cartesian";
       pipe.nodes[0].input = ["#[0...9]"];
       pipe.nodes[0].batchOperation = "cartesian";
-      const res = await runRaw(pipe);
+      const res = await runRaw(pipe, dev_token);
       const jobId = res.body.jobId;
-      const result = await getResult(jobId, 200);
+      const result = await getResult(jobId, 200, dev_token);
       expect(result.data.length).to.be.equal(10);
     }).timeout(1000 * 60 * 2);
 
@@ -137,9 +158,9 @@ describe("Node Tests git 660", () => {
       pipe.name = "two_batch_cartesian";
       pipe.nodes[0].input = ["#[0...9]", "#[10,20,30]"];
       pipe.nodes[0].batchOperation = "cartesian";
-      const res = await runRaw(pipe);
+      const res = await runRaw(pipe, dev_token);
       const jobId = res.body.jobId;
-      const result = await getResult(jobId, 200);
+      const result = await getResult(jobId, 200, dev_token);
       expect(result.data.length).to.be.equal(30);
     }).timeout(1000 * 60 * 2);
 
@@ -147,9 +168,9 @@ describe("Node Tests git 660", () => {
       pipe.name = "two_batch_one_object_cartesian";
       pipe.nodes[0].input = [{ data: "stam" }, "#[0...9]", "#[10,20,30]"];
       pipe.nodes[0].batchOperation = "cartesian";
-      const res = await runRaw(pipe);
+      const res = await runRaw(pipe, dev_token);
       const jobId = res.body.jobId;
-      const result = await getResult(jobId, 200);
+      const result = await getResult(jobId, 200, dev_token);
       expect(result.data.length).to.be.equal(30);
     }).timeout(1000 * 60 * 2);
 
@@ -162,9 +183,9 @@ describe("Node Tests git 660", () => {
         "#[10,20,30]",
       ];
       pipe.nodes[0].batchOperation = "cartesian";
-      const res = await runRaw(pipe);
+      const res = await runRaw(pipe, dev_token);
       const jobId = res.body.jobId;
-      const result = await getResult(jobId, 200);
+      const result = await getResult(jobId, 200, dev_token);
       console.log(result.data.length);
       console.log(result.data[0].result);
       expect(result.data.length).to.be.equal(30);
@@ -177,9 +198,9 @@ describe("Node Tests git 660", () => {
       pipe.nodes[0].input = ["add", "#[0...9]", "#[10,20,30]"];
       pipe.nodes[0].algorithmName = "green-alg";
       pipe.nodes[0].batchOperation = "indexed";
-      const res = await runRaw(pipe);
+      const res = await runRaw(pipe, dev_token);
       const jobId = res.body.jobId;
-      const result = await getResult(jobId, 200);
+      const result = await getResult(jobId, 200, dev_token);
       expect(result.data.length).to.be.equal(10);
     }).timeout(1000 * 60 * 2);
   });
@@ -227,14 +248,14 @@ describe("Node Tests git 660", () => {
 
     it("run node get data from flowInput", async () => {
       const expectedResult = 29;
-      const res = await runRaw(pipe);
+      const res = await runRaw(pipe, dev_token);
       const jobId = res.body.jobId;
-      const result = await getResult(jobId, 200);
+      const result = await getResult(jobId, 200, dev_token);
 
-      const job2 = await exceCachPipeline(jobId, "one");
-      const res2 = await await getResult(job2.body.jobId, 200);
-      const job3 = await exceCachPipeline(jobId, "two");
-      const res3 = await await getResult(job3.body.jobId, 200);
+      const job2 = await exceCachPipeline(jobId, "one", dev_token);
+      const res2 = await await getResult(job2.body.jobId, 200, dev_token);
+      const job3 = await exceCachPipeline(jobId, "two", dev_token);
+      const res3 = await await getResult(job3.body.jobId, 200, dev_token);
 
       expect(result.data[0].result).to.be.equal(expectedResult);
       expect(res3.data[0].result).to.be.equal(expectedResult);
@@ -268,9 +289,9 @@ describe("Node Tests git 660", () => {
     it("batch indexed", async () => {
       pipe.nodes[0].input = ["#[0...9]"];
       pipe.nodes[1].input = ["#[10...19]"];
-      const res = await runRaw(pipe);
+      const res = await runRaw(pipe, dev_token);
       const jobId = res.body.jobId;
-      const result = await getResult(jobId, 200);
+      const result = await getResult(jobId, 200, dev_token);
       expect(result.data.length).to.be.equal(10);
       expect(JSON.stringify(result.data[7].result)).to.be.equal(
         JSON.stringify([[7], [17]])
@@ -282,9 +303,9 @@ describe("Node Tests git 660", () => {
       pipe.nodes[1].input = ["#[10...14]"];
       pipe.nodes[2].input = ["#@one", "#@two"];
       pipe.nodes[2].batchOperation = "cartesian";
-      const res = await runRaw(pipe);
+      const res = await runRaw(pipe, dev_token);
       const jobId = res.body.jobId;
-      const result = await getResult(jobId, 200);
+      const result = await getResult(jobId, 200, dev_token);
       expect(result.data.length).to.be.equal(50);
       expect(JSON.stringify(result.data[37].result)).to.be.equal(
         JSON.stringify([[7], [12]])
@@ -299,9 +320,9 @@ describe("Node Tests git 660", () => {
       pipe.nodes[1].input = ["#[10...14]"];
       pipe.nodes[2].input = ["99", "#@one", "#@two"];
       pipe.nodes[2].batchOperation = "cartesian";
-      const res = await runRaw(pipe);
+      const res = await runRaw(pipe, dev_token);
       const jobId = res.body.jobId;
-      const result = await getResult(jobId, 200);
+      const result = await getResult(jobId, 200, dev_token);
       expect(result.data.length).to.be.equal(50);
       console.log(result.data[37].result);
       expect(JSON.stringify(result.data[37].result)).to.be.equal(
@@ -317,9 +338,9 @@ describe("Node Tests git 660", () => {
       pipe.nodes[1].input = ["#[10...14]"];
       pipe.nodes[2].input = ["99", "#@one", "#@two"];
       pipe.nodes[2].batchOperation = "indexed";
-      const res = await runRaw(pipe);
+      const res = await runRaw(pipe, dev_token);
       const jobId = res.body.jobId;
-      const result = await getResult(jobId, 200);
+      const result = await getResult(jobId, 200, dev_token);
       expect(result.data.length).to.be.equal(10);
       expect(JSON.stringify(result.data[7].result)).to.be.equal(
         JSON.stringify(["99", [7], null])
@@ -334,9 +355,9 @@ describe("Node Tests git 660", () => {
       pipe.nodes[1].input = ["#[10...14]"];
       pipe.nodes[2].input = ["*@one", "#@two"];
       pipe.nodes[2].batchOperation = "indexed";
-      const res = await runRaw(pipe);
+      const res = await runRaw(pipe, dev_token);
       const jobId = res.body.jobId;
-      const result = await getResult(jobId, 200);
+      const result = await getResult(jobId, 200, dev_token);
       expect(result.data.length).to.be.equal(50);
 
       // console.log(JSON.stringify(result.data[37].result))
@@ -376,9 +397,9 @@ describe("Node Tests git 660", () => {
       pipe.nodes[2].batchOperation = "cartesian";
       pipe.flowInput.one = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
       pipe.flowInput.two = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
-      const res = await runRaw(pipe);
+      const res = await runRaw(pipe, dev_token);
       const jobId = res.body.jobId;
-      const result = await getResult(jobId, 200);
+      const result = await getResult(jobId, 200, dev_token);
       expect(result.data.length).to.be.equal(1000);
       expect(JSON.stringify(result.data[999].result)).to.be.equal(
         JSON.stringify([[9, 19], [19]])
@@ -394,9 +415,9 @@ describe("Node Tests git 660", () => {
       pipe.nodes[2].batchOperation = "indexed";
       pipe.flowInput.one = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
       pipe.flowInput.two = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
-      const res = await runRaw(pipe);
+      const res = await runRaw(pipe, dev_token);
       const jobId = res.body.jobId;
-      const result = await getResult(jobId, 200);
+      const result = await getResult(jobId, 200, dev_token);
       expect(result.data.length).to.be.equal(100);
       expect(JSON.stringify(result.data[99].result)).to.be.equal(
         JSON.stringify([[9, 19], null])
@@ -413,9 +434,9 @@ describe("Node Tests git 660", () => {
       pipe.nodes[2].batchOperation = "cartesian";
       pipe.flowInput.one = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
       pipe.flowInput.two = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
-      const res = await runRaw(pipe);
+      const res = await runRaw(pipe, dev_token);
       const jobId = res.body.jobId;
-      const result = await getResult(jobId, 200);
+      const result = await getResult(jobId, 200, dev_token);
 
       expect(result.data.length).to.be.equal(1000);
       //  expect(JSON.stringify(result.data[99].result)).to.be.equal("[[0,19],[19]]")
@@ -426,9 +447,9 @@ describe("Node Tests git 660", () => {
       pipe.nodes[1].input = ["#[10...15]"];
       pipe.nodes[2].input = ["99", "#@one", "#@two"];
       pipe.nodes[2].batchOperation = "indexed";
-      const res = await runRaw(pipe);
+      const res = await runRaw(pipe, dev_token);
       const jobId = res.body.jobId;
-      const result = await getResult(jobId, 200);
+      const result = await getResult(jobId, 200, dev_token);
       expect(result.data.length).to.be.equal(10);
       expect(JSON.stringify(result.data[7].result)).to.be.equal(
         JSON.stringify(["99", [7], null])
@@ -443,9 +464,9 @@ describe("Node Tests git 660", () => {
       pipe.nodes[1].input = ["#[10...19]"];
       pipe.nodes[2].input = [{ a: "@one", b: "@two" }];
       pipe.nodes[2].batchOperation = "indexed";
-      const res = await runRaw(pipe);
+      const res = await runRaw(pipe, dev_token);
       const jobId = res.body.jobId;
-      const result = await getResult(jobId, 200);
+      const result = await getResult(jobId, 200, dev_token);
       expect(result.data.length).to.be.equal(1);
       expect(result.data[0].result[0].a.length).to.be.equal(10);
       expect(result.data[0].result[0].b.length).to.be.equal(10);
@@ -458,9 +479,9 @@ describe("Node Tests git 660", () => {
 
       pipe.flowInput.one = null;
       pipe.flowInput.two = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-      const res = await runRaw(pipe);
+      const res = await runRaw(pipe, dev_token);
       const jobId = res.body.jobId;
-      await getResult(jobId, 200);
+      await getResult(jobId, 200, dev_token);
     }).timeout(1000 * 60 * 2);
 
     it("caching (Run Node) batch index", async () => {
@@ -470,13 +491,13 @@ describe("Node Tests git 660", () => {
       pipe.nodes[2].batchOperation = "indexed";
       pipe.flowInput.one = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
       pipe.flowInput.two = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
-      const res = await runRaw(pipe);
+      const res = await runRaw(pipe, dev_token);
       const jobId = res.body.jobId;
-      const orgRes = await getResult(jobId, 200);
+      const orgRes = await getResult(jobId, 200, dev_token);
 
-      const res2 = await exceCachPipeline(jobId, "three");
+      const res2 = await exceCachPipeline(jobId, "three", dev_token);
       const jobId2 = res2.body.jobId;
-      const cachRes = await getResult(jobId2, 200);
+      const cachRes = await getResult(jobId2, 200, dev_token);
 
       expect(JSON.stringify(orgRes.data) == JSON.stringify(cachRes.data)).to.be
         .true;
@@ -489,13 +510,13 @@ describe("Node Tests git 660", () => {
       pipe.nodes[2].batchOperation = "indexed";
       pipe.flowInput.one = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
       pipe.flowInput.two = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
-      const res = await runRaw(pipe);
+      const res = await runRaw(pipe, dev_token);
       const jobId = res.body.jobId;
-      const orgRes = await getResult(jobId, 200);
+      const orgRes = await getResult(jobId, 200, dev_token);
 
-      const res2 = await exceCachPipeline(jobId, "one");
+      const res2 = await exceCachPipeline(jobId, "one", dev_token);
       const jobId2 = res2.body.jobId;
-      const cachRes = await getResult(jobId2, 200);
+      const cachRes = await getResult(jobId2, 200, dev_token);
 
       expect(JSON.stringify(orgRes.data) == JSON.stringify(cachRes.data)).to.be
         .true;
@@ -507,12 +528,12 @@ describe("Node Tests git 660", () => {
       pipe.nodes[2].batchOperation = "cartesian";
       pipe.flowInput.one = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
       pipe.flowInput.two = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
-      const res = await runRaw(pipe);
+      const res = await runRaw(pipe, dev_token);
       const jobId = res.body.jobId;
-      const orgRes = await getResult(jobId, 200);
-      const res2 = await exceCachPipeline(jobId, "three");
+      const orgRes = await getResult(jobId, 200, dev_token);
+      const res2 = await exceCachPipeline(jobId, "three", dev_token);
       const jobId2 = res2.body.jobId;
-      const cachRes = await getResult(jobId2, 200);
+      const cachRes = await getResult(jobId2, 200, dev_token);
 
       expect(JSON.stringify(orgRes.data) == JSON.stringify(cachRes.data)).to.be
         .true;
@@ -523,12 +544,12 @@ describe("Node Tests git 660", () => {
       pipe.nodes[1].input = ["#[10...15]"];
       pipe.nodes[2].input = ["99", "#@one", "#@two"];
       pipe.nodes[2].batchOperation = "indexed";
-      const res = await runRaw(pipe);
+      const res = await runRaw(pipe, dev_token);
       const jobId = res.body.jobId;
-      const orgRes = await getResult(jobId, 200);
-      const res2 = await exceCachPipeline(jobId, "three");
+      const orgRes = await getResult(jobId, 200, dev_token);
+      const res2 = await exceCachPipeline(jobId, "three", dev_token);
       const jobId2 = res2.body.jobId;
-      const cachRes = await getResult(jobId2, 200);
+      const cachRes = await getResult(jobId2, 200, dev_token);
 
       expect(JSON.stringify(orgRes.data) == JSON.stringify(cachRes.data)).to.be
         .true;
@@ -541,11 +562,11 @@ describe("Node Tests git 660", () => {
       pipe.nodes[2].batchOperation = "cartesian";
       pipe.flowInput.one = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
       pipe.flowInput.two = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
-      const res = await runRaw(pipe);
+      const res = await runRaw(pipe, dev_token);
       const jobId = res.body.jobId;
-      const orgRes = await getResult(jobId, 200);
+      const orgRes = await getResult(jobId, 200, dev_token);
 
-      const res2 = await exceCachPipeline(jobId, "three");
+      const res2 = await exceCachPipeline(jobId, "three", dev_token);
       expect(res2.status).to.be.equal(400);
       expect(res2.body.error.message).to.be.equal(
         "relation waitAny for node three is not allowed"
@@ -560,17 +581,17 @@ describe("Node Tests git 660", () => {
 
       pipe.flowInput.one = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
       pipe.flowInput.two = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
-      const res = await runRaw(pipe);
+      const res = await runRaw(pipe, dev_token);
       const jobId = res.body.jobId;
-      const orgRes = await getResult(jobId, 200);
+      const orgRes = await getResult(jobId, 200, dev_token);
 
-      const res2 = await exceCachPipeline(jobId, "two");
+      const res2 = await exceCachPipeline(jobId, "two", dev_token);
       const jobId2 = res2.body.jobId;
-      await getResult(jobId2, 200);
+      await getResult(jobId2, 200, dev_token);
 
-      const res3 = await exceCachPipeline(jobId2, "three");
+      const res3 = await exceCachPipeline(jobId2, "three", dev_token);
       const jobId3 = res3.body.jobId;
-      const cachRes = await getResult(jobId3, 200);
+      const cachRes = await getResult(jobId3, 200, dev_token);
 
       expect(JSON.stringify(orgRes.data) == JSON.stringify(cachRes.data)).to.be
         .true;
@@ -594,16 +615,16 @@ describe("Node Tests git 660", () => {
     };
 
     it("node fail scheduling due to lack of resource", async () => {
-      await storeAlgorithmApply(alg8cpu);
+      await storeAlgorithmApply(alg8cpu, dev_token);
       const alg = { name: algName, input: [] };
-      const res = await runAlgorithm(alg);
+      const res = await runAlgorithm(alg, dev_token);
       await intervalDelay("Waiting", 90 * 1000);
-      const graph = await getRawGraph(res.body.jobId);
+      const graph = await getRawGraph(res.body.jobId, dev_token);
       expect(graph.body.nodes[0].status).to.be.equal("failedScheduling");
     }).timeout(1000 * 60 * 3);
 
     after(async () => {
-      await deleteAlgorithm(algName);
+      await deleteAlgorithm(algName, dev_token);
     });
   });
 
@@ -611,11 +632,11 @@ describe("Node Tests git 660", () => {
     it("skip batch node if input is null", async () => {
       const testData = testData3;
       const d = deconstructTestData(testData);
-      await deletePipeline(d);
-      await storePipeline(d, pipeList);
-      const jobId = await runStoredAndWaitForResults(d);
+      await deletePipeline(d, dev_token);
+      await storePipeline(d, dev_token,  pipeList);
+      const jobId = await runStoredAndWaitForResults(d, dev_token);
 
-      const graph = await getRawGraph(jobId);
+      const graph = await getRawGraph(jobId, dev_token);
 
       expect(graph.body.nodes[1].batch[0].status).to.be.equal("skipped");
     }).timeout(1000 * 60 * 3);
@@ -623,9 +644,9 @@ describe("Node Tests git 660", () => {
     it("node get data from batch after batch was killed", async () => {
       const testData = testData1;
       const d = deconstructTestData(testData);
-      await deletePipeline(d);
-      await storePipeline(d, pipeList);
-      const jobId = await runStored(d);
+      await deletePipeline(d, dev_token);
+      await storePipeline(d, dev_token,  pipeList);
+      const jobId = await runStored(d, dev_token);
       await delay(15000);
       const jobs = await filterjobsByName("green-alg");
       console.log(jobs);
@@ -641,7 +662,7 @@ describe("Node Tests git 660", () => {
       });
       await Promise.all(delpod);
 
-      const result = await getResult(jobId, 200);
+      const result = await getResult(jobId, 200, dev_token);
       expect(result.status).to.be.equal("completed");
     }).timeout(1000 * 60 * 2);
   });
@@ -650,7 +671,7 @@ describe("Node Tests git 660", () => {
     it("integers", async () => {
       //set test data to testData1
       const d = deconstructTestData(testData402);
-      await deletePipeline(d);
+      await deletePipeline(d, dev_token);
       const pipe = {
         name: d.name,
         flowInput: {
@@ -660,10 +681,10 @@ describe("Node Tests git 660", () => {
       };
 
       //store pipeline addmuldiv
-      await storePipeline(d, pipeList);
-      const res = await runStored(pipe);
+      await storePipeline(d, dev_token,  pipeList);
+      const res = await runStored(pipe, dev_token);
       const jobId = res.body.jobId;
-      const result = await getResult(jobId, 200);
+      const result = await getResult(jobId, 200, dev_token);
       // let diff = []
       expect(result.data[0].result).to.be.equal(64);
     }).timeout(1000 * 60 * 5);
@@ -671,7 +692,7 @@ describe("Node Tests git 660", () => {
     it("float", async () => {
       //set test data to testData1
       const d = deconstructTestData(testData402);
-      await deletePipeline(d);
+      await deletePipeline(d, dev_token);
       const pipe = {
         name: d.name,
         flowInput: {
@@ -681,10 +702,10 @@ describe("Node Tests git 660", () => {
       };
 
       //store pipeline addmuldiv
-      await storePipeline(d, pipeList);
-      const res = await runStored(pipe);
+      await storePipeline(d, dev_token,  pipeList);
+      const res = await runStored(pipe, dev_token);
       const jobId = res.body.jobId;
-      const result = await getResult(jobId, 200);
+      const result = await getResult(jobId, 200, dev_token);
       // let diff = []
       expect(result.data[0].result).to.be.closeTo(7.965, 0.001);
     }).timeout(1000 * 60 * 5);
@@ -692,7 +713,7 @@ describe("Node Tests git 660", () => {
     it("string", async () => {
       //set test data to testData1
       const d = deconstructTestData(testData405);
-      await deletePipeline(d);
+      await deletePipeline(d, dev_token);
       const pipe = {
         name: d.name,
         flowInput: {
@@ -701,10 +722,10 @@ describe("Node Tests git 660", () => {
       };
 
       //store pipeline addmuldiv
-      await storePipeline(d, pipeList);
-      const res = await runStored(pipe);
+      await storePipeline(d, dev_token,  pipeList);
+      const res = await runStored(pipe, dev_token);
       const jobId = res.body.jobId;
-      const result = await getResult(jobId, 200);
+      const result = await getResult(jobId, 200, dev_token);
       // let diff = []
       expect(result.data[0].result).to.be.equal("hello earth");
     }).timeout(1000 * 60 * 5);
@@ -712,7 +733,7 @@ describe("Node Tests git 660", () => {
     it("bool true", async () => {
       //set test data to testData1
       const d = deconstructTestData(testData403);
-      await deletePipeline(d);
+      await deletePipeline(d, dev_token);
       const pipe = {
         name: d.name,
         flowInput: {
@@ -721,10 +742,10 @@ describe("Node Tests git 660", () => {
       };
 
       //store pipeline addmuldiv
-      await storePipeline(d, pipeList);
-      const res = await runStored(pipe);
+      await storePipeline(d, dev_token,  pipeList);
+      const res = await runStored(pipe, dev_token);
       const jobId = res.body.jobId;
-      const result = await getResult(jobId, 200);
+      const result = await getResult(jobId, 200, dev_token);
       // let diff = []
       expect(result.data[0].result).to.be.equal(true);
     }).timeout(1000 * 60 * 5);
@@ -732,7 +753,7 @@ describe("Node Tests git 660", () => {
     it("bool false", async () => {
       //set test data to testData1
       const d = deconstructTestData(testData403);
-      await deletePipeline(d);
+      await deletePipeline(d, dev_token);
       const pipe = {
         name: d.name,
         flowInput: {
@@ -741,10 +762,10 @@ describe("Node Tests git 660", () => {
       };
 
       //store pipeline addmuldiv
-      await storePipeline(d, pipeList);
-      const res = await runStored(pipe);
+      await storePipeline(d, dev_token,  pipeList);
+      const res = await runStored(pipe, dev_token);
       const jobId = res.body.jobId;
-      const result = await getResult(jobId, 200);
+      const result = await getResult(jobId, 200, dev_token);
       // let diff = []
       expect(result.data[0].result).to.be.equal(false);
     }).timeout(1000 * 60 * 5);
@@ -752,7 +773,7 @@ describe("Node Tests git 660", () => {
     it("bool object type", async () => {
       //set test data to testData1
       const d = deconstructTestData(testData403);
-      await deletePipeline(d);
+      await deletePipeline(d, dev_token);
       const pipe = {
         name: d.name,
         flowInput: {
@@ -765,10 +786,10 @@ describe("Node Tests git 660", () => {
       };
 
       //store pipeline addmuldiv
-      await storePipeline(d, pipeList);
-      const res = await runStored(pipe);
+      await storePipeline(d, dev_token,  pipeList);
+      const res = await runStored(pipe, dev_token);
       const jobId = res.body.jobId;
-      const result = await getResult(jobId, 200);
+      const result = await getResult(jobId, 200, dev_token);
       // let diff = []
       expect(result.data[0].result).to.be.deep.equal(pipe.flowInput.inputs);
     }).timeout(1000 * 60 * 5);
@@ -796,12 +817,12 @@ describe("Node Tests git 660", () => {
 
       const d = testData2.descriptor;
       //store pipeline
-      await deletePipeline(d);
-      await storePipeline(d, pipeList);
+      await deletePipeline(d, dev_token);
+      await storePipeline(d, dev_token,  pipeList);
 
-      const res = await runStored(d.name);
+      const res = await runStored(d.name, dev_token);
 
-      await checkResults(res, 200, "completed", d, true);
+      await checkResults(res, 200, "completed", d, dev_token, true);
     }).timeout(5000000);
 
     it("should fail the pipeline, 20 percent tolerance with one fail", async () => {
@@ -819,11 +840,11 @@ describe("Node Tests git 660", () => {
       dataSort(obj);
       const d = testData2.descriptor;
 
-      await deletePipeline(d);
-      await storePipeline(d, pipeList);
-      const res = await runStored(d.name);
+      await deletePipeline(d, dev_token);
+      await storePipeline(d, dev_token,  pipeList);
+      const res = await runStored(d.name, dev_token);
 
-      await checkResults(res, 200, "failed", d, true);
+      await checkResults(res, 200, "failed", d, dev_token, true,);
     }).timeout(5000000);
 
     it("should complete the pipeline, 60 percent tolerance with one fail", async () => {
@@ -841,11 +862,11 @@ describe("Node Tests git 660", () => {
       dataSort(obj);
       const d = testData2.descriptor;
 
-      await deletePipeline(d);
-      await storePipeline(d, pipeList);
-      const res = await runStored(d.name);
+      await deletePipeline(d, dev_token);
+      await storePipeline(d, dev_token,  pipeList);
+      const res = await runStored(d.name, dev_token);
 
-      await checkResults(res, 200, "completed", d, true);
+      await checkResults(res, 200, "completed", d, dev_token, true);
     }).timeout(5000000);
 
     it("should fail the pipeline, -2 percent tolerance with one fail", async () => {
@@ -863,8 +884,8 @@ describe("Node Tests git 660", () => {
       dataSort(obj);
       const d = testData2.descriptor;
 
-      await deletePipeline(d);
-      const res = await storePipeline(d, pipeList);
+      await deletePipeline(d, dev_token);
+      const res = await storePipeline(d, dev_token,  pipeList);
 
       expect(res.status).to.eql(400);
       expect(res.body).to.have.property("error");
@@ -889,8 +910,8 @@ describe("Node Tests git 660", () => {
       dataSort(obj);
       const d = testData2.descriptor;
 
-      await deletePipeline(d);
-      const res = await storePipeline(d, pipeList);
+      await deletePipeline(d, dev_token);
+      const res = await storePipeline(d, dev_token,  pipeList);
 
       expect(res.status).to.eql(400);
       expect(res.body).to.have.property("error");
@@ -915,8 +936,8 @@ describe("Node Tests git 660", () => {
       dataSort(obj);
       const d = testData2.descriptor;
 
-      await deletePipeline(d);
-      const res = await storePipeline(d, pipeList);
+      await deletePipeline(d, dev_token);
+      const res = await storePipeline(d, dev_token,  pipeList);
       expect(res.status).to.eql(400);
 
       expect(res.body).to.have.property("error");
@@ -941,8 +962,8 @@ describe("Node Tests git 660", () => {
       dataSort(obj);
       const d = testData2.descriptor;
 
-      await deletePipeline(d);
-      const res = await storePipeline(d, pipeList);
+      await deletePipeline(d, dev_token);
+      const res = await storePipeline(d, dev_token,  pipeList);
       expect(res.status).to.eql(400);
       expect(res.body).to.have.property("error");
       expect(res.body.error.message).to.include(
@@ -955,13 +976,13 @@ describe("Node Tests git 660", () => {
   it("output node", async () => {
     const testData = outputPipe;
     const d = deconstructTestData(testData);
-    await deletePipeline(d);
-    await storePipeline(d, pipeList);
+    await deletePipeline(d, dev_token);
+    await storePipeline(d, dev_token,  pipeList);
 
-    const jobId = await runStoredAndWaitForResults(d);
-    const result = await getResult(jobId, 200);
+    const jobId = await runStoredAndWaitForResults(d, dev_token);
+    const result = await getResult(jobId, 200, dev_token);
     const outputAlgorithmName = `${d.name}-output`;
-    await deleteAlgorithm(outputAlgorithmName);
+    await deleteAlgorithm(outputAlgorithmName, dev_token);
     expect(result.data[1].result[0]).to.be.equal('yellow-input')
     expect(result.data[1].result[1]).to.be.equal(42)
     expect(result.data[0].nodeName).to.be.equal('black')

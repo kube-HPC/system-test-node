@@ -2,9 +2,10 @@ const chai = require('chai');
 const path = require('path');
 const config = require(path.join(process.cwd(), 'config/config'))
 
-const getSpansByJodid = async (jobId) => {
+const getSpansByJodid = async (jobId, token = {}) => {
     const res = await chai.request(config.baseUrl).
-        get(`/hkube/api-server//api/v1/jaeger?jobId=${jobId}`);
+        get(`/hkube/api-server//api/v1/jaeger?jobId=${jobId}`)
+        .set('Authorization', `Bearer ${token}`);
 
     if (res.status !== 200) {
         throw new Error(`Failed to get spans: Code ${res.status}\n${res.text}`);

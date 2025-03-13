@@ -3,6 +3,8 @@ const expect = chai.expect;
 const chaiHttp = require('chai-http');
 const path = require('path');
 const delay = require('delay');
+const config = require('../config/config');
+
 
 const {
     testData1,
@@ -46,6 +48,25 @@ const {
 } = require('../utils/elasticsearch');
 
 describe('TID-161- High Availability for HKube infrastructure services', () => {
+    before(async function () {
+        this.timeout(1000 * 60 * 15);
+        let testUserBody ={
+            username: config.keycloakDevUser,
+            password: config.keycloakDevPass
+        }
+        const response = await chai.request(config.apiServerUrl)
+        .post('/auth/login')
+        .send(testUserBody)
+        
+        if (response.status === 200) {
+            console.log('dev login success');
+            dev_token = response.body.token;
+        }
+        else {
+            console.log('dev login failed - no keycloak/bad credentials');
+        }
+    });
+    let dev_token;
     let pipeList = [];
 
     after(async function () {
@@ -57,7 +78,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
     while (j < pipeList.length) {
         delPipe = pipeList.slice(j, z);
         const del = delPipe.map((e) => {
-            return deletePipeline(e);
+            return deletePipeline(e, dev_token);
         });
         console.log("delPipe-", JSON.stringify(delPipe, null, 2));
         const delResult = await Promise.all(del);
@@ -82,11 +103,11 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
         it('Fail pipeline driver  ', async () => {
             //set test data to testData1
             const d = deconstructTestData(testData1);
-            await deletePipeline(d);
+            await deletePipeline(d, dev_token);
             //store pipeline evalwait
-            await storePipeline(d, pipeList);
+            await storePipeline(d, dev_token, pipeList);
             //run the pipeline evalwait
-            const res = await runStored(d);
+            const res = await runStored(d, dev_token);
             const jobId = res.body.jobId;
             console.log("jobId = " + jobId);
             let drivers = [];
@@ -101,7 +122,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
             write_log('podName-' + podName);
             await deletePod(podName);
             //get result
-            const result = await getResult(jobId, 200);
+            const result = await getResult(jobId, 200, dev_token);
             write_log(result.status);
             write_log(result.error, 'error');
             expect(result.status).to.be.equal('completed');
@@ -116,9 +137,9 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
                 }
             }
             await delay(2000);
-            await deletePipeline(d.name);
-            await storePipeline(d, pipeList);
-            const res = await runStored(pipe);
+            await deletePipeline(d.name, dev_token);
+            await storePipeline(d, dev_token, pipeList);
+            const res = await runStored(pipe, dev_token);
             const jobId = res.body.jobId;
             await delay(15000);
             const driver = await getDriverIdByJobId(jobId);
@@ -135,16 +156,16 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
 
             await delay(3000);
 
-            await getResult(jobId, 200);
+            await getResult(jobId, 200, dev_token);
         }).timeout(1000 * 60 * 5);
 
         it('kill pipeline driver  multiple batch', async () => {
             const e = deconstructTestData(testData2);
 
-            await deletePipeline(e.name);
-            await storePipeline(e, pipeList);
+            await deletePipeline(e.name, dev_token);
+            await storePipeline(e, dev_token, pipeList);
 
-            const res = await runStored(e);
+            const res = await runStored(e, dev_token);
             const jobId = res.body.jobId;
             await delay(3000);
 
@@ -159,15 +180,15 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
             await delay(10000);
             const newdriver = await getDriverIdByJobId(jobId);
             console.log("new driver =" + newdriver);
-            await getResult(jobId, 200);
+            await getResult(jobId, 200, dev_token);
         }).timeout(1000 * 60 * 10);
 
         it('kill pipeline driver   batch on batch', async () => {
             const e = deconstructTestData(testData4);
-            await deletePipeline(e.name);
-            await storePipeline(e, pipeList);
+            await deletePipeline(e.name, dev_token);
+            await storePipeline(e, dev_token,pipeList);
 
-            const res = await runStored(e);
+            const res = await runStored(e, dev_token);
             const jobId = res.body.jobId;
             await delay(7000);
 
@@ -182,7 +203,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
             await delay(15000);
             const newdriver = await getDriverIdByJobId(jobId);
             console.log("new driver =" + newdriver);
-            await getResult(jobId, 200);
+            await getResult(jobId, 200, dev_token);
         }).timeout(1000 * 60 * 10);
     });
 
@@ -197,12 +218,12 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
         }
         //set test data to testData1
         const d = deconstructTestData(testData1);
-        await deletePipeline(d);
+        await deletePipeline(d, dev_token);
         //store pipeline evalwait
-        await storePipeline(d, pipeList);
+        await storePipeline(d, dev_token, pipeList);
 
         //run the pipeline evalwait
-        const res = await runStored(pipe);
+        const res = await runStored(pipe, dev_token);
 
         const jobId = res.body.jobId;
 
@@ -225,8 +246,8 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
     it('Fail jaeger', async () => {
         const d = deconstructTestData(testData1);
         //store pipeline evalwait
-        await deletePipeline(d);
-        await storePipeline(d, pipeList);
+        await deletePipeline(d, dev_token);
+        await storePipeline(d, dev_token, pipeList);
         //run the pipeline evalwait
         const res = await runStored(d);
         const jobId = res.body.jobId;
@@ -247,7 +268,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
             }
         }
         await delay(20000);
-        const result = await getResult(jobId, 200);
+        const result = await getResult(jobId, 200, dev_token);
         expect(result.status).to.be.equal('completed');
     }).timeout(1000 * 60 * 60);
 
