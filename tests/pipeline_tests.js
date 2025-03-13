@@ -925,7 +925,7 @@ let dev_token;
         };
         const runStoredResult = await runStored(ttl, dev_token); //should be stoped  due to ttl
         let getStatusResultBody = await getStatus(runStoredResult.body.jobId, 200, "active", dev_token);
-        await timeout(10500)
+        await timeout(10500);
         await cleanPipeLines(dev_token);
         getStatusResultBody = await getStatus(runStoredResult.body.jobId, 200, "stopped", dev_token);
         expect(getStatusResultBody.reason).to.be.equal("pipeline expired");
