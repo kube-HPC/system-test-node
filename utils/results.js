@@ -43,20 +43,22 @@ const getJobIdStatus = async (jobId, token = {}) => {
 
 const getStatus = async (jobId, expectedCode, expectedStatus, token = {}, timeout = 60 * 1000 * 3, interval = 1000) => {
     const start = Date.now();
+    let actualStatus = '';
     do {
         process.stdout.write(`\rWaiting for jobId: ${jobId} to get status: ${expectedStatus}, time passed: ${Date.now() - start}/${timeout} ms...`);
         const res = await chai.request(config.apiServerUrl)
             .get(`/exec/status/${jobId}`)
             .set('Authorization', `Bearer ${token}`);
 
+        actualStatus = res.body.status;
         logger.info(`${res.status}, ${JSON.stringify(res.body)}`);
-        if (res.status == expectedCode && res.body.status == expectedStatus) {
+        if (res.status == expectedCode && actualStatus == expectedStatus) {
             console.log(`\njobId: ${jobId} has status: ${expectedStatus}`);
             return res.body;
         }
         await delay(interval);
     } while (Date.now() - start < timeout);
-    expect.fail(`\ntimeout exceeded trying to get ${expectedStatus} status for jobId ${jobId}`);
+    expect.fail(`\ntimeout exceeded trying to get ${expectedStatus} status for jobId ${jobId}. Status is ${actualStatus}`);
 };
 
 const getStates = async (jobId) => {
