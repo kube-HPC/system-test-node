@@ -117,8 +117,8 @@ describe("pipeline Tests 673", () => {
   before(async function () {
     this.timeout(1000 * 60 * 15);
     let testUserBody ={
-        username: 'test-guest',// config.keycloakDevUser,
-        password: 'test-guest'//config.keycloakDevPass
+        username: config.keycloakDevUser,
+        password: config.keycloakDevPass
     }
     const response = await chai.request(config.apiServerUrl)
     .post('/auth/login')
