@@ -174,7 +174,7 @@ describe('Alrogithm Tests', () => {
                         }
                     }
                     catch (error) { 
-                        console.error(error);
+                        console.error(result.error.message || error);
                     }
                 }
             });
