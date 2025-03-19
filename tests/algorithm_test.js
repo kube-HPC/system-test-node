@@ -589,7 +589,7 @@ describe('Alrogithm Tests', () => {
 
             await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, dev_token, false);
             let deleteAlg = await deleteAlgorithmVersion(algorithmName, v2.body.algorithm.version, dev_token);
-            expect(deleteAlg.body.error.message).to.be.equal("unable to remove used version");
+            expect(deleteAlg.body.error.message).to.be.equal("unable to remove the currently used version");
             deleteAlg = await deleteAlgorithmVersion(algorithmName, v1.body.algorithm.version, dev_token);
             expect(deleteAlg.status).to.be.equal(200);
             const algVersion = await getAlgorithmVersion(algorithmName, dev_token);
