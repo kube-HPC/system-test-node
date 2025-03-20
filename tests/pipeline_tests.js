@@ -682,8 +682,8 @@ let dev_token;
     //undefined
     it("Trigger get input from parent", async () => {
       const triggerTestData = testData9;
-      const triggerdName = pipelineRandomName(8);
-      triggerTestData.descriptor.name = triggerdName;
+      const triggeredName = pipelineRandomName(8);
+      triggerTestData.descriptor.name = triggeredName;
       const triggered = deconstructTestData(triggerTestData);
       const trigger = deconstructTestData(testData8);
       await deletePipeline(trigger, dev_token);
@@ -694,7 +694,8 @@ let dev_token;
       await runStoredAndWaitForResults(trigger, dev_token);
       await delay(1000 * 20);
       jobs = await getWebSocketJobs();
-      jobId = jobs.filter((obj) => obj.pipeline.triggers)[0].key;
+      const jobWithTriggers = jobs.filter((obj) => obj.pipeline.triggers);
+      const jobId = jobWithTriggers.filter((obj) => obj.pipeline.name === triggeredName)[0].key;
       const result = await getResult(jobId, 200, dev_token);
       expect(result.data.length).to.be.equal(10);
       const expected = [46, 47, 48, 49, 50, 51, 52, 53, 54, 45];
@@ -772,7 +773,7 @@ let dev_token;
     }).timeout(1000 * 60 * 2);
   });
 
-  describe("pause_resume_pipelineas (git 529 344)", () => {
+  describe("pause_resume_pipelines (git 529 344)", () => {
     //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/529
     const algorithmName = "algorithm-version-test";
     const algorithmImageV1 = "tamir321/algoversion:v1";
@@ -909,7 +910,7 @@ let dev_token;
     describe("pipeline options", async () => {
       const d = deconstructTestData(ttlPipe);
 
-      it("pipeline ttl ", async () => {
+      it("pipeline ttl", async () => {
         await deletePipeline(d, dev_token);
         await storePipeline(d, dev_token, pipeList);
         const ttl = {
@@ -924,7 +925,7 @@ let dev_token;
         };
         const runStoredResult = await runStored(ttl, dev_token); //should be stoped  due to ttl
         let getStatusResultBody = await getStatus(runStoredResult.body.jobId, 200, "active", dev_token);
-        await timeout(10500)
+        await timeout(10500);
         await cleanPipeLines(dev_token);
         getStatusResultBody = await getStatus(runStoredResult.body.jobId, 200, "stopped", dev_token);
         expect(getStatusResultBody.reason).to.be.equal("pipeline expired");

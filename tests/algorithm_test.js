@@ -153,6 +153,7 @@ describe('Alrogithm Tests', () => {
 
     afterEach(async function () { // after each to zero the number of hot-workers
         this.timeout(2 * 60 * 1000);
+        if (algList.length === 0) return;
         console.log("algList = " + algList);
         j = 0;
         z = 3;
@@ -173,7 +174,7 @@ describe('Alrogithm Tests', () => {
                         }
                     }
                     catch (error) { 
-                        console.error(error);
+                        console.error(result.error.message || error);
                     }
                 }
             });
