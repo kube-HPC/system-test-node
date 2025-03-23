@@ -1,6 +1,6 @@
 name: alg-deps
 env: python 
-baseImage: python:3.7
+baseImage: python:3.8
 resources:
   cpu: 0.5
   gpu: 0 # if not needed just remove it from the file

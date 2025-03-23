@@ -6,7 +6,7 @@
   "mem": "512Mi",
   "entryPoint": "pyeyemat",
   "minHotWorkers": 0,
-  "baseImage": "python:3.7",
+  "baseImage": "python:3.8",
   "type": "Code",
   "options": {
     "pending": true

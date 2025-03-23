@@ -1,6 +1,6 @@
 name: ryywokrz
 env: python
-baseImage: 'python:3.7'
+baseImage: 'python:3.8'
 resources:
   cpu: 0.1
   gpu: 0

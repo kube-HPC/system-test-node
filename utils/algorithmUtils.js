@@ -123,7 +123,7 @@ const buildAlgorithm = async ({ code, algName, entry, kc_token = {}, baseVersion
     return buildIdAlg;
 }
 
-const buildAlgorithmAndWait = async ({ code, algName, entry, kc_token = {}, baseVersion = 'python:3.7', algorithmArray = [] }) => {
+const buildAlgorithmAndWait = async ({ code, algName, entry, kc_token = {}, baseVersion = 'python:3.8', algorithmArray = [] }) => {
     const buildIdAlg = await buildAlgorithm({ code: code, algName: algName, entry: entry, kc_token: kc_token, baseVersion: baseVersion, algorithmArray: algorithmArray });
     const buildStatusAlg = await getStatusall(buildIdAlg, `/builds/status/`, 200, "completed", kc_token, 1000 * 60 * 15);
     return buildStatusAlg;
