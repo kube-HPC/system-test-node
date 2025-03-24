@@ -446,8 +446,8 @@ describe('Alrogithm Tests', () => {
         it(`change baseImage trigger new Build`, async () => {
             const code1 = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
             const entry = 'main27';
-            const algName = "python3.7-test-1";
-            const pythonVersion = "python:3.7";
+            const algName = "python3.8-test-1";
+            const pythonVersion = "python:3.8";
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, kc_token: dev_token, baseVersion: pythonVersion, algorithmArray: algList });
             expect(buildStatusAlg.status).to.be.equal("completed");
             expect(buildStatusAlg.algorithmImage).to.contain(buildStatusAlg.imageTag); //.endsWith(buildStatusAlg.imageTag)
@@ -455,7 +455,7 @@ describe('Alrogithm Tests', () => {
 
             let algJson = JSON.parse(alg.text);
             alg = await getAlgorithm(algName, dev_token);
-            algJson.baseImage = "python:3.8";
+            algJson.baseImage = "python:3.9";
             let v2 = await storeAlgorithmApply(algJson, dev_token);
             //expect(v2.algorithmImage).to.contain(v2.imageTag)
             expect(v2.imageTag).to.not.be.equal(buildStatusAlg.imageTag);
@@ -466,8 +466,8 @@ describe('Alrogithm Tests', () => {
         it(`change env trigger new Build`, async () => {
             const code1 = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
             const entry = 'main27';
-            const algName = "python3.7-test-1";
-            const pythonVersion = "python:3.7";
+            const algName = "python3.8-test-1";
+            const pythonVersion = "python:3.8";
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, kc_token: dev_token, baseVersion: pythonVersion, algorithmArray: algList });
             expect(buildStatusAlg.status).to.be.equal("completed");
             expect(buildStatusAlg.algorithmImage).to.contain(buildStatusAlg.imageTag); //.endsWith(buildStatusAlg.imageTag)
