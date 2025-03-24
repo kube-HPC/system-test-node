@@ -80,7 +80,7 @@ describe('Algorithm build test', () => {
                         }
                     }
                     catch (error) { 
-                        console.error(error);
+                        console.error(result.error.message || error);
                     }
                 }
             });          
