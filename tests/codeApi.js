@@ -80,7 +80,7 @@ describe('code api tests ', () => {
     const createAlg = async (obj, token = {}, isGit = false) => {
         obj.algorithmArray = algList;
         obj.kc_token = token;
-        await deleteAlgorithm(obj.name, token, true);
+        await deleteAlgorithm(obj.algName, token, true);
         const buildStatusAlg = isGit ? await buildGitAlgorithm(obj) : await buildAlgorithmAndWait(obj);
         expect(buildStatusAlg.status).to.be.equal("completed");
         return buildStatusAlg;
