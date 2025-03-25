@@ -50,13 +50,13 @@ chai.use(assertArrays);
 describe('all swagger calls test ', () => {
     before(async function () {
         this.timeout(1000 * 60 * 15);
-        let testUserBody ={
+        let testUserBody = {
             username: config.keycloakDevUser,
             password: config.keycloakDevPass
         }
         const response = await chai.request(config.apiServerUrl)
-        .post('/auth/login')
-        .send(testUserBody)
+            .post('/auth/login')
+            .send(testUserBody)
         
         if (response.status === 200) {
             console.log('dev login success');
@@ -1021,13 +1021,13 @@ describe('all swagger calls test ', () => {
     describe('No correct role', () => {
         before(async function () {
             this.timeout(1000 * 60 * 15);
-            let testUserBody ={
+            let testUserBody = {
                 username: config.keycloakGuestUser,
                 password: config.keycloakGuestPass
             }
             const response = await chai.request(config.apiServerUrl)
-            .post('/auth/login')
-            .send(testUserBody)
+                .post('/auth/login')
+                .send(testUserBody)
             
             if (response.status === 200) {
                 console.log('guest login success');
@@ -1043,7 +1043,7 @@ describe('all swagger calls test ', () => {
             const res = await chai.request(config.apiServerUrl)
                 .delete(`/store/pipelines/${name}`)
                 .set("Authorization", `Bearer ${guest_token}`)
-            if (dev_token) {
+            if (guest_token) {
                 expect(res.text).to.eql("Access denied")
                 expect(res).to.have.status(403)
             }
