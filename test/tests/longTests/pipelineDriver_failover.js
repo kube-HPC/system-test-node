@@ -59,7 +59,7 @@ describe('pipeline driver fail over', () => {
         //run the pipeline evalwait
         const res = await runStored(d)
         const jobId = res.body.jobId
-        const driver = await getDriverIdByJobId(jobId)
+        const driver = await getDriverIdByJobId(undefined, jobId)
 
         const podName = driver[0].podName
         write_log('podName-' + podName)
@@ -89,7 +89,7 @@ describe('pipeline driver fail over', () => {
         const res = await runStored(pipe)
         const jobId = res.body.jobId
         await delay(15000)
-        const driver = await getDriverIdByJobId(jobId)
+        const driver = await getDriverIdByJobId(undefined, jobId)
 
         const podName = driver[0].podName
         write_log('podName-' + podName)
@@ -98,7 +98,7 @@ describe('pipeline driver fail over', () => {
         write_log('podName-' + podName)
         await delay(25000)
 
-        const newdriver = await getDriverIdByJobId(jobId)
+        const newdriver = await getDriverIdByJobId(undefined, jobId)
         console.log("new driver =" + newdriver)
 
         await delay(3000)
@@ -118,7 +118,7 @@ describe('pipeline driver fail over', () => {
         await delay(5000)
 
 
-        const driver = await getDriverIdByJobId(jobId)
+        const driver = await getDriverIdByJobId(undefined, jobId)
 
         const podName = driver[0].podName
         write_log('podName-' + podName)
@@ -127,7 +127,7 @@ describe('pipeline driver fail over', () => {
         const pod = await deletePod(podName)
         write_log('podName-' + podName)
         await delay(10000)
-        const newdriver = await getDriverIdByJobId(jobId)
+        const newdriver = await getDriverIdByJobId(undefined, jobId)
         console.log("new driver =" + newdriver)
         const result = await getResult(jobId, 200)
     }).timeout(1000 * 60 * 10);
@@ -143,7 +143,7 @@ describe('pipeline driver fail over', () => {
         await delay(70000)
 
 
-        const driver = await getDriverIdByJobId(jobId)
+        const driver = await getDriverIdByJobId(undefined, jobId)
 
         const podName = driver[0].podName
         write_log('podName-' + podName)
@@ -152,7 +152,7 @@ describe('pipeline driver fail over', () => {
         const pod = await deletePod(podName)
         write_log('podName-' + podName)
         await delay(10000)
-        const newdriver = await getDriverIdByJobId(jobId)
+        const newdriver = await getDriverIdByJobId(undefined, jobId)
         console.log("new driver =" + newdriver)
         const result = await getResult(jobId, 200)
     }).timeout(1000 * 60 * 10);

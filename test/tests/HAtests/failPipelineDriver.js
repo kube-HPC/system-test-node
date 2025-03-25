@@ -45,7 +45,7 @@ describe('HA tests', () => {
         const jobId = res.body.jobId
 
 
-        const driver = await getDriverIdByJobId(jobId)
+        const driver = await getDriverIdByJobId(undefined, jobId)
 
         const podName = driver[0].podName
 
