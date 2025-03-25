@@ -204,24 +204,32 @@ describe('Alrogithm Tests', () => {
             username: 'nopermissions',
             password: '123'
         }
+
         const response = await chai.request(config.apiServerUrl)
-        .post('/auth/login')
-        .send(testUserBody)
+            .post('/auth/login')
+            .send(testUserBody)
         
         let token;
         if (response.status === StatusCodes.OK) {
             console.log('nopermissions user login success');
             token = response.body.token;
         }
+
         expect(token).to.not.equal(undefined, 'dev login failed - no keycloak/bad credentials');
+
+        let errorCaught = false;
         try {
             await getAllAlgorithms(token);
         }
         catch (error) {
+            errorCaught = true;
             expect(error.response.status).to.be.equal(StatusCodes.FORBIDDEN);
             expect(error.response.errors[0].code).to.be.equal('FORBIDDEN');
             expect(error.response.errors[0].message).to.be.equal('Forbidden: You do not have access to this resource');
             expect(error.response.errors[0].status).to.be.equal(StatusCodes.FORBIDDEN);
+        }
+        if (!errorCaught) {
+            throw new Error("Expected getAllAlgorithms to throw an error but it didn't");
         }
     }).timeout(1000 * 60)
 
