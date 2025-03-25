@@ -658,7 +658,7 @@ describe('Hkubectl Tests', () => {
             console.log(startCommand);
             await exceSyncString(startCommand);
             let res = await runStored(devPipeline);
-            await delay(45 * 1000);
+            await delay(90 * 1000);
             // get status before watch
             let pipelineData = await getPipelineStatus(res.body.jobId);
             expect(pipelineData.body.status).be.equal('failed');
