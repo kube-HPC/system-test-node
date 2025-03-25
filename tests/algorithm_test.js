@@ -1014,8 +1014,8 @@ describe('Alrogithm Tests', () => {
                 expect(listOfAlgorithmResponse).to.be.an('array');
                 expect(listOfAlgorithmResponse.length).to.be.equal(2);
                 expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
-                expect(listOfAlgorithmResponse[0].name).to.be.equal('alg1');
-                expect(listOfAlgorithmResponse[1].name).to.be.equal('alg2');
+                expect(listOfAlgorithmResponse[0].algorithm.name).to.be.equal('alg1');
+                expect(listOfAlgorithmResponse[1].algorithm.name).to.be.equal('alg2');
             }).timeout(1000 * 60 * 5);
 
             it('create an algorithm array containing a 409 Conflict status and error message for existing algorithms', async () => {
@@ -1070,7 +1070,7 @@ describe('Alrogithm Tests', () => {
                 expect(listOfAlgorithmResponse).to.be.an('array');
                 expect(listOfAlgorithmResponse.length).to.be.equal(2);
                 expect(listOfAlgorithmResponse[0].error.code).to.be.equal(409, 'Expected status code to be CONFLICT');
-                expect(listOfAlgorithmResponse[1].name).to.be.equal('alg2');
+                expect(listOfAlgorithmResponse[1].algorithm.name).to.be.equal('alg2');
             }).timeout(1000 * 60 * 5);
 
             it('overwrite an algorithm', async () => {
@@ -1124,8 +1124,8 @@ describe('Alrogithm Tests', () => {
                 expect(response.statusCode).to.be.equal(201);
                 expect(listOfAlgorithmResponse).to.be.an('array');
                 expect(listOfAlgorithmResponse.length).to.be.equal(2);
-                expect(listOfAlgorithmResponse[1].name).to.be.equal('alg2');
-                alg2Response = await getAlgorithm('alg2', dev_token);
+                expect(listOfAlgorithmResponse[1].algorithm.name).to.be.equal('alg2');
+                const alg2Response = await getAlgorithm('alg2', dev_token);
                 expect(alg2Response.body.cpu).to.eq(0.2);
 
             }).timeout(1000 * 60 * 5);
@@ -1160,7 +1160,7 @@ describe('Alrogithm Tests', () => {
                 expect(listOfAlgorithmResponse.length).to.be.equal(2);
                 expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
                 expect(listOfAlgorithmResponse[0].error.code).to.be.equal(400, 'Expected status code to be BAD-REQUEST');
-                expect(listOfAlgorithmResponse[1].name).to.be.equal('alg1');
+                expect(listOfAlgorithmResponse[1].algorithm.name).to.be.equal('alg1');
             });
         });
 

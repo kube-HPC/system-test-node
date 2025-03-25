@@ -76,19 +76,21 @@ const storeAlgorithmApply = async (alg, token = {}) => {
 }
 
 const storeAlgorithms = async (alg, token = {}) => {
+    const body = Array.isArray(alg) ? { payload: alg.map(a => JSON.stringify(a)) } : { payload: JSON.stringify(alg) };
     const res = await chai.request(config.apiServerUrl)
         .post('/store/algorithms')
         .set('Authorization', `Bearer ${token}`)
-        .send(alg)
+        .send(body)
         .set('Content-Type', 'application/json');
     return res;
 };
 
 const storeOrUpdateAlgorithms = async (alg, token = {}) => {
+    const body = Array.isArray(alg) ? { payload: alg.map(a => JSON.stringify(a)) } : { payload: JSON.stringify(alg) };
     const res = await chai.request(config.apiServerUrl)
         .post('/store/algorithms?overwrite=true')
         .set('Authorization', `Bearer ${token}`)
-        .send(alg)
+        .send(body)
         .set('Content-Type', 'application/json');
     return res;
 };
