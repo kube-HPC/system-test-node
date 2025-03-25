@@ -303,7 +303,7 @@ let dev_token;
       await runStoredAndWaitForResults(simple, dev_token);
       await delay(3 * 1000);
       await deletePipeline(d, dev_token);
-      jobs = await getWebSocketJobs();
+      jobs = await getWebSocketJobs(dev_token);
       jobId = jobs.filter((obj) => obj.pipeline.triggers)[0].key;
       const status = await getExecPipeline(jobId, dev_token);
       expect(status.body.types).includes("trigger");
@@ -521,7 +521,7 @@ let dev_token;
       await storePipeline(d, dev_token, pipeList);
       await runStoredAndWaitForResults(simple, dev_token);
       await delay(3 * 1000);
-      jobs = await getWebSocketJobs();
+      jobs = await getWebSocketJobs(dev_token);
       jobId = jobs.filter((obj) => obj.pipeline.triggers)[0].key;
       const pipelineData = await getExecPipeline(jobId, dev_token);
       const rr = validateDefault(triggerd.descriptor, pipelineData.body);
@@ -652,7 +652,7 @@ let dev_token;
       await delay(1000 * 120);
 
       const me = `pipeline ${pipelineName} failed sending to api server, error: unable to find flowInput.inputs`;
-      const log = await getWebSocketlogs();
+      const log = await getWebSocketlogs(dev_token);
       const error = log.filter((obj) => obj.message == me);
       expect(error.length).to.be.greaterThan(0);
     }).timeout(1000 * 60 * 7);
@@ -673,7 +673,7 @@ let dev_token;
       await storePipeline(d, dev_token, pipeList);
       await runStoredAndWaitForResults(simple, dev_token);
       await delay(1000 * 20);
-      const log = await getWebSocketlogs();
+      const log = await getWebSocketlogs(dev_token);
       const me = `pipeline ${triggerdName} failed sending to api server, error: unable to find flowInput.inp`;
       const error = log.filter((obj) => obj.message == me);
       expect(error.length).to.be.greaterThan(0);
@@ -693,7 +693,7 @@ let dev_token;
       await storePipeline(triggered, dev_token, pipeList);
       await runStoredAndWaitForResults(trigger, dev_token);
       await delay(1000 * 20);
-      jobs = await getWebSocketJobs();
+      jobs = await getWebSocketJobs(dev_token);
       const jobWithTriggers = jobs.filter((obj) => obj.pipeline.triggers);
       const jobId = jobWithTriggers.filter((obj) => obj.pipeline.name === triggeredName)[0].key;
       const result = await getResult(jobId, 200, dev_token);
@@ -708,7 +708,7 @@ let dev_token;
       // testData4 = versatile-pipe
       const simple2TestData = testData2;
       const versatileTestData = testData4;
-      const logBefore = await getWebSocketlogs();
+      const logBefore = await getWebSocketlogs(dev_token);
       const before = logBefore
         .filter((obj) => typeof obj.message == "string")
         .filter((obj) =>
@@ -742,8 +742,8 @@ let dev_token;
       await storePipeline(e, dev_token,  pipeList);
       const res = await runStored(pipe, dev_token);
       await delay(1000 * 20);
-      await getDriverIdByJobId(res.body.jobId);
-      const log = await getWebSocketlogs();
+      await getDriverIdByJobId(dev_token, res.body.jobId);
+      const log = await getWebSocketlogs(dev_token);
       const after = log
         .filter((obj) => typeof obj.message == "string")
         .filter((obj) =>

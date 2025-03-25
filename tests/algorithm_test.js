@@ -240,7 +240,7 @@ describe('Alrogithm Tests', () => {
             await applyAlg(algorithmSatisfied, dev_token);
             await runAlgorithm(algorithm, dev_token);
             await intervalDelay("Waiting", 45000, 2500);
-            const allAlgorithms = await getAllAlgorithms();
+            const allAlgorithms = await getAllAlgorithms(dev_token);
             const algo = allAlgorithms.find(algo => algo.name === algorithm.name);
             if (!algo) {
                 throw new Error(`Algorithm ${algorithm.name} not found`);
@@ -253,7 +253,7 @@ describe('Alrogithm Tests', () => {
             await applyAlg(algorithmNotSatisfied, dev_token);
             await runAlgorithm(algorithm, dev_token);
             await intervalDelay("Waiting", 45000, 2500);
-            const allAlgorithms = await getAllAlgorithms();
+            const allAlgorithms = await getAllAlgorithms(dev_token);
             const algo = allAlgorithms.find(algo => algo.name === algorithm.name);
             if (!algo) {
                 throw new Error(`Algorithm ${algorithm.name} not found`);
@@ -613,12 +613,12 @@ describe('Alrogithm Tests', () => {
             await delay(2000);
             await storeAlgorithmApply(algorithmV2, dev_token);
 
-            const { job } = await getJobById(resAlgorithmV1.body.jobId);
-            const versionranAlgorithm = await getJobsByNameAndVersion(job.graph.nodes[0].algorithmName, job.graph.nodes[0].algorithmVersion);
+            const { job } = await getJobById(dev_token, resAlgorithmV1.body.jobId);
+            const versionranAlgorithm = await getJobsByNameAndVersion(dev_token, job.graph.nodes[0].algorithmName, job.graph.nodes[0].algorithmVersion);
             expect(algorithmV1.algorithmImage).to.be.equal(versionranAlgorithm.algorithmsByVersion.algorithm.algorithmImage);
 
             await deleteAlgorithm(algorithmName,dev_token, true, true);
-            const ranAlgorithmAfterDelete = await getJobsByNameAndVersion(job.graph.nodes[0].algorithmName, job.graph.nodes[0].algorithmVersion);
+            const ranAlgorithmAfterDelete = await getJobsByNameAndVersion(dev_token, job.graph.nodes[0].algorithmName, job.graph.nodes[0].algorithmVersion);
             expect(algorithmV1.algorithmImage).to.be.equal(ranAlgorithmAfterDelete.algorithmsByVersion.algorithm.algorithmImage);
         }).timeout(1000 * 60 * 5);
     });
@@ -928,7 +928,7 @@ describe('Alrogithm Tests', () => {
             }
             await applyAlg(alg, dev_token);
             await intervalDelay("Waiting", 40000);
-            const workers = await waitForWorkers(alg.name, alg.minHotWorkers);
+            const workers = await waitForWorkers(dev_token, alg.name, alg.minHotWorkers);
             await deleteAlgorithm(alg.name, dev_token, true);
             expect(workers.length).to.be.equal(alg.minHotWorkers);
         }).timeout(1000 * 5 * 60);

@@ -95,7 +95,7 @@ describe.skip('Test worker cache 576', () => { // IF THIS TESTS RETURNS, PLEASE 
         //run the pipeline 
         const jobId = await runStoredAndWaitForResults(d, dev_token);
 
-        const WSdata = await getWorkers();
+        const WSdata = await getWorkers(dev_token);
         const pods = WSdata.discovery.worker.filter(worker => worker.algorithmName == "eval-alg");
 
         const data = await getSpansByJodid(jobId, dev_token);

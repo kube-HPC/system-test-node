@@ -1,5 +1,5 @@
 require('dotenv').config()
-const { request } = require('graphql-request')
+const { GraphQLClient } = require('graphql-request')
 const { WORKERS_ALL_QUERY } = require('../utils/graphql/queries/workers-query');
 const JOB_QUERY = require('../utils/graphql/queries/job-query');
 const JOB_BY_ID_QUERY = require('../utils/graphql/queries/job-by-id-query');
@@ -12,51 +12,64 @@ const delay = require('delay')
 
 const Graphql_URL = process.env.BASE_URL + "/hkube/api-server/graphql";
 
-const getDriverIdByJobId = async (jobId, experimentName = 'main') => {
-    data = await request(Graphql_URL, PIPELINE_DRIVER_QUERY);
+const _createClient = (token) => {
+    return new GraphQLClient(Graphql_URL, {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+};
+
+const getDriverIdByJobId = async (token, jobId, experimentName = 'main') => {
+    const client = _createClient(token);
+    data = await client.request(PIPELINE_DRIVER_QUERY);
     return data.discovery.pipelineDriver.filter((driver) => driver.jobs.some(job => job.jobId === jobId));
-}
+};
 
-const getAllAlgorithms = async (experimentName = 'main') => {
-    const data = await request(Graphql_URL, ALL_ALGORITHMS_QUERY);
+const getAllAlgorithms = async (token, experimentName = 'main') => {
+    const client = _createClient(token);
+    const data = await client.request(ALL_ALGORITHMS_QUERY);
     return data.algorithms.list;
-}
+};
 
-const getWebSocketlogs = async (experimentName = 'main') => {
-    const data = await request(Graphql_URL, ERROR_LOG_QUERY);
+const getWebSocketlogs = async (token, experimentName = 'main') => {
+    const client = _createClient(token);
+    const data = await client.request(ERROR_LOG_QUERY);
     return data.errorLogs;
-}
+};
 
-const getWebSocketJobs = async (experimentName = 'main') => {
-    const data = await request(Graphql_URL, JOB_QUERY);
+const getWebSocketJobs = async (token, experimentName = 'main') => {
+    const client = _createClient(token);
+    const data = await client.request(JOB_QUERY);
     return data.jobsAggregated.jobs
 };
-const getJobById = async (jobId) => {
+
+const getJobById = async (token, jobId) => {
+    const client = _createClient(token);
     const variables = {
         jobId
     }
-    const data = await request(Graphql_URL, JOB_BY_ID_QUERY,variables);
+    const data = await client.request(JOB_BY_ID_QUERY,variables);
     return data;
 };
 
-const getJobsByNameAndVersion = async (name,version) => {
+const getJobsByNameAndVersion = async (token, name,version) => {
+    const client = _createClient(token);
     const variables = {
         name,
         version
     }
-    const data = await request(Graphql_URL, ALGORITHM_BY_VERSION_QUERY,variables);
+    const data = await client.request(ALGORITHM_BY_VERSION_QUERY,variables);
     return data;
 };
 
-const getWorkers = async (experimentName = 'main') => {
+const getWorkers = async (token, experimentName = 'main') => { // WORK ADIR
+    const client = _createClient(token);
+    return await client.request(WORKERS_ALL_QUERY);
+};
 
-    return await request(Graphql_URL, WORKERS_ALL_QUERY);
-}
-
-const waitForWorkers = async (algName, count, waitCycles = 10) => {
+const waitForWorkers = async (token, algName, count, waitCycles = 10) => {
     let workers = [];
     for (let i = 0; i < waitCycles; i++) {
-        const data = await getWorkers()
+        const data = await getWorkers(token)
         workers = data.discovery.worker.filter(worker => worker.algorithmName == algName);
         if (workers.length == count) {
             return workers;
