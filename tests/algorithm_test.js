@@ -4,6 +4,7 @@ const chaiHttp = require('chai-http');
 const path = require('path')
 const delay = require('delay')
 const config = require('../config/config');
+const { StatusCodes } = require('http-status-codes');
 require('./processEvent')
 
 const {
@@ -102,7 +103,7 @@ describe('Alrogithm Tests', () => {
         .post('/auth/login')
         .send(testUserBody)
         
-        if (response.status === 200) {
+        if (response.status === StatusCodes.OK) {
             console.log('dev login success');
             dev_token = response.body.token;
         }
@@ -277,7 +278,7 @@ describe('Alrogithm Tests', () => {
                     const discovery = await chai.request(config.apiServerUrl)
                         .get(`/resources/unscheduledalgorithms/${selectedNodeAlgName}`)
                         .set('Authorization', `Bearer ${dev_token}`);
-                    if (discovery.status === 200) {
+                    if (discovery.status === StatusCodes.OK) {
                         console.log(`Reason for the unschedualing of alg after node selector : ${discovery.body.message}\n`);
                         const amountMissing = discovery.body.complexResourceDescriptor.nodes[0].amountsMissing;
                         let resourceMissingMessage = '';
@@ -495,14 +496,14 @@ describe('Alrogithm Tests', () => {
             await storePipeline(d, dev_token);
             const jobId = await runStoredAndWaitForResults(d, dev_token);
             // result should be (v1)        
-            const result1 = await getResult(jobId, 200, dev_token);
+            const result1 = await getResult(jobId, StatusCodes.OK, dev_token);
             expect(result1.data[0].result.vaerion).to.be.equal("v1");
 
             const update = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, dev_token, true);
             await delay(2000);
             const jobId2 = await runStoredAndWaitForResults(d, dev_token);
             //validate result should be (v2)
-            const result2 = await getResult(jobId2, 200, dev_token);
+            const result2 = await getResult(jobId2, StatusCodes.OK, dev_token);
             expect(result2.data[0].result.vaerion).to.be.equal("v2");
 
         }).timeout(1000 * 60 * 10);
@@ -552,7 +553,7 @@ describe('Alrogithm Tests', () => {
             const jobId = res.body.jobId;
             await intervalDelay("Waiting", 15000, 1500);
             const update = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, dev_token, true);
-            expect(update.status).to.be.equal(201);
+            expect(update.status).to.be.equal(StatusCodes.CREATED);
             await intervalDelay("Waiting", 10000);
             const status = await getPipelineStatus(jobId, dev_token);
             expect(status.body.status).to.be.equal("failed");
@@ -575,9 +576,9 @@ describe('Alrogithm Tests', () => {
             const jobId = res.body.jobId;
             await intervalDelay("Waiting", 10000);
             const update = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, dev_token, false);
-            expect(update.status).to.be.equal(400);
+            expect(update.status).to.be.equal(StatusCodes.BAD_REQUEST);
             await delay(3000);
-            const result2 = await getResult(jobId, 200, dev_token);
+            const result2 = await getResult(jobId, StatusCodes.OK, dev_token);
             expect(result2.data[0].result.vaerion).to.be.equal("v1");
             const alg = await getAlgorithm(algorithmName, dev_token);
             expect(alg.body.algorithmImage).to.be.equal(algorithmImageV1);
@@ -592,7 +593,7 @@ describe('Alrogithm Tests', () => {
             let deleteAlg = await deleteAlgorithmVersion(algorithmName, v2.body.algorithm.version, dev_token);
             expect(deleteAlg.body.error.message).to.be.equal("unable to remove the currently used version");
             deleteAlg = await deleteAlgorithmVersion(algorithmName, v1.body.algorithm.version, dev_token);
-            expect(deleteAlg.status).to.be.equal(200);
+            expect(deleteAlg.status).to.be.equal(StatusCodes.OK);
             const algVersion = await getAlgorithmVersion(algorithmName, dev_token);
             expect(algVersion.body.length).to.be.equal(1);
         }).timeout(1000 * 60 * 5);
@@ -679,7 +680,7 @@ describe('Alrogithm Tests', () => {
             // const jnk = await applyAlg(alg, dev_token);
             const res = await runRaw(pipe, dev_token);
             const jobId = res.body.jobId;
-            const result = await getResult(jobId, 200, dev_token);
+            const result = await getResult(jobId, StatusCodes.OK, dev_token);
             console.log(result);
             expect(result.data[0].result).to.be.equal("3072");
             alg.name = "env1";
@@ -688,7 +689,7 @@ describe('Alrogithm Tests', () => {
             await applyAlg(alg, dev_token);
             const res2 = await runRaw(pipe, dev_token);
             const jobId2 = res2.body.jobId;
-            const result2 = await getResult(jobId2, 200, dev_token);
+            const result2 = await getResult(jobId2, StatusCodes.OK, dev_token);
             expect(result2.data[0].result).to.be.equal("512");
             console.log(result2);
         }).timeout(1000 * 10 * 60);
@@ -849,7 +850,7 @@ describe('Alrogithm Tests', () => {
 
             const res = await runAlgorithm(algRun, dev_token);
             const jobId = res.body.jobId;
-            const result = await getResult(jobId, 200, dev_token);
+            const result = await getResult(jobId, StatusCodes.OK, dev_token);
             expect(result.data[0].result).to.be.equal(alg.algorithmEnv.FOO);
         }).timeout(1000 * 5 * 60);
 
@@ -863,7 +864,7 @@ describe('Alrogithm Tests', () => {
 
             const res = await runAlgorithm(algRun, dev_token);
             const jobId = res.body.jobId;
-            const result = await getResult(jobId, 200, dev_token);
+            const result = await getResult(jobId, StatusCodes.OK, dev_token);
             expect(result.data[0].result).to.contain("Hkube");
         }).timeout(1000 * 5 * 60);
 
@@ -877,7 +878,7 @@ describe('Alrogithm Tests', () => {
 
             const res = await runAlgorithm(algRun, dev_token);
             const jobId = res.body.jobId;
-            const result = await getResult(jobId, 200, dev_token);
+            const result = await getResult(jobId, StatusCodes.OK, dev_token);
             expect(result.data[0].result).to.be.equal("fs");
         }).timeout(1000 * 5 * 60);
 
@@ -891,7 +892,7 @@ describe('Alrogithm Tests', () => {
 
             const res = await runAlgorithm(algRun, dev_token);
             const jobId = res.body.jobId;
-            const result = await getResult(jobId, 200, dev_token);
+            const result = await getResult(jobId, StatusCodes.OK, dev_token);
             expect(result.data[0].result).to.be.equal("1");
         }).timeout(1000 * 5 * 60);
 
@@ -906,7 +907,7 @@ describe('Alrogithm Tests', () => {
 
             const res = await runAlgorithm(algRun, dev_token);
             const jobId = res.body.jobId;
-            const result = await getResult(jobId, 200, dev_token);
+            const result = await getResult(jobId, StatusCodes.OK, dev_token);
             expect(result.data[0].result).to.contain("compute.internal");
         }).timeout(1000 * 5 * 60);
 
@@ -1013,7 +1014,7 @@ describe('Alrogithm Tests', () => {
                 const listOfAlgorithmResponse = response.body;
                 expect(listOfAlgorithmResponse).to.be.an('array');
                 expect(listOfAlgorithmResponse.length).to.be.equal(2);
-                expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
+                expect(response.statusCode).to.be.equal(StatusCodes.CREATED, 'Expected status code to be CREATED');
                 expect(listOfAlgorithmResponse[0].algorithm.name).to.be.equal('alg1');
                 expect(listOfAlgorithmResponse[1].algorithm.name).to.be.equal('alg2');
             }).timeout(1000 * 60 * 5);
@@ -1066,7 +1067,7 @@ describe('Alrogithm Tests', () => {
                 ];
                 const response = await applyAlgList(algorithmsList, dev_token);
                 const listOfAlgorithmResponse = response.body;
-                expect(response.statusCode).to.be.equal(201);
+                expect(response.statusCode).to.be.equal(StatusCodes.CREATED);
                 expect(listOfAlgorithmResponse).to.be.an('array');
                 expect(listOfAlgorithmResponse.length).to.be.equal(2);
                 expect(listOfAlgorithmResponse[0].error.code).to.be.equal(409, 'Expected status code to be CONFLICT');
@@ -1121,7 +1122,7 @@ describe('Alrogithm Tests', () => {
                 ];
                 const response = await applyOrUpdateAlgList(algorithmsList, dev_token);
                 const listOfAlgorithmResponse = response.body;
-                expect(response.statusCode).to.be.equal(201);
+                expect(response.statusCode).to.be.equal(StatusCodes.CREATED);
                 expect(listOfAlgorithmResponse).to.be.an('array');
                 expect(listOfAlgorithmResponse.length).to.be.equal(2);
                 expect(listOfAlgorithmResponse[1].algorithm.name).to.be.equal('alg2');
@@ -1158,8 +1159,8 @@ describe('Alrogithm Tests', () => {
                 const listOfAlgorithmResponse = response.body;
                 expect(listOfAlgorithmResponse).to.be.an('array');
                 expect(listOfAlgorithmResponse.length).to.be.equal(2);
-                expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
-                expect(listOfAlgorithmResponse[0].error.code).to.be.equal(400, 'Expected status code to be BAD-REQUEST');
+                expect(response.statusCode).to.be.equal(StatusCodes.CREATED, 'Expected status code to be CREATED');
+                expect(listOfAlgorithmResponse[0].error.code).to.be.equal(StatusCodes.BAD_REQUEST, 'Expected status code to be BAD_REQUEST');
                 expect(listOfAlgorithmResponse[1].algorithm.name).to.be.equal('alg1');
             });
         });
@@ -1174,7 +1175,7 @@ describe('Alrogithm Tests', () => {
 
             it('should apply selector when given one, and find no pods to stop', async () => {
                 const response = await deleteAlgorithmPods("anyName", dev_token, "mySelector");
-                expect(response.statusCode).to.be.equal(404);
+                expect(response.statusCode).to.be.equal(StatusCodes.NOT_FOUND);
                 expect(response.body).to.be.equal('No pods found with selector mySelector');
             }).timeout(1000 * 60 * 5);
 
@@ -1189,7 +1190,7 @@ describe('Alrogithm Tests', () => {
                 const response = await deleteAlgorithmPods(stayUpSkeleton.name, dev_token);
                 await delay(1000);
                 await stopPipeline(result.body.jobId, dev_token);
-                expect(response.statusCode).to.be.equal(200);
+                expect(response.statusCode).to.be.equal(StatusCodes.OK);
                 expect(response.body.message.length).to.be.equal(1);
                 await deleteAlgorithmJobs(stayUpSkeleton.name, dev_token);
             }).timeout(1000 * 60 * 5);
@@ -1202,7 +1203,7 @@ describe('Alrogithm Tests', () => {
                 await runStored(statelessPipeline);
                 await intervalDelay("Waiting", 30000);
                 const response = await deleteAlgorithmPods("yellow-alg", dev_token);
-                expect(response.statusCode).to.be.equal(200);
+                expect(response.statusCode).to.be.equal(StatusCodes.OK);
                 expect(response.body.message.length).to.be.greaterThan(2);
                 await deleteAlgorithmJobs(stayUpSkeleton.name, dev_token);
                 await deleteAlgorithmJobs(statelessAlgName, dev_token);
@@ -1212,7 +1213,7 @@ describe('Alrogithm Tests', () => {
 
             it('should apply selector when given one, and find no jobs to stop', async () => {
                 const response = await deleteAlgorithmJobs("anyName", dev_token, "mySelector");
-                expect(response.statusCode).to.be.equal(404);
+                expect(response.statusCode).to.be.equal(StatusCodes.NOT_FOUND);
                 expect(response.body).to.be.equal('No jobs found with selector mySelector');
             }).timeout(1000 * 60 * 5);
 
@@ -1227,7 +1228,7 @@ describe('Alrogithm Tests', () => {
                 const response = await deleteAlgorithmJobs(stayUpSkeleton.name, dev_token);
                 await delay(1000);
                 await stopPipeline(result.body.jobId, dev_token);
-                expect(response.statusCode).to.be.equal(200);
+                expect(response.statusCode).to.be.equal(StatusCodes.OK);
                 expect(response.body.message.length).to.be.equal(1);
             }).timeout(1000 * 60 * 5);
 
@@ -1239,7 +1240,7 @@ describe('Alrogithm Tests', () => {
                 await runStored(statelessPipeline, dev_token);
                 await intervalDelay("Waiting", 30000);
                 const response = await deleteAlgorithmJobs("yellow-alg", dev_token);
-                expect(response.statusCode).to.be.equal(200);
+                expect(response.statusCode).to.be.equal(StatusCodes.OK);
                 expect(response.body.message.length).to.be.greaterThan(2);
                 await deleteAlgorithmJobs(stayUpSkeleton.name, dev_token);       
             }).timeout(1000 * 60 * 5);
