@@ -263,7 +263,7 @@ describe('Alrogithm Tests', () => {
 
     describe('Test Algorithm Version (git 560 487 998)', () => {
         //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/560
-        const algorithmName = "algorithm-version-test";
+        const algorithmName = `algorithm-version-test-${pipelineRandomName(4).toLowerCase()}`;
         const algorithmImageV1 = "tamir321/algoversion:v1";
         const algorithmImageV2 = "tamir321/algoversion:v2";
 
