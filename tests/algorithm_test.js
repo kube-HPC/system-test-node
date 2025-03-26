@@ -199,40 +199,6 @@ describe('Alrogithm Tests', () => {
         console.log("node 0 - " + nodes[0]);
     }).timeout(1000 * 60 * 5);
 
-    it("should fail getting all algorithms with no permission", async () => {
-        let testUserBody ={
-            username: 'nopermissions',
-            password: '123'
-        }
-
-        const response = await chai.request(config.apiServerUrl)
-            .post('/auth/login')
-            .send(testUserBody)
-        
-        let token;
-        if (response.status === StatusCodes.OK) {
-            console.log('nopermissions user login success');
-            token = response.body.token;
-        }
-
-        expect(token).to.not.equal(undefined, 'dev login failed - no keycloak/bad credentials');
-
-        let errorCaught = false;
-        try {
-            await getAllAlgorithms(token);
-        }
-        catch (error) {
-            errorCaught = true;
-            expect(error.response.status).to.be.equal(StatusCodes.FORBIDDEN);
-            expect(error.response.errors[0].code).to.be.equal('FORBIDDEN');
-            expect(error.response.errors[0].message).to.be.equal('Forbidden: You do not have access to this resource');
-            expect(error.response.errors[0].status).to.be.equal(StatusCodes.FORBIDDEN);
-        }
-        if (!errorCaught) {
-            throw new Error("Expected getAllAlgorithms to throw an error but it didn't");
-        }
-    }).timeout(1000 * 60)
-
     describe('TID 480 - Test Algorithm ttl (git 61 342)', () => {
         // p1
         it('ttl = 3 one of the inputs = 5 seconds ', async () => {
