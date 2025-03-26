@@ -1018,16 +1018,16 @@ describe('all swagger calls test ', () => {
         }).timeout(1000 * 60 * 20);
     });
 
-    describe('No correct role', () => {
+    describe.only('No correct role', () => {
         before(async function () {
             this.timeout(1000 * 60 * 15);
             let testUserBody = {
                 username: config.keycloakGuestUser,
                 password: config.keycloakGuestPass
-            }
+            };
             const response = await chai.request(config.apiServerUrl)
                 .post('/auth/login')
-                .send(testUserBody)
+                .send(testUserBody);
             
             if (response.status === 200) {
                 console.log('guest login success');
@@ -1037,20 +1037,22 @@ describe('all swagger calls test ', () => {
                 console.log('guest login failed - no keycloak/bad credentials');
             }
         });
-        it('should fail to DELETE /store/pipelines/{name}', async () => {
-            const name = 'addmultForTest'
+
+        it('should fail to DELETE /store/pipelines/{name} via REST', async () => {
+            const name = 'addmultForTest';
 
             const res = await chai.request(config.apiServerUrl)
                 .delete(`/store/pipelines/${name}`)
-                .set("Authorization", `Bearer ${guest_token}`)
+                .set("Authorization", `Bearer ${guest_token}`);
             if (dev_token) {
-                expect(res.text).to.eql("Access denied")
-                expect(res).to.have.status(403)
+                expect(res.text).to.eql("Access denied");
+                expect(res).to.have.status(403);
             }
             else { // no kc
-                expect(res).to.have.status(404)
+                expect(res).to.have.status(404);
             }
+        });
 
-        })
+
     })
 });
