@@ -15,6 +15,7 @@ chai.use(chaiHttp);
 describe('graphql tests', () => {
     let guest_token;
     let nopermissions_token;
+    let keycloakIsDisabled = false;
 
     before(async function () {
         this.timeout(1000 * 60 * 15);
@@ -22,7 +23,7 @@ describe('graphql tests', () => {
     
         const userCredentials = [
             { name: 'guest', username: config.keycloakGuestUser, password: config.keycloakGuestPass },
-            { name: 'nopermissions', username: 'nopermissions', password: '123' }
+            { name: 'nopermissions', username: 'nopermissions', password: '1234' }
         ];
 
         const tokens = await Promise.all(userCredentials.map(async (userBody, index) => {
@@ -34,6 +35,15 @@ describe('graphql tests', () => {
             if (response.status === 200) {
                 console.log(`${names[index]} login success`);
                 return response.body.token;
+            }
+            else if (response.body.error.message === 'Request failed with status code 404')
+            {
+                keycloakIsDisabled = true;
+                console.log('Keycloak is disabled.');
+            }
+            else if (response.body.error.message === 'Request failed with status code 401')
+            {
+                throw Error(`Wrong credentials for ${names[index]}!`);
             }
             console.log(`${names[index]} login failed - no keycloak/bad credentials`);
             return undefined;
@@ -53,8 +63,8 @@ describe('graphql tests', () => {
 
     describe('autherntication tests', async function () {
         before(function () {
-            if (!guest_token) {
-                console.log('guest login failed - no keycloak/bad credentials. If keycloak is enabled, fix credentials. If it is disabled, test suite skipped.');
+            if (keycloakIsDisabled) {
+                console.log('Keycloak is disabled. Skipping tests that require keycloak.');
                 this.skip(); // Skips authentication tests since keycloak is not enabled (if credentials are incorrect, fix them).
             }
         });
