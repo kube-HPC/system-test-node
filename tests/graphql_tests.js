@@ -27,11 +27,11 @@ describe('graphql tests', () => {
 
         const tokens = await Promise.all(userCredentials.map(async (userBody, index) => {
             names = ['guest', 'nopermissions'];
-            const responseGuest = await chai.request(config.apiServerUrl)
+            const response = await chai.request(config.apiServerUrl)
                 .post('/auth/login')
                 .send(userBody);
     
-            if (responseGuest.status === 200) {
+            if (response.status === 200) {
                 console.log(`${names[index]} login success`);
                 return response.body.token;
             }
