@@ -1018,7 +1018,7 @@ describe('all swagger calls test ', () => {
         }).timeout(1000 * 60 * 20);
     });
 
-    describe.only('No correct role', () => {
+    describe('No correct role', () => {
         before(async function () {
             this.timeout(1000 * 60 * 15);
             let testUserBody = {
@@ -1052,7 +1052,5 @@ describe('all swagger calls test ', () => {
                 expect(res).to.have.status(404);
             }
         });
-
-
-    })
+    });
 });
