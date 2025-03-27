@@ -66,7 +66,7 @@ jobs:
         env:
           KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
       - name: test
-        run: npm graphql
+        run: npm run graphql
         env:
           BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
