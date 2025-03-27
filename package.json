@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha ./tests/swaggerCalls.js",
+    "graphql": "mocha ./tests/graphql_tests.js",
     "streaming": "mocha ./tests/streaming_tests.js",
     "pipelinetest": "mocha ./tests/pipeline_tests.js",
     "jageartest": "mocha ./tests/jagearTest.js",
@@ -28,6 +29,7 @@
     "chai": "^4.1.2",
     "chai-arrays": "^2.0.0",
     "chai-http": "^4.3.0",
+    "http-status-codes": "^2.2.0",
     "child_process": "^1.0.2",
     "crypto-random-string": "^1.0.0",
     "deep-diff": "^1.0.2",

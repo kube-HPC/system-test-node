@@ -76,8 +76,8 @@ const getJobIdsTree = async (jobId, token = {}) => {
     return res;
 }
 
-const getPodsRunning = async (jobId) => {
-    const data = await getWorkers();
+const getPodsRunning = async (jobId, token) => {
+    const data = await getWorkers(token);
     const worker = data.discovery.worker.filter(w => w.jobId === jobId).map(w => w.podName);
     logger.info(`worker : ,${jobId}, ${JSON.stringify(worker)}`);
     return worker;

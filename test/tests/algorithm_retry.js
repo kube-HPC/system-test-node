@@ -392,7 +392,7 @@ describe('algorithm retry Tests (git 602) ~', () => {
                 //run the pipeline evalwait
                 const res = await runStored(pipe)
                 const jobId = res.body.jobId
-                const driver = await getDriverIdByJobId(jobId)
+                const driver = await getDriverIdByJobId(undefined, jobId)
                 const nodes = await getPiplineNodes(jobId)
 
                 const partNodes = nodes.slice(0, 3)

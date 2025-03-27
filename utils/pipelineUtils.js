@@ -21,8 +21,8 @@ const {
     logResult
 } = require('../utils/algorithmUtils');
 
-const getPiplineNodes = async (id) => {
-    const data = await getWorkers();
+const getPiplineNodes = async (jobId, token) => {
+    const data = await getWorkers(token);
     const res = data.discovery.worker.filter(w => w.jobId === jobId).map(w => w.podName);
     logger.info(`worker : ,${jobId}, ${JSON.stringify(worker)}`);
 

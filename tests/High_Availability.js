@@ -114,7 +114,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
             let times = 0;
             while (drivers.length == 0 && times < 10) {
                 await delay(1000);
-                drivers = await getDriverIdByJobId(jobId);
+                drivers = await getDriverIdByJobId(dev_token, jobId);
                 times++;
             }
             console.log("driver = " + drivers);
@@ -142,7 +142,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
             const res = await runStored(pipe, dev_token);
             const jobId = res.body.jobId;
             await delay(15000);
-            const driver = await getDriverIdByJobId(jobId);
+            const driver = await getDriverIdByJobId(dev_token, jobId);
 
             const podName = driver[0].podName;
             write_log('podName-' + podName);
@@ -151,7 +151,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
             write_log('podName-' + podName);
             await delay(25000);
 
-            const newdriver = await getDriverIdByJobId(jobId);
+            const newdriver = await getDriverIdByJobId(dev_token, jobId);
             console.log("new driver =" + newdriver);
 
             await delay(3000);
@@ -169,7 +169,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
             const jobId = res.body.jobId;
             await delay(3000);
 
-            const driver = await getDriverIdByJobId(jobId);
+            const driver = await getDriverIdByJobId(dev_token, jobId);
 
             const podName = driver[0].podName;
             write_log('podName-' + podName);
@@ -178,7 +178,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
             await deletePod(podName);
             write_log('podName-' + podName);
             await delay(10000);
-            const newdriver = await getDriverIdByJobId(jobId);
+            const newdriver = await getDriverIdByJobId(dev_token, jobId);
             console.log("new driver =" + newdriver);
             await getResult(jobId, 200, dev_token);
         }).timeout(1000 * 60 * 10);
@@ -192,7 +192,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
             const jobId = res.body.jobId;
             await delay(7000);
 
-            const driver = await getDriverIdByJobId(jobId);
+            const driver = await getDriverIdByJobId(dev_token, jobId);
 
             const podName = driver[0].podName;
             write_log('podName-' + podName);
@@ -201,7 +201,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
             await deletePod(podName);
             write_log('podName-' + podName);
             await delay(15000);
-            const newdriver = await getDriverIdByJobId(jobId);
+            const newdriver = await getDriverIdByJobId(dev_token, jobId);
             console.log("new driver =" + newdriver);
             await getResult(jobId, 200, dev_token);
         }).timeout(1000 * 60 * 10);
@@ -228,7 +228,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
         const jobId = res.body.jobId;
 
         await delay(20000);
-        const nodes = await getPiplineNodes(jobId);
+        const nodes = await getPiplineNodes(jobId, dev_token);
         const partNodes = nodes.slice(0, numberToDelete);
 
         const allAlg = partNodes.map(async (element) => { deletePod(element, 'default') });
@@ -253,7 +253,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
         const jobId = res.body.jobId;
         let driver = undefined;
         while (!driver) {
-            const drivers = await getDriverIdByJobId(jobId);
+            const drivers = await getDriverIdByJobId(dev_token, jobId);
             driver = drivers[0];
             if (driver) {
                 const pilelineDriverPod = driver.podName;
