@@ -55,7 +55,7 @@ jobs:
           KEYCLOAK_GUEST_USER: ${{ secrets.KEYCLOAK_GUEST_USER }}
   GraphQLTests:
     runs-on: ubuntu-latest
-    needs: deploy
+    needs: Deployment
     steps:
       - uses: actions/checkout@v2
       - run: npm ci
