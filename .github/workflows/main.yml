@@ -34,7 +34,7 @@ jobs:
           DOCKER_BUILD_PUSH_USERNAME: ${{ secrets.DOCKER_BUILD_PUSH_USERNAME }}
   SwaggerTests:
     runs-on: ubuntu-latest
-    needs: deploy
+    needs: Deployment
     steps:
       - uses: actions/checkout@v2
       - run: npm ci
