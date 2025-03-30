@@ -299,6 +299,7 @@ describe('Alrogithm Tests', () => {
         const algorithmV1 = algJson(algorithmName, algorithmImageV1);
         const algorithmV2 = algJson(algorithmName, algorithmImageV2);
         const d = deconstructTestData(testData1);
+        d.pipeline.nodes[0].algorithmName = algorithmName;
         //store pipeline
 
         it('algorithm change creates a new version', async () => {
