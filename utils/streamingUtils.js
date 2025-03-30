@@ -20,11 +20,11 @@ const {
  * 
  * @throws Will throw an error if the expected status is not achieved within the timeout.
  */
-const waitForStatus = async (jobId, nodeName, expectedStatus, timeout = 60 * 1000 * 10, interval = 5 * 1000) => {
+const waitForStatus = async (token, jobId, nodeName, expectedStatus, timeout = 60 * 1000 * 10, interval = 5 * 1000) => {
     const start = Date.now();
     do {
         process.stdout.write(`\rWaiting for ${nodeName} status to be ${expectedStatus}, Time passed: ${Date.now() - start}/${timeout} ms...`)
-        let { body: graph } = await getRawGraph(jobId);
+        let { body: graph } = await getRawGraph(jobId, token);
         const filtered = graph.nodes.filter(node => node.nodeName === nodeName);
         if (filtered.length > 0) {
             const node = filtered[0];
@@ -75,9 +75,9 @@ const getNumActivePods = (graph, nodeName) => {
  * 
  * @returns {Promise<number>} The request rate between the source and target nodes.
  */
-const getRequestRate = async (jobId, source, target) => {
+const getRequestRate = async (token, jobId, source, target) => {
 
-    let { body: graph } = await getRawGraph(jobId);
+    let { body: graph } = await getRawGraph(jobId, token);
     const filtered = graph.edges.filter(edge => edge.from === source && edge.to === target);
     const metrics = filtered[0]?.value['metrics'];
     return metrics.reqRate;
@@ -92,8 +92,8 @@ const getRequestRate = async (jobId, source, target) => {
  * 
  * @returns {Promise<number>} The current number of pods between the source and target nodes.
  */
-const getCurrentPods = async (jobId, source, target) => {
-    let { body: graph } = await getRawGraph(jobId);
+const getCurrentPods = async (token, jobId, source, target) => {
+    let { body: graph } = await getRawGraph(jobId, token);
     const filtered = graph.edges.filter(edge => edge.from === source && edge.to === target);
     const metrics = filtered[0]?.value['metrics'];
     return metrics.currentSize;
@@ -108,8 +108,8 @@ const getCurrentPods = async (jobId, source, target) => {
  * 
  * @returns {Promise<number>} The response rate between the source and target nodes.
  */
-const getResponseRate = async (jobId, source, target) => {
-    let { body: graph } = await getRawGraph(jobId);
+const getResponseRate = async (token, jobId, source, target) => {
+    let { body: graph } = await getRawGraph(jobId, token);
     const filtered = graph.edges.filter(edge => edge.from === source && edge.to === target);
     const metrics = filtered[0]?.value['metrics'];
     return metrics.resRate;
@@ -124,8 +124,8 @@ const getResponseRate = async (jobId, source, target) => {
  * 
  * @returns {Promise<number>} The required number of pods between the source and target nodes.
  */
-const getRequiredPods = async (jobId, source, target) => {
-    let { body: graph } = await getRawGraph(jobId);
+const getRequiredPods = async (token, jobId, source, target) => {
+    let { body: graph } = await getRawGraph(jobId, token);
     const filtered = graph.edges.filter(edge => edge.from === source && edge.to === target);
     const metrics = filtered[0]?.value['metrics'];
     return metrics.required;
@@ -140,8 +140,8 @@ const getRequiredPods = async (jobId, source, target) => {
  * 
  * @returns {Promise<number>} The throughput between the source and target nodes, in percentage.
  */
-const getThroughput = async (jobId, source, target) => {
-    let { body: graph } = await getRawGraph(jobId);
+const getThroughput = async (token, jobId, source, target) => {
+    let { body: graph } = await getRawGraph(jobId, token);
     const filtered = graph.edges.filter(edge => edge.from === source && edge.to === target);
     const metrics = filtered[0]?.value['metrics'];
     return metrics.throughput;
