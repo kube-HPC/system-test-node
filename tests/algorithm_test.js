@@ -352,7 +352,7 @@ describe('Alrogithm Tests', () => {
         }).timeout(1000 * 60 * 10);
 
         // p2
-        it(' algorithm labels   ', async () => {
+        it('algorithm labels', async () => {
             const algName = pipelineRandomName(8).toLowerCase();
             const algV1 = algJson(algName, algorithmImageV1);
             algV1.minHotWorkers = 1; // get a pod running
@@ -371,7 +371,7 @@ describe('Alrogithm Tests', () => {
         }).timeout(1000 * 60 * 10);
 
         //p3
-        it(' algorithm annotations ', async () => {
+        it('algorithm annotations', async () => {
             // const nodes = await getNodes();
             const algName = pipelineRandomName(8).toLowerCase();
             const algV1 = algJson(algName, algorithmImageV1);
@@ -463,7 +463,6 @@ describe('Alrogithm Tests', () => {
             expect(v2.imageTag).to.not.be.equal(buildStatusAlg.imageTag);
             expect(v2.body.messages[0].startsWith("a build was triggered due to change in baseImage")).to.be.true;
         }).timeout(1000 * 60 * 20);
-
 
         it(`change env trigger new Build`, async () => {
             const code1 = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
