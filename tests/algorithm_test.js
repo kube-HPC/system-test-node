@@ -260,7 +260,49 @@ describe('Alrogithm Tests', () => {
             }
             expect(algo.unscheduledReason).to.be.a('string');
         }).timeout(1000 * 60 * 5);
-    })
+
+        describe('algorithm with volumes tests', () => {
+            volumeTypes = {
+                pvc: {
+                    name: "pvc-volume-no-exist",
+                    persistentVolumeClaim: {
+                        claimName: "non-existing"
+                    }
+                },
+                configMap: {
+                    name: "configmap-volume-no-exist",
+                    configMap: {
+                        name: "non-existing-configmap"
+                    }
+                },
+                secret: {
+                    name: "secret-volume-no-exist",
+                    secret: {
+                        secretName: "non-existing-secret"
+                    }
+                }
+            }
+
+            Object.entries(volumeTypes).forEach(([key, volume]) => {
+                it.only(`should fail creating an algorithm with a non-existing ${key} and create a warning`, async () => {
+                    const algName = `non-existing-${key}-${pipelineRandomName(4).toLowerCase()}`;
+                    const alg = algJson(algName, algorithmImage, 0, 0.5, 0, "64Mi");
+                    alg.volumes = [volume];
+
+                    await applyAlg(alg, dev_token);
+                    await runAlgorithm({ name: alg.name, input: [] }, dev_token);
+
+                    await intervalDelay("Waiting for warning to create", 60000, 10000);
+                    const allAlgorithms = await getAllAlgorithms(dev_token);
+                    const testAlgo = allAlgorithms.find(a => a.name === alg.name);
+
+                    expect(testAlgo).to.not.be.undefined;
+                    expect(testAlgo.unscheduledReason).to.exist;
+                    expect(testAlgo.unscheduledReason).to.equal(`One or more volumes are missing or do not exist.\nMissing volumes: non-existing-${key}`);
+                }).timeout(1000 * 60 * 5);
+            });
+        });
+    });
 
     describe('Test Algorithm Version (git 560 487 998)', () => {
         //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/560
@@ -974,8 +1016,6 @@ describe('Alrogithm Tests', () => {
             const graph = await getRawGraph(jobId, dev_token);
             expect(graph.body.nodes.length).to.be.equal(2);
         }).timeout(1000 * 5 * 60);
-
-
     });
 
     describe('insert algorithm array', () => {
