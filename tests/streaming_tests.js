@@ -100,7 +100,7 @@ describe("streaming pipeline test", () => {
     });
 
     describe("simple pipeline tests with constant ratios", () => {
-        it("should satisfy the request rate with the given rate, with enough nodes.", async () => {
+        it("should satisfy the request rate with the given rate, with enough nodes", async () => {
             await createAlg(statefull);
             await createAlg(stateless);
 
@@ -121,7 +121,7 @@ describe("streaming pipeline test", () => {
             const required = await getRequiredPods(jobId, simple_statefulNodeName, simple_statelessNodeName);
             expect(required).to.be.gt(3, `required is ${required}, needed >3`);
 
-            await intervalDelay('Waiting phase 2', 50 * 1000);
+            await intervalDelay('Waiting phase 2', 30 * 1000);
             const current = await getCurrentPods(jobId, simple_statefulNodeName, simple_statelessNodeName);
             const throughput = await getThroughput(jobId, simple_statefulNodeName, simple_statelessNodeName);
             expect(throughput).to.be.gt(100, `throughput is ${throughput}, needed >100`); // suppose to be emptying the queue
@@ -133,7 +133,7 @@ describe("streaming pipeline test", () => {
             await stopPipeline(jobId)
         }).timeout(350 * 1000);
 
-        it("should satisfy the high request rate with high rate, with enough nodes.", async () => {
+        it("should satisfy the high request rate with high rate, with enough nodes", async () => {
             await createAlg(statefull, 0.5);
             await createAlg(stateless);
 
@@ -167,7 +167,7 @@ describe("streaming pipeline test", () => {
             await stopPipeline(jobId)
         }).timeout(550 * 1000);
 
-        it("should stabilize on 1 pod.", async () => {
+        it("should stabilize on 1 pod", async () => {
             await createAlg(statefull);
             await createAlg(stateless);
 
@@ -197,7 +197,7 @@ describe("streaming pipeline test", () => {
             await stopPipeline(jobId)
         }).timeout(300 * 1000);
 
-        it("should stabilize on 2 pods.", async () => {
+        it("should stabilize on 2 pods", async () => {
             await createAlg(statefull);
             await createAlg(stateless);
 
@@ -225,7 +225,7 @@ describe("streaming pipeline test", () => {
             await stopPipeline(jobId)
         }).timeout(300 * 1000);
 
-        it("should stabilize on 21 pods.", async () => {
+        it("should stabilize on 21 pods", async () => {
             await createAlg(statefull, 0.3);
             await createAlg(stateless);
 
@@ -261,7 +261,7 @@ describe("streaming pipeline test", () => {
     });
 
     describe("simple pipeline test with changing ratios", () => {
-        it("should scale up at first, then scale down to second rate.", async () => {
+        it("should scale up at first, then scale down to second rate", async () => {
             await createAlg(statefull);
             await createAlg(stateless);
 
@@ -289,7 +289,7 @@ describe("streaming pipeline test", () => {
             await stopPipeline(jobId)
         }).timeout(400 * 1000);
 
-        it("should scale up at first, then scale down to 0 and then back up.", async () => {
+        it("should scale up at first, then scale down to 0 and then back up", async () => {
             await createAlg(statefull);
             await createAlg(stateless);
 
@@ -321,7 +321,7 @@ describe("streaming pipeline test", () => {
             await stopPipeline(jobId)
         }).timeout(450 * 1000);
 
-        it("should satisfy the request rate with changing processing time.", async () => {
+        it("should satisfy the request rate with changing processing time", async () => {
             await createAlg(statefull, 0.3);
             await createAlg(statelessByInterval);
             
@@ -380,7 +380,7 @@ describe("streaming pipeline test", () => {
             const required = await getRequiredPods(jobId, multiple_statefulNodeName1, multiple_statelessNodeName);
             expect(required).to.be.gt(5, `required is ${required}, needed >5`);
 
-            await intervalDelay('Waiting phase 2', 30 * 1000);
+            await intervalDelay('Waiting phase 2', 20 * 1000);
             const current = await getCurrentPods(jobId, multiple_statefulNodeName1, multiple_statelessNodeName);
             const throughput1 = await getThroughput(jobId, multiple_statefulNodeName1, multiple_statelessNodeName);
             const throughput2 = await getThroughput(jobId, multiple_statefulNodeName2, multiple_statelessNodeName);
@@ -388,7 +388,7 @@ describe("streaming pipeline test", () => {
             expect(throughput2).to.be.gte(100, `throughput is ${throughput2}, needed >=100`);
             expect(current).to.be.gt(5, `current is ${current}, needed >5`);
 
-            await intervalDelay('Waiting phase 3', 60 * 1000)
+            await intervalDelay('Waiting phase 3', 90 * 1000)
             await checkEqualWithRetries(getCurrentPods, [jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 5);
             await checkEqualWithRetries(getThroughput, [jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 100);
             await checkEqualWithRetries(getThroughput, [jobId, multiple_statefulNodeName2, multiple_statelessNodeName], 100);
@@ -439,5 +439,4 @@ describe("streaming pipeline test", () => {
             await stopPipeline(jobId)
         }).timeout(400 * 1000);
     });
-
 });
