@@ -76,7 +76,7 @@ jobs:
           KEYCLOAK_GUEST_USER: ${{ secrets.KEYCLOAK_GUEST_USER }}
   PipelineTests:
     runs-on: ubuntu-latest
-    needs: [SwaggerTests, GraphQLTest]
+    needs: [SwaggerTests, GraphQLTests]
     steps:
       - uses: actions/checkout@v2
       - run: npm ci
@@ -95,7 +95,7 @@ jobs:
           KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
   NodeTests:
     runs-on: ubuntu-latest
-    needs: [SwaggerTests, GraphQLTest]
+    needs: [SwaggerTests, GraphQLTests]
     steps:
       - uses: actions/checkout@v2
       - run: npm ci
@@ -117,7 +117,7 @@ jobs:
           K8S_CONFIG_PATH: /tmp/config  
   JagearTests:
     runs-on: ubuntu-latest
-    needs: [SwaggerTests, GraphQLTest]
+    needs: [SwaggerTests, GraphQLTests]
     steps:
       - uses: actions/checkout@v2
       - run: npm ci
@@ -136,7 +136,7 @@ jobs:
           KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
   CodeApiTests:
     runs-on: ubuntu-latest
-    needs: [SwaggerTests, GraphQLTest]
+    needs: [SwaggerTests, GraphQLTests]
     steps:
       - uses: actions/checkout@v2
       - run: npm ci
@@ -182,7 +182,7 @@ jobs:
   #         Gitlab_Token: ${{ secrets.GITLAB_TOKEN }}
   HkubeCliTests:
     runs-on: ubuntu-latest
-    needs: [jagearTest,nodeTest,pipelineTest,codeApiTest]
+    needs: [JagearTests, NodeTests, PipelineTests, CodeApiTests]
     if: ${{ always() }}
     steps:
       - uses: actions/checkout@v2
@@ -213,7 +213,7 @@ jobs:
           K8S_CONFIG_PATH: /tmp/config
   DatsourceTests:
     runs-on: ubuntu-latest
-    needs: [jagearTest,nodeTest,pipelineTest,codeApiTest]
+    needs: [JagearTests, NodeTests, PipelineTests, CodeApiTests]
     if: ${{ always() }}
     steps:
       - uses: actions/checkout@v2
@@ -291,7 +291,7 @@ jobs:
           K8S_CONFIG_PATH: /tmp/config
   HighAvailability:
     runs-on: ubuntu-latest
-    needs: [algorithmTest, streamingTest]
+    needs: [AlgorithmTests, StreamingTests]
     if: ${{ always() }}
     steps:
       - uses: actions/checkout@v2
