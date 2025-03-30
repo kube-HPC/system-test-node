@@ -1,6 +1,11 @@
 const chai = require('chai');
 const expect = chai.expect;
+const config = require('../config/config');
 const delay = require('delay');
+const { StatusCodes } = require('http-status-codes');
+const chaiHttp = require('chai-http');
+
+chai.use(chaiHttp);
 
 const {
     deleteAlgorithm,
@@ -85,7 +90,7 @@ describe("streaming pipeline test", () => {
         if (cpu) {
             alg.cpu = cpu;
         }
-        await storeAlgorithms(alg, token);
+        await storeAlgorithms(alg, dev_token);
         algList.push(alg.name);
     }
 
