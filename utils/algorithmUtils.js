@@ -121,6 +121,7 @@ const buildAlgorithm = async ({ code, algName, entry, kc_token = {}, baseVersion
     // res.should.have.status(200)
     expect(res.status).to.eql(200);
     const buildIdAlg = res.body.buildId;
+    expect(buildIdAlg).to.not.be.undefined;
 
     return buildIdAlg;
 }

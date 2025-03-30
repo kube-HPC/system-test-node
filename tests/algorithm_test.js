@@ -230,10 +230,10 @@ describe('Alrogithm Tests', () => {
     describe('Test Algorithm unscheduledReason', () => {
         const maxCPU = 8;
         const minMem = "4Mi";
-        const algorithmBaseName = 'algo-is-satisfied-test';
+        const algorithmBaseName = 'algo-is-satisfied';
         const algorithmImage = 'tamir321/algoversion:v1';
-        const algorithmSatisfied = algJson(algorithmBaseName + '-true', algorithmImage, 0, 0, 0, minMem);
-        const algorithmNotSatisfied = algJson(algorithmBaseName + '-false', algorithmImage, 0, maxCPU, 0, minMem);
+        const algorithmSatisfied = algJson(`${algorithmBaseName}-true-${pipelineRandomName(4).toLowerCase()}`, algorithmImage, 0, 0, 0, minMem);
+        const algorithmNotSatisfied = algJson(`${algorithmBaseName}-false-${pipelineRandomName(4).toLowerCase()}`, algorithmImage, 0, maxCPU, 0, minMem);
 
         it('should run algorithm and verify it has no unscheduledReason', async () => {
             const algorithm = { name: algorithmSatisfied.name, input: [] };
@@ -299,6 +299,7 @@ describe('Alrogithm Tests', () => {
         const algorithmV1 = algJson(algorithmName, algorithmImageV1);
         const algorithmV2 = algJson(algorithmName, algorithmImageV2);
         const d = deconstructTestData(testData1);
+        d.pipeline.nodes[0].algorithmName = algorithmName;
         //store pipeline
 
         it('algorithm change creates a new version', async () => {
@@ -351,7 +352,7 @@ describe('Alrogithm Tests', () => {
         }).timeout(1000 * 60 * 10);
 
         // p2
-        it(' algorithm labels   ', async () => {
+        it('algorithm labels', async () => {
             const algName = pipelineRandomName(8).toLowerCase();
             const algV1 = algJson(algName, algorithmImageV1);
             algV1.minHotWorkers = 1; // get a pod running
@@ -370,7 +371,7 @@ describe('Alrogithm Tests', () => {
         }).timeout(1000 * 60 * 10);
 
         //p3
-        it(' algorithm annotations ', async () => {
+        it('algorithm annotations', async () => {
             // const nodes = await getNodes();
             const algName = pipelineRandomName(8).toLowerCase();
             const algV1 = algJson(algName, algorithmImageV1);
@@ -426,9 +427,9 @@ describe('Alrogithm Tests', () => {
 
             times = 0;
             let podsNamesAfter = [];
-            while (podsNamesAfter.length == 0 && times < 45) {
+            while (podsNamesAfter.length === 0 && times < 45) {
                 await delay(1000);
-                podsNamesAfter = await filterPodsByName(algName);
+                podsNamesAfter = await filterPodsByName(algName) || [];
                 podsNamesAfter = podsNamesAfter.filter((n) => {
                     if (n.metadata.name !== firstPodName) { //Make sure the old pod is not returned
                         return n.metadata.name;
@@ -447,7 +448,7 @@ describe('Alrogithm Tests', () => {
         it(`change baseImage trigger new Build`, async () => {
             const code1 = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
             const entry = 'main27';
-            const algName = "python3.8-test-1";
+            const algName = `python3.8-test-1-${pipelineRandomName(4).toLowerCase()}`;
             const pythonVersion = "python:3.8";
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, kc_token: dev_token, baseVersion: pythonVersion, algorithmArray: algList });
             expect(buildStatusAlg.status).to.be.equal("completed");
@@ -463,11 +464,10 @@ describe('Alrogithm Tests', () => {
             expect(v2.body.messages[0].startsWith("a build was triggered due to change in baseImage")).to.be.true;
         }).timeout(1000 * 60 * 20);
 
-
         it(`change env trigger new Build`, async () => {
             const code1 = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
             const entry = 'main27';
-            const algName = "python3.8-test-1";
+            const algName = `python3.8-test-1-${pipelineRandomName(4).toLowerCase()}`;
             const pythonVersion = "python:3.8";
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, kc_token: dev_token, baseVersion: pythonVersion, algorithmArray: algList });
             expect(buildStatusAlg.status).to.be.equal("completed");
@@ -1166,8 +1166,8 @@ describe('Alrogithm Tests', () => {
         });
 
         describe('kubernetes algorithm tests', () => {
-            const stayupAlgName = "stayuptestalg";
-            const statelessAlgName = "yellow-alg";
+            const stayupAlgName = `stayuptestalg-${pipelineRandomName(4).toLowerCase()}`;
+            const statelessAlgName = `yellow-alg-${pipelineRandomName(4).toLowerCase()}`;
             let stayUpSkeleton = {
                 name: stayupAlgName,
                 input: []
