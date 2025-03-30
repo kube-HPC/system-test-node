@@ -427,9 +427,9 @@ describe('Alrogithm Tests', () => {
 
             times = 0;
             let podsNamesAfter = [];
-            while (podsNamesAfter.length == 0 && times < 45) {
+            while (podsNamesAfter.length === 0 && times < 45) {
                 await delay(1000);
-                podsNamesAfter = await filterPodsByName(algName);
+                podsNamesAfter = await filterPodsByName(algName) || [];
                 podsNamesAfter = podsNamesAfter.filter((n) => {
                     if (n.metadata.name !== firstPodName) { //Make sure the old pod is not returned
                         return n.metadata.name;
