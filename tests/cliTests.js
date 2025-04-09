@@ -862,7 +862,7 @@ describe('Hkubectl Tests', () => {
                 fs.mkdirSync(baseFolderPath);
             }
             const exportDataCommand = `hkubectl export all ${baseFolderPath}`;
-            const exportedData = await execSync(exportDataCommand, { encoding: 'utf-8' });
+            await execSync(exportDataCommand, { encoding: 'utf-8' });
             let files = fs.readdirSync(baseFolderPath, 'utf8');
             expect(files.length).to.equal(2, 'two folders, pipelines and algorithms');
 
