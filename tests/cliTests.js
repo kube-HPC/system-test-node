@@ -288,17 +288,26 @@ describe('Hkubectl Tests', () => {
             const pipelineName = pipelineRandomName(8).toLowerCase();
             const pipelineFile = './pipelines/simpelraw.json';
             const pipelineTemp = './pipelines/temp.json';
-            let fileContents = fs.readFileSync(pipelineFile, 'utf8');
-            let data = JSON.parse(fileContents);
-            data.name = `${pipelineName}`;
-            let jsonStr = JSON.stringify(data);
-            fs.writeFileSync(pipelineTemp, jsonStr, 'utf8');
-            const store = `hkubectl pipeline store -f ` + pipelineTemp;
-            const output = await exceSyncString(store);
+            try {
+                let fileContents = fs.readFileSync(pipelineFile, 'utf8');
+                let data = JSON.parse(fileContents);
+                data.name = `${pipelineName}`;
+                let jsonStr = JSON.stringify(data);
+                fs.writeFileSync(pipelineTemp, jsonStr, 'utf8');
 
-            const pipe = await getPipeline(pipelineName);
-            expect(pipe.body.name).to.be.equal(pipelineName);
-            await deletePipeline(pipelineName);
+                const store = `hkubectl pipeline store -f ` + pipelineTemp;
+                await exceSyncString(store);
+
+                const pipe = await getPipeline(pipelineName);
+                expect(pipe.body.name).to.be.equal(pipelineName);
+            } catch (error) {
+                throw new Error(`Test failed with error: ${error.message}`);
+            } finally {
+                if (fs.existsSync(pipelineTemp)) {
+                    fs.unlinkSync(pipelineTemp);
+                }
+                await deletePipeline(pipelineName);
+            }
         }).timeout(1000 * 60 * 6);
     });
 
