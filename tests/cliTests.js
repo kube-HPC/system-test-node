@@ -159,7 +159,7 @@ describe('Hkubectl Tests', () => {
                 `--mem 256Mi ` +
                 `--codePath ${filePath} `;
 
-            const buildResult = await exceSyncString(runBulid);
+            await exceSyncString(runBulid);
             const result = await runAlgGetResult(algName, [4]);
             await deleteAlgorithm(algName, true);
             expect(result.data[0].result.version.toString()).to.be.equal("3.5");
@@ -178,14 +178,14 @@ describe('Hkubectl Tests', () => {
 
             const runBulid = `hkubectl algorithm apply ` +
                 `-f ${algFile}`;
-            const buildResult = await exceSyncString(runBulid);
+            await exceSyncString(runBulid);
             delay(5000);
             const result = await runAlgGetResult(algName, [4]);
 
             expect(result.data[0].result.version.toString()).to.be.equal("3.5");
 
             const deleteAlg = `hkubectl algorithm delete ${algName}`;
-            const deleteResult = await exceSyncString(deleteAlg);
+            await exceSyncString(deleteAlg);
 
             const alg = await getAlgorithm(algName);
             console.log(alg.body);
@@ -212,9 +212,9 @@ describe('Hkubectl Tests', () => {
                 `--mem 256Mi ` +
                 `--codePath ./additionalFiles/${trgzFile2} `;
             console.log("start build 1");
-            const buildResult = await exceSyncString(runBulid);
+            await exceSyncString(runBulid);
             console.log("start build 2");
-            const buildResult2 = await exceSyncString(runBulidV2);
+            await exceSyncString(runBulidV2);
             const result = await runAlgGetResult(algName, [4]);
             expect(result.data[0].result.version.toString()).to.be.equal("1.1");
         }).timeout(1000 * 60 * 15);
@@ -240,10 +240,10 @@ describe('Hkubectl Tests', () => {
                 `--setCurrent true ` +
                 `--codePath ./additionalFiles/${trgzFile2} `;
             console.log("start build 1");
-            const buildResult = await exceSyncString(runBulid);
+            await exceSyncString(runBulid);
 
             console.log("start build 2");
-            const buildResult2 = await exceSyncString(runBulidV2);
+            await exceSyncString(runBulidV2);
 
             const result = await runAlgGetResult(algName, [4]);
             expect(result.data[0].result.version.toString()).to.be.equal("1.1");
@@ -261,11 +261,11 @@ describe('Hkubectl Tests', () => {
                 `--codePath ./additionalFiles/python.versions.tar.gz ` +
                 `--noWait`;
 
-            const buildResult = await exceSyncString(runBulid);
+            await exceSyncString(runBulid);
 
             const builds = await getBuildList(algName);
             console.log(builds);
-            const buildStatusAlg = await getStatusall(builds[0].buildId, `/builds/status/`, 200, "completed", 1000 * 60 * 10);
+            await getStatusall(builds[0].buildId, `/builds/status/`, 200, "completed", 1000 * 60 * 10);
             const result = await runAlgGetResult(algName, [4]);
             await deleteAlgorithm(algName, true);
             expect(result.data[0].result.version.toString()).to.be.equal("3.5");
