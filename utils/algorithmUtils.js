@@ -180,10 +180,10 @@ const buildGitAlgorithm = async ({ algName, gitUrl, gitKind, entry, branch, kc_t
     return buildStatusAlg;
 }
 
-const runAlgGetResult = async (algName, inupts, token = {}) => {
+const runAlgGetResult = async (algName, inputs, token = {}) => {
     const alg = {
         name: algName,
-        input: inupts
+        input: inputs
     }
     const res = await runAlgorithm(alg, token);
     const jobId = res.body.jobId;
