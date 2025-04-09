@@ -470,6 +470,7 @@ describe('Hkubectl Tests', () => {
             }
 
             var data = fs.readFileSync(filePath, 'utf8');
+            filePathList.push(`${folderPath}/main.py`);
             fs.writeFileSync(`${folderPath}/main.py`, data, { encoding: 'utf8', flag: 'w' });
 
             const command = ` hkubectl sync create` +
@@ -528,6 +529,7 @@ describe('Hkubectl Tests', () => {
             var filePath = `${folderPath}/main.py`;
 
             var data = fs.readFileSync(filePath, 'utf8');
+            filePathList.push(`${folderPath}/${algName}.py`);
             fs.writeFileSync(`${folderPath}/${algName}.py`, data, { encoding: 'utf8', flag: 'w' });
 
             await delay(40 * 1000);
@@ -562,6 +564,7 @@ describe('Hkubectl Tests', () => {
             var filePath = `${folderPath}/main.py`;
 
             var data = fs.readFileSync(filePath, 'utf8');
+            filePathList.push(`${folderPath}/${algName}.py`);
             fs.writeFileSync(`${folderPath}/${algName}.py`, data, { encoding: 'utf8', flag: 'w' });
 
             await delay(20 * 1000);
