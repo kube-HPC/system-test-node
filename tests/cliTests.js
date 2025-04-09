@@ -709,7 +709,7 @@ describe('Hkubectl Tests', () => {
     });
 
     describe('hkubectl export tests', () => {
-        it.only('export algoritms as jsons to a local directory ', async () => {
+        it('export algoritms as jsons to a local directory ', async () => {
             const rimraf = require('rimraf');
             const folderPath = './additionalFiles/exportedAlgorithms';
             if (!fs.existsSync(folderPath)) {
