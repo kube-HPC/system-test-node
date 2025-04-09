@@ -326,12 +326,12 @@ describe('Alrogithm Tests', () => {
                 const algName = `mounts-volumes-${pipelineRandomName(4).toLowerCase()}`;
                 const alg = algJson(algName, algorithmImage, 0, 0.5, 0, "64Mi");
                 alg.volumes = [{
-                    name: "emptyDir-Volume",
+                    name: 'my-dir',
                     emptyDir: {}
                 }];
                 alg.volumeMounts = [{
-                    name: "emptyDir-Volume",
-                    mountPath: "/tmp/foo"
+                    name: 'my-dir',
+                    mountPath: '/tmp/foo'
                 }];
 
                 await applyAlg(alg, dev_token);
@@ -339,6 +339,40 @@ describe('Alrogithm Tests', () => {
 
                 expect(result.status).to.equal('completed');
                 expect(result.data[0].result).to.be.equal(6);
+            }).timeout(1000 * 60 * 5);
+
+            it('should successfully create a pod with a shared volume for algorunner and sidecar', async () => {
+                const algName = `mounts-volumes-${pipelineRandomName(4).toLowerCase()}`;
+                const alg = algJson(algName, algorithmImage, 0, 0.5, 0, "64Mi");
+                alg.volumes = [{
+                    name: 'my-dir',
+                    emptyDir: {}
+                }];
+                alg.volumeMounts = [{
+                    name: 'my-dir',
+                    mountPath: '/tmp/foo'
+                }];
+                alg.sideCars = [{
+                    container: {
+                        name: 'mycar',
+                        image: 'redis'
+                    },
+                    volumeMounts: [{
+                        name: 'my-dir',
+                        mountPath: '/tmp/foo'
+                    }]
+                }];
+
+                await applyAlg(alg, dev_token);
+                await runAlgGetResult(alg.name, [6], dev_token);
+                const pod = await filterPodsByName(alg.name)
+                const { spec } = pod[0];
+
+                expect(spec.volumes).to.deep.contain({ name: 'my-dir', emptyDir: {} });
+                expect(spec.containers[1].name).to.equal('algorunner');
+                expect(spec.containers[1].volumeMounts).to.deep.contain({ name: 'my-dir', mountPath: '/tmp/foo' });
+                expect(spec.containers[2].name).to.equal('mycar');
+                expect(spec.containers[2].volumeMounts).to.deep.contain({ name: 'my-dir', mountPath: '/tmp/foo' });
             }).timeout(1000 * 60 * 5);
         });
     });
