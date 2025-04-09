@@ -539,7 +539,7 @@ describe('Hkubectl Tests', () => {
             deleteAlgorithm(algName);
         }).timeout(1000 * 60 * 10);
 
-        it('sync python alg ignor files', async () => {
+        it('sync python alg ignore files', async () => {
             //the folder containg hkubeignore that has one line to ignore *.txt
             const folderPath = path.join(process.cwd(), 'additionalFiles/pythonIgnoreFile');
 
