@@ -5,6 +5,7 @@ const delay = require('delay');
 const expect = chai.expect;
 const assertArrays = require('chai-arrays');
 const execSync = require('child_process').execSync;
+const fs = require('fs');
 
 const {
     pipelineRandomName,
@@ -166,7 +167,6 @@ describe('Hkubectl Tests', () => {
         }).timeout(1000 * 60 * 6);
 
         xit('hkube algorithm apply from file and delete', async () => {
-            const fs = require('fs');
             const algName = pipelineRandomName(8).toLowerCase();
             algList.push(algName);
             const algFile = path.join(process.cwd(), './additionalFiles/alg.yaml');
@@ -284,7 +284,6 @@ describe('Hkubectl Tests', () => {
         }).timeout(1000 * 60 * 6);
 
         it('pipeline store from file', async () => {
-            const fs = require('fs');
             const pipelineName = pipelineRandomName(8).toLowerCase();
             const pipelineFile = './pipelines/simpelraw.json';
             const pipelineTemp = './pipelines/temp.json';
@@ -688,7 +687,6 @@ describe('Hkubectl Tests', () => {
 
         describe('hkubecl export tests', () => {
             it('export algoritms as jsons to a local directory ', async () => {
-                const fs = require('fs');
                 const rimraf = require('rimraf');
                 const folderPath = './additionalFiles/exportedAlgorithms';
                 if (!fs.existsSync(folderPath)) {
@@ -718,7 +716,6 @@ describe('Hkubectl Tests', () => {
             }).timeout(1000 * 60 * 6);
 
             it('export algorithms as YAMLs to a local directory', async () => {
-                const fs = require('fs');
                 const rimraf = require('rimraf');
                 const yaml = require('js-yaml');
                 const folderPath = './additionalFiles/exportedAlgorithms';
@@ -752,7 +749,6 @@ describe('Hkubectl Tests', () => {
 
             it('export with a non-existing directory', () => {
                 const { spawnSync } = require('child_process');
-                const fs = require('fs');
                 const nonExistingDir = './additionalFiles/nonExistingDir';
                 expect(fs.existsSync(nonExistingDir), `Directory "${nonExistingDir}" should not exist`).to.be.false;
 
@@ -773,7 +769,6 @@ describe('Hkubectl Tests', () => {
             }).timeout(1000 * 60 * 10);
 
             it('export pipelines as jsons to a local directory', async () => {
-                const fs = require('fs');
                 const rimraf = require('rimraf');
                 const folderPath = './additionalFiles/exportedPipelines';
                 if (!fs.existsSync(folderPath)) {
@@ -806,7 +801,6 @@ describe('Hkubectl Tests', () => {
             }).timeout(1000 * 60 * 6);
 
             it('export pipelines as YAMLs to a local directory', async () => {
-                const fs = require('fs');
                 const rimraf = require('rimraf');
                 const yaml = require('js-yaml');
                 const folderPath = './additionalFiles/exportedPipelines';
@@ -839,7 +833,6 @@ describe('Hkubectl Tests', () => {
             }).timeout(1000 * 60 * 6);
 
             it('export all data as jsons to a local directory', async () => {
-                const fs = require('fs');
                 const rimraf = require('rimraf');
                 const baseFolderPath = './additionalFiles/allData';
                 if (!fs.existsSync(baseFolderPath)) {
@@ -887,7 +880,6 @@ describe('Hkubectl Tests', () => {
 
         describe('hkubecl import tests', () => {
             it('import algoritms from a local directory to hkube env', async () => {
-                const fs = require('fs');
                 await deleteAlgorithm('6o5yjjiy');
                 await deleteAlgorithm('7i59t2ad');
                 const folderPath = './additionalFiles/importAlgorithms';
@@ -900,7 +892,6 @@ describe('Hkubectl Tests', () => {
             }).timeout(1000 * 60 * 6);
 
             it('import algoritms from a local directory to hkube env, switch cpu from 1 to 2', async () => {
-                const fs = require('fs');
                 await deleteAlgorithm('6o5yjjiy');
                 await deleteAlgorithm('7i59t2ad');
                 const folderPath = './additionalFiles/importAlgorithms';
@@ -916,7 +907,6 @@ describe('Hkubectl Tests', () => {
             }).timeout(1000 * 60 * 6);
 
             it('import algoritms from a local directory to hkube env. use ; decorator to change 2 values', async () => {
-                const fs = require('fs');
                 await deleteAlgorithm('6o5yjjiy');
                 await deleteAlgorithm('7i59t2ad');
                 const folderPath = './additionalFiles/importAlgorithms';
@@ -934,7 +924,6 @@ describe('Hkubectl Tests', () => {
             }).timeout(1000 * 60 * 6);
 
             it('import pipelines from a local directory to hkube env', async () => {
-                const fs = require('fs');
                 await deletePipeline('0aIWYOaR');
                 await deletePipeline('0lAzCLWk');
                 const folderPath = './additionalFiles/importPipelines';
@@ -947,7 +936,6 @@ describe('Hkubectl Tests', () => {
             }).timeout(1000 * 60 * 6);
 
             it('import all data from a local directory to hkube env', async () => {
-                const fs = require('fs');
                 await deletePipeline('0aIWYOaR');
                 await deletePipeline('0lAzCLWk');
                 await deleteAlgorithm('6o5yjjiy');
@@ -966,7 +954,6 @@ describe('Hkubectl Tests', () => {
             }).timeout(1000 * 60 * 6);
 
             it('import existing pipeline using overwrite', async () => {
-                const fs = require('fs');
                 await deletePipeline('0aIWYOaR');
                 await deletePipeline('0lAzCLWk');
                 await deleteAlgorithm('6o5yjjiy');
@@ -996,7 +983,6 @@ describe('Hkubectl Tests', () => {
             }).timeout(1000 * 60 * 6);
 
             it('import existing pipeline', async () => {
-                const fs = require('fs');
                 await deletePipeline('0aIWYOaR');
                 await deletePipeline('0lAzCLWk');
                 await deleteAlgorithm('6o5yjjiy');
@@ -1026,7 +1012,6 @@ describe('Hkubectl Tests', () => {
             }).timeout(1000 * 60 * 6);
 
             it('import all data from a local directory to hkube env. change one param in an algo', async () => {
-                const fs = require('fs');
                 await deletePipeline('0aIWYOaR');
                 await deletePipeline('0lAzCLWk');
                 await deleteAlgorithm('6o5yjjiy');
@@ -1046,7 +1031,6 @@ describe('Hkubectl Tests', () => {
             }).timeout(1000 * 60 * 6);
 
             it('import all data from a local directory to hkube env. use ; decorator to change 2 values', async () => {
-                const fs = require('fs');
                 await deletePipeline('0aIWYOaR');
                 await deletePipeline('0lAzCLWk');
                 await deleteAlgorithm('6o5yjjiy');
@@ -1068,7 +1052,6 @@ describe('Hkubectl Tests', () => {
 
             it('import using a non-existing directory', () => {
                 const { spawnSync } = require('child_process');
-                const fs = require('fs');
                 const nonExistingDir = './additionalFiles/nonExistingDir';
                 expect(fs.existsSync(nonExistingDir), `Directory "${nonExistingDir}" should not exist`).to.be.false;
 
