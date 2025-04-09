@@ -266,13 +266,13 @@ describe('Alrogithm Tests', () => {
                 pvc: {
                     name: "pvc-volume-no-exist",
                     persistentVolumeClaim: {
-                        claimName: "non-existing"
+                        claimName: "non-existing-pvc"
                     }
                 },
                 configMap: {
                     name: "configmap-volume-no-exist",
                     configMap: {
-                        name: "non-existing-configmap"
+                        name: "non-existing-configMap"
                     }
                 },
                 secret: {
@@ -284,7 +284,7 @@ describe('Alrogithm Tests', () => {
             }
 
             Object.entries(volumeTypes).forEach(([key, volume]) => {
-                it.only(`should fail creating an algorithm with a non-existing ${key} and create a warning`, async () => {
+                it(`should fail creating an algorithm with a non-existing ${key} and create a warning`, async () => {
                     const algName = `non-existing-${key}-${pipelineRandomName(4).toLowerCase()}`;
                     const alg = algJson(algName, algorithmImage, 0, 0.5, 0, "64Mi");
                     alg.volumes = [volume];
@@ -300,6 +300,19 @@ describe('Alrogithm Tests', () => {
                     expect(testAlgo.unscheduledReason).to.exist;
                     expect(testAlgo.unscheduledReason).to.equal(`One or more volumes are missing or do not exist.\nMissing volumes: non-existing-${key}`);
                 }).timeout(1000 * 60 * 5);
+            });
+
+            it(`should successfully run an algorithm with a valid emptyDir volume and shared volume`, async () => {
+                const algName = `mounts-volumes-${pipelineRandomName(4).toLowerCase()}`;
+                const alg = algJson(algName, algorithmImage, 0, 0.5, 0, "64Mi");
+                alg.volumes = [{
+                    name: "emptyDir-Volume",
+                    emptyDir: {}
+                }];
+                alg.volumeMounts = [{
+                    name: "emptyDir-Volume",
+                    mountPath: "/tmp/foo"
+                }];
             });
         });
     });
