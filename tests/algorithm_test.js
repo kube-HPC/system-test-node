@@ -22,7 +22,8 @@ const {
     storeOrUpdateAlgorithms,
     deleteAlgorithmJobs,
     deleteAlgorithmPods,
-    normalizeCpuValue
+    normalizeCpuValue,
+    runAlgGetResult
 } = require('../utils/algorithmUtils')
 
 const {
@@ -231,7 +232,7 @@ describe('Alrogithm Tests', () => {
         const maxCPU = 8;
         const minMem = "4Mi";
         const algorithmBaseName = 'algo-is-satisfied';
-        const algorithmImage = 'tamir321/algoversion:v1';
+        const algorithmImage = 'hkube/algorithm-example-python'; // output is first element of the array which given as input.
         const algorithmSatisfied = algJson(`${algorithmBaseName}-true-${pipelineRandomName(4).toLowerCase()}`, algorithmImage, 0, 0, 0, minMem);
         const algorithmNotSatisfied = algJson(`${algorithmBaseName}-false-${pipelineRandomName(4).toLowerCase()}`, algorithmImage, 0, maxCPU, 0, minMem);
 
@@ -313,7 +314,13 @@ describe('Alrogithm Tests', () => {
                     name: "emptyDir-Volume",
                     mountPath: "/tmp/foo"
                 }];
-            });
+
+                await applyAlg(alg, dev_token);
+                const result = await runAlgGetResult(alg.name, [6], dev_token);
+
+                expect(result.status).to.equal('completed');
+                expect(result.data[0].result).to.be.equal(6);
+            }).timeout(1000 * 60 * 5);
         });
     });
 
