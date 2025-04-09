@@ -67,6 +67,7 @@ const execSyncReturenJSON = async (command) => {
 describe('Hkubectl Tests', () => {
     let algList = [];
     let pipeList = [];
+    let filePathList = [];
 
     // Use this method to apply algorithms, as it ensures that the algorithms are inserted into the algList.
     // This, in turn, guarantees that no unnecessary data is left behind by properly removing those algorithms.
@@ -108,28 +109,53 @@ describe('Hkubectl Tests', () => {
         }
         
         console.log("-----------------------------------------------");
-            console.log("pipeList = " + pipeList);
-            j = 0;
-            z = 3;
-        
-            while (j < pipeList.length) {
-                delPipe = pipeList.slice(j, z);
-                const del = delPipe.map((e) => {
-                    return deletePipeline(e);
+        console.log("pipeList = " + pipeList);
+        j = 0;
+        z = 3;
+    
+        while (j < pipeList.length) {
+            delPipe = pipeList.slice(j, z);
+            const del = delPipe.map((e) => {
+                return deletePipeline(e);
+            });
+            console.log("delPipe-", JSON.stringify(delPipe, null, 2));
+            const delResult = await Promise.all(del);
+            delResult.forEach(result => {
+                if (result && result.text) {
+                    console.log("Delete Result Message:", result.text);
+                }
+            });
+            await delay(2000);
+            j += 3;
+            z += 3;
+            console.log("j=" + j + ",z=" + z);
+        }
+
+        console.log("-----------------------------------------------");
+        console.log("filePathList = " + filePathList);
+        j = 0;
+        z = 3;
+
+        while (j < filePathList.length) {
+            let delFiles = filePathList.slice(j, z);
+            const del = delFiles.map((filePath) => {
+                return new Promise((resolve, reject) => {
+                    fs.unlink(filePath, (err) => {
+                        if (err) {
+                            reject(`Failed to delete file ${filePath}: ${err}`);
+                        } else {
+                            console.log(`Successfully deleted file: ${filePath}`);
+                            resolve();
+                        }
+                    });
                 });
-                console.log("delPipe-", JSON.stringify(delPipe, null, 2));
-                const delResult = await Promise.all(del);
-                delResult.forEach(result => {
-                    if (result && result.text) {
-                        console.log("Delete Result Message:", result.text);
-                    }
-                });
-                await delay(2000);
-                j += 3;
-                z += 3;
-                console.log("j=" + j + ",z=" + z);
-            }
-            console.log("----------------------- end -----------------------");
+            });
+            await Promise.all(del);
+            await delay(2000);
+            j += 3;
+            z += 3;
+        }
+        console.log("----------------------- end -----------------------");
     });
 
     describe('hkubecl algorithm tests', () => {
@@ -287,26 +313,19 @@ describe('Hkubectl Tests', () => {
             const pipelineName = pipelineRandomName(8).toLowerCase();
             const pipelineFile = './pipelines/simpelraw.json';
             const pipelineTemp = './pipelines/temp.json';
-            try {
-                let fileContents = fs.readFileSync(pipelineFile, 'utf8');
-                let data = JSON.parse(fileContents);
-                data.name = `${pipelineName}`;
-                let jsonStr = JSON.stringify(data);
-                fs.writeFileSync(pipelineTemp, jsonStr, 'utf8');
+            filePathList.push(pipelineTemp);
+            let fileContents = fs.readFileSync(pipelineFile, 'utf8');
+            let data = JSON.parse(fileContents);
+            data.name = `${pipelineName}`;
+            let jsonStr = JSON.stringify(data);
+            fs.writeFileSync(pipelineTemp, jsonStr, 'utf8');
 
-                const store = `hkubectl pipeline store -f ` + pipelineTemp;
-                await exceSyncString(store);
+            const store = `hkubectl pipeline store -f ` + pipelineTemp;
+            await exceSyncString(store);
 
-                const pipe = await getPipeline(pipelineName);
-                expect(pipe.body.name).to.be.equal(pipelineName);
-            } catch (error) {
-                throw new Error(`Test failed with error: ${error.message}`);
-            } finally {
-                if (fs.existsSync(pipelineTemp)) {
-                    fs.unlinkSync(pipelineTemp);
-                }
-                await deletePipeline(pipelineName);
-            }
+            const pipe = await getPipeline(pipelineName);
+            expect(pipe.body.name).to.be.equal(pipelineName);
+            await deletePipeline(pipelineName);
         }).timeout(1000 * 60 * 6);
     });
 
