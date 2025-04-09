@@ -1278,7 +1278,7 @@ describe('Alrogithm Tests', () => {
         it('should find multiple pods to delete', async () => {
             const statelessPipeline = deconstructTestData(statelessPipe);
             await deletePipeline(statelessPipeline.name, dev_token);
-            let storeResult = await applyAlg(stayUpAlg, dev_token);
+            await applyAlg(stayUpAlg, dev_token);
             storeResult = await storePipeline(statelessPipeline, dev_token);
             await runStored(statelessPipeline);
             await intervalDelay("Waiting", 30000);
