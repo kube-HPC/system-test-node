@@ -323,7 +323,7 @@ describe('Hkubectl Tests', () => {
             expect(result.data[0].result).to.be.equal('links-1');
         }).timeout(1000 * 60 * 6);
 
-        it('exec raw pipe ', async () => {
+        it('exec raw pipe', async () => {
             const runSimple = "hkubectl exec raw -f ./pipelines/simpelraw.json";
             //const jsonResult = await execSyncReturenJSON(runSimple)
             const output = await execSync(runSimple + " --json");
@@ -337,7 +337,7 @@ describe('Hkubectl Tests', () => {
             expect(result.data[0].result).to.be.equal('links-1');
         }).timeout(1000 * 60 * 6);
 
-        it('exec  algorithm wait', async () => {
+        it('exec algorithm wait', async () => {
             console.log("start");
             const runSimple = "hkubectl exec algorithm green-alg ";
 
@@ -346,7 +346,7 @@ describe('Hkubectl Tests', () => {
             expect(jsonResult.jobResult[0].nodeName).to.be.equal('green-alg');
         }).timeout(1000 * 60 * 6);
 
-        it('exec  algorithm noWait', async () => {
+        it('exec algorithm noWait', async () => {
             const runSimple = "hkubectl exec algorithm green-alg --noWait";
             const jsonResult = await execSyncReturenJSON(runSimple);
 
@@ -356,7 +356,7 @@ describe('Hkubectl Tests', () => {
             expect(result.data[0].result).to.be.equal(null);
         }).timeout(1000 * 60 * 6);
 
-        it('exec stop pipe ', async () => {
+        it('exec stop pipe', async () => {
             const runSimple = "hkubectl exec stored simple --noWait";
             const jsonResult = await execSyncReturenJSON(runSimple);
 
@@ -371,7 +371,7 @@ describe('Hkubectl Tests', () => {
             expect(result.status).to.be.equal("stopped");
         }).timeout(1000 * 60 * 6);
 
-        it('exec status pipe ', async () => {
+        it('exec status pipe', async () => {
             const runSimple = "hkubectl exec stored simple --noWait";
             const jsonResult = await execSyncReturenJSON(runSimple);
             console.log("=======================");
@@ -385,7 +385,7 @@ describe('Hkubectl Tests', () => {
             expect(statuses[0].result.status).to.be.equal(statuses[1].body.status);
         }).timeout(1000 * 60 * 6);
 
-        it('exec get pipe ', async () => {
+        it('exec get pipe', async () => {
             const get = "hkubectl pipeline get simple --json";
             //const output = await exceSyncString(get);
             //const expected = ["name","simple"]
@@ -400,7 +400,7 @@ describe('Hkubectl Tests', () => {
             expect(result.result.name).to.be.equal('simple');
         }).timeout(1000 * 60 * 6);
 
-        it('exec results pipe ', async () => {
+        it('exec results pipe', async () => {
             const runSimple = "hkubectl exec stored simple --noWait";
             const jsonResult = await execSyncReturenJSON(runSimple);
             console.log(jsonResult);
