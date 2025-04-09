@@ -303,7 +303,26 @@ describe('Alrogithm Tests', () => {
                 }).timeout(1000 * 60 * 5);
             });
 
-            it(`should successfully run an algorithm with a valid emptyDir volume and shared volume`, async () => {
+            it('should fail creating an algorithm with more than one non-existing volumes and create a warning', async () => {
+                const algName = `non-existing-volumes-${pipelineRandomName(4).toLowerCase()}`;
+                const alg = algJson(algName, algorithmImage, 0, 0.5, 0, "64Mi");
+                alg.volumes = Object.values(volumeTypes);
+
+                await applyAlg(alg, dev_token);
+                await runAlgorithm({ name: alg.name, input: [] }, dev_token);
+
+                await intervalDelay("Waiting for warning to create", 60000, 10000);
+                const allAlgorithms = await getAllAlgorithms(dev_token);
+                const testAlgo = allAlgorithms.find(a => a.name === alg.name);
+
+                expect(testAlgo).to.not.be.undefined;
+                expect(testAlgo.unscheduledReason).to.exist;
+                expect(testAlgo.unscheduledReason).to.equal(
+                    'One or more volumes are missing or do not exist.\nMissing volumes: non-existing-pvc, non-existing-configMap, non-existing-secret'
+                );
+            }).timeout(1000 * 60 * 5);
+
+            it('should successfully run an algorithm with a valid emptyDir volume and shared volume', async () => {
                 const algName = `mounts-volumes-${pipelineRandomName(4).toLowerCase()}`;
                 const alg = algJson(algName, algorithmImage, 0, 0.5, 0, "64Mi");
                 alg.volumes = [{
