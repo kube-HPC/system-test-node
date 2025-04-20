@@ -125,7 +125,7 @@ describe("streaming pipeline test", () => {
     });
 
     describe("simple pipeline tests with constant ratios", () => {
-        it.only("should satisfy the request rate with the given rate, with enough nodes", async () => {
+        it("should satisfy the request rate with the given rate, with enough nodes", async () => {
             await createAlg(statefull);
             await createAlg(stateless);
 
@@ -176,14 +176,11 @@ describe("streaming pipeline test", () => {
             await waitForStatus(dev_token, jobId, simple_statelessNodeName, 'active', 120 * 1000, 2 * 1000);
 
             await intervalDelay('Waiting phase 1', 30 * 1000);
-            const required = await getRequiredPods(dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName);
-            expect(required).to.be.gt(26, `required is ${required}, needed >26`); // ideal amount, but queue is filled
+            await checkInRangeWithRetries(getRequiredPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 27, Infinity, 'Required pods'); // ideal amount is 26, but queue is filled
 
             await intervalDelay('Waiting phase 2', 90 * 1000);
-            const current = await getCurrentPods(dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName);
-            expect(current).to.be.gt(30, `current is ${current}, needed >30`); // emptying queue
-            const throughput = await getThroughput(dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName);
-            expect(throughput).to.be.gt(90, `throughput is ${throughput}, needed >90`);
+            await checkInRangeWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 31, Infinity, 'Current pods'); // emptying queue
+            await checkInRangeWithRetries(getThroughput, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 90, Infinity, 'Throughput');
 
             await intervalDelay('Waiting phase 3', 240 * 1000);
             // Suppose to have 26 pods, but might go to 24~27
@@ -366,16 +363,16 @@ describe("streaming pipeline test", () => {
             await intervalDelay('Waiting streaming to run for data to update', 30 * 1000);
 
             // Should get to required = 1 at some point.
-            let attemptNumber = await checkEqualWithRetries(getRequiredPods, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 1, 'Required pods', 5 * 1000, 15);
-            console.log(`Phase 1 passed at attempt number ${attemptNumber}.`);
+            let { attempt: attempt1 } = await checkEqualWithRetries(getRequiredPods, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 1, 'Required pods', 5 * 1000, 15);
+            console.log(`Phase 1 passed at attempt number ${attempt1}.`);
 
             // Should get to required >= 20 required at some point.
-            await checkInRangeWithRetries(getRequiredPods, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 20, 50, 'Required pods', 5 * 1000, 15);
-            console.log(`Phase 2 passed at attempt number ${attemptNumber}.`);
+            let { attempt: attempt2 } = await checkInRangeWithRetries(getRequiredPods, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 20, 50, 'Required pods', 5 * 1000, 15);
+            console.log(`Phase 2 passed at attempt number ${attempt2}.`);
 
             // Should get again to required = 1 at some point.
-            await checkEqualWithRetries(getRequiredPods, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 1, 'Required pods', 5 * 1000, 15);
-            console.log(`Phase 3 passed at attempt number ${attemptNumber}.`);
+            let { attempt: attempt3 } = await checkEqualWithRetries(getRequiredPods, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 1, 'Required pods', 5 * 1000, 15);
+            console.log(`Phase 3 passed at attempt number ${attempt3}.`);
             await stopPipeline(jobId, dev_token);
         }).timeout(450 * 1000);
     });
