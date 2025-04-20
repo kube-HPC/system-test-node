@@ -1168,6 +1168,7 @@ describe('Algorithm Tests', () => {
         describe('kubernetes algorithm tests', () => {
             const stayupAlgName = `stayuptestalg-${pipelineRandomName(4).toLowerCase()}`;
             const statelessAlgName = `yellow-alg-${pipelineRandomName(4).toLowerCase()}`;
+            statelessPipe.descriptor.nodes[0].algorithmName = stayupAlgName;
             let stayUpSkeleton = {
                 name: stayupAlgName,
                 input: []
@@ -1200,7 +1201,7 @@ describe('Algorithm Tests', () => {
                 await deletePipeline(statelessPipeline.name, dev_token);
                 let storeResult = await applyAlg(stayUpAlg, dev_token);
                 storeResult = await storePipeline(statelessPipeline, dev_token);
-                await runStored(statelessPipeline);
+                await runStored(statelessPipeline, dev_token);
                 await intervalDelay("Waiting", 30000);
                 const response = await deleteAlgorithmPods("yellow-alg", dev_token);
                 expect(response.statusCode).to.be.equal(StatusCodes.OK);
@@ -1235,7 +1236,7 @@ describe('Algorithm Tests', () => {
             it('should find multiple jobs to delete', async () => {
                 const statelessPipeline = deconstructTestData(statelessPipe);
                 await deletePipeline(statelessPipeline.name, dev_token);
-                let storeResult = await applyAlg(stayUpAlg, dev_token);
+                await applyAlg(stayUpAlg, dev_token);
                 storeResult = await storePipeline(statelessPipeline, dev_token);
                 await runStored(statelessPipeline, dev_token);
                 await intervalDelay("Waiting", 30000);
