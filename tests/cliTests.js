@@ -139,14 +139,14 @@ describe('Hkubectl Tests', () => {
         while (j < filePathList.length) {
             let delFiles = filePathList.slice(j, z);
             const del = delFiles.map((filePath) => {
-                return new Promise((resolve, reject) => {
+                return new Promise((resolve) => {
                     fs.unlink(filePath, (err) => {
                         if (err) {
-                            reject(`Failed to delete file ${filePath}: ${err}`);
+                            console.warn(`Failed to delete file ${filePath}: ${err.message}`);
                         } else {
                             console.log(`Successfully deleted file: ${filePath}`);
-                            resolve();
                         }
+                        resolve();
                     });
                 });
             });
