@@ -74,7 +74,10 @@ const checkEqualWithRetries = async (computeFn, funcArguments = [], targetValue,
 const checkInRangeWithRetries = async (computeFn, funcArguments = [], min, max, valueName = 'Value', retryDelay = 10000, retries = 3) => {
     const result = await _checkConditionWithRetries(value => value >= min && value <= max, computeFn, funcArguments, retryDelay, retries);
     if (result) return result;
-    expect.fail(`${valueName} did not fall within range [${min}, ${max}] after ${retries} attempts.`);
+    let range = `did not fall within range [${min}, ${max}]`;
+    if (min === -Infinity) range = `is not lower than or equal to ${max}`;
+    else if (max === Infinity) range = `is not higher than or equal to ${min}`;
+    expect.fail(`${valueName} ${range} after ${retries} attempts.`);
 };
 
 
