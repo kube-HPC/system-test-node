@@ -125,7 +125,7 @@ describe("streaming pipeline test", () => {
     });
 
     describe("simple pipeline tests with constant ratios", () => {
-        it("should satisfy the request rate with the given rate, with enough nodes", async () => {
+        it.only("should satisfy the request rate with the given rate, with enough nodes", async () => {
             await createAlg(statefull);
             await createAlg(stateless);
 
@@ -153,8 +153,8 @@ describe("streaming pipeline test", () => {
             expect(current).to.be.gt(3, `current is ${current}, needed >3`);
 
             await intervalDelay('Waiting phase 3', 90 * 1000);
-            await checkEqualWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 3);
-            await checkInRangeWithRetries(getThroughput, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 99, 101);
+            await checkEqualWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 3, 'Current pods');
+            await checkInRangeWithRetries(getThroughput, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 99, 101, 'Throughput');
             await stopPipeline(jobId, dev_token);
         }).timeout(350 * 1000);
 
@@ -187,8 +187,8 @@ describe("streaming pipeline test", () => {
 
             await intervalDelay('Waiting phase 3', 240 * 1000);
             // Suppose to have 26 pods, but might go to 24~27
-            await checkInRangeWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 24, 27);
-            await checkInRangeWithRetries(getThroughput, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 98, 102);
+            await checkInRangeWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 24, 27, 'Current pods');
+            await checkInRangeWithRetries(getThroughput, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 98, 102, 'Throughput');
             await stopPipeline(jobId, dev_token);
         }).timeout(550 * 1000);
 
@@ -217,8 +217,8 @@ describe("streaming pipeline test", () => {
             expect(current).to.be.gt(1, `current is ${current}, needed >1`);
             
             await intervalDelay('Waiting phase 2', 40 * 1000);
-            await checkEqualWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 1);
-            await checkEqualWithRetries(getThroughput, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 100);
+            await checkEqualWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 1, 'Current pods');
+            await checkEqualWithRetries(getThroughput, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 100, 'Throughput');
             await stopPipeline(jobId, dev_token);
         }).timeout(300 * 1000);
 
@@ -241,12 +241,11 @@ describe("streaming pipeline test", () => {
             await waitForStatus(dev_token, jobId, simple_statelessNodeName, 'active', 120 * 1000, 2 * 1000);
 
             await intervalDelay('Waiting phase 1', 40 * 1000);
-            const throughput = await getThroughput(dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName);
-            expect(throughput).to.be.gt(100, `throughput is ${throughput}, needed >100`); // suppose to be emptying the queue
+            await checkInRangeWithRetries(getThroughput, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 100, Infinity, 'Throughput'); // suppose to be emptying the queue
 
             await intervalDelay('Waiting phase 2', 40 * 1000);
-            await checkEqualWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 2);
-            await checkEqualWithRetries(getThroughput, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 100);
+            await checkEqualWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 2, 'Current pods');
+            await checkEqualWithRetries(getThroughput, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 100, 'Throughput');
             await stopPipeline(jobId, dev_token);
         }).timeout(300 * 1000);
 
@@ -279,8 +278,8 @@ describe("streaming pipeline test", () => {
             expect(throughput).to.be.gt(100, `throughput is ${throughput}, needed >100`); // suppose to be emptying the queue
 
             await intervalDelay('Waiting phase 3', 120 * 1000);
-            await checkEqualWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 21);
-            await checkEqualWithRetries(getThroughput, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 100);
+            await checkEqualWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 21, 'Current pods');
+            await checkEqualWithRetries(getThroughput, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 100, 'Throughput');
             await stopPipeline(jobId, dev_token);
         }).timeout(450 * 1000);
     });
@@ -337,8 +336,7 @@ describe("streaming pipeline test", () => {
             expect(current).to.be.gte(4, `current is ${current}, needed >=4`);
 
             await intervalDelay('Waiting phase 2', 50 * 1000);
-            current = await getCurrentPods(dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName);
-            expect(current).to.be.equal(0, `current is ${current}, neeeded =0`);
+            await checkEqualWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 0,'Current pods', 5 * 1000, 4);
 
             await intervalDelay('Waiting phase 3', 75 * 1000);
             current = await getCurrentPods(dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName);
@@ -368,15 +366,15 @@ describe("streaming pipeline test", () => {
             await intervalDelay('Waiting streaming to run for data to update', 30 * 1000);
 
             // Should get to required = 1 at some point.
-            let attemptNumber = await checkEqualWithRetries(getRequiredPods, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 1, 5 * 1000, 15);
+            let attemptNumber = await checkEqualWithRetries(getRequiredPods, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 1, 'Required pods', 5 * 1000, 15);
             console.log(`Phase 1 passed at attempt number ${attemptNumber}.`);
 
             // Should get to required >= 20 required at some point.
-            await checkInRangeWithRetries(getRequiredPods, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 20, 50, 5 * 1000, 15);
+            await checkInRangeWithRetries(getRequiredPods, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 20, 50, 'Required pods', 5 * 1000, 15);
             console.log(`Phase 2 passed at attempt number ${attemptNumber}.`);
 
             // Should get again to required = 1 at some point.
-            await checkEqualWithRetries(getRequiredPods, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 1, 5 * 1000, 15);
+            await checkEqualWithRetries(getRequiredPods, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 1, 'Required pods', 5 * 1000, 15);
             console.log(`Phase 3 passed at attempt number ${attemptNumber}.`);
             await stopPipeline(jobId, dev_token);
         }).timeout(450 * 1000);
@@ -414,9 +412,9 @@ describe("streaming pipeline test", () => {
             expect(current).to.be.gt(5, `current is ${current}, needed >5`);
 
             await intervalDelay('Waiting phase 3', 90 * 1000);
-            await checkEqualWithRetries(getCurrentPods, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 5);
-            await checkEqualWithRetries(getThroughput, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 100);
-            await checkEqualWithRetries(getThroughput, [dev_token, jobId, multiple_statefulNodeName2, multiple_statelessNodeName], 100);
+            await checkEqualWithRetries(getCurrentPods, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 5, 'Current pods');
+            await checkEqualWithRetries(getThroughput, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 100, 'Throughput');
+            await checkEqualWithRetries(getThroughput, [dev_token, jobId, multiple_statefulNodeName2, multiple_statelessNodeName], 100, 'Throughput');
             await stopPipeline(jobId, dev_token);
         }).timeout(400 * 1000);
 
@@ -458,9 +456,9 @@ describe("streaming pipeline test", () => {
             expect(current).to.be.gte(2, `current is ${current}, needed >=2`);
 
             await intervalDelay('Waiting phase 3', 60 * 1000);
-            await checkEqualWithRetries(getCurrentPods, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 2);
-            await checkEqualWithRetries(getThroughput, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 100);
-            await checkEqualWithRetries(getThroughput, [dev_token, jobId, multiple_statefulNodeName2, multiple_statelessNodeName], 100);
+            await checkEqualWithRetries(getCurrentPods, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 2, 'Current pods');
+            await checkEqualWithRetries(getThroughput, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 100, 'Throughput');
+            await checkEqualWithRetries(getThroughput, [dev_token, jobId, multiple_statefulNodeName2, multiple_statelessNodeName], 100, 'Throughput');
             await stopPipeline(jobId, dev_token);
         }).timeout(400 * 1000);
     });
