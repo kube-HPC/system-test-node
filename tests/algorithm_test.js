@@ -92,7 +92,7 @@ const algJson = (algName, imageName, algMinHotWorkers = 0, algCPU = 0.001, algGP
 }
 
 const { waitForWorkers, getJobsByNameAndVersion, getJobById, getAllAlgorithms } = require('../utils/socketGet')
-describe('Alrogithm Tests', () => {
+describe('Algorithm Tests', () => {
     before(async function () {
         this.timeout(1000 * 60 * 15);
         let testUserBody ={
