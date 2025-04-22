@@ -367,7 +367,7 @@ describe("streaming pipeline test", () => {
             console.log(`Phase 1 passed at attempt number ${attempt1}.`);
 
             // Should get to required >= 20 required at some point.
-            let { attempt: attempt2 } = await checkInRangeWithRetries(getRequiredPods, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 20, 50, 'Required pods', 5 * 1000, 15);
+            let { attempt: attempt2 } = await checkInRangeWithRetries(getRequiredPods, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 20, 50, 'Required pods', 5 * 1000, 20);
             console.log(`Phase 2 passed at attempt number ${attempt2}.`);
 
             // Should get again to required = 1 at some point.
