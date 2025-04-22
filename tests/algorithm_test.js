@@ -22,7 +22,8 @@ const {
     storeOrUpdateAlgorithms,
     deleteAlgorithmJobs,
     deleteAlgorithmPods,
-    normalizeCpuValue
+    normalizeCpuValue,
+    runAlgGetResult
 } = require('../utils/algorithmUtils')
 
 const {
@@ -231,7 +232,7 @@ describe('Alrogithm Tests', () => {
         const maxCPU = 8;
         const minMem = "4Mi";
         const algorithmBaseName = 'algo-is-satisfied';
-        const algorithmImage = 'tamir321/algoversion:v1';
+        const algorithmImage = 'hkube/algorithm-example-python'; // output is first element of the array which given as input.
         const algorithmSatisfied = algJson(`${algorithmBaseName}-true-${pipelineRandomName(4).toLowerCase()}`, algorithmImage, 0, 0, 0, minMem);
         const algorithmNotSatisfied = algJson(`${algorithmBaseName}-false-${pipelineRandomName(4).toLowerCase()}`, algorithmImage, 0, maxCPU, 0, minMem);
 
@@ -260,7 +261,121 @@ describe('Alrogithm Tests', () => {
             }
             expect(algo.unscheduledReason).to.be.a('string');
         }).timeout(1000 * 60 * 5);
-    })
+
+        describe('algorithm with volumes tests', () => {
+            volumeTypes = {
+                pvc: {
+                    name: "pvc-volume-no-exist",
+                    persistentVolumeClaim: {
+                        claimName: "non-existing-pvc"
+                    }
+                },
+                configMap: {
+                    name: "configmap-volume-no-exist",
+                    configMap: {
+                        name: "non-existing-configMap"
+                    }
+                },
+                secret: {
+                    name: "secret-volume-no-exist",
+                    secret: {
+                        secretName: "non-existing-secret"
+                    }
+                }
+            }
+
+            Object.entries(volumeTypes).forEach(([key, volume]) => {
+                it(`should fail creating an algorithm with a non-existing ${key} and create a warning`, async () => {
+                    const algName = `non-existing-${key}-${pipelineRandomName(4).toLowerCase()}`;
+                    const alg = algJson(algName, algorithmImage, 0, 0.5, 0, "64Mi");
+                    alg.volumes = [volume];
+
+                    await applyAlg(alg, dev_token);
+                    await runAlgorithm({ name: alg.name, input: [] }, dev_token);
+
+                    await intervalDelay("Waiting for warning to create", 60000, 10000);
+                    const allAlgorithms = await getAllAlgorithms(dev_token);
+                    const testAlgo = allAlgorithms.find(a => a.name === alg.name);
+
+                    expect(testAlgo).to.not.be.undefined;
+                    expect(testAlgo.unscheduledReason).to.exist;
+                    expect(testAlgo.unscheduledReason).to.equal(`One or more volumes are missing or do not exist.\nMissing volumes: non-existing-${key}`);
+                }).timeout(1000 * 60 * 5);
+            });
+
+            it('should fail creating an algorithm with more than one non-existing volumes and create a warning', async () => {
+                const algName = `non-existing-volumes-${pipelineRandomName(4).toLowerCase()}`;
+                const alg = algJson(algName, algorithmImage, 0, 0.5, 0, "64Mi");
+                alg.volumes = Object.values(volumeTypes);
+
+                await applyAlg(alg, dev_token);
+                await runAlgorithm({ name: alg.name, input: [] }, dev_token);
+
+                await intervalDelay("Waiting for warning to create", 60000, 10000);
+                const allAlgorithms = await getAllAlgorithms(dev_token);
+                const testAlgo = allAlgorithms.find(a => a.name === alg.name);
+
+                expect(testAlgo).to.not.be.undefined;
+                expect(testAlgo.unscheduledReason).to.exist;
+                expect(testAlgo.unscheduledReason).to.equal(
+                    'One or more volumes are missing or do not exist.\nMissing volumes: non-existing-pvc, non-existing-configMap, non-existing-secret'
+                );
+            }).timeout(1000 * 60 * 5);
+
+            it('should successfully run an algorithm with a valid emptyDir volume and shared volume', async () => {
+                const algName = `mounts-volumes-${pipelineRandomName(4).toLowerCase()}`;
+                const alg = algJson(algName, algorithmImage, 0, 0.5, 0, "64Mi");
+                alg.volumes = [{
+                    name: 'my-dir',
+                    emptyDir: {}
+                }];
+                alg.volumeMounts = [{
+                    name: 'my-dir',
+                    mountPath: '/tmp/foo'
+                }];
+
+                await applyAlg(alg, dev_token);
+                const result = await runAlgGetResult(alg.name, [6], dev_token);
+
+                expect(result.status).to.equal('completed');
+                expect(result.data[0].result).to.be.equal(6);
+            }).timeout(1000 * 60 * 5);
+
+            it('should successfully create a pod with a shared volume for algorunner and sidecar', async () => {
+                const algName = `mounts-volumes-${pipelineRandomName(4).toLowerCase()}`;
+                const alg = algJson(algName, algorithmImage, 0, 0.5, 0, "64Mi");
+                alg.volumes = [{
+                    name: 'my-dir',
+                    emptyDir: {}
+                }];
+                alg.volumeMounts = [{
+                    name: 'my-dir',
+                    mountPath: '/tmp/foo'
+                }];
+                alg.sideCars = [{
+                    container: {
+                        name: 'mycar',
+                        image: 'redis'
+                    },
+                    volumeMounts: [{
+                        name: 'my-dir',
+                        mountPath: '/tmp/foo'
+                    }]
+                }];
+
+                await applyAlg(alg, dev_token);
+                await runAlgGetResult(alg.name, [6], dev_token);
+                const pod = await filterPodsByName(alg.name)
+                const { spec } = pod[0];
+
+                expect(spec.volumes).to.deep.contain({ name: 'my-dir', emptyDir: {} });
+                expect(spec.containers[1].name).to.equal('algorunner');
+                expect(spec.containers[1].volumeMounts).to.deep.contain({ name: 'my-dir', mountPath: '/tmp/foo' });
+                expect(spec.containers[2].name).to.equal('mycar');
+                expect(spec.containers[2].volumeMounts).to.deep.contain({ name: 'my-dir', mountPath: '/tmp/foo' });
+            }).timeout(1000 * 60 * 5);
+        });
+    });
 
     describe('Test Algorithm Version (git 560 487 998)', () => {
         //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/560
@@ -932,318 +1047,316 @@ describe('Alrogithm Tests', () => {
             await deleteAlgorithm(alg.name, dev_token, true);
             expect(workers.length).to.be.equal(alg.minHotWorkers);
         }).timeout(1000 * 5 * 60);
+    });
 
-        describe('algorithm execute another', () => {
-            it('TID-600 algorithm execute another algorithm (git 288)', async () => {
-                let alg = {
-                    name: "versatile",
-                    cpu: 1,
-                    gpu: 0,
-                    mem: "256Mi",
-                    minHotWorkers: 0,
-                    algorithmImage: "tamir321/versatile:04",
-                    type: "Image",
-                    options: {
-                        debug: false,
-                        pending: false
-                    },
-                    workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
-                }
-                await applyAlg(alg, dev_token);
-                //need to add alg versatile-pipe
-                const algName = "black-alg";
-                const pipe = {
-                    "name": "versatile-pipe",
-                    "flowInput": {
-                        "inp": [{
-                            "type": "algorithm",
-                            "name": `${algName}`,
-                            "input": ["a"]
-                        }]
-                    }
-                }
-                const d = deconstructTestData(testData4);
-
-                //store pipeline evalwait
-                const a = await storePipeline(d, dev_token);
-
-                //run the pipeline evalwait
-                const jobId = await runStoredAndWaitForResults(pipe, dev_token);
-
-                const graph = await getRawGraph(jobId, dev_token);
-                expect(graph.body.nodes.length).to.be.equal(2);
-            }).timeout(1000 * 5 * 60);
-
-
-        });
-
-        describe('insert algorithm array', () => {
-            it('should succeed to store an array of algorithms', async () => {
-                let algorithmsList = [
-                    {
-                        name: "alg1",
-                        cpu: 0.1,
-                        gpu: 0,
-                        mem: "256Mi",
-                        minHotWorkers: 0,
-                        algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
-                        type: "Image",
-                        options: {
-                            debug: false,
-                            pending: false
-                        },
-                        workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
-                    },
-                    {
-                        name: "alg2",
-                        cpu: 0.1,
-                        gpu: 0,
-                        mem: "256Mi",
-                        minHotWorkers: 0,
-                        algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
-                        type: "Image",
-                        options: {
-                            debug: false,
-                            pending: false
-                        },
-                        workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
-                    }
-                ];
-
-                const response = await applyAlgList(algorithmsList, dev_token, true);
-                const listOfAlgorithmResponse = response.body;
-                expect(listOfAlgorithmResponse).to.be.an('array');
-                expect(listOfAlgorithmResponse.length).to.be.equal(2);
-                expect(response.statusCode).to.be.equal(StatusCodes.CREATED, 'Expected status code to be CREATED');
-                expect(listOfAlgorithmResponse[0].algorithm.name).to.be.equal('alg1');
-                expect(listOfAlgorithmResponse[1].algorithm.name).to.be.equal('alg2');
-            }).timeout(1000 * 60 * 5);
-
-            it('create an algorithm array containing a 409 Conflict status and error message for existing algorithms', async () => {
-                let existingAlg = {
-                    name: "alg1",
-                    cpu: 0.1,
-                    gpu: 0,
-                    mem: "256Mi",
-                    minHotWorkers: 0,
-                    algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
-                    type: "Image",
-                    options: {
-                        debug: false,
-                        pending: false
-                    },
-                    workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
-                }
-                await applyAlg(existingAlg);
-
-                let algorithmsList = [
-                    {
-                        "name": "alg1",
-                        "cpu": 0.1,
-                        "gpu": 0,
-                        "mem": "256Mi",
-                        "minHotWorkers": 0,
-                        "algorithmImage": "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
-                        "type": "Image",
-                        "options": {
-                            "debug": false,
-                            "pending": false
-                        }
-                    },
-                    {
-                        name: "alg2",
-                        cpu: 0.1,
-                        gpu: 0,
-                        mem: "256Mi",
-                        minHotWorkers: 0,
-                        algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
-                        type: "Image",
-                        options: {
-                            debug: false,
-                            pending: false
-                        },
-                        workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
-                    }
-                ];
-                const response = await applyAlgList(algorithmsList, dev_token);
-                const listOfAlgorithmResponse = response.body;
-                expect(response.statusCode).to.be.equal(StatusCodes.CREATED);
-                expect(listOfAlgorithmResponse).to.be.an('array');
-                expect(listOfAlgorithmResponse.length).to.be.equal(2);
-                expect(listOfAlgorithmResponse[0].error.code).to.be.equal(409, 'Expected status code to be CONFLICT');
-                expect(listOfAlgorithmResponse[1].algorithm.name).to.be.equal('alg2');
-            }).timeout(1000 * 60 * 5);
-
-            it('overwrite an algorithm', async () => {
-                let existingAlg = {
-                    name: "alg1",
-                    cpu: 0.1,
-                    gpu: 0,
-                    mem: "256Mi",
-                    minHotWorkers: 0,
-                    algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
-                    type: "Image",
-                    options: {
-                        debug: false,
-                        pending: false
-                    },
-                    workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
-                }
-                await applyAlg(existingAlg);
-
-                let algorithmsList = [
-                    {
-                        "name": "alg1",
-                        "cpu": 0.1,
-                        "gpu": 0,
-                        "mem": "256Mi",
-                        "minHotWorkers": 0,
-                        "algorithmImage": "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
-                        "type": "Image",
-                        "options": {
-                            "debug": false,
-                            "pending": false
-                        }
-                    },
-                    {
-                        name: "alg2",
-                        cpu: 0.2,
-                        gpu: 0,
-                        mem: "256Mi",
-                        minHotWorkers: 0,
-                        algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
-                        type: "Image",
-                        options: {
-                            debug: false,
-                            pending: false
-                        },
-                        workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
-                    }
-                ];
-                const response = await applyOrUpdateAlgList(algorithmsList, dev_token);
-                const listOfAlgorithmResponse = response.body;
-                expect(response.statusCode).to.be.equal(StatusCodes.CREATED);
-                expect(listOfAlgorithmResponse).to.be.an('array');
-                expect(listOfAlgorithmResponse.length).to.be.equal(2);
-                expect(listOfAlgorithmResponse[1].algorithm.name).to.be.equal('alg2');
-                const alg2Response = await getAlgorithm('alg2', dev_token);
-                expect(alg2Response.body.cpu).to.eq(0.2);
-
-            }).timeout(1000 * 60 * 5);
-
-            it('should succeed creating an array containing a 400 Bad Request status and error message for invalid data', async () => {
-                const invalidAlgorithmData = [
-                    {
-                        name: 'Invalid Algorithm NAME-',
-                        algorithmImage: 'image',
-                        mem: '50Mi',
-                        cpu: 1,
-                        type: 'Image',
-                    },
-                    {
-                        name: "alg1",
-                        cpu: 0.1,
-                        gpu: 0,
-                        mem: "256Mi",
-                        minHotWorkers: 0,
-                        algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
-                        type: "Image",
-                        options: {
-                            debug: false,
-                            pending: false
-                        },
-                        workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
-                    },
-                ];
-                const response = await applyAlgList(invalidAlgorithmData, dev_token, true);
-                const listOfAlgorithmResponse = response.body;
-                expect(listOfAlgorithmResponse).to.be.an('array');
-                expect(listOfAlgorithmResponse.length).to.be.equal(2);
-                expect(response.statusCode).to.be.equal(StatusCodes.CREATED, 'Expected status code to be CREATED');
-                expect(listOfAlgorithmResponse[0].error.code).to.be.equal(StatusCodes.BAD_REQUEST, 'Expected status code to be BAD_REQUEST');
-                expect(listOfAlgorithmResponse[1].algorithm.name).to.be.equal('alg1');
-            });
-        });
-
-        describe('kubernetes algorithm tests', () => {
-            const stayupAlgName = `stayuptestalg-${pipelineRandomName(4).toLowerCase()}`;
-            const statelessAlgName = `yellow-alg-${pipelineRandomName(4).toLowerCase()}`;
-            let stayUpSkeleton = {
-                name: stayupAlgName,
-                input: []
+    describe('algorithm execute another', () => {
+        it('TID-600 algorithm execute another algorithm (git 288)', async () => {
+            let alg = {
+                name: "versatile",
+                cpu: 1,
+                gpu: 0,
+                mem: "256Mi",
+                minHotWorkers: 0,
+                algorithmImage: "tamir321/versatile:04",
+                type: "Image",
+                options: {
+                    debug: false,
+                    pending: false
+                },
+                workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
             }
+            await applyAlg(alg, dev_token);
+            //need to add alg versatile-pipe
+            const algName = "black-alg";
+            const pipe = {
+                "name": "versatile-pipe",
+                "flowInput": {
+                    "inp": [{
+                        "type": "algorithm",
+                        "name": `${algName}`,
+                        "input": ["a"]
+                    }]
+                }
+            }
+            const d = deconstructTestData(testData4);
 
-            it('should apply selector when given one, and find no pods to stop', async () => {
-                const response = await deleteAlgorithmPods("anyName", dev_token, "mySelector");
-                expect(response.statusCode).to.be.equal(StatusCodes.NOT_FOUND);
-                expect(response.body).to.be.equal('No pods found with selector mySelector');
-            }).timeout(1000 * 60 * 5);
+            //store pipeline evalwait
+            const a = await storePipeline(d, dev_token);
 
-            it('should find one pod to delete', async () => {
-                let suffix = pipelineRandomName(4).toLowerCase();
-                stayUpAlg.name += `-${suffix}`;
-                stayUpSkeleton.name = stayUpAlg.name;
-                await applyAlg(stayUpAlg, dev_token);
-                stayUpAlg.name = stayupAlgName;
-                const result = await runAlgorithm(stayUpSkeleton, dev_token);
-                await intervalDelay("Waiting for creation", 20000);
-                const response = await deleteAlgorithmPods(stayUpSkeleton.name, dev_token);
-                await delay(1000);
-                await stopPipeline(result.body.jobId, dev_token);
-                expect(response.statusCode).to.be.equal(StatusCodes.OK);
-                expect(response.body.message.length).to.be.equal(1);
-                await deleteAlgorithmJobs(stayUpSkeleton.name, dev_token);
-            }).timeout(1000 * 60 * 5);
+            //run the pipeline evalwait
+            const jobId = await runStoredAndWaitForResults(pipe, dev_token);
 
-            it('should find multiple pods to delete', async () => {
-                const statelessPipeline = deconstructTestData(statelessPipe);
-                await deletePipeline(statelessPipeline.name, dev_token);
-                let storeResult = await applyAlg(stayUpAlg, dev_token);
-                storeResult = await storePipeline(statelessPipeline, dev_token);
-                await runStored(statelessPipeline);
-                await intervalDelay("Waiting", 30000);
-                const response = await deleteAlgorithmPods("yellow-alg", dev_token);
-                expect(response.statusCode).to.be.equal(StatusCodes.OK);
-                expect(response.body.message.length).to.be.greaterThan(2);
-                await deleteAlgorithmJobs(stayUpSkeleton.name, dev_token);
-                await deleteAlgorithmJobs(statelessAlgName, dev_token);
-                await deletePipeline(statelessPipeline.name, dev_token)
-                await deleteAlgorithm(stayupAlgName, dev_token, true)
-            }).timeout(1000 * 60 * 5);
+            const graph = await getRawGraph(jobId, dev_token);
+            expect(graph.body.nodes.length).to.be.equal(2);
+        }).timeout(1000 * 5 * 60);
+    });
 
-            it('should apply selector when given one, and find no jobs to stop', async () => {
-                const response = await deleteAlgorithmJobs("anyName", dev_token, "mySelector");
-                expect(response.statusCode).to.be.equal(StatusCodes.NOT_FOUND);
-                expect(response.body).to.be.equal('No jobs found with selector mySelector');
-            }).timeout(1000 * 60 * 5);
+    describe('insert algorithm array', () => {
+        it('should succeed to store an array of algorithms', async () => {
+            let algorithmsList = [
+                {
+                    name: "alg1",
+                    cpu: 0.1,
+                    gpu: 0,
+                    mem: "256Mi",
+                    minHotWorkers: 0,
+                    algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                    type: "Image",
+                    options: {
+                        debug: false,
+                        pending: false
+                    },
+                    workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
+                },
+                {
+                    name: "alg2",
+                    cpu: 0.1,
+                    gpu: 0,
+                    mem: "256Mi",
+                    minHotWorkers: 0,
+                    algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                    type: "Image",
+                    options: {
+                        debug: false,
+                        pending: false
+                    },
+                    workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
+                }
+            ];
 
-            it('should find one job to delete', async () => {
-                let suffix = pipelineRandomName(4).toLowerCase();
-                stayUpAlg.name += `-${suffix}`;
-                stayUpSkeleton.name = stayUpAlg.name;
-                await applyAlg(stayUpAlg, dev_token);
-                stayUpAlg.name = stayupAlgName;
-                const result = await runAlgorithm(stayUpSkeleton, dev_token);
-                await intervalDelay("Waiting for creation", 20000);
-                const response = await deleteAlgorithmJobs(stayUpSkeleton.name, dev_token);
-                await delay(1000);
-                await stopPipeline(result.body.jobId, dev_token);
-                expect(response.statusCode).to.be.equal(StatusCodes.OK);
-                expect(response.body.message.length).to.be.equal(1);
-            }).timeout(1000 * 60 * 5);
+            const response = await applyAlgList(algorithmsList, dev_token, true);
+            const listOfAlgorithmResponse = response.body;
+            expect(listOfAlgorithmResponse).to.be.an('array');
+            expect(listOfAlgorithmResponse.length).to.be.equal(2);
+            expect(response.statusCode).to.be.equal(StatusCodes.CREATED, 'Expected status code to be CREATED');
+            expect(listOfAlgorithmResponse[0].algorithm.name).to.be.equal('alg1');
+            expect(listOfAlgorithmResponse[1].algorithm.name).to.be.equal('alg2');
+        }).timeout(1000 * 60 * 5);
 
-            it('should find multiple jobs to delete', async () => {
-                const statelessPipeline = deconstructTestData(statelessPipe);
-                await deletePipeline(statelessPipeline.name, dev_token);
-                let storeResult = await applyAlg(stayUpAlg, dev_token);
-                storeResult = await storePipeline(statelessPipeline, dev_token);
-                await runStored(statelessPipeline, dev_token);
-                await intervalDelay("Waiting", 30000);
-                const response = await deleteAlgorithmJobs("yellow-alg", dev_token);
-                expect(response.statusCode).to.be.equal(StatusCodes.OK);
-                expect(response.body.message.length).to.be.greaterThan(2);
-                await deleteAlgorithmJobs(stayUpSkeleton.name, dev_token);       
-            }).timeout(1000 * 60 * 5);
+        it('create an algorithm array containing a 409 Conflict status and error message for existing algorithms', async () => {
+            let existingAlg = {
+                name: "alg1",
+                cpu: 0.1,
+                gpu: 0,
+                mem: "256Mi",
+                minHotWorkers: 0,
+                algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                type: "Image",
+                options: {
+                    debug: false,
+                    pending: false
+                },
+                workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
+            }
+            await applyAlg(existingAlg);
+
+            let algorithmsList = [
+                {
+                    "name": "alg1",
+                    "cpu": 0.1,
+                    "gpu": 0,
+                    "mem": "256Mi",
+                    "minHotWorkers": 0,
+                    "algorithmImage": "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                    "type": "Image",
+                    "options": {
+                        "debug": false,
+                        "pending": false
+                    }
+                },
+                {
+                    name: "alg2",
+                    cpu: 0.1,
+                    gpu: 0,
+                    mem: "256Mi",
+                    minHotWorkers: 0,
+                    algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                    type: "Image",
+                    options: {
+                        debug: false,
+                        pending: false
+                    },
+                    workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
+                }
+            ];
+            const response = await applyAlgList(algorithmsList, dev_token);
+            const listOfAlgorithmResponse = response.body;
+            expect(response.statusCode).to.be.equal(StatusCodes.CREATED);
+            expect(listOfAlgorithmResponse).to.be.an('array');
+            expect(listOfAlgorithmResponse.length).to.be.equal(2);
+            expect(listOfAlgorithmResponse[0].error.code).to.be.equal(409, 'Expected status code to be CONFLICT');
+            expect(listOfAlgorithmResponse[1].algorithm.name).to.be.equal('alg2');
+        }).timeout(1000 * 60 * 5);
+
+        it('overwrite an algorithm', async () => {
+            let existingAlg = {
+                name: "alg1",
+                cpu: 0.1,
+                gpu: 0,
+                mem: "256Mi",
+                minHotWorkers: 0,
+                algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                type: "Image",
+                options: {
+                    debug: false,
+                    pending: false
+                },
+                workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
+            }
+            await applyAlg(existingAlg);
+
+            let algorithmsList = [
+                {
+                    "name": "alg1",
+                    "cpu": 0.1,
+                    "gpu": 0,
+                    "mem": "256Mi",
+                    "minHotWorkers": 0,
+                    "algorithmImage": "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                    "type": "Image",
+                    "options": {
+                        "debug": false,
+                        "pending": false
+                    }
+                },
+                {
+                    name: "alg2",
+                    cpu: 0.2,
+                    gpu: 0,
+                    mem: "256Mi",
+                    minHotWorkers: 0,
+                    algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                    type: "Image",
+                    options: {
+                        debug: false,
+                        pending: false
+                    },
+                    workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
+                }
+            ];
+            const response = await applyOrUpdateAlgList(algorithmsList, dev_token);
+            const listOfAlgorithmResponse = response.body;
+            expect(response.statusCode).to.be.equal(StatusCodes.CREATED);
+            expect(listOfAlgorithmResponse).to.be.an('array');
+            expect(listOfAlgorithmResponse.length).to.be.equal(2);
+            expect(listOfAlgorithmResponse[1].algorithm.name).to.be.equal('alg2');
+            const alg2Response = await getAlgorithm('alg2', dev_token);
+            expect(alg2Response.body.cpu).to.eq(0.2);
+
+        }).timeout(1000 * 60 * 5);
+
+        it('should succeed creating an array containing a 400 Bad Request status and error message for invalid data', async () => {
+            const invalidAlgorithmData = [
+                {
+                    name: 'Invalid Algorithm NAME-',
+                    algorithmImage: 'image',
+                    mem: '50Mi',
+                    cpu: 1,
+                    type: 'Image',
+                },
+                {
+                    name: "alg1",
+                    cpu: 0.1,
+                    gpu: 0,
+                    mem: "256Mi",
+                    minHotWorkers: 0,
+                    algorithmImage: "docker.io/hkubedevtest/lonstringv3:vq2vozy33",
+                    type: "Image",
+                    options: {
+                        debug: false,
+                        pending: false
+                    },
+                    workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
+                },
+            ];
+            const response = await applyAlgList(invalidAlgorithmData, dev_token, true);
+            const listOfAlgorithmResponse = response.body;
+            expect(listOfAlgorithmResponse).to.be.an('array');
+            expect(listOfAlgorithmResponse.length).to.be.equal(2);
+            expect(response.statusCode).to.be.equal(StatusCodes.CREATED, 'Expected status code to be CREATED');
+            expect(listOfAlgorithmResponse[0].error.code).to.be.equal(StatusCodes.BAD_REQUEST, 'Expected status code to be BAD_REQUEST');
+            expect(listOfAlgorithmResponse[1].algorithm.name).to.be.equal('alg1');
         });
+    });
+
+    describe('kubernetes algorithm tests', () => {
+        const stayupAlgName = `stayuptestalg-${pipelineRandomName(4).toLowerCase()}`;
+        const statelessAlgName = `yellow-alg-${pipelineRandomName(4).toLowerCase()}`;
+        let stayUpSkeleton = {
+            name: stayupAlgName,
+            input: []
+        }
+
+        it('should apply selector when given one, and find no pods to stop', async () => {
+            const response = await deleteAlgorithmPods("anyName", dev_token, "mySelector");
+            expect(response.statusCode).to.be.equal(StatusCodes.NOT_FOUND);
+            expect(response.body).to.be.equal('No pods found with selector mySelector');
+        }).timeout(1000 * 60 * 5);
+
+        it('should find one pod to delete', async () => {
+            let suffix = pipelineRandomName(4).toLowerCase();
+            stayUpAlg.name += `-${suffix}`;
+            stayUpSkeleton.name = stayUpAlg.name;
+            await applyAlg(stayUpAlg, dev_token);
+            stayUpAlg.name = stayupAlgName;
+            const result = await runAlgorithm(stayUpSkeleton, dev_token);
+            await intervalDelay("Waiting for creation", 20000);
+            const response = await deleteAlgorithmPods(stayUpSkeleton.name, dev_token);
+            await delay(1000);
+            await stopPipeline(result.body.jobId, dev_token);
+            expect(response.statusCode).to.be.equal(StatusCodes.OK);
+            expect(response.body.message.length).to.be.equal(1);
+            await deleteAlgorithmJobs(stayUpSkeleton.name, dev_token);
+        }).timeout(1000 * 60 * 5);
+
+        it('should find multiple pods to delete', async () => {
+            const statelessPipeline = deconstructTestData(statelessPipe);
+            await deletePipeline(statelessPipeline.name, dev_token);
+            await applyAlg(stayUpAlg, dev_token);
+            storeResult = await storePipeline(statelessPipeline, dev_token);
+            await runStored(statelessPipeline);
+            await intervalDelay("Waiting", 30000);
+            const response = await deleteAlgorithmPods("yellow-alg", dev_token);
+            expect(response.statusCode).to.be.equal(StatusCodes.OK);
+            expect(response.body.message.length).to.be.greaterThan(2);
+            await deleteAlgorithmJobs(stayUpSkeleton.name, dev_token);
+            await deleteAlgorithmJobs(statelessAlgName, dev_token);
+            await deletePipeline(statelessPipeline.name, dev_token)
+            await deleteAlgorithm(stayupAlgName, dev_token, true)
+        }).timeout(1000 * 60 * 5);
+
+        it('should apply selector when given one, and find no jobs to stop', async () => {
+            const response = await deleteAlgorithmJobs("anyName", dev_token, "mySelector");
+            expect(response.statusCode).to.be.equal(StatusCodes.NOT_FOUND);
+            expect(response.body).to.be.equal('No jobs found with selector mySelector');
+        }).timeout(1000 * 60 * 5);
+
+        it('should find one job to delete', async () => {
+            let suffix = pipelineRandomName(4).toLowerCase();
+            stayUpAlg.name += `-${suffix}`;
+            stayUpSkeleton.name = stayUpAlg.name;
+            await applyAlg(stayUpAlg, dev_token);
+            stayUpAlg.name = stayupAlgName;
+            const result = await runAlgorithm(stayUpSkeleton, dev_token);
+            await intervalDelay("Waiting for creation", 20000);
+            const response = await deleteAlgorithmJobs(stayUpSkeleton.name, dev_token);
+            await delay(1000);
+            await stopPipeline(result.body.jobId, dev_token);
+            expect(response.statusCode).to.be.equal(StatusCodes.OK);
+            expect(response.body.message.length).to.be.equal(1);
+        }).timeout(1000 * 60 * 5);
+
+        it('should find multiple jobs to delete', async () => {
+            const statelessPipeline = deconstructTestData(statelessPipe);
+            await deletePipeline(statelessPipeline.name, dev_token);
+            await applyAlg(stayUpAlg, dev_token);
+            storeResult = await storePipeline(statelessPipeline, dev_token);
+            await runStored(statelessPipeline, dev_token);
+            await intervalDelay("Waiting", 30000);
+            const response = await deleteAlgorithmJobs("yellow-alg", dev_token);
+            expect(response.statusCode).to.be.equal(StatusCodes.OK);
+            expect(response.body.message.length).to.be.greaterThan(2);
+            await deleteAlgorithmJobs(stayUpSkeleton.name, dev_token);       
+        }).timeout(1000 * 60 * 5);
     });
 });
