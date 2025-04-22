@@ -6,6 +6,7 @@ chai.use(chaiHttp);
 const path = require('path');
 const config = require(path.join(process.cwd(), 'config/config'));
 const logger = require('../utils/logger');
+const { StatusCodes } = require('http-status-codes');
 
 const {
     getResult,
@@ -20,7 +21,7 @@ const {
 const fse = require('fs');
 
 const logResult = (result, text = '') => {
-    if (result.status > 201) {
+    if (result.status > StatusCodes.CREATED) {
         write_log(result.body, 'error');
     } else {
         write_log(`${text} -${result.status}`);
@@ -50,7 +51,7 @@ const getAlgorithm = async (name, token = {}) => {
 const storeAlgorithm = async (algName, token = {}) => {
     const res = await getAlgorithm(algName, token);
     write_log(res.status + " " + algName);
-    if (res.status === 404) {
+    if (res.status === StatusCodes.NOT_FOUND) {
         const { alg } = require(path.join(process.cwd(), `additionalFiles/defaults/algorithms/${algName}`));
         const res1 = storeAlgorithmApply(alg, token);
         logResult(res1, "algorithmUtils storeAlgorithm");
@@ -119,7 +120,7 @@ const buildAlgorithm = async ({ code, algName, entry, kc_token = {}, baseVersion
     logger.info(JSON.stringify(res.body));
 
     // res.should.have.status(200)
-    expect(res.status).to.eql(200);
+    expect(res.status).to.eql(StatusCodes.OK);
     const buildIdAlg = res.body.buildId;
     expect(buildIdAlg).to.not.be.undefined;
 
@@ -127,8 +128,8 @@ const buildAlgorithm = async ({ code, algName, entry, kc_token = {}, baseVersion
 }
 
 const buildAlgorithmAndWait = async ({ code, algName, entry, kc_token = {}, baseVersion = 'python:3.8', algorithmArray = [] }) => {
-    const buildIdAlg = await buildAlgorithm({ code: code, algName: algName, entry: entry, kc_token: kc_token, baseVersion: baseVersion, algorithmArray: algorithmArray });
-    const buildStatusAlg = await getStatusall(buildIdAlg, `/builds/status/`, 200, "completed", kc_token, 1000 * 60 * 15);
+    const buildIdAlg = await buildAlgorithm({ code: code, algName: algName, entry: entry, kc_token: kc_token, baseVersion: baseVersion, algorithmArray });
+    const buildStatusAlg = await getStatusall(buildIdAlg, `/builds/status/`, StatusCodes.OK, "completed", kc_token, 1000 * 60 * 15);
     return buildStatusAlg;
 }
 
@@ -167,26 +168,26 @@ const buildGitAlgorithm = async ({ algName, gitUrl, gitKind, entry, branch, kc_t
         .set("Authorization", `Bearer ${kc_token}`)
         .field('payload', JSON.stringify(data));
     logger.info(JSON.stringify(res.body));
-    if (res.status != 200) {
+    if (res.status != StatusCodes.OK) {
         logger.info(JSON.stringify(res.text));
         return res;
     }
     // res.should.have.status(200)
-    expect(res.status).to.eql(200);
+    expect(res.status).to.eql(StatusCodes.OK);
     const buildIdAlg = res.body.buildId;
-    const buildStatusAlg = await getStatusall(buildIdAlg, `/builds/status/`, 200, "completed", kc_token, 1000 * 60 * 14);
+    const buildStatusAlg = await getStatusall(buildIdAlg, `/builds/status/`, StatusCodes.OK, "completed", kc_token, 1000 * 60 * 14);
 
     return buildStatusAlg;
 }
 
-const runAlgGetResult = async (algName, inupts, token = {}) => {
+const runAlgGetResult = async (algName, inputs, token = {}) => {
     const alg = {
         name: algName,
-        input: inupts
+        input: inputs
     }
     const res = await runAlgorithm(alg, token);
     const jobId = res.body.jobId;
-    const result = await getResult(jobId, 200, token);
+    const result = await getResult(jobId, StatusCodes.OK, token);
     return result;
     // expect(result.data[0].result).to.be.equal(42)
 }
