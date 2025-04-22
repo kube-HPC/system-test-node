@@ -30,6 +30,21 @@ const intervalDelay = async (msg, timeout, interval = 2 * 1000) => {
     console.log();
 };
 
+// Helper function to check if a condition is met, with retries and delays.
+const _checkConditionWithRetries = async (conditionFn, computeFn, computeFuncArguments = [], retryDelay = 10000, retries = 3) => {
+    let computedValue;
+    for (let attempt = 1; attempt <= retries; attempt++) {
+        computedValue = await computeFn(...computeFuncArguments);
+        if (conditionFn(computedValue)) {
+            process.stdout.write('\x1b[2K\r');
+            return { attempt, value: computedValue };
+        }
+        process.stdout.write(`\rFailed check ${attempt}/${retries}`);
+        if (attempt < retries) await delay(retryDelay);
+    }
+    return computedValue;
+};
+
 /**
  * Checks if a computed value is equal to a target value, with retries and delays.
  *
@@ -40,17 +55,10 @@ const intervalDelay = async (msg, timeout, interval = 2 * 1000) => {
  * @param {number} [retries=3] - The number of times to retry the check.
  * @returns {Promise<boolean>} - Returns `true` if the value matches; otherwise, fails the test.
  */
-const checkEqualWithRetries = async (computeFn, funcArguments = [], targetValue, retryDelay = 10000, retries = 3) => {
-    for (let attempt = 1; attempt <= retries; attempt++) {
-        const computedValue = await computeFn(...funcArguments);
-        if (computedValue === targetValue) {
-            process.stdout.write('\x1b[2K\r');
-            return attempt;
-        }
-        process.stdout.write(`\rFailed check ${attempt}/${retries}`);
-        if (attempt < retries) await delay(retryDelay);
-    }
-    expect.fail(`Value did not match target value (${targetValue}) after ${retries} attempts.`);
+const checkEqualWithRetries = async (computeFn, funcArguments = [], targetValue, valueName = 'Value', retryDelay = 10000, retries = 3) => {
+    const result = await _checkConditionWithRetries(value => value === targetValue, computeFn, funcArguments, retryDelay, retries);
+    if (typeof result === 'object' && result !== null) return result;
+    expect.fail(`${valueName}(${result}) did not match target value (${targetValue}) after ${retries} attempts.`);
 };
 
 /**
@@ -64,17 +72,13 @@ const checkEqualWithRetries = async (computeFn, funcArguments = [], targetValue,
  * @param {number} [retries=3] - The number of times to retry the check.
  * @returns {Promise<boolean>} - Returns `true` if the value is within range; otherwise, fails the test.
  */
-const checkInRangeWithRetries = async (computeFn, funcArguments = [], min, max, retryDelay = 10000, retries = 3) => {
-    for (let attempt = 1; attempt <= retries; attempt++) {
-        const computedValue = await computeFn(...funcArguments);
-        if (computedValue >= min && computedValue <= max) {
-            process.stdout.write('\x1b[2K\r');
-            return attempt;
-        }
-        process.stdout.write(`\rFailed check ${attempt}/${retries}`);
-        if (attempt < retries) await delay(retryDelay);
-    }
-    expect.fail(`Value did not fall within range [${min}, ${max}] after ${retries} attempts.`);
+const checkInRangeWithRetries = async (computeFn, funcArguments = [], min, max, valueName = 'Value', retryDelay = 10000, retries = 3) => {
+    const result = await _checkConditionWithRetries(value => value >= min && value <= max, computeFn, funcArguments, retryDelay, retries);
+    if (typeof result === 'object' && result !== null) return result;
+    let range = `did not fall within range [${min}, ${max}]`;
+    if (min === -Infinity) range = `is not lower than or equal to ${max}`;
+    else if (max === Infinity) range = `is not higher than or equal to ${min}`;
+    expect.fail(`${valueName}(${result}) ${range} after ${retries} attempts.`);
 };
 
 

@@ -93,7 +93,7 @@ const algJson = (algName, imageName, algMinHotWorkers = 0, algCPU = 0.001, algGP
 }
 
 const { waitForWorkers, getJobsByNameAndVersion, getJobById, getAllAlgorithms } = require('../utils/socketGet')
-describe('Alrogithm Tests', () => {
+describe('Algorithm Tests', () => {
     before(async function () {
         this.timeout(1000 * 60 * 15);
         let testUserBody ={
@@ -1282,6 +1282,7 @@ describe('Alrogithm Tests', () => {
     describe('kubernetes algorithm tests', () => {
         const stayupAlgName = `stayuptestalg-${pipelineRandomName(4).toLowerCase()}`;
         const statelessAlgName = `yellow-alg-${pipelineRandomName(4).toLowerCase()}`;
+        statelessPipe.descriptor.nodes[0].algorithmName = stayupAlgName;
         let stayUpSkeleton = {
             name: stayupAlgName,
             input: []
@@ -1313,8 +1314,8 @@ describe('Alrogithm Tests', () => {
             const statelessPipeline = deconstructTestData(statelessPipe);
             await deletePipeline(statelessPipeline.name, dev_token);
             await applyAlg(stayUpAlg, dev_token);
-            storeResult = await storePipeline(statelessPipeline, dev_token);
-            await runStored(statelessPipeline);
+            await storePipeline(statelessPipeline, dev_token);
+            await runStored(statelessPipeline, dev_token);
             await intervalDelay("Waiting", 30000);
             const response = await deleteAlgorithmPods("yellow-alg", dev_token);
             expect(response.statusCode).to.be.equal(StatusCodes.OK);
