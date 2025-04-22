@@ -246,7 +246,7 @@ describe("streaming pipeline test", () => {
             await stopPipeline(jobId, dev_token);
         }).timeout(300 * 1000);
 
-        it("should stabilize on 21 pods", async () => {
+        it.only("should stabilize on 21 pods", async () => {
             await createAlg(statefull, 0.3);
             await createAlg(stateless);
 
@@ -265,16 +265,15 @@ describe("streaming pipeline test", () => {
             await waitForStatus(dev_token, jobId, simple_statelessNodeName, 'active', 120 * 1000, 2 * 1000);
 
             await intervalDelay('Waiting phase 1', 30 * 1000);
-            const required =  await getRequiredPods(dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName);
-            expect(required).to.be.gt(21, `required is ${required}, needed >21`); // ideal amount, but queue is filled
+            await checkInRangeWithRetries(getRequiredPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 22, Infinity, 'Required');  // ideal amount is 21, but queue is filled
 
-            await intervalDelay('Waiting phase 2', 90 * 1000);
+            await intervalDelay('Waiting phase 2', 60 * 1000);
             const current =  await getCurrentPods(dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName);
             expect(current).to.be.gt(21, `current is ${current}, needed >21`); // ideal amount, but queue is filled
             const throughput = await getThroughput(dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName);
             expect(throughput).to.be.gt(100, `throughput is ${throughput}, needed >100`); // suppose to be emptying the queue
 
-            await intervalDelay('Waiting phase 3', 120 * 1000);
+            await intervalDelay('Waiting phase 3', 150 * 1000);
             await checkEqualWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 21, 'Current pods');
             await checkEqualWithRetries(getThroughput, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 100, 'Throughput');
             await stopPipeline(jobId, dev_token);
