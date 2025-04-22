@@ -949,8 +949,8 @@ describe('Hkubectl Tests', () => {
         it('import pipelines from a local directory to hkube env', async () => {
             await deletePipeline('0aIWYOaR');
             await deletePipeline('0lAzCLWk');
-            algList.push('0aIWYOaR');
-            algList.push('0lAzCLWk');
+            pipeList.push('0aIWYOaR');
+            pipeList.push('0lAzCLWk');
             const folderPath = './additionalFiles/importPipelines';
             const importPipeCommand = `hkubectl import pipelines ${folderPath}`;
             const importedPipelines = await execSync(importPipeCommand);
@@ -963,8 +963,8 @@ describe('Hkubectl Tests', () => {
             await deletePipeline('0lAzCLWk');
             await deleteAlgorithm('6o5yjjiy');
             await deleteAlgorithm('7i59t2ad');
-            algList.push('0aIWYOaR');
-            algList.push('0lAzCLWk');
+            pipeList.push('0aIWYOaR');
+            pipeList.push('0lAzCLWk');
             algList.push('6o5yjjiy');
             algList.push('7i59t2ad');
             const folderPath = './additionalFiles/importAllData';
@@ -981,8 +981,8 @@ describe('Hkubectl Tests', () => {
             await deletePipeline('0lAzCLWk');
             await deleteAlgorithm('6o5yjjiy');
             await deleteAlgorithm('7i59t2ad');
-            algList.push('0aIWYOaR');
-            algList.push('0lAzCLWk');
+            pipeList.push('0aIWYOaR');
+            pipeList.push('0lAzCLWk');
             algList.push('6o5yjjiy');
             algList.push('7i59t2ad');
             const pipelineFile = './pipelines/simpelraw.json';
@@ -1011,8 +1011,8 @@ describe('Hkubectl Tests', () => {
             await deletePipeline('0lAzCLWk');
             await deleteAlgorithm('6o5yjjiy');
             await deleteAlgorithm('7i59t2ad');
-            algList.push('0aIWYOaR');
-            algList.push('0lAzCLWk');
+            pipeList.push('0aIWYOaR');
+            pipeList.push('0lAzCLWk');
             algList.push('6o5yjjiy');
             algList.push('7i59t2ad');
             const pipelineFile = './pipelines/simpelraw.json';
@@ -1041,8 +1041,8 @@ describe('Hkubectl Tests', () => {
             await deletePipeline('0lAzCLWk');
             await deleteAlgorithm('6o5yjjiy');
             await deleteAlgorithm('7i59t2ad');
-            algList.push('0aIWYOaR');
-            algList.push('0lAzCLWk');
+            pipeList.push('0aIWYOaR');
+            pipeList.push('0lAzCLWk');
             algList.push('6o5yjjiy');
             algList.push('7i59t2ad');
             const folderPath = './additionalFiles/importAllData';
@@ -1060,8 +1060,8 @@ describe('Hkubectl Tests', () => {
             await deletePipeline('0lAzCLWk');
             await deleteAlgorithm('6o5yjjiy');
             await deleteAlgorithm('7i59t2ad');
-            algList.push('0aIWYOaR');
-            algList.push('0lAzCLWk');
+            pipeList.push('0aIWYOaR');
+            pipeList.push('0lAzCLWk');
             algList.push('6o5yjjiy');
             algList.push('7i59t2ad');
             const folderPath = './additionalFiles/importAllData';
