@@ -246,7 +246,7 @@ describe("streaming pipeline test", () => {
             await stopPipeline(jobId, dev_token);
         }).timeout(300 * 1000);
 
-        it.only("should stabilize on 21 pods", async () => {
+        it("should stabilize on 21 pods", async () => {
             await createAlg(statefull, 0.3);
             await createAlg(stateless);
 
