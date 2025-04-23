@@ -126,7 +126,7 @@ describe('code api tests ', () => {
     });
 
     describe("python code API", () => {
-        const algName = pipelineRandomName(8).toLowerCase();
+        const algName = `codeapi-python-${pipelineRandomName(4).toLowerCase()}`;
         const obj = { 
             algName,
             code: path.join(process.cwd(), 'additionalFiles/pythonAlg/pythonApi.tar.gz'), //pythonApi.tar.gz
@@ -229,7 +229,7 @@ describe('code api tests ', () => {
         //     }
         // }
 
-        it("start raw pipelien", async () => {
+        it("start raw pipeline", async () => {
             const startRaw = [
                 {
                     action: "start_raw_subpipeline",
@@ -251,7 +251,7 @@ describe('code api tests ', () => {
     });
 
     describe("Node JS code API", () => {
-        const algName = pipelineRandomName(8).toLowerCase();
+        const algName = `codeapi-nodejs-${pipelineRandomName(4).toLowerCase()}`;
         const obj = {
             algName,
             entry: 'hkubeApi',

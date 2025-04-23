@@ -20,8 +20,9 @@ const descriptor = {
             extraData: {
                 code: [
                     "(input,require)=> {",
-                    "return  new Promise((resolve,reject)=>{setTimeout(()=>resolve(4),input)});}"
-
+                    "const promise = new Promise((resolve)=>{setTimeout(()=>resolve(4),input)});",
+                    "return promise.then(value => value + 6);",
+                    "}"
                 ]
             }
         },
@@ -35,8 +36,9 @@ const descriptor = {
             extraData: {
                 code: [
                     "(input,require)=> {",
-                    "return  new Promise((resolve,reject)=>{setTimeout(()=>resolve(4),input)});}"
-
+                    "const promise = new Promise((resolve)=>{setTimeout(()=>resolve(4),input)});",
+                    "return promise.then(value => value + 6);",
+                    "}"
                 ]
             }
         },
