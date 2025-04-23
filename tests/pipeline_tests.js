@@ -304,7 +304,8 @@ let dev_token;
       await delay(3 * 1000);
       await deletePipeline(d, dev_token);
       jobs = await getWebSocketJobs(dev_token);
-      jobId = jobs.filter((obj) => obj.pipeline.triggers)[0].key;
+      const jobWithTriggers = jobs.filter((obj) => obj.pipeline.triggers);
+      const jobId = jobWithTriggers.filter((obj) => obj.pipeline.name === triggeredName)[0].key;
       const status = await getExecPipeline(jobId, dev_token);
       expect(status.body.types).includes("trigger");
       expect(status.body.types).includes("stored");
@@ -507,25 +508,26 @@ let dev_token;
     it("TID-450 type = Triger (git 157)", async () => {
       //undefined
       const testData = testData2;
-      const triggerd = testData7;
+      const triggered = testData7;
       const simpleName = testData.descriptor.name;
       const simple = deconstructTestData(testData);
       await deletePipeline(simple, dev_token);
       await storePipeline(simple, dev_token, pipeList);
       const triggeredPipe = pipelineRandomName(8);
-      triggerd.descriptor.name = triggeredPipe;
-      triggerd.descriptor.triggers.pipelines = [simpleName];
+      triggered.descriptor.name = triggeredPipe;
+      triggered.descriptor.triggers.pipelines = [simpleName];
 
-      const d = deconstructTestData(triggerd);
+      const d = deconstructTestData(triggered);
       await deletePipeline(d, dev_token);
       await storePipeline(d, dev_token, pipeList);
       await runStoredAndWaitForResults(simple, dev_token);
       await delay(3 * 1000);
       jobs = await getWebSocketJobs(dev_token);
-      jobId = jobs.filter((obj) => obj.pipeline.triggers)[0].key;
+      const jobWithTriggers = jobs.filter((obj) => obj.pipeline.triggers);
+      const jobId = jobWithTriggers.filter((obj) => obj.pipeline.name === triggeredName)[0].key;
       const pipelineData = await getExecPipeline(jobId, dev_token);
-      const rr = validateDefault(triggerd.descriptor, pipelineData.body);
-      console.log("there are diffrance in :" + rr);
+      const rr = validateDefault(triggered.descriptor, pipelineData.body);
+      console.log(rr.length > 0 ? "Differences:" + rr : "No differnces.");
       expect(rr.length).to.be.equal(0);
     }).timeout(1000 * 60 * 7);
 
