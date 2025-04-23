@@ -78,7 +78,7 @@ describe('code api tests ', () => {
     let algList = [];
 
     const createAlg = async (obj, token = {}, isGit = false) => {
-        obj.algorithmArray = algList;
+        // obj.algorithmArray = algList;
         obj.kc_token = token;
         await deleteAlgorithm(obj.algName, token, true);
         const buildStatusAlg = isGit ? await buildGitAlgorithm(obj) : await buildAlgorithmAndWait(obj);
