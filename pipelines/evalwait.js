@@ -15,7 +15,9 @@ const descriptor = {
             extraData: {
                 code: [
                     "(input,require)=> {",
-                        "return new Promise((resolve,reject)=>{setTimeout(()=>resolve(input[0][1]),input[0][0])});}"
+                    "const promise = new Promise((resolve)=>{setTimeout(()=>resolve(input[0][1]),input[0][0])});",
+                    "return promise.then(value => value + 6);",
+                    "}"
                 ]
             }
         }

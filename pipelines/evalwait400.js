@@ -30,7 +30,9 @@ const descriptor = {
             extraData: {
                 code: [
                     "(input,require)=> {",
-                        "return new Promise((resolve,reject)=>{setTimeout(()=>resolve(30),input[1])});}"
+                    "const promise = new Promise((resolve)=>{setTimeout(()=>resolve(30),input[1])});",
+                    "return promise.then(value => value + 6);",
+                    "}"
                 ]
             }
         }
