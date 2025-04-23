@@ -287,7 +287,7 @@ describe('Algorithm Tests', () => {
             Object.entries(volumeTypes).forEach(([key, volume]) => {
                 it(`should fail creating an algorithm with a non-existing ${key} and create a warning`, async () => {
                     const algName = `non-existing-${key}-${pipelineRandomName(4).toLowerCase()}`;
-                    const alg = algJson(algName, algorithmImage, 0, 0.5, 0, "64Mi");
+                    const alg = algJson(algName, algorithmImage);
                     alg.volumes = [volume];
 
                     await applyAlg(alg, dev_token);
@@ -305,7 +305,7 @@ describe('Algorithm Tests', () => {
 
             it('should fail creating an algorithm with more than one non-existing volumes and create a warning', async () => {
                 const algName = `non-existing-volumes-${pipelineRandomName(4).toLowerCase()}`;
-                const alg = algJson(algName, algorithmImage, 0, 0.5, 0, "64Mi");
+                const alg = algJson(algName, algorithmImage);
                 alg.volumes = Object.values(volumeTypes);
 
                 await applyAlg(alg, dev_token);
@@ -324,7 +324,7 @@ describe('Algorithm Tests', () => {
 
             it('should successfully run an algorithm with a valid emptyDir volume and shared volume', async () => {
                 const algName = `mounts-volumes-${pipelineRandomName(4).toLowerCase()}`;
-                const alg = algJson(algName, algorithmImage, 0, 0.5, 0, "64Mi");
+                const alg = algJson(algName, algorithmImage);
                 alg.volumes = [{
                     name: 'my-dir',
                     emptyDir: {}
@@ -343,7 +343,7 @@ describe('Algorithm Tests', () => {
 
             it('should successfully create a pod with a shared volume for algorunner and sidecar', async () => {
                 const algName = `mounts-volumes-${pipelineRandomName(4).toLowerCase()}`;
-                const alg = algJson(algName, algorithmImage, 0, 0.5, 0, "64Mi");
+                const alg = algJson(algName, algorithmImage);
                 alg.volumes = [{
                     name: 'my-dir',
                     emptyDir: {}
