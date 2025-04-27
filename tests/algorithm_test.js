@@ -49,7 +49,8 @@ const {
 
 const {
     getResult,
-    getRawGraph
+    getRawGraph,
+    getStatusall
 } = require('../utils/results')
 
 // // const KubernetesClient = require('@hkube/kubernetes-client').Client;
@@ -574,6 +575,8 @@ describe('Algorithm Tests', () => {
             alg = await getAlgorithm(algName, dev_token);
             algJson.baseImage = "python:3.9";
             let v2 = await storeAlgorithmApply(algJson, dev_token);
+            const buildStatus = await(getStatusall(v2.body.buildId, `/builds/status/`, StatusCodes.OK, "completed", dev_token, 1000 * 60 * 15));
+            expect(buildStatus.status).to.be.equal("completed");
             //expect(v2.algorithmImage).to.contain(v2.imageTag)
             expect(v2.imageTag).to.not.be.equal(buildStatusAlg.imageTag);
             expect(v2.body.messages[0].startsWith("a build was triggered due to change in baseImage")).to.be.true;
@@ -593,6 +596,8 @@ describe('Algorithm Tests', () => {
             alg = await getAlgorithm(algName, dev_token);
             algJson.env = "nodejs";
             let v2 = await storeAlgorithmApply(algJson, dev_token);
+            const buildStatus = await(getStatusall(v2.body.buildId, `/builds/status/`, StatusCodes.OK, "completed", dev_token, 1000 * 60 * 15));
+            expect(buildStatus.status).to.be.equal("completed");
             //expect(v2.algorithmImage).to.contain(v2.imageTag)
             expect(v2.imageTag).to.not.be.equal(buildStatusAlg.imageTag);
             expect(v2.body.messages[0].startsWith("a build was triggered due to change in env")).to.be.true;
