@@ -398,7 +398,7 @@ describe('Algorithm Tests', () => {
                 const { job } = await getJobById(dev_token, jobId);
                 const allAlgorithms = await getAllAlgorithms(dev_token);
                 const testAlgo = allAlgorithms.find(a => a.name === alg.name);
-                const errorMessage = 'Job is invalid: algorunner.volumeMounts[3].name: Not found: non-exist';
+                const errorMessage = 'Kubernetes Job is invalid: algorunner.volumeMounts[3].name: Not found: non-exist';
 
                 expect(testAlgo).to.not.be.undefined;
                 expect(testAlgo.unscheduledReason).to.equal(errorMessage);
