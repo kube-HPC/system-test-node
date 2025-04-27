@@ -264,7 +264,7 @@ describe('Algorithm Tests', () => {
         }).timeout(1000 * 60 * 5);
 
         describe('algorithm with volumes tests', () => {
-            volumeTypes = {
+            const volumeTypes = {
                 pvc: {
                     name: "pvc-volume-no-exist",
                     persistentVolumeClaim: {
@@ -292,15 +292,19 @@ describe('Algorithm Tests', () => {
                     alg.volumes = [volume];
 
                     await applyAlg(alg, dev_token);
-                    await runAlgorithm({ name: alg.name, input: [] }, dev_token);
+                    const res = await runAlgorithm({ name: alg.name, input: [] }, dev_token);
+                    const { jobId } = res.body;
 
-                    await intervalDelay("Waiting for warning to create", 60000, 10000);
+                    await intervalDelay("Waiting for warning to create", 80 * 1000, 10000);
+                    const { job } = await getJobById(dev_token, jobId);
                     const allAlgorithms = await getAllAlgorithms(dev_token);
                     const testAlgo = allAlgorithms.find(a => a.name === alg.name);
+                    const errorMessage = `One or more volumes are missing or do not exist.\nMissing volumes: non-existing-${key}`;
 
                     expect(testAlgo).to.not.be.undefined;
-                    expect(testAlgo.unscheduledReason).to.exist;
-                    expect(testAlgo.unscheduledReason).to.equal(`One or more volumes are missing or do not exist.\nMissing volumes: non-existing-${key}`);
+                    expect(testAlgo.unscheduledReason).to.equal(errorMessage);
+                    expect(job.graph.nodes[0].status).to.equal('failedScheduling');
+                    expect(job.graph.nodes[0].error).to.equal(errorMessage);
                 }).timeout(1000 * 60 * 5);
             });
 
@@ -310,21 +314,23 @@ describe('Algorithm Tests', () => {
                 alg.volumes = Object.values(volumeTypes);
 
                 await applyAlg(alg, dev_token);
-                await runAlgorithm({ name: alg.name, input: [] }, dev_token);
+                const res = await runAlgorithm({ name: alg.name, input: [] }, dev_token);
+                const { jobId } = res.body;
 
-                await intervalDelay("Waiting for warning to create", 60000, 10000);
+                await intervalDelay("Waiting for warning to create", 80 * 1000, 10000);
+                const { job } = await getJobById(dev_token, jobId);
                 const allAlgorithms = await getAllAlgorithms(dev_token);
                 const testAlgo = allAlgorithms.find(a => a.name === alg.name);
+                const errorMessage = 'One or more volumes are missing or do not exist.\nMissing volumes: non-existing-pvc, non-existing-configMap, non-existing-secret';
 
                 expect(testAlgo).to.not.be.undefined;
-                expect(testAlgo.unscheduledReason).to.exist;
-                expect(testAlgo.unscheduledReason).to.equal(
-                    'One or more volumes are missing or do not exist.\nMissing volumes: non-existing-pvc, non-existing-configMap, non-existing-secret'
-                );
+                expect(testAlgo.unscheduledReason).to.equal(errorMessage);
+                expect(job.graph.nodes[0].status).to.equal('failedScheduling');
+                expect(job.graph.nodes[0].error).to.equal(errorMessage);
             }).timeout(1000 * 60 * 5);
 
-            it('should successfully run an algorithm with a valid emptyDir volume and shared volume', async () => {
-                const algName = `mounts-volumes-${pipelineRandomName(4).toLowerCase()}`;
+            it('should successfully run an algorithm with a valid emptyDir volume and volume mount', async () => {
+                const algName = `mounts-volume-${pipelineRandomName(4).toLowerCase()}`;
                 const alg = algJson(algName, algorithmImage);
                 alg.volumes = [{
                     name: 'my-dir',
@@ -343,7 +349,7 @@ describe('Algorithm Tests', () => {
             }).timeout(1000 * 60 * 5);
 
             it('should successfully create a pod with a shared volume for algorunner and sidecar', async () => {
-                const algName = `mounts-volumes-${pipelineRandomName(4).toLowerCase()}`;
+                const algName = `mounts-shared-volume-${pipelineRandomName(4).toLowerCase()}`;
                 const alg = algJson(algName, algorithmImage);
                 alg.volumes = [{
                     name: 'my-dir',
@@ -374,6 +380,30 @@ describe('Algorithm Tests', () => {
                 expect(spec.containers[1].volumeMounts).to.deep.contain({ name: 'my-dir', mountPath: '/tmp/foo' });
                 expect(spec.containers[2].name).to.equal('mycar');
                 expect(spec.containers[2].volumeMounts).to.deep.contain({ name: 'my-dir', mountPath: '/tmp/foo' });
+            }).timeout(1000 * 60 * 5);
+
+            it('should fail creating a pod with an invalid volumeMounts', async () => {
+                const algName = `mounts-invalid-mount-${pipelineRandomName(4).toLowerCase()}`;
+                const alg = algJson(algName, algorithmImage);
+                alg.volumeMounts = [{
+                    name: 'non-exist',
+                    mountPath: '/tmp/foo'
+                }];
+
+                await applyAlg(alg, dev_token);
+                const res = await runAlgorithm({ name: alg.name, input: [] }, dev_token);
+                const { jobId } = res.body;
+
+                await intervalDelay("Waiting for warning to create", 80 * 1000, 10000);
+                const { job } = await getJobById(dev_token, jobId);
+                const allAlgorithms = await getAllAlgorithms(dev_token);
+                const testAlgo = allAlgorithms.find(a => a.name === alg.name);
+                const errorMessage = 'Job is invalid: algorunner.volumeMounts[3].name: Not found: non-exist';
+
+                expect(testAlgo).to.not.be.undefined;
+                expect(testAlgo.unscheduledReason).to.equal(errorMessage);
+                expect(job.graph.nodes[0].status).to.equal('failedScheduling');
+                expect(job.graph.nodes[0].error).to.equal(errorMessage);
             }).timeout(1000 * 60 * 5);
         });
     });
