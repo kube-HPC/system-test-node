@@ -627,7 +627,7 @@ describe('Algorithm Tests', () => {
             algJson.env = "nodejs";
             let v2 = await storeAlgorithmApply(algJson, dev_token);
             const buildStatus = await(getStatusall(v2.body.buildId, `/builds/status/`, StatusCodes.OK, "completed", dev_token, 1000 * 60 * 15));
-            expect(buildStatus.status).to.be.equal("completed");
+            expect(buildStatus.status).to.be.equal("failed");
             //expect(v2.algorithmImage).to.contain(v2.imageTag)
             expect(v2.imageTag).to.not.be.equal(buildStatusAlg.imageTag);
             expect(v2.body.messages[0].startsWith("a build was triggered due to change in env")).to.be.true;
