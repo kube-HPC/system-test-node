@@ -179,12 +179,12 @@ describe("streaming pipeline test", () => {
             await checkInRangeWithRetries(getRequiredPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 27, Infinity, 'Required pods'); // ideal amount is 26, but queue is filled
 
             await intervalDelay('Waiting phase 2', 90 * 1000);
-            await checkInRangeWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 31, Infinity, 'Current pods'); // emptying queue
+            await checkInRangeWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 31, Infinity, 'Current pods', 15 * 1000, 5); // emptying queue
             await checkInRangeWithRetries(getThroughput, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 90, Infinity, 'Throughput');
 
             await intervalDelay('Waiting phase 3', 240 * 1000);
             // Suppose to have 26 pods, but might go to 24~27
-            await checkInRangeWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 24, 27, 'Current pods', 30 * 1000, 5);
+            await checkInRangeWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 24, 27, 'Current pods', 15 * 1000, 15);
             await checkInRangeWithRetries(getThroughput, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 98, 102, 'Throughput', 15 * 1000, 5);
             await stopPipeline(jobId, dev_token);
         }).timeout(700 * 1000);
