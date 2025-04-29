@@ -67,7 +67,8 @@ const {
   exceCachPipeline,
   getPipelinestatusByName,
   storePipelinesWithDescriptor,
-  storeOrUpdatePipelines
+  storeOrUpdatePipelines,
+  getPipelineVersion
 } = require("../utils/pipelineUtils");
 
 chai.use(chaiHttp);
@@ -114,9 +115,10 @@ const timeout = (ms) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 describe("pipeline Tests 673", () => {
+  let testUserBody;
   before(async function () {
     this.timeout(1000 * 60 * 15);
-    let testUserBody ={
+    testUserBody ={
         username: config.keycloakDevUser,
         password: config.keycloakDevPass
     }
@@ -416,7 +418,10 @@ let dev_token;
       testData.descriptor.name = pipelineRandomName(8);
       const d = deconstructTestData(testData);
       await deletePipeline(d, dev_token);
-      await storePipeline(d, dev_token, pipeList);
+      const pipeStore = await storePipeline(d, dev_token, pipeList);
+      expect(pipeStore.body).to.have.property('auditTrail')
+      const pipeVersion = await getPipelineVersion(d.name, dev_token);
+      expect(pipeVersion.body[0].createdBy).to.be.eql(testUserBody.username);
       await delay(1000 * 90);
 
       const result = await getCronResult(d.name, 5, dev_token);
@@ -1405,6 +1410,9 @@ let dev_token;
       ];
       const response = await storeOrUpdatePipelines(pipelineList, dev_token, pipeList);
       const listOfPipelineResponse = response.body
+      expect(listOfPipelineResponse[1].auditTrail.length).to.be.eql(2);
+      expect(listOfPipelineResponse[1].auditTrail[0].timestamp).to.be.gt(listOfPipelineResponse[1].auditTrail[1].timestamp);
+      expect(listOfPipelineResponse[1].auditTrail[0].version).to.be.eql(response.body[1].version)
       expect(listOfPipelineResponse).to.be.an('array');
       expect(listOfPipelineResponse.length).to.be.equal(2);
       expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');
