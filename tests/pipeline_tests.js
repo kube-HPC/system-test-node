@@ -4,6 +4,7 @@ const chaiHttp = require("chai-http");
 const path = require("path");
 const delay = require("delay");
 var diff = require("deep-diff").diff;
+const { executeActions } = require('@hkube/consts');
 const config = require(path.join(process.cwd(), 'config/config'));
 
 
@@ -20,6 +21,7 @@ const {
   getWebSocketJobs,
   getWebSocketlogs,
   getDriverIdByJobId,
+  getJobById
 } = require("../utils/socketGet");
 const { getStatus } = require("../utils/results")
 
@@ -806,6 +808,12 @@ let dev_token;
       expect(pipelineStatus.body.status).to.be.equal("paused");
       await resumePipeline(jobId, dev_token);
       await getResult(jobId, 200, dev_token);
+      const jobBody = await getJobById(dev_token, jobId)
+      expect(jobBody.job).to.have.property("auditTrail");
+      expect(jobBody.job.auditTrail[jobBody.job.auditTrail.length -1].action).to.eql(executeActions.RUN);
+      expect(jobBody.job.auditTrail[jobBody.job.auditTrail.length -2].action).to.eql(executeActions.PAUSE);
+      expect(jobBody.job.auditTrail[jobBody.job.auditTrail.length -3].action).to.eql(executeActions.RESUME);
+      expect(jobBody.job.auditTrail[jobBody.job.auditTrail.length -3].timestamp).to.be.gt(jobBody.job.auditTrail[jobBody.job.auditTrail.length -1].timestamp)
     }).timeout(1000 * 60 * 5);
 
     it("pause resume pipeline multiple batch", async () => {

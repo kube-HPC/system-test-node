@@ -116,6 +116,11 @@ const JOB_BY_ID_QUERY = gql`
           progress
         }
       }
+      auditTrail {
+        timestamp
+        user
+        action
+      }
       pipeline {
         name
         experimentName

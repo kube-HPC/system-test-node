@@ -24,6 +24,7 @@
     "@hkube/etcd": "^5.1.10",
     "@hkube/kubernetes-client": "^1.0.27",
     "@hkube/logger": "^1.0.30",
+    "@hkube/consts": "^1.0.59",
     "autocannon": "^7.4.0",
     "axios": "^0.21.1",
     "chai": "^4.1.2",
