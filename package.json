@@ -26,7 +26,7 @@
     "@hkube/logger": "^1.0.30",
     "@hkube/consts": "^1.0.59",
     "autocannon": "^7.4.0",
-    "axios": "^0.21.1",
+    "axios": "^0.27.2",
     "chai": "^4.1.2",
     "chai-arrays": "^2.0.0",
     "chai-http": "^4.3.0",
