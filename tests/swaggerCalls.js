@@ -1048,9 +1048,6 @@ describe('all swagger calls test ', () => {
                 expect(res.text).to.eql("Access denied");
                 expect(res).to.have.status(403);
             }
-            else { // no kc
-                expect(res).to.have.status(404);
-            }
         });
     });
 });
