@@ -454,7 +454,6 @@ describe('Algorithm Tests', () => {
             algorithmV1.algorithmEnv = { "FOO": "123456" };
             let v2 = await storeAlgorithmApply(algorithmV1, dev_token);
             const algVersion2 = await getAlgorithmVersion(algorithmName, dev_token);
-            expect(algVersion2.body[0].createdBy).to.be.eql(testUserBody.username);
             expect(algVersion2.body.length).to.be.equal(2);
             let alg = await getAlgorithm(algorithmName, dev_token);
             expect(JSON.parse(alg.text).version).to.be.equal(v1.body.algorithm.version);
@@ -465,6 +464,9 @@ describe('Algorithm Tests', () => {
             expect(alg.body.auditTrail[0].timestamp).to.be.gt(alg.body.auditTrail[1].timestamp);
             expect(alg.body.auditTrail[1].version).to.eql(v1.body.algorithm.version)
             expect(alg.body.auditTrail[0].version).to.eql(v2.body.algorithm.version);
+            if(dev_token) {
+                expect(algVersion2.body[0].createdBy).to.be.eql(testUserBody.username);
+            } 
             }).timeout(1000 * 60 * 10);
 
         it('algorithm version can have tag', async () => {

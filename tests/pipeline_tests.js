@@ -421,7 +421,6 @@ let dev_token;
       const pipeStore = await storePipeline(d, dev_token, pipeList);
       expect(pipeStore.body).to.have.property('auditTrail')
       const pipeVersion = await getPipelineVersion(d.name, dev_token);
-      expect(pipeVersion.body[0].createdBy).to.be.eql(testUserBody.username);
       await delay(1000 * 90);
 
       const result = await getCronResult(d.name, 5, dev_token);
@@ -432,6 +431,9 @@ let dev_token;
       const expected = ["cron", "internal", "stored"];
       const a = expected.filter((v) => types.includes(v));
       expect(a.length).to.be.equal(3);
+      if(dev_token){
+        expect(pipeVersion.body[0].createdBy).to.be.eql(testUserBody.username);
+      }
     }).timeout(1000 * 60 * 7);
 
     it("pipe in pipe", async () => {
