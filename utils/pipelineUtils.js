@@ -340,6 +340,13 @@ const getPipelinestatusByName = async (name, token = {}, limit = 5) => {
     return res;
 }
 
+const getPipelineVersion = async (name, token = {}, limit = 5) => {
+    const res = await chai.request(config.apiServerUrl)
+        .get(`/versions/pipelines/${name}`)
+        .set('Authorization', `Bearer ${token}`);
+    return res;
+}
+
 const pipelineRandomName = (length) => {
     var result = '';
     var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -389,5 +396,6 @@ module.exports = {
     getPipelineTriggerTree,
     loadRunStored,
     getPending,
-    getActive
+    getActive,
+    getPipelineVersion
 }

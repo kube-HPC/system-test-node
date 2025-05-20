@@ -4,6 +4,7 @@ const chaiHttp = require("chai-http");
 const path = require("path");
 const delay = require("delay");
 var diff = require("deep-diff").diff;
+const { executeActions } = require('@hkube/consts');
 const config = require(path.join(process.cwd(), 'config/config'));
 
 
@@ -20,6 +21,7 @@ const {
   getWebSocketJobs,
   getWebSocketlogs,
   getDriverIdByJobId,
+  getJobById
 } = require("../utils/socketGet");
 const { getStatus } = require("../utils/results")
 
@@ -67,7 +69,8 @@ const {
   exceCachPipeline,
   getPipelinestatusByName,
   storePipelinesWithDescriptor,
-  storeOrUpdatePipelines
+  storeOrUpdatePipelines,
+  getPipelineVersion
 } = require("../utils/pipelineUtils");
 
 chai.use(chaiHttp);
@@ -114,9 +117,10 @@ const timeout = (ms) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 describe("pipeline Tests 673", () => {
+  let testUserBody;
   before(async function () {
     this.timeout(1000 * 60 * 15);
-    let testUserBody ={
+    testUserBody ={
         username: config.keycloakDevUser,
         password: config.keycloakDevPass
     }
@@ -416,7 +420,9 @@ let dev_token;
       testData.descriptor.name = pipelineRandomName(8);
       const d = deconstructTestData(testData);
       await deletePipeline(d, dev_token);
-      await storePipeline(d, dev_token, pipeList);
+      const pipeStore = await storePipeline(d, dev_token, pipeList);
+      expect(pipeStore.body).to.have.property('auditTrail')
+      const pipeVersion = await getPipelineVersion(d.name, dev_token);
       await delay(1000 * 90);
 
       const result = await getCronResult(d.name, 5, dev_token);
@@ -427,6 +433,9 @@ let dev_token;
       const expected = ["cron", "internal", "stored"];
       const a = expected.filter((v) => types.includes(v));
       expect(a.length).to.be.equal(3);
+      if(dev_token){
+        expect(pipeVersion.body[0].createdBy).to.be.eql(testUserBody.username);
+      }
     }).timeout(1000 * 60 * 7);
 
     it("pipe in pipe", async () => {
@@ -806,6 +815,12 @@ let dev_token;
       expect(pipelineStatus.body.status).to.be.equal("paused");
       await resumePipeline(jobId, dev_token);
       await getResult(jobId, 200, dev_token);
+      const jobBody = await getJobById(dev_token, jobId)
+      expect(jobBody.job).to.have.property("auditTrail");
+      expect(jobBody.job.auditTrail[jobBody.job.auditTrail.length -1].action).to.eql(executeActions.RUN);
+      expect(jobBody.job.auditTrail[jobBody.job.auditTrail.length -2].action).to.eql(executeActions.PAUSE);
+      expect(jobBody.job.auditTrail[jobBody.job.auditTrail.length -3].action).to.eql(executeActions.RESUME);
+      expect(jobBody.job.auditTrail[jobBody.job.auditTrail.length -3].timestamp).to.be.gt(jobBody.job.auditTrail[jobBody.job.auditTrail.length -1].timestamp)
     }).timeout(1000 * 60 * 5);
 
     it("pause resume pipeline multiple batch", async () => {
@@ -1405,6 +1420,9 @@ let dev_token;
       ];
       const response = await storeOrUpdatePipelines(pipelineList, dev_token, pipeList);
       const listOfPipelineResponse = response.body
+      expect(listOfPipelineResponse[1].auditTrail.length).to.be.eql(2);
+      expect(listOfPipelineResponse[1].auditTrail[0].timestamp).to.be.gt(listOfPipelineResponse[1].auditTrail[1].timestamp);
+      expect(listOfPipelineResponse[1].auditTrail[0].version).to.be.eql(response.body[1].version)
       expect(listOfPipelineResponse).to.be.an('array');
       expect(listOfPipelineResponse.length).to.be.equal(2);
       expect(response.statusCode).to.be.equal(201, 'Expected status code to be CREATED');

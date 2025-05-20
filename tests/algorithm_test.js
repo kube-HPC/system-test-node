@@ -95,9 +95,10 @@ const algJson = (algName, imageName, algMinHotWorkers = 0, algCPU = 0.001, algGP
 
 const { waitForWorkers, getJobsByNameAndVersion, getJobById, getAllAlgorithms } = require('../utils/socketGet')
 describe('Algorithm Tests', () => {
+    let testUserBody;
     before(async function () {
         this.timeout(1000 * 60 * 15);
-        let testUserBody ={
+        testUserBody ={
             username: config.keycloakDevUser,
             password: config.keycloakDevPass
         }
@@ -459,7 +460,14 @@ describe('Algorithm Tests', () => {
             await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, dev_token, true);
             alg = await getAlgorithm(algorithmName, dev_token);
             expect(JSON.parse(alg.text).algorithmEnv.FOO).to.be.equal('123456');
-        }).timeout(1000 * 60 * 10);
+            expect(alg.body.auditTrail.length).to.be.eql(2);
+            expect(alg.body.auditTrail[0].timestamp).to.be.gt(alg.body.auditTrail[1].timestamp);
+            expect(alg.body.auditTrail[1].version).to.eql(v1.body.algorithm.version)
+            expect(alg.body.auditTrail[0].version).to.eql(v2.body.algorithm.version);
+            if(dev_token) {
+                expect(algVersion2.body[0].createdBy).to.be.eql(testUserBody.username);
+            } 
+            }).timeout(1000 * 60 * 10);
 
         it('algorithm version can have tag', async () => {
             const v1 = await applyAlg(algorithmV1, dev_token);
