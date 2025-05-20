@@ -1,4 +1,6 @@
 #!/bin/bash
+set -ex
+
 domain="$1"
 echo Deploy to kubernetes
 helm repo add hkube-dev http://"$domain"/helm/dev/
