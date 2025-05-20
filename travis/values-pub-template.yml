@@ -1,6 +1,6 @@
 global:
   production: true
-  clusterName: test
+  clusterName: test-spot
   hkube_url: https://cicd-test.hkube.org/hkube
   registry: ""
   storage:
