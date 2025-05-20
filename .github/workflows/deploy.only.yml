@@ -1,0 +1,27 @@
+name: Deploy Only
+
+on:
+  workflow_dispatch:
+
+jobs:
+  Deployment:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: create kubeconfig
+        run: |
+          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
+          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
+
+      - name: verify kubectl
+        run: kubectl cluster-info
+
+      - name: deploy
+        run: ./travis/deploy.sh ${{ secrets.HKUBE_DOMAIN_RAW }}
+        env:
+          DOCKER_BUILD_PUSH_PASSWORD: ${{ secrets.DOCKER_BUILD_PUSH_PASSWORD }}
+          DOCKER_BUILD_PUSH_USERNAME: ${{ secrets.DOCKER_BUILD_PUSH_USERNAME }}
