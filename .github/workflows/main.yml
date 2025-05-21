@@ -265,7 +265,7 @@ jobs:
           K8S_CONFIG_PATH: /tmp/config
   StreamingTests:
     runs-on: ubuntu-latest
-    needs: [HkubeCliTests]
+    needs: [AlgorithmTests]
     if: ${{ always() }}
     steps:
       - uses: actions/checkout@v2
