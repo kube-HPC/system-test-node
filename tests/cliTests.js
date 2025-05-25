@@ -73,14 +73,13 @@ describe('Hkubectl Tests', () => {
     let testUserBody;
     before(async function () {
         this.timeout(1000 * 60 * 15);
-        testUserBody ={
+        testUserBody = {
             username: config.keycloakDevUser,
             password: config.keycloakDevPass
         }
         const response = await chai.request(config.apiServerUrl)
-        .post('/auth/login')
-        .send(testUserBody)
-        
+            .post('/auth/login')
+            .send(testUserBody)
         if (response.status === StatusCodes.OK) {
             console.log('dev login success');
             dev_token = response.body.data.access_token;
@@ -128,12 +127,12 @@ describe('Hkubectl Tests', () => {
             z += 3;
             console.log("j=" + j + ",z=" + z);
         }
-        
+
         console.log("-----------------------------------------------");
         console.log("pipeList = " + pipeList);
         j = 0;
         z = 3;
-    
+
         while (j < pipeList.length) {
             delPipe = pipeList.slice(j, z);
             const del = delPipe.map((e) => {
@@ -479,7 +478,7 @@ describe('Hkubectl Tests', () => {
             });
         }
 
-        it.only('sync create watch changes python', async () => {
+        it('sync create watch changes python', async () => {
             const filePath = path.join(process.cwd(), 'additionalFiles/main.py');
             const algName = pipelineRandomName(8).toLowerCase();
             algList.push(algName);
@@ -644,11 +643,11 @@ describe('Hkubectl Tests', () => {
 
             console.log(startCommand);
             await exceSyncString(startCommand);
-           
+
             await delay(10 * 1000);
 
             const alg = await getAlgorithm(somealg.name, dev_token);
-            const  { devMode, devFolder } = alg.body.options;
+            const { devMode, devFolder } = alg.body.options;
 
             expect(devFolder).to.be.equal(process.cwd());
             expect(devMode).to.be.equal(true);
@@ -677,11 +676,11 @@ describe('Hkubectl Tests', () => {
 
             console.log(stopCommand);
             await exceSyncString(stopCommand);
-           
+
             await delay(10 * 1000);
 
             const alg = await getAlgorithm(somealg.name, dev_token);
-            const  { devMode, devFolder } = alg.body.options;
+            const { devMode, devFolder } = alg.body.options;
 
             expect(devFolder).to.be.equal(null);
             expect(devMode).to.be.equal(false);
@@ -689,7 +688,7 @@ describe('Hkubectl Tests', () => {
 
         it('sync an algorithm with a custom path using start,stop, and a devFolder', async () => {
             const randomName = pipelineRandomName(8).toLowerCase();
-            const algName = "sync-dev-folder"+randomName;
+            const algName = "sync-dev-folder" + randomName;
             syncAlg.name = algName;
             await applyAlg(syncAlg, dev_token);
             const localFolder = path.join(process.cwd(), 'additionalFiles/file1');
@@ -705,7 +704,7 @@ describe('Hkubectl Tests', () => {
             const startCommand = ` hkubectl sync start` +
                 ` --algorithmName ${algName}` +
                 ` --devFolder ${devContainerFolder}`;
-        
+
             console.log(startCommand);
             await exceSyncString(startCommand);
             let res = await runStored(devPipeline, dev_token);
