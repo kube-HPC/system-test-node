@@ -60,7 +60,7 @@ describe('all swagger calls test ', () => {
         
         if (response.status === 200) {
             console.log('dev login success');
-            dev_token = response.body.token;
+            dev_token = response.body.data.access_token;
         }
         else {
             console.log('dev login failed - no keycloak/bad credentials');
@@ -1031,7 +1031,7 @@ describe('all swagger calls test ', () => {
             
             if (response.status === 200) {
                 console.log('guest login success');
-                guest_token = response.body.token;
+                guest_token = response.body.data.access_token;;
             }
             else {
                 console.log('guest login failed - no keycloak/bad credentials');
