@@ -61,5 +61,5 @@ api_server:
     pipeline_driver_cpu: '0.6'
     pipeline_driver_mem: '850'
 keycloak:
-  enable: false
+  enable: true
 
