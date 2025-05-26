@@ -34,7 +34,7 @@ describe('graphql tests', () => {
     
             if (response.status === 200) {
                 console.log(`${names[index]} login success`);
-                return response.body.token;
+                return response.body.data.access_token;
             }
             else if (response.body.error.message === 'Request failed with status code 404')
             {
