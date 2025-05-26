@@ -8,7 +8,7 @@ mkdir -p ~/.hkube
 cat <<EOF >~/.hkube/.hkuberc
 {
   "endpoint": "${HKUBE_URL}",
-  "rejectUnauthorized": false
+  "rejectUnauthorized": false,
   "username": "${KEYCLOAK_DEV_USER}",
   "password": "${KEYCLOAK_DEV_PASS}"
 }
