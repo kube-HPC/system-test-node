@@ -57,7 +57,7 @@ describe('all swagger calls test ', () => {
         const response = await chai.request(config.apiServerUrl)
             .post('/auth/login')
             .send(testUserBody)
-        
+
         if (response.status === 200) {
             console.log('dev login success');
             dev_token = response.body.data.access_token;
@@ -72,7 +72,7 @@ describe('all swagger calls test ', () => {
     let pipeList = [];
 
     const applyAlg = async (alg, token = {}) => {
-        await deleteAlgorithm(alg.name,token, true);
+        await deleteAlgorithm(alg.name, token, true);
         if (!algList.includes(alg.name)) {
             algList.push(alg.name);
         }
@@ -151,16 +151,16 @@ describe('all swagger calls test ', () => {
             const rawPipe = {
                 name: "rawPipe",
                 nodes: [
-                {
-                    nodeName: "node1",
-                    algorithmName: "green-alg",
-                    input: [1, 2, 3]
-                },
-                {
-                    nodeName: "node2",
-                    algorithmName: "yellow-alg",
-                    input: ["@node1"]
-                }]
+                    {
+                        nodeName: "node1",
+                        algorithmName: "green-alg",
+                        input: [1, 2, 3]
+                    },
+                    {
+                        nodeName: "node2",
+                        algorithmName: "yellow-alg",
+                        input: ["@node1"]
+                    }]
             }
 
             const res = await chai.request(config.apiServerUrl)
@@ -1028,7 +1028,7 @@ describe('all swagger calls test ', () => {
             const response = await chai.request(config.apiServerUrl)
                 .post('/auth/login')
                 .send(testUserBody);
-            
+
             if (response.status === 200) {
                 console.log('guest login success');
                 guest_token = response.body.data.access_token;;
