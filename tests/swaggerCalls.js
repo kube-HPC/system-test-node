@@ -1045,7 +1045,7 @@ describe('all swagger calls test ', () => {
                 .delete(`/store/pipelines/${name}`)
                 .set("Authorization", `Bearer ${guest_token}`);
             if (dev_token) {
-                expect(res.text).to.eql({ "error": "Unauthorized" });
+                expect(res.text).to.eql("Access denied");
                 expect(res).to.have.status(403);
             }
         });
