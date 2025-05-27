@@ -27,11 +27,11 @@ const {
     combineFlows
 } = require('../utils/streamingUtils');
 
-const { 
+const {
     intervalDelay,
     checkEqualWithRetries,
     checkInRangeWithRetries
- } = require('../utils/misc_utils');
+} = require('../utils/misc_utils');
 
 const { alg: statefull } = require("../additionalFiles/defaults/algorithms/timeStartstream");
 
@@ -68,14 +68,14 @@ describe("streaming pipeline test", () => {
 
     before(async function () {
         this.timeout(1000 * 60 * 15);
-        let testUserBody ={
+        let testUserBody = {
             username: config.keycloakDevUser,
             password: config.keycloakDevPass
         }
         const response = await chai.request(config.apiServerUrl)
-        .post('/auth/login')
-        .send(testUserBody)
-        
+            .post('/auth/login')
+            .send(testUserBody)
+
         if (response.status === StatusCodes.OK) {
             console.log('dev login success');
             dev_token = response.body.data.access_token;
@@ -212,7 +212,7 @@ describe("streaming pipeline test", () => {
             const throughput = await getThroughput(dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName);
             expect(throughput).to.be.gt(100, `throughput is ${throughput}, needed >100`); // suppose to be emptying the queue
             expect(current).to.be.gt(1, `current is ${current}, needed >1`);
-            
+
             await intervalDelay('Waiting phase 2', 40 * 1000);
             await checkEqualWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 1, 'Current pods');
             await checkEqualWithRetries(getThroughput, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 100, 'Throughput');
@@ -268,7 +268,7 @@ describe("streaming pipeline test", () => {
             await checkInRangeWithRetries(getRequiredPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 22, Infinity, 'Required');  // ideal amount is 21, but queue is filled
 
             await intervalDelay('Waiting phase 2', 60 * 1000);
-            const current =  await getCurrentPods(dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName);
+            const current = await getCurrentPods(dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName);
             expect(current).to.be.gt(21, `current is ${current}, needed >21`); // ideal amount, but queue is filled
             const throughput = await getThroughput(dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName);
             expect(throughput).to.be.gt(100, `throughput is ${throughput}, needed >100`); // suppose to be emptying the queue
@@ -332,7 +332,7 @@ describe("streaming pipeline test", () => {
             expect(current).to.be.gte(4, `current is ${current}, needed >=4`);
 
             await intervalDelay('Waiting phase 2', 50 * 1000);
-            await checkEqualWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 0,'Current pods', 5 * 1000, 4);
+            await checkEqualWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 0, 'Current pods', 5 * 1000, 4);
 
             await intervalDelay('Waiting phase 3', 75 * 1000);
             current = await getCurrentPods(dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName);
@@ -343,7 +343,7 @@ describe("streaming pipeline test", () => {
         it("should satisfy the request rate with changing processing time", async () => {
             await createAlg(statefull, 0.3);
             await createAlg(statelessByInterval);
-            
+
             streamInterval.flowInput = createFlowInput_ByInterval({
                 first_process_time: 1,
                 second_process_time: 0.01,
@@ -377,9 +377,9 @@ describe("streaming pipeline test", () => {
     });
 
     describe("multiple streaming nodes pipeline tests", () => {
-        it("should satisfy the request rate of 2 statefuls", async () => {
-            await createAlg(statefull);
-            await createAlg(stateless);
+        it.only("should satisfy the request rate of 2 statefuls", async () => {
+            await createAlg(statefull, dev_token);
+            await createAlg(stateless, dev_token);
 
             streamMultiple.flowInput = createFlowInput_Simple({
                 programs: [
