@@ -45,7 +45,7 @@ const {
 
 const {
     statelessPipe
-  } = require("../config/index").deletePodsJobsTest;
+} = require("../config/index").deletePodsJobsTest;
 
 const {
     getResult,
@@ -70,9 +70,9 @@ const {
     pipelineRandomName
 } = require('../utils/pipelineUtils')
 
-const { 
+const {
     intervalDelay
- } = require('../utils/misc_utils');
+} = require('../utils/misc_utils');
 
 chai.use(chaiHttp);
 
@@ -98,14 +98,14 @@ describe('Algorithm Tests', () => {
     let testUserBody;
     before(async function () {
         this.timeout(1000 * 60 * 15);
-        testUserBody ={
+        testUserBody = {
             username: config.keycloakDevUser,
             password: config.keycloakDevPass
         }
         const response = await chai.request(config.apiServerUrl)
-        .post('/auth/login')
-        .send(testUserBody)
-        
+            .post('/auth/login')
+            .send(testUserBody)
+
         if (response.status === StatusCodes.OK) {
             console.log('dev login success');
             dev_token = response.body.data.access_token;
@@ -171,13 +171,13 @@ describe('Algorithm Tests', () => {
             const delResult = await Promise.all(del);
             delResult.forEach(result => {
                 if (result && result.text) {
-                    try { 
+                    try {
                         const parsedText = JSON.parse(result.text);
                         if (parsedText.message) {
                             console.log("Delete Result Message:", parsedText.message);
                         }
                     }
-                    catch (error) { 
+                    catch (error) {
                         console.error(result.error.message || error);
                     }
                 }
@@ -464,10 +464,10 @@ describe('Algorithm Tests', () => {
             expect(alg.body.auditTrail[0].timestamp).to.be.gt(alg.body.auditTrail[1].timestamp);
             expect(alg.body.auditTrail[1].version).to.eql(v1.body.algorithm.version)
             expect(alg.body.auditTrail[0].version).to.eql(v2.body.algorithm.version);
-            if(dev_token) {
+            if (dev_token) {
                 expect(algVersion2.body[0].createdBy).to.be.eql(testUserBody.username);
-            } 
-            }).timeout(1000 * 60 * 10);
+            }
+        }).timeout(1000 * 60 * 10);
 
         it('algorithm version can have tag', async () => {
             const v1 = await applyAlg(algorithmV1, dev_token);
@@ -613,7 +613,7 @@ describe('Algorithm Tests', () => {
             alg = await getAlgorithm(algName, dev_token);
             algJson.baseImage = "python:3.9";
             let v2 = await storeAlgorithmApply(algJson, dev_token);
-            const buildStatus = await(getStatusall(v2.body.buildId, `/builds/status/`, StatusCodes.OK, "completed", dev_token, 1000 * 60 * 15));
+            const buildStatus = await (getStatusall(v2.body.buildId, `/builds/status/`, StatusCodes.OK, "completed", dev_token, 1000 * 60 * 15));
             //expect(v2.algorithmImage).to.contain(v2.imageTag)
             expect(v2.imageTag).to.not.be.equal(buildStatusAlg.imageTag);
             expect(v2.body.messages[0].startsWith("a build was triggered due to change in baseImage")).to.be.true;
@@ -633,7 +633,7 @@ describe('Algorithm Tests', () => {
             alg = await getAlgorithm(algName, dev_token);
             algJson.env = "nodejs";
             let v2 = await storeAlgorithmApply(algJson, dev_token);
-            const buildStatus = await(getStatusall(v2.body.buildId, `/builds/status/`, StatusCodes.OK, "completed", dev_token, 1000 * 60 * 15));
+            const buildStatus = await (getStatusall(v2.body.buildId, `/builds/status/`, StatusCodes.OK, "completed", dev_token, 1000 * 60 * 15));
             //expect(v2.algorithmImage).to.contain(v2.imageTag)
             expect(v2.imageTag).to.not.be.equal(buildStatusAlg.imageTag);
             expect(v2.body.messages[0].startsWith("a build was triggered due to change in env")).to.be.true;
@@ -674,7 +674,7 @@ describe('Algorithm Tests', () => {
             //const update = await updateAlgorithmVersion(algorithmName,algorithmImageV2,true);
             await delay(2000);
             //const jobId2 = await runStoredAndWaitForResults(d, dev_token)      
-            await deleteAlgorithm(algorithmName, dev_token, true); 
+            await deleteAlgorithm(algorithmName, dev_token, true);
             await delay(2000);
             const pipeline = await getPipeline(d.name, dev_token);
             expect(pipeline.body.error.message).to.include("Not Found");
@@ -773,7 +773,7 @@ describe('Algorithm Tests', () => {
             const versionranAlgorithm = await getJobsByNameAndVersion(dev_token, job.graph.nodes[0].algorithmName, job.graph.nodes[0].algorithmVersion);
             expect(algorithmV1.algorithmImage).to.be.equal(versionranAlgorithm.algorithmsByVersion.algorithm.algorithmImage);
 
-            await deleteAlgorithm(algorithmName,dev_token, true, true);
+            await deleteAlgorithm(algorithmName, dev_token, true, true);
             const ranAlgorithmAfterDelete = await getJobsByNameAndVersion(dev_token, job.graph.nodes[0].algorithmName, job.graph.nodes[0].algorithmVersion);
             expect(algorithmV1.algorithmImage).to.be.equal(ranAlgorithmAfterDelete.algorithmsByVersion.algorithm.algorithmImage);
         }).timeout(1000 * 60 * 5);
@@ -1189,7 +1189,7 @@ describe('Algorithm Tests', () => {
                 },
                 workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
             }
-            await applyAlg(existingAlg);
+            await applyAlg(existingAlg, dev_token);
 
             let algorithmsList = [
                 {
@@ -1398,7 +1398,7 @@ describe('Algorithm Tests', () => {
             const response = await deleteAlgorithmJobs("yellow-alg", dev_token);
             expect(response.statusCode).to.be.equal(StatusCodes.OK);
             expect(response.body.message.length).to.be.greaterThan(2);
-            await deleteAlgorithmJobs(stayUpSkeleton.name, dev_token);       
+            await deleteAlgorithmJobs(stayUpSkeleton.name, dev_token);
         }).timeout(1000 * 60 * 5);
     });
 });

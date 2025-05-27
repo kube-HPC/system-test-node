@@ -92,8 +92,8 @@ const getPodNode = async (podName, namespace = 'default') => {
 
 const getPodSpecByContainer = async (podName, containerName = 'worker', namespace = 'default') => {
     const pod = await client.api.v1.namespaces(namespace).pods(podName).get();
-    const container = pod.body.spec.containers.find(c=> c.name === containerName);
-    if(!container) {
+    const container = pod.body.spec.containers.find(c => c.name === containerName);
+    if (!container) {
         write_log(`container ${containerName} not found in pod ${podName} `);
         return null;
     }
@@ -102,13 +102,13 @@ const getPodSpecByContainer = async (podName, containerName = 'worker', namespac
     }
 }
 
-const FailSinglePod = async (podName, namespace = 'default') => {
+const FailSinglePod = async (podName, token = {}, namespace = 'default') => {
     //set test data to testData1
     const d = deconstructTestData(testData1);
 
     //store pipeline evalwait
-    await deletePipeline(d);
-    await storePipeline(d);
+    await deletePipeline(d, token);
+    await storePipeline(d, token);
 
     //run the pipeline evalwait
     const res = await runStored(d);

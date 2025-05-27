@@ -934,7 +934,7 @@ describe('Hkubectl Tests', () => {
             expect(importedAlgorithms.toString()).to.include("Successfully imported 7i59t2ad");
         }).timeout(1000 * 60 * 6);
 
-        it.only('import algoritms from a local directory to hkube env, switch cpu from 1 to 2', async () => {
+        it('import algoritms from a local directory to hkube env, switch cpu from 1 to 2', async () => {
             await deleteAlgorithm('6o5yjjiy', dev_token);
             await deleteAlgorithm('7i59t2ad', dev_token);
             algList.push('6o5yjjiy');
@@ -942,7 +942,7 @@ describe('Hkubectl Tests', () => {
             const folderPath = './additionalFiles/importAlgorithms';
             const importAlgoCommand = `hkubectl import algorithms ${folderPath} -r \"\\"cpu\\": 1^\\"cpu\\": 2\"`;
             const importedAlgorithms = await execSync(importAlgoCommand);
-            alg2 = await getAlgorithm('7i59t2ad'), dev_token;
+            alg2 = await getAlgorithm('7i59t2ad', dev_token);
             expect(importedAlgorithms.toString()).to.include('1 occurrences of ""cpu": 1" found and changed');
             expect(importedAlgorithms.toString()).to.include("Successfully imported 6o5yjjiy");
             expect(importedAlgorithms.toString()).to.include("Successfully imported 7i59t2ad");
