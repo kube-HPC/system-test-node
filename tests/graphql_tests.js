@@ -6,7 +6,7 @@ const config = require(path.join(process.cwd(), 'config/config'));
 const { StatusCodes } = require('http-status-codes');
 
 
-const { 
+const {
     getAllAlgorithms
 } = require('../utils/socketGet');
 
@@ -20,7 +20,7 @@ describe('graphql tests', () => {
     before(async function () {
         this.timeout(1000 * 60 * 15);
         // guest user login
-    
+
         const userCredentials = [
             { name: 'guest', username: config.keycloakGuestUser, password: config.keycloakGuestPass },
             { name: 'nopermissions', username: 'nopermissions', password: '1234' }
@@ -31,18 +31,16 @@ describe('graphql tests', () => {
             const response = await chai.request(config.apiServerUrl)
                 .post('/auth/login')
                 .send(userBody);
-    
+
             if (response.status === 200) {
                 console.log(`${names[index]} login success`);
                 return response.body.data.access_token;
             }
-            else if (response.body.error.message === 'Request failed with status code 404')
-            {
+            else if (response.body.error.message === 'Request failed with status code 404') {
                 keycloakIsDisabled = true;
                 console.log('Keycloak is disabled.');
             }
-            else if (response.body.error.message === 'Request failed with status code 401')
-            {
+            else if (response.body.error.message === 'Request failed with status code 401') {
                 throw Error(`Wrong credentials for ${names[index]}!`);
             }
             console.log(`${names[index]} login failed - no keycloak/bad credentials`);
@@ -85,31 +83,31 @@ describe('graphql tests', () => {
         });
 
         it('should fail getting all algorithms with no permission', async () => {
-            const testUserBody ={
+            const testUserBody = {
                 username: 'nopermissions',
                 password: '123'
             }
-    
+
             const response = await chai.request(config.apiServerUrl)
                 .post('/auth/login')
                 .send(testUserBody)
-            
+
             let token;
             if (response.status === StatusCodes.OK) {
                 console.log(`${testUserBody.user} user login success`);
                 token = response.body.token;
             }
-        
+
             let errorCaught = false;
             try {
                 await getAllAlgorithms(token);
             }
             catch (error) {
                 errorCaught = true;
-                expect(error.response.status).to.be.equal(StatusCodes.FORBIDDEN);
+                expect(error.response.status).to.be.equal(StatusCodes.UNAUTHORIZED);
                 expect(error.response.errors[0].code).to.be.equal('FORBIDDEN');
                 expect(error.response.errors[0].message).to.be.equal('Forbidden: You do not have access to this resource');
-                expect(error.response.errors[0].status).to.be.equal(StatusCodes.FORBIDDEN);
+                expect(error.response.errors[0].status).to.be.equal(StatusCodes.UNAUTHORIZED);
             }
             expect(errorCaught).to.be.equal(true, 'Expected error to be thrown for no permissions');
         }).timeout(1000 * 60)

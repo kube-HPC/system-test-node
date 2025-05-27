@@ -239,6 +239,8 @@ jobs:
           K8S_CONFIG_PATH: /tmp/config
           GitHub_Token: ${{ secrets.GIT_TOKEN }}
           Gitlab_Token: ${{ secrets.GITLAB_TOKEN }}
+          KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
+          KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
   AlgorithmTests:
     runs-on: ubuntu-latest
     needs: [HkubeCliTests]
