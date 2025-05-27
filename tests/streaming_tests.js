@@ -377,7 +377,7 @@ describe("streaming pipeline test", () => {
     });
 
     describe("multiple streaming nodes pipeline tests", () => {
-        it.only("should satisfy the request rate of 2 statefuls", async () => {
+        it("should satisfy the request rate of 2 statefuls", async () => {
             await createAlg(statefull, dev_token);
             await createAlg(stateless, dev_token);
 
