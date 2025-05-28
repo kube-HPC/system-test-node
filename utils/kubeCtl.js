@@ -119,7 +119,7 @@ const FailSinglePod = async (podName, token = {}, namespace = 'default') => {
     await deletePod(ServewrPod[0].metadata.name, namespace);
     await delay(15000);
 
-    const result = await getResult(jobId, 200);
+    const result = await getResult(jobId, 200, token);
 
     expect(result.status).to.be.equal('completed');
 
