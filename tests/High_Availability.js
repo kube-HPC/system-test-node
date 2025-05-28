@@ -273,27 +273,27 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
     }).timeout(1000 * 60 * 60);
 
     it('Fail API server  ', async () => {
-        await FailSinglePod("api-server");
+        await FailSinglePod("api-server", dev_token);
     }).timeout(1000 * 60 * 60);
 
     it('Fail simulator  ', async () => {
-        await FailSinglePod("simulator");
+        await FailSinglePod("simulator", dev_token);
     }).timeout(1000 * 60 * 60);
 
     it('Fail task-executor  ', async () => {
-        await FailSinglePod("task-executor");
+        await FailSinglePod("task-executor", dev_token);
     }).timeout(1000 * 60 * 60);
 
     it('Fail resource-manager  ', async () => {
-        await FailSinglePod("resource-manager");
+        await FailSinglePod("resource-manager", dev_token);
     }).timeout(1000 * 60 * 60);
 
     it('Fail algorithm-operator  ', async () => {
-        await FailSinglePod("algorithm-operator");
+        await FailSinglePod("algorithm-operator", dev_token);
     }).timeout(1000 * 60 * 60);
 
     it('Fail trigger-service  ', async () => {
-        await FailSinglePod("trigger-service");
+        await FailSinglePod("trigger-service", dev_token);
     }).timeout(1000 * 60 * 60);
 
     it.skip('Fail prometheus  ', async () => {

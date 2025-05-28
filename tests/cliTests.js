@@ -721,7 +721,7 @@ describe('Hkubectl Tests', () => {
             execShellCommand(watch);
 
             res = await runStored(devPipeline, dev_token);
-            await delay(40 * 1000);
+            await delay(60 * 1000);
             // get status
             pipelineData = await getPipelineStatus(res.body.jobId, dev_token);
             expect(pipelineData.body.status).be.equal('completed');

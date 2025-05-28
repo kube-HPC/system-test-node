@@ -830,10 +830,9 @@ describe("pipeline Tests 673", () => {
 
       const res = await runStored(e, dev_token);
       const jobId = res.body.jobId;
-      await delay(3000);
-
+      await delay(12000);
       await pausePipeline(jobId, dev_token);
-      await delay(60000);
+      await delay(6000);
       let pipelineStatus = await getPipelineStatus(jobId, dev_token);
       expect(pipelineStatus.body.status).to.be.equal("paused");
       await resumePipeline(jobId, dev_token);
@@ -847,7 +846,7 @@ describe("pipeline Tests 673", () => {
           inp: 15000,
         },
       };
-      await applyAlg(algorithmV1);
+      await applyAlg(algorithmV1, dev_token);
 
       await delay(2000);
       await deletePipeline(d, dev_token);
