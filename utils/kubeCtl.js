@@ -111,7 +111,7 @@ const FailSinglePod = async (podName, token = {}, namespace = 'default') => {
     await storePipeline(d, token);
 
     //run the pipeline evalwait
-    const res = await runStored(d);
+    const res = await runStored(d, token);
     const jobId = res.body.jobId;
     await delay(5000);
     const ServewrPod = await filterPodsByName(podName, namespace);
