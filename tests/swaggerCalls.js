@@ -1044,7 +1044,46 @@ describe('all swagger calls test ', () => {
             const res = await chai.request(config.apiServerUrl)
                 .delete(`/store/pipelines/${name}`)
                 .set("Authorization", `Bearer ${guest_token}`);
-            if (dev_token) {
+            if (guest_token) {
+                expect(res.text).to.eql("Access denied");
+                expect(res).to.have.status(403);
+            }
+        });
+
+        it('should fail to POST /exec/stored/ via REST', async () => {
+                const pipe = {
+                name: "simple",
+                flowInput: {
+                    files: {
+                        link: "link1"
+                    }
+                },
+                priority: 1
+            }
+
+            const res = await chai.request(config.apiServerUrl)
+                .post('/exec/stored')
+                .set("Authorization", `Bearer ${guest_token}`)
+                .send(pipe);
+
+            if (guest_token) {
+                expect(res.text).to.eql("Access denied");
+                expect(res).to.have.status(403);
+            }
+        });
+
+        it('should fail to POST /cron/start/ via REST', async () => {
+                const cronBody = {
+                name: "simple",
+                pattern: "0 0 * * *",
+            }
+
+            const res = await chai.request(config.apiServerUrl)
+                .post('/cron/start')
+                .set("Authorization", `Bearer ${guest_token}`)
+                .send(cronBody);
+
+            if (guest_token) {
                 expect(res.text).to.eql("Access denied");
                 expect(res).to.have.status(403);
             }
