@@ -85,7 +85,7 @@ describe('graphql tests', () => {
         it('should fail getting all algorithms with no permission', async () => {
             const testUserBody = {
                 username: 'nopermissions',
-                password: '123'
+                password: '1234'
             }
 
             const response = await chai.request(config.apiServerUrl)
@@ -95,7 +95,7 @@ describe('graphql tests', () => {
             let token;
             if (response.status === StatusCodes.OK) {
                 console.log(`${testUserBody.user} user login success`);
-                token = response.body.token;
+                token = response.body.data.access_token;
             }
 
             let errorCaught = false;
@@ -104,10 +104,10 @@ describe('graphql tests', () => {
             }
             catch (error) {
                 errorCaught = true;
-                expect(error.response.status).to.be.equal(StatusCodes.UNAUTHORIZED);
+                expect(error.response.status).to.be.equal(StatusCodes.FORBIDDEN);
                 expect(error.response.errors[0].code).to.be.equal('FORBIDDEN');
                 expect(error.response.errors[0].message).to.be.equal('Forbidden: You do not have access to this resource');
-                expect(error.response.errors[0].status).to.be.equal(StatusCodes.UNAUTHORIZED);
+                expect(error.response.errors[0].status).to.be.equal(StatusCodes.FORBIDDEN);
             }
             expect(errorCaught).to.be.equal(true, 'Expected error to be thrown for no permissions');
         }).timeout(1000 * 60)

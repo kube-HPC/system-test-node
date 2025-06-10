@@ -50,14 +50,14 @@ const {
 describe('TID-161- High Availability for HKube infrastructure services', () => {
     before(async function () {
         this.timeout(1000 * 60 * 15);
-        let testUserBody ={
+        let testUserBody = {
             username: config.keycloakDevUser,
             password: config.keycloakDevPass
         }
         const response = await chai.request(config.apiServerUrl)
-        .post('/auth/login')
-        .send(testUserBody)
-        
+            .post('/auth/login')
+            .send(testUserBody)
+
         if (response.status === 200) {
             console.log('dev login success');
             dev_token = response.body.data.access_token;
@@ -70,35 +70,35 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
     let pipeList = [];
 
     after(async function () {
-    this.timeout(2 * 60 * 1000);
-    console.log("pipeList = " + pipeList);
-    j = 0;
-    z = 3;
+        this.timeout(2 * 60 * 1000);
+        console.log("pipeList = " + pipeList);
+        j = 0;
+        z = 3;
 
-    while (j < pipeList.length) {
-        delPipe = pipeList.slice(j, z);
-        const del = delPipe.map((e) => {
-            return deletePipeline(e, dev_token);
-        });
-        console.log("delPipe-", JSON.stringify(delPipe, null, 2));
-        const delResult = await Promise.all(del);
-        delResult.forEach(result => {
-            if (result && result.text) {
-                console.log("Delete Result Message:", result.text);
-            }
-        });
-        await delay(2000);
-        j += 3;
-        z += 3;
-        console.log("j=" + j + ",z=" + z);
-    }
-    console.log("----------------------- end -----------------------");
+        while (j < pipeList.length) {
+            delPipe = pipeList.slice(j, z);
+            const del = delPipe.map((e) => {
+                return deletePipeline(e, dev_token);
+            });
+            console.log("delPipe-", JSON.stringify(delPipe, null, 2));
+            const delResult = await Promise.all(del);
+            delResult.forEach(result => {
+                if (result && result.text) {
+                    console.log("Delete Result Message:", result.text);
+                }
+            });
+            await delay(2000);
+            j += 3;
+            z += 3;
+            console.log("j=" + j + ",z=" + z);
+        }
+        console.log("----------------------- end -----------------------");
     });
 
     beforeEach(function () {
         console.log('\n-----------------------------------------------\n');
     });
-    
+
     describe('pipeline driver fail over', () => {
         it('Fail pipeline driver  ', async () => {
             //set test data to testData1
@@ -186,7 +186,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
         it('kill pipeline driver   batch on batch', async () => {
             const e = deconstructTestData(testData4);
             await deletePipeline(e.name, dev_token);
-            await storePipeline(e, dev_token,pipeList);
+            await storePipeline(e, dev_token, pipeList);
 
             const res = await runStored(e, dev_token);
             const jobId = res.body.jobId;
@@ -249,7 +249,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
         await deletePipeline(d, dev_token);
         await storePipeline(d, dev_token, pipeList);
         //run the pipeline evalwait
-        const res = await runStored(d);
+        const res = await runStored(d, dev_token);
         const jobId = res.body.jobId;
         let driver = undefined;
         while (!driver) {
@@ -273,27 +273,27 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
     }).timeout(1000 * 60 * 60);
 
     it('Fail API server  ', async () => {
-        await FailSinglePod("api-server");
+        await FailSinglePod("api-server", dev_token);
     }).timeout(1000 * 60 * 60);
 
     it('Fail simulator  ', async () => {
-        await FailSinglePod("simulator");
+        await FailSinglePod("simulator", dev_token);
     }).timeout(1000 * 60 * 60);
 
     it('Fail task-executor  ', async () => {
-        await FailSinglePod("task-executor");
+        await FailSinglePod("task-executor", dev_token);
     }).timeout(1000 * 60 * 60);
 
     it('Fail resource-manager  ', async () => {
-        await FailSinglePod("resource-manager");
+        await FailSinglePod("resource-manager", dev_token);
     }).timeout(1000 * 60 * 60);
 
     it('Fail algorithm-operator  ', async () => {
-        await FailSinglePod("algorithm-operator");
+        await FailSinglePod("algorithm-operator", dev_token);
     }).timeout(1000 * 60 * 60);
 
     it('Fail trigger-service  ', async () => {
-        await FailSinglePod("trigger-service");
+        await FailSinglePod("trigger-service", dev_token);
     }).timeout(1000 * 60 * 60);
 
     it.skip('Fail prometheus  ', async () => {

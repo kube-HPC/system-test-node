@@ -721,7 +721,7 @@ describe('Hkubectl Tests', () => {
             execShellCommand(watch);
 
             res = await runStored(devPipeline, dev_token);
-            await delay(40 * 1000);
+            await delay(60 * 1000);
             // get status
             pipelineData = await getPipelineStatus(res.body.jobId, dev_token);
             expect(pipelineData.body.status).be.equal('completed');
@@ -942,7 +942,7 @@ describe('Hkubectl Tests', () => {
             const folderPath = './additionalFiles/importAlgorithms';
             const importAlgoCommand = `hkubectl import algorithms ${folderPath} -r \"\\"cpu\\": 1^\\"cpu\\": 2\"`;
             const importedAlgorithms = await execSync(importAlgoCommand);
-            alg2 = await getAlgorithm('7i59t2ad');
+            alg2 = await getAlgorithm('7i59t2ad', dev_token);
             expect(importedAlgorithms.toString()).to.include('1 occurrences of ""cpu": 1" found and changed');
             expect(importedAlgorithms.toString()).to.include("Successfully imported 6o5yjjiy");
             expect(importedAlgorithms.toString()).to.include("Successfully imported 7i59t2ad");
@@ -957,7 +957,7 @@ describe('Hkubectl Tests', () => {
             const folderPath = './additionalFiles/importAlgorithms';
             const importAlgoCommand = `hkubectl import algorithms ${folderPath} -r \"\\"cpu\\": 1^\\"cpu\\": 2\"";"52Mi\"^\"60Mi\""`;
             const importedAlgorithms = await execSync(importAlgoCommand);
-            alg2 = await getAlgorithm('7i59t2ad');
+            alg2 = await getAlgorithm('7i59t2ad', dev_token);
             expect(importedAlgorithms.toString()).to.include('1 occurrences of ""cpu": 1" found and changed');
             expect(importedAlgorithms.toString()).to.include('1 occurrences of "52Mi" found and changed');
             expect(importedAlgorithms.toString()).to.include("Successfully imported 6o5yjjiy");

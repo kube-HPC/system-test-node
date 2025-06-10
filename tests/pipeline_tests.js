@@ -120,23 +120,23 @@ describe("pipeline Tests 673", () => {
   let testUserBody;
   before(async function () {
     this.timeout(1000 * 60 * 15);
-    testUserBody ={
-        username: config.keycloakDevUser,
-        password: config.keycloakDevPass
+    testUserBody = {
+      username: config.keycloakDevUser,
+      password: config.keycloakDevPass
     }
     const response = await chai.request(config.apiServerUrl)
-    .post('/auth/login')
-    .send(testUserBody)
-    
+      .post('/auth/login')
+      .send(testUserBody)
+
     if (response.status === 200) {
-        console.log('dev login success');
-        dev_token = response.body.data.access_token;
-      }
-    else {
-        console.log('dev login failed - no keycloak/bad credentials');
+      console.log('dev login success');
+      dev_token = response.body.data.access_token;
     }
-});
-let dev_token;
+    else {
+      console.log('dev login failed - no keycloak/bad credentials');
+    }
+  });
+  let dev_token;
   const algList = [];
   const pipeList = [];
 
@@ -169,21 +169,21 @@ let dev_token;
     z = 3;
 
     while (j < algList.length) {
-        delAlg = algList.slice(j, z);
-        const del = delAlg.map((e) => {
-            return deleteAlgorithm(e, dev_token, true);
-        });
-        console.log("delAlg-", JSON.stringify(delAlg, null, 2));
-        const delResult = await Promise.all(del);
-        delResult.forEach(result => {
-            if (result && result.text) {
-                console.log("Delete Result Message:", result.text);
-            }
-        });
-        await delay(2000);
-        j += 3;
-        z += 3;
-        console.log("j=" + j + ",z=" + z);
+      delAlg = algList.slice(j, z);
+      const del = delAlg.map((e) => {
+        return deleteAlgorithm(e, dev_token, true);
+      });
+      console.log("delAlg-", JSON.stringify(delAlg, null, 2));
+      const delResult = await Promise.all(del);
+      delResult.forEach(result => {
+        if (result && result.text) {
+          console.log("Delete Result Message:", result.text);
+        }
+      });
+      await delay(2000);
+      j += 3;
+      z += 3;
+      console.log("j=" + j + ",z=" + z);
     }
 
     console.log("-----------------------------------------------");
@@ -192,21 +192,21 @@ let dev_token;
     z = 3;
 
     while (j < pipeList.length) {
-        delPipe = pipeList.slice(j, z);
-        const del = delPipe.map((e) => {
-            return deletePipeline(e, dev_token);
-        });
-        console.log("delPipe-", JSON.stringify(delPipe, null, 2));
-        const delResult = await Promise.all(del);
-        delResult.forEach(result => {
-            if (result && result.text) {
-                console.log("Delete Result Message:", result.text);
-            }
-        });
-        await delay(2000);
-        j += 3;
-        z += 3;
-        console.log("j=" + j + ",z=" + z);
+      delPipe = pipeList.slice(j, z);
+      const del = delPipe.map((e) => {
+        return deletePipeline(e, dev_token);
+      });
+      console.log("delPipe-", JSON.stringify(delPipe, null, 2));
+      const delResult = await Promise.all(del);
+      delResult.forEach(result => {
+        if (result && result.text) {
+          console.log("Delete Result Message:", result.text);
+        }
+      });
+      await delay(2000);
+      j += 3;
+      z += 3;
+      console.log("j=" + j + ",z=" + z);
     }
     console.log("----------------------- end -----------------------");
   });
@@ -340,7 +340,7 @@ let dev_token;
       // testData4 = versatile-pipe
       const e = deconstructTestData(versatilePipe);
       await deletePipeline(e, dev_token);
-      await storePipeline(e, dev_token,  pipeList);
+      await storePipeline(e, dev_token, pipeList);
       await runStoredAndWaitForResults(pipe, dev_token);
       const res = await getPipelinestatusByName(pipelineName, dev_token);
       const status = await getExecPipeline(res.body[0].jobId, dev_token);
@@ -433,7 +433,7 @@ let dev_token;
       const expected = ["cron", "internal", "stored"];
       const a = expected.filter((v) => types.includes(v));
       expect(a.length).to.be.equal(3);
-      if(dev_token){
+      if (dev_token) {
         expect(pipeVersion.body[0].createdBy).to.be.eql(testUserBody.username);
       }
     }).timeout(1000 * 60 * 7);
@@ -564,7 +564,7 @@ let dev_token;
       // testData4 = versatile-pipe
       const e = deconstructTestData(versatilePipe);
       await deletePipeline(e, dev_token);
-      await storePipeline(e, dev_token,  pipeList);
+      await storePipeline(e, dev_token, pipeList);
       await runStoredAndWaitForResults(pipe, dev_token);
       const res = await getPipelinestatusByName(pipelineName, dev_token);
       const pipelineData = await getExecPipeline(res.body[0].jobId, dev_token);
@@ -650,7 +650,7 @@ let dev_token;
 
       expect(res.text).to.include("unable to find flowInput.two");
     }).timeout(1000 * 60 * 2);
-  
+
     //undefined
     it("cron  does not have flowInput ", async () => {
       const testData = testData3;
@@ -750,7 +750,7 @@ let dev_token;
 
       const e = deconstructTestData(versatileTestData);
       await deletePipeline(e, dev_token);
-      await storePipeline(e, dev_token,  pipeList);
+      await storePipeline(e, dev_token, pipeList);
       const res = await runStored(pipe, dev_token);
       await delay(1000 * 20);
       await getDriverIdByJobId(dev_token, res.body.jobId);
@@ -817,23 +817,22 @@ let dev_token;
       await getResult(jobId, 200, dev_token);
       const jobBody = await getJobById(dev_token, jobId)
       expect(jobBody.job).to.have.property("auditTrail");
-      expect(jobBody.job.auditTrail[jobBody.job.auditTrail.length -1].action).to.eql(executeActions.RUN);
-      expect(jobBody.job.auditTrail[jobBody.job.auditTrail.length -2].action).to.eql(executeActions.PAUSE);
-      expect(jobBody.job.auditTrail[jobBody.job.auditTrail.length -3].action).to.eql(executeActions.RESUME);
-      expect(jobBody.job.auditTrail[jobBody.job.auditTrail.length -3].timestamp).to.be.gt(jobBody.job.auditTrail[jobBody.job.auditTrail.length -1].timestamp)
+      expect(jobBody.job.auditTrail[jobBody.job.auditTrail.length - 1].action).to.eql(executeActions.RUN);
+      expect(jobBody.job.auditTrail[jobBody.job.auditTrail.length - 2].action).to.eql(executeActions.PAUSE);
+      expect(jobBody.job.auditTrail[jobBody.job.auditTrail.length - 3].action).to.eql(executeActions.RESUME);
+      expect(jobBody.job.auditTrail[jobBody.job.auditTrail.length - 3].timestamp).to.be.gt(jobBody.job.auditTrail[jobBody.job.auditTrail.length - 1].timestamp)
     }).timeout(1000 * 60 * 5);
 
     it("pause resume pipeline multiple batch", async () => {
       const e = deconstructTestData(testData5);
       await deletePipeline(e, dev_token);
-      await storePipeline(e, dev_token,  pipeList);
+      await storePipeline(e, dev_token, pipeList);
 
       const res = await runStored(e, dev_token);
       const jobId = res.body.jobId;
-      await delay(3000);
-
+      await delay(12000);
       await pausePipeline(jobId, dev_token);
-      await delay(60000);
+      await delay(6000);
       let pipelineStatus = await getPipelineStatus(jobId, dev_token);
       expect(pipelineStatus.body.status).to.be.equal("paused");
       await resumePipeline(jobId, dev_token);
@@ -847,7 +846,7 @@ let dev_token;
           inp: 15000,
         },
       };
-      await applyAlg(algorithmV1);
+      await applyAlg(algorithmV1, dev_token);
 
       await delay(2000);
       await deletePipeline(d, dev_token);
@@ -1069,7 +1068,7 @@ let dev_token;
       testData.descriptor.nodes[0].input[0] = "[1,2]";
       const e = deconstructTestData(testData);
       await deletePipeline(e, dev_token);
-      await storePipeline(e, dev_token,  pipeList);
+      await storePipeline(e, dev_token, pipeList);
       const tree = await getPipelineTriggerTree(simpleName, dev_token);
 
       expect(tree.text).to.include(triggeredPipe);
@@ -1097,7 +1096,7 @@ let dev_token;
       testData.descriptor.nodes[0].input[0] = "[1,2]";
       const e = deconstructTestData(testData);
       await deletePipeline(e, dev_token);
-      await storePipeline(e, dev_token,  pipeList);
+      await storePipeline(e, dev_token, pipeList);
       //getJobIdsTree
       const jobId = await runStoredAndWaitForResults(simple, dev_token);
 
@@ -1135,7 +1134,7 @@ let dev_token;
       testData.descriptor.nodes[0].input[0] = "[1,2]";
       const e = deconstructTestData(testData);
       await deletePipeline(e, dev_token);
-      await storePipeline(e, dev_token,  pipeList);
+      await storePipeline(e, dev_token, pipeList);
 
       const tree = await getPipelineTriggerTree("", dev_token);
       expect(tree.status).to.be.equal(400);
