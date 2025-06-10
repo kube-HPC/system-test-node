@@ -215,7 +215,7 @@ describe("streaming pipeline test", () => {
             
             await intervalDelay('Waiting phase 2', 40 * 1000);
             await checkEqualWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 1, 'Current pods');
-            await checkEqualWithRetries(getThroughput, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 100, 'Throughput');
+            await checkEqualWithRetries(getThroughput, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 100, 'Throughput', 11000, 5);
             await stopPipeline(jobId, dev_token);
         }).timeout(300 * 1000);
 
