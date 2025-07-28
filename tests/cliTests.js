@@ -62,7 +62,7 @@ const runHkubectlConfig = () => {
 
         configProcess.stdout.on('data', (data) => {
             const output = data.toString();
-            process.stdout.write(output); // debug usage
+            // process.stdout.write(output); // debug usage
 
             if (!isWriting && step < inputs.length && /Enter|Verify/.test(output)) {
                 isWriting = true;
