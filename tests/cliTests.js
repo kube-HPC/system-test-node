@@ -52,7 +52,7 @@ const runHkubectlConfig = () => {
         const configProcess = spawn('hkubectl', ['config']);
         const inputs = [
             config.baseUrl + '\n',
-            'y\n',
+            'false\n',
             config.keycloakDevUser + '\n',
             config.keycloakDevPass + '\n'
         ];
