@@ -225,7 +225,7 @@ describe('Hkubectl Tests', () => {
     });
 
     describe('hkubecl algorithm tests', () => {
-        it.only('hkube algorithm list', async () => {
+        it('hkube algorithm list', async () => {
             const runSimple = "hkubectl algorithm list --json";
             const jsonResult = await execSyncReturenJSON(runSimple);
             console.log(jsonResult);
