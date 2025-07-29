@@ -24,11 +24,11 @@ jobs:
         run: |
           ./travis/cli.sh
           echo $PWD >> $GITHUB_PATH
-        env:
-          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
-          HKUBE_URL: ${{ secrets.HKUBE }}
-          KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
-          KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
+        # env:
+        #   KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
+        #   HKUBE_URL: ${{ secrets.HKUBE }}
+        #   KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
+        #   KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
       - name: test
         run: |
           npm run cliTests

@@ -4,7 +4,7 @@ const chaiHttp = require('chai-http');
 const delay = require('delay');
 const expect = chai.expect;
 const assertArrays = require('chai-arrays');
-const execSync = require('child_process').execSync;
+const { execSync, spawn } = require('child_process');
 const config = require('../config/config');
 const { StatusCodes } = require('http-status-codes');
 const fs = require('fs');
@@ -45,6 +45,54 @@ chai.use(chaiHttp);
 chai.use(assertArrays);
 const yaml = require('js-yaml');
 
+
+const runHkubectlConfig = () => {
+    return new Promise((resolve, reject) => {
+        console.log("Using URL: " + config.baseUrl + " and " + config.keycloakDevUser + " user for hkubectl configuration...");
+        const configProcess = spawn('hkubectl', ['config']);
+        const inputs = [
+            config.baseUrl + '\n',
+            'false\n',
+            config.keycloakDevUser + '\n',
+            config.keycloakDevPass + '\n'
+        ];
+
+        let step = 0;
+        let isWriting = false;
+        let outputBuffer = ''; // to capture stdout for checking login result
+
+        configProcess.stdout.on('data', (data) => {
+            const output = data.toString();
+            outputBuffer += output;
+            // process.stdout.write(output); // debug
+
+            if (!isWriting && step < inputs.length && /Enter|Verify/.test(output)) {
+                isWriting = true;
+                delay(1000).then(() => {
+                    configProcess.stdin.write(inputs[step]);
+                    step++;
+                    isWriting = false;
+                });
+            }
+        });
+
+        configProcess.stderr.on('data', (data) => {
+            console.error(`stderr: ${data}`);
+        });
+
+        configProcess.on('close', (code) => {
+            if (/Login failed/i.test(outputBuffer)) {
+                reject(new Error('hkubectl login failed'));
+            } else if (code === 0) {
+                console.log('hkubectl configured successfully');
+                resolve();
+            } else {
+                reject(new Error(`hkubectl config failed with exit code ${code}`));
+            }
+        });
+    });
+};
+
 const exceSyncString = async (command) => {
     console.log("start- " + command);
     output = execSync(command);
@@ -81,11 +129,13 @@ describe('Hkubectl Tests', () => {
             .post('/auth/login')
             .send(testUserBody)
         if (response.status === StatusCodes.OK) {
-            console.log('dev login success');
+            console.log(config.keycloakDevUser + ' login success');
             dev_token = response.body.data.access_token;
+
+            await runHkubectlConfig();
         }
         else {
-            console.log('dev login failed - no keycloak/bad credentials');
+            console.log(config.keycloakDevUser + ' login failed - no keycloak/bad credentials');
         }
     });
     let dev_token;
@@ -179,7 +229,7 @@ describe('Hkubectl Tests', () => {
     });
 
     describe('hkubecl algorithm tests', () => {
-        it('hkube algorithm list', async () => {
+        it.only('hkube algorithm list', async () => {
             const runSimple = "hkubectl algorithm list --json";
             const jsonResult = await execSyncReturenJSON(runSimple);
             console.log(jsonResult);
