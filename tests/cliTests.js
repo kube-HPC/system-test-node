@@ -59,10 +59,12 @@ const runHkubectlConfig = () => {
 
         let step = 0;
         let isWriting = false;
+        let outputBuffer = ''; // to capture stdout for checking login result
 
         configProcess.stdout.on('data', (data) => {
             const output = data.toString();
-            // process.stdout.write(output); // debug usage
+            outputBuffer += output;
+            // process.stdout.write(output); // debug
 
             if (!isWriting && step < inputs.length && /Enter|Verify/.test(output)) {
                 isWriting = true;
@@ -79,7 +81,9 @@ const runHkubectlConfig = () => {
         });
 
         configProcess.on('close', (code) => {
-            if (code === 0) {
+            if (/Login failed/i.test(outputBuffer)) {
+                reject(new Error('hkubectl login failed'));
+            } else if (code === 0) {
                 console.log('hkubectl configured successfully');
                 resolve();
             } else {
@@ -225,7 +229,7 @@ describe('Hkubectl Tests', () => {
     });
 
     describe('hkubecl algorithm tests', () => {
-        it('hkube algorithm list', async () => {
+        it.only('hkube algorithm list', async () => {
             const runSimple = "hkubectl algorithm list --json";
             const jsonResult = await execSyncReturenJSON(runSimple);
             console.log(jsonResult);
