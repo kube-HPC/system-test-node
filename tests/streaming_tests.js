@@ -178,8 +178,8 @@ describe("streaming pipeline test", () => {
             await intervalDelay('Waiting phase 1', 30 * 1000);
             await checkInRangeWithRetries(getRequiredPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 27, Infinity, 'Required pods'); // ideal amount is 26, but queue is filled
 
-            await intervalDelay('Waiting phase 2', 90 * 1000);
-            await checkInRangeWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 31, Infinity, 'Current pods', 15 * 1000, 5); // emptying queue
+            await intervalDelay('Waiting phase 2', 30 * 1000);
+            await checkInRangeWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 31, Infinity, 'Current pods', 15 * 1000, 10); // emptying queue
             await checkInRangeWithRetries(getThroughput, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 90, Infinity, 'Throughput');
 
             await intervalDelay('Waiting phase 3', 240 * 1000);
