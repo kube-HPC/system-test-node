@@ -83,24 +83,9 @@ describe('graphql tests', () => {
         });
 
         it('should fail getting all algorithms with no permission', async () => {
-            const testUserBody = {
-                username: 'nopermissions',
-                password: '1234'
-            }
-
-            const response = await chai.request(config.apiServerUrl)
-                .post('/auth/login')
-                .send(testUserBody)
-
-            let token;
-            if (response.status === StatusCodes.OK) {
-                console.log(`${testUserBody.user} user login success`);
-                token = response.body.data.access_token;
-            }
-
             let errorCaught = false;
             try {
-                await getAllAlgorithms(token);
+                await getAllAlgorithms(nopermissions_token);
             }
             catch (error) {
                 errorCaught = true;
