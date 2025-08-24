@@ -22,7 +22,7 @@
   "dependencies": {
     "@elastic/elasticsearch": "^7.6.1",
     "@hkube/etcd": "^5.1.10",
-    "@hkube/kubernetes-client": "^1.0.27",
+    "@hkube/kubernetes-client": "^1.0.36",
     "@hkube/logger": "^1.0.30",
     "@hkube/consts": "^1.0.59",
     "autocannon": "^7.4.0",
