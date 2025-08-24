@@ -4,6 +4,7 @@ const path = require('path');
 const config = require(path.join(process.cwd(), 'config/config'));
 const chaiHttp = require('chai-http');
 const assertArrays = require('chai-arrays');
+const { pipelineStatuses } = require('@hkube/consts');
 const fs = require('fs');
 
 const {
@@ -236,13 +237,14 @@ describe('all swagger calls test ', () => {
             await getResult(jobId2, 200, dev_token);
         }).timeout(1000 * 60 * 5)
 
-        it('test the POST exec/stop rest call', async () => {
+        it('test the POST /exec/stop rest call', async () => {
             const jobId = await runRaw(dev_token, 30000);
             // const jobId = res.body.jobId
 
             const data = {
                 jobId: jobId,
-                reason: "from test"
+                reason: "from test",
+                statusToStop: pipelineStatuses.ACTIVE
             }
 
             await delay(3 * 1000);
@@ -252,6 +254,25 @@ describe('all swagger calls test ', () => {
                 .send(data);
 
             expect(res2).to.have.status(200);
+        }).timeout(1000 * 30);
+
+        it('test the POST /exec/stop rest call with failure due to status', async () => {
+            const jobId = await runRaw(dev_token, 30000);
+            // const jobId = res.body.jobId
+
+            const data = {
+                jobId: jobId,
+                reason: "from test",
+                statusToStop: pipelineStatuses.PENDING
+            }
+
+            await delay(3 * 1000);
+            const res2 = await chai.request(config.apiServerUrl)
+                .post('/exec/stop')
+                .set("Authorization", `Bearer ${dev_token}`)
+                .send(data);
+
+            expect(res2).to.have.status(404);
         }).timeout(1000 * 30);
 
         it('test the GET exec/pipelines/{jobId} rest call', async () => {
