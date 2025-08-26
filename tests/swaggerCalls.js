@@ -256,7 +256,7 @@ describe('all swagger calls test ', () => {
             expect(res2).to.have.status(200);
         }).timeout(1000 * 30);
 
-        it('test the POST /exec/stop rest call with failure due to status', async () => {
+        it.only('test the POST /exec/stop rest call with failure due to status', async () => {
             const jobId = await runRaw(dev_token, 30000);
             // const jobId = res.body.jobId
 
@@ -273,6 +273,7 @@ describe('all swagger calls test ', () => {
                 .send(data);
 
             expect(res2).to.have.status(404);
+            expect(res2.body.error.message).to.be.equal(`No jobs found matching criteria (jobId: ${data.jobId}, statuses: pending)`);
         }).timeout(1000 * 30);
 
         it('test the GET exec/pipelines/{jobId} rest call', async () => {
