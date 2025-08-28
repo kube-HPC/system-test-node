@@ -68,6 +68,7 @@ const checkEqualWithRetries = async (computeFn, funcArguments = [], targetValue,
  * @param {Array} [funcArguments=[]] - The arguments to pass to `computeFn`.
  * @param {number} min - The minimum value of the range.
  * @param {number} max - The maximum value of the range.
+ * @param {string} [valueName='Value'] - The name of the value being checked (for error messages).
  * @param {number} [retryDelay=10000] - The delay between each retry in milliseconds.
  * @param {number} [retries=3] - The number of times to retry the check.
  * @returns {Promise<boolean>} - Returns `true` if the value is within range; otherwise, fails the test.
