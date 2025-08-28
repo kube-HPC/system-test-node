@@ -256,7 +256,7 @@ describe('all swagger calls test ', () => {
             expect(res2).to.have.status(200);
         }).timeout(1000 * 30);
 
-        it.only('test the POST /exec/stop rest call with failure due to status', async () => {
+        it('test the POST /exec/stop rest call with failure due to status', async () => {
             const jobId = await runRaw(dev_token, 30000);
             // const jobId = res.body.jobId
 
