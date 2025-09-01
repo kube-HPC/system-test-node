@@ -246,7 +246,7 @@ const deleteAlgorithm = async (name, token = {}, force = true, keepOldVersions =
     const res = await chai.request(config.apiServerUrl)
         .delete(`/store/algorithms/${name}?force=${force}&keepOldVersions=${keepOldVersions}`)
         .set('Authorization', `Bearer ${token}`);
-    logResult(res, "algorithmUtils deleteAlgorithm");
+    if (res.error.status !== 404) logResult(res, "algorithmUtils deleteAlgorithm");
     return res;
 }
 
