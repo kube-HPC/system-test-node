@@ -898,7 +898,7 @@ describe('Algorithm Tests', () => {
             expect(containerSpec.resources.limits.memory).to.be.equal(alg.workerCustomResources.limits.memory);
         }).timeout(1000 * 10 * 60)
 
-        it('algorithm with workerCustomResources should run with stated workerCustomValues cpu and default memory', async () => {
+        it('algorithm with workerCustomResources should run with stated workerCustomValues cpu and no memory', async () => {
             let alg = {
                 name: "workercustomnomem",
                 cpu: 0.1,
@@ -939,9 +939,11 @@ describe('Algorithm Tests', () => {
             const expectedPod = await filterPodsByName(alg.name);
             const containerSpec = await getPodSpecByContainer(expectedPod[0].metadata.name);
             expect(normalizeCpuValue(containerSpec.resources.requests.cpu)).to.be.equal(parseFloat(alg.workerCustomResources.requests.cpu));
-            expect(containerSpec.resources.requests.memory).to.be.equal('512Mi');
+            expect(containerSpec.resources.requests.memory).to.be.undefined;
+            // expect(containerSpec.resources.requests.memory).to.be.equal('512Mi');
             expect(normalizeCpuValue(containerSpec.resources.limits.cpu)).to.be.equal(parseFloat(alg.workerCustomResources.limits.cpu));
-            expect(containerSpec.resources.limits.memory).to.be.equal('1Gi');
+            expect(containerSpec.resources.limits.memory).to.be.undefined;
+            // expect(containerSpec.resources.limits.memory).to.be.equal('1Gi');
         }).timeout(1000 * 10 * 60);
     });
 
