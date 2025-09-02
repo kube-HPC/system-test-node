@@ -61,7 +61,7 @@ const getJobsByNameAndVersion = async (token, name,version) => {
     return data;
 };
 
-const getWorkers = async (token, experimentName = 'main') => { // WORK ADIR
+const getWorkers = async (token, experimentName = 'main') => {
     const client = _createClient(token);
     return await client.request(WORKERS_ALL_QUERY);
 };

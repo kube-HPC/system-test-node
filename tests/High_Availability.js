@@ -128,7 +128,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
             expect(result.status).to.be.equal('completed');
         }).timeout(1000 * 60 * 60);
 
-        it('kill pipeline driver  singe batch', async () => {
+        it('kill pipeline driver single batch', async () => {
             const d = deconstructTestData(testData3);
             const pipe = {
                 name: d.name,
@@ -159,7 +159,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
             await getResult(jobId, 200, dev_token);
         }).timeout(1000 * 60 * 5);
 
-        it('kill pipeline driver  multiple batch', async () => {
+        it('kill pipeline driver multiple batch', async () => {
             const e = deconstructTestData(testData2);
 
             await deletePipeline(e.name, dev_token);
@@ -183,7 +183,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
             await getResult(jobId, 200, dev_token);
         }).timeout(1000 * 60 * 10);
 
-        it('kill pipeline driver   batch on batch', async () => {
+        it('kill pipeline driver batch on batch', async () => {
             const e = deconstructTestData(testData4);
             await deletePipeline(e.name, dev_token);
             await storePipeline(e, dev_token, pipeList);

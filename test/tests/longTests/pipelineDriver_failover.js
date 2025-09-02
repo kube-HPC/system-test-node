@@ -74,7 +74,7 @@ describe('pipeline driver fail over', () => {
         expect(result.status).to.be.equal('completed');
     }).timeout(1000 * 60 * 60);
 
-    it('kill pipeline driver  singe batch', async () => {
+    it('kill pipeline driver single batch', async () => {
         const d = deconstructTestData(testData3)
         const pipe = {
             name: d.name,
@@ -108,7 +108,7 @@ describe('pipeline driver fail over', () => {
 
     }).timeout(1000 * 60 * 5);
 
-    it('kill pipeline driver  multiple batch', async () => {
+    it('kill pipeline driver multiple batch', async () => {
         const e = deconstructTestData(testData2)
 
         await storePipeline(e)
@@ -134,7 +134,7 @@ describe('pipeline driver fail over', () => {
 
 
 
-    it('kill pipeline driver   batch on batch', async () => {
+    it('kill pipeline driver batch on batch', async () => {
         const e = deconstructTestData(testData4)
         await storePipeline(e)
 
