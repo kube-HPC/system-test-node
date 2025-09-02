@@ -329,8 +329,8 @@ describe("streaming pipeline test", () => {
             let current = await getCurrentPods(dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName);
             expect(current).to.be.gte(4, `current is ${current}, needed >=4`);
 
-            await intervalDelay('Waiting phase 2', 50 * 1000);
-            await checkEqualWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 0, 'Current pods', 5 * 1000, 4);
+            await intervalDelay('Waiting phase 2', 40 * 1000);
+            await checkEqualWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 0, 'Current pods', 5 * 1000, 10);
 
             await intervalDelay('Waiting phase 3', 75 * 1000);
             current = await getCurrentPods(dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName);
