@@ -167,7 +167,7 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
 
             const res = await runStored(e, dev_token);
             const jobId = res.body.jobId;
-            await delay(3000);
+            await delay(10000);
 
             const driver = await getDriverIdByJobId(dev_token, jobId);
 
