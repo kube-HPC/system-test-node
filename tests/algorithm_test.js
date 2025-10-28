@@ -79,11 +79,11 @@ chai.use(chaiHttp);
 const algJson = (algName, imageName, algMinHotWorkers = 0, algCPU = 0.001, algGPU = 0, algMEMORY = "32Mi") => {
     return {
         name: algName.toLowerCase(),
+        algorithmImage: imageName,
+        minHotWorkers: algMinHotWorkers,
         cpu: algCPU,
         gpu: algGPU,
         mem: algMEMORY,
-        minHotWorkers: algMinHotWorkers,
-        algorithmImage: imageName,
         type: "Image",
         options: {
             debug: false,
@@ -262,6 +262,52 @@ describe('Algorithm Tests', () => {
                 throw new Error(`Algorithm ${algorithm.name} not found`);
             }
             expect(algo.unscheduledReason).to.be.a('string');
+        }).timeout(1000 * 60 * 5);
+
+        it('should built correctly warning for unscheduled algorithm', async () => {
+            const algorithm = algJson(`unscheduled-resources-${pipelineRandomName(4).toLowerCase()}`, algorithmImage, 0, 4);
+            algorithm.workerCustomResources = { 
+                limits: {
+                    cpu: 8,
+                    memory: '512Mi'
+             },
+                requests: {
+                    cpu: 4,
+                    memory: '256Mi'
+                }
+            };
+            algorithm.sideCars = [{
+                container: {
+                    name: 'mycar',
+                    image: 'redis',
+                    resources: {
+                        requests: {
+                            cpu: '4',
+                            memory: '256Mi'
+                        },
+                        limits: {
+                            cpu: '8',
+                            memory: '512Mi'
+                        }
+                    }
+                }
+            }];
+
+            await applyAlg(algorithm, dev_token);
+            const res = await runAlgorithm({ name: algorithm.name, input: [] }, dev_token);
+            const { jobId } = res.body;
+
+            await intervalDelay("Waiting for warning to create", 60 * 1000, 5000);
+            const { job } = await getJobById(dev_token, jobId);
+            const allAlgorithms = await getAllAlgorithms(dev_token);
+            const testAlgo = allAlgorithms.find(a => a.name === algorithm.name);
+            const unscheduledReason = `Maximum capacity exceeded cpu (3)`;
+            const errorMessage = 'Maximum capacity exceeded cpu (3)\nYour request of cpu = 12 is over max capacity of 8';
+
+            expect(testAlgo).to.not.be.undefined;
+            expect(testAlgo.unscheduledReason).to.equal(unscheduledReason);
+            expect(job.graph.nodes[0].status).to.equal('failedScheduling');
+            expect(job.graph.nodes[0].error).to.equal(errorMessage);
         }).timeout(1000 * 60 * 5);
 
         describe('algorithm with volumes tests', () => {
