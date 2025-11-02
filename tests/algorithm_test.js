@@ -1061,12 +1061,12 @@ describe('Algorithm Tests', () => {
                 name: alg.name,
                 input: ["FR"]
             }
-            //input:[{"action":"env","EnvironmentVariable":"FR"}]}
 
             const res = await runAlgorithm(algRun, dev_token);
             const jobId = res.body.jobId;
             const result = await getResult(jobId, StatusCodes.OK, dev_token);
-            expect(result.data[0].result).to.contain("compute.internal");
+            const nodes = await getNodes();
+            expect(nodes).to.include(result.data[0].result);
         }).timeout(1000 * 5 * 60);
 
         it('algorithm hot workers', async () => {
