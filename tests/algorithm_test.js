@@ -304,7 +304,7 @@ describe('Algorithm Tests', () => {
                 const allAlgorithms = await getAllAlgorithms(dev_token);
                 const testAlgo = allAlgorithms.find(a => a.name === algorithm.name);
                 const unscheduledReason = `Maximum capacity exceeded cpu (3)`;
-                const errorMessage = `Maximum capacity exceeded cpu (3)\nYour total request of cpu = ${actualRequestedCPU} is over max capacity of 8.\nCheck algorithm, worker and sideCars resource requests.`;
+                const errorMessage = `Maximum capacity exceeded cpu (3)\nYour total request of cpu = ${actualRequestedCPU} is over max capacity of 8.\nCheck algorithm, workerCustomResources and sideCars resource requests.`;
 
                 expect(testAlgo).to.not.be.undefined;
                 expect(testAlgo.unscheduledReason).to.equal(unscheduledReason);
