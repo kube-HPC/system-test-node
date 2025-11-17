@@ -30,7 +30,8 @@ const {
 const {
     intervalDelay,
     checkEqualWithRetries,
-    checkInRangeWithRetries
+    checkInRangeWithRetries,
+    loginWithRetry
 } = require('../utils/misc_utils');
 
 const { alg: statefull } = require("../additionalFiles/defaults/algorithms/timeStartstream");
@@ -68,21 +69,7 @@ describe("streaming pipeline test", () => {
 
     before(async function () {
         this.timeout(1000 * 60 * 15);
-        let testUserBody = {
-            username: config.keycloakDevUser,
-            password: config.keycloakDevPass
-        }
-        const response = await chai.request(config.apiServerUrl)
-            .post('/auth/login')
-            .send(testUserBody)
-
-        if (response.status === StatusCodes.OK) {
-            console.log('dev login success');
-            dev_token = response.body.data.access_token;
-        }
-        else {
-            console.log('dev login failed - no keycloak/bad credentials');
-        }
+        dev_token = await loginWithRetry();
     });
 
     const createAlg = async (alg, cpu) => {

@@ -71,7 +71,8 @@ const {
 } = require('../utils/pipelineUtils')
 
 const {
-    intervalDelay
+    intervalDelay,
+    loginWithRetry
 } = require('../utils/misc_utils');
 
 chai.use(chaiHttp);
@@ -95,26 +96,14 @@ const algJson = (algName, imageName, algMinHotWorkers = 0, algCPU = 0.001, algGP
 
 const { waitForWorkers, getJobsByNameAndVersion, getJobById, getAllAlgorithms } = require('../utils/socketGet')
 describe('Algorithm Tests', () => {
-    let testUserBody;
+    let testUserName = config.keycloakDevUser;
+    let dev_token;
+
     before(async function () {
         this.timeout(1000 * 60 * 15);
-        testUserBody = {
-            username: config.keycloakDevUser,
-            password: config.keycloakDevPass
-        }
-        const response = await chai.request(config.apiServerUrl)
-            .post('/auth/login')
-            .send(testUserBody)
-
-        if (response.status === StatusCodes.OK) {
-            console.log('dev login success');
-            dev_token = response.body.data.access_token;
-        }
-        else {
-            console.log('dev login failed - no keycloak/bad credentials');
-        }
+        dev_token = await loginWithRetry();
     });
-    let dev_token;
+
     let algList = [];
     let selectedNodeAlgName = "";
 
@@ -465,7 +454,7 @@ describe('Algorithm Tests', () => {
             expect(alg.body.auditTrail[1].version).to.eql(v1.body.algorithm.version)
             expect(alg.body.auditTrail[0].version).to.eql(v2.body.algorithm.version);
             if (dev_token) {
-                expect(algVersion2.body[0].createdBy).to.be.eql(testUserBody.username);
+                expect(algVersion2.body[0].createdBy).to.be.eql(testUserName);
             }
         }).timeout(1000 * 60 * 10);
 

@@ -41,6 +41,8 @@ const {
     getBuildList
 } = require('../utils/algorithmUtils');
 
+const { loginWithRetry } = require('../utils/misc_utils');
+
 chai.use(chaiHttp);
 chai.use(assertArrays);
 const yaml = require('js-yaml');
@@ -118,27 +120,12 @@ describe('Hkubectl Tests', () => {
     let algList = [];
     let pipeList = [];
     let filePathList = [];
-    let testUserBody;
+    let dev_token;
+
     before(async function () {
         this.timeout(1000 * 60 * 15);
-        testUserBody = {
-            username: config.keycloakDevUser,
-            password: config.keycloakDevPass
-        }
-        const response = await chai.request(config.apiServerUrl)
-            .post('/auth/login')
-            .send(testUserBody)
-        if (response.status === StatusCodes.OK) {
-            console.log(config.keycloakDevUser + ' login success');
-            dev_token = response.body.data.access_token;
-
-            await runHkubectlConfig();
-        }
-        else {
-            console.log(config.keycloakDevUser + ' login failed - no keycloak/bad credentials');
-        }
+        dev_token = await loginWithRetry();
     });
-    let dev_token;
     // Use this method to apply algorithms, as it ensures that the algorithms are inserted into the algList.
     // This, in turn, guarantees that no unnecessary data is left behind by properly removing those algorithms.
     const applyAlg = async (alg, token = {}) => {
