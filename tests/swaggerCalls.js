@@ -1034,6 +1034,10 @@ describe('all swagger calls test ', () => {
         before(async function () {
             this.timeout(1000 * 60 * 15);
             guest_token = await loginWithRetry(config.keycloakGuestUser, config.keycloakGuestPass);
+            if (!guest_token) {
+                console.log('Keycloak is disabled. Skipping tests that require keycloak.');
+                this.skip(); // Skips authentication tests since keycloak is not enabled (if credentials are incorrect, fix them).
+            }
         });
 
         it('should fail to DELETE /store/pipelines/{name} via REST', async () => {
