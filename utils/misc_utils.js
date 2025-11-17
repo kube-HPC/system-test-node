@@ -124,7 +124,7 @@ async function loginWithRetry(username = config.keycloakDevUser, password = conf
         }
     }
 
-    throw lastError;
+    return undefined;
 }
 
 
