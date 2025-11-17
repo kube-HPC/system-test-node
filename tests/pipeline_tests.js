@@ -7,11 +7,11 @@ var diff = require("deep-diff").diff;
 const { executeActions } = require('@hkube/consts');
 const config = require(path.join(process.cwd(), 'config/config'));
 
+const { loginWithRetry } = require("../utils/misc_utils");
 
 const {
   runAlgorithm,
   deleteAlgorithm,
-  storeAlgorithm,
   StoreDebugAlgorithm,
   storeAlgorithmApply
 } = require("../utils/algorithmUtils");
@@ -117,45 +117,31 @@ const timeout = (ms) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 describe("pipeline Tests 673", () => {
-  let testUserBody;
-  before(async function () {
-    this.timeout(1000 * 60 * 15);
-    testUserBody = {
-      username: config.keycloakDevUser,
-      password: config.keycloakDevPass
-    }
-    const response = await chai.request(config.apiServerUrl)
-      .post('/auth/login')
-      .send(testUserBody)
-
-    if (response.status === 200) {
-      console.log('dev login success');
-      dev_token = response.body.data.access_token;
-    }
-    else {
-      console.log('dev login failed - no keycloak/bad credentials');
-    }
-  });
+  let testUserName = config.keycloakDevUser;
   let dev_token;
+
+  before(async function () {
+      this.timeout(1000 * 60 * 15);
+      dev_token = await loginWithRetry();
+  });
+
   const algList = [];
   const pipeList = [];
-
-  const createAlg = async (algName, token = {}) => {
-    await deleteAlgorithm(algName, token, true);
-    await storeAlgorithm(algName, token);
-    algList.push(algName);
-  }
 
   const applyAlg = async (alg, token = {}) => {
     await deleteAlgorithm(alg.name, token, true);
     await storeAlgorithmApply(alg, token);
-    algList.push(alg.name);
+    if (!algList.includes(alg.name)) {
+        algList.push(alg.name);
+    }
   }
 
   const createDebugAlg = async (algName, token = {}) => {
     await deleteAlgorithm(algName, token, true);
     await StoreDebugAlgorithm(algName, token);
-    algList.push(algName);
+    if (!algList.includes(algName)) {
+        algList.push(algName);
+    }
   }
 
   beforeEach(function () {
@@ -434,7 +420,7 @@ describe("pipeline Tests 673", () => {
       const a = expected.filter((v) => types.includes(v));
       expect(a.length).to.be.equal(3);
       if (dev_token) {
-        expect(pipeVersion.body[0].createdBy).to.be.eql(testUserBody.username);
+        expect(pipeVersion.body[0].createdBy).to.be.eql(testUserName);
       }
     }).timeout(1000 * 60 * 7);
 

@@ -2,6 +2,7 @@ const chai = require('chai');
 const delay = require('delay');
 const logger = require('../utils/logger')
 const expect = chai.expect;
+const config = require('../config/config');
 
 
 const write_log = (st, sv = 'info') => {
@@ -82,10 +83,55 @@ const checkInRangeWithRetries = async (computeFn, funcArguments = [], min, max, 
     expect.fail(`${valueName}(${result}) ${range} after ${retries} attempts.`);
 };
 
+/**
+ * Login to the API server with retries.
+ *
+ * @param {string} username - The username for login (default dev from config).
+ * @param {string} password - The password for login (default dev from config).
+ * @param {number} attempts - Number of attempts (default 3)
+ * @param {number} delayMs - Delay between retries in ms (default 10000)
+ * @returns {Promise<string>} - Resolves with access token
+ */
+async function loginWithRetry(username = config.keycloakDevUser, password = config.keycloakDevPass, attempts = 3, delayMs = 10000) {
+    let lastError;
+    if (username === undefined || password === undefined) {
+        throw new Error('Username or password is undefined');
+    }
+
+    for (let attempt = 0; attempt < attempts; attempt++) {
+        try {
+            const response = await chai.request(config.apiServerUrl)
+                .post('/auth/login')
+                .send({
+                    username: username,
+                    password: password
+                });
+
+            if (response.status !== 200) {
+                throw new Error(`Login failed with status ${response.status}`);
+            }
+
+            console.log('Dev login success');
+            return response.body.data.access_token;
+
+        } catch (err) {
+            lastError = err;
+            console.warn(`Login attempt ${attempt + 1} failed: ${err.message}`);
+            if (attempt < retries) {
+                console.log(`Retrying in ${delayMs / 1000}s...`);
+                await new Promise(res => setTimeout(res, delayMs));
+            }
+        }
+    }
+
+    throw lastError;
+}
+
 
 module.exports = {
     write_log,
     intervalDelay,
     checkEqualWithRetries,
-    checkInRangeWithRetries
+    checkInRangeWithRetries,
+    loginWithRetry
 }

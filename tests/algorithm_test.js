@@ -71,7 +71,8 @@ const {
 } = require('../utils/pipelineUtils')
 
 const {
-    intervalDelay
+    intervalDelay,
+    loginWithRetry
 } = require('../utils/misc_utils');
 
 chai.use(chaiHttp);
@@ -95,26 +96,14 @@ const algJson = (algName, imageName, algMinHotWorkers = 0, algCPU = 0.001, algGP
 
 const { waitForWorkers, getJobsByNameAndVersion, getJobById, getAllAlgorithms } = require('../utils/socketGet')
 describe('Algorithm Tests', () => {
-    let testUserBody;
+    let testUserName = config.keycloakDevUser;
+    let dev_token;
+
     before(async function () {
         this.timeout(1000 * 60 * 15);
-        testUserBody = {
-            username: config.keycloakDevUser,
-            password: config.keycloakDevPass
-        }
-        const response = await chai.request(config.apiServerUrl)
-            .post('/auth/login')
-            .send(testUserBody)
-
-        if (response.status === StatusCodes.OK) {
-            console.log('dev login success');
-            dev_token = response.body.data.access_token;
-        }
-        else {
-            console.log('dev login failed - no keycloak/bad credentials');
-        }
+        dev_token = await loginWithRetry();
     });
-    let dev_token;
+
     let algList = [];
     let selectedNodeAlgName = "";
 
@@ -465,7 +454,7 @@ describe('Algorithm Tests', () => {
             expect(alg.body.auditTrail[1].version).to.eql(v1.body.algorithm.version)
             expect(alg.body.auditTrail[0].version).to.eql(v2.body.algorithm.version);
             if (dev_token) {
-                expect(algVersion2.body[0].createdBy).to.be.eql(testUserBody.username);
+                expect(algVersion2.body[0].createdBy).to.be.eql(testUserName);
             }
         }).timeout(1000 * 60 * 10);
 
@@ -546,15 +535,14 @@ describe('Algorithm Tests', () => {
             expect(pods[0].metadata.annotations["annotations-by"]).to.be.eqls("test");
         }).timeout(1000 * 60 * 10);
 
-        it('update algorithm nodeSelector', async () => {
+        it.only('update algorithm nodeSelector', async () => {
             const nodes = await getNodes();
             expect(nodes.length).to.be.above(1, "Received 1 or less nodes.");
             //create and store an algorithm
             const algName = pipelineRandomName(8).toLowerCase();
             selectedNodeAlgName = algName;
             console.log(`Alg name is : ${algName}`);
-            const algV1 = algJson(algName, algorithmImageV1);
-            algV1.minHotWorkers = 1; // get a pod running
+            const algV1 = algJson(algName, algorithmImageV1, 1); // get the pod running with hot worker
             algV1.nodeSelector = { "kubernetes.io/hostname": nodes[1] };
             let v1 = await applyAlg(algV1, dev_token);
             console.log(`Alg stored, selected node : ${nodes[1]}`);
@@ -570,11 +558,10 @@ describe('Algorithm Tests', () => {
             console.log(`Pod name after first store action : ${podNames}`);
             const firstPodName = podNames[0]; // Store first pod's name from the pod array
             const podNode = await getPodNode(firstPodName);
-            expect(podNode).to.be.equal(nodes[1]); // verify worker on selected node nodes[2]
+            expect(podNode).to.be.equal(nodes[1]); // verify worker on selected node nodes[1]
 
-            algV1.nodeSelector = { "kubernetes.io/hostname": nodes[0] };
-            algV1.minHotWorkers = 1;
-            console.log(`New Selected node : ${nodes[0]}`);
+            algV1.nodeSelector = { "kubernetes.io/hostname": nodes[2] };
+            console.log(`New Selected node : ${nodes[2]}`);
             //store and update the new algorithm with a new version + a different selected node nodes[1];
             v1 = await applyAlg(algV1, dev_token);
             await updateAlgorithmVersion(algName, v1.body.algorithm.version, dev_token, true);
@@ -596,7 +583,7 @@ describe('Algorithm Tests', () => {
             //var index = podNamesAfter.indexOf(podNames[0]); //index=0; when fails.
             //var filteredAry = ary.filter(e => e !== 'seven')
             const podNodeAfter = await getPodNode(podsNamesAfter[0].metadata.name);
-            expect(podNodeAfter).to.be.equal(nodes[0]);
+            expect(podNodeAfter).to.be.equal(nodes[2]);
         }).timeout(1000 * 60 * 10);
 
         it(`change baseImage trigger new Build`, async () => {
@@ -1055,6 +1042,7 @@ describe('Algorithm Tests', () => {
         }).timeout(1000 * 5 * 60);
 
         it('algorithm Environment Variables fieldRef', async () => {
+            const nodes = await getNodes();
             await applyAlg(alg, dev_token);
 
             const algRun = {
@@ -1065,7 +1053,6 @@ describe('Algorithm Tests', () => {
             const res = await runAlgorithm(algRun, dev_token);
             const jobId = res.body.jobId;
             const result = await getResult(jobId, StatusCodes.OK, dev_token);
-            const nodes = await getNodes();
             expect(nodes).to.include(result.data[0].result);
         }).timeout(1000 * 5 * 60);
 

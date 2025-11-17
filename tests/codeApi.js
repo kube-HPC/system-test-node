@@ -22,6 +22,8 @@ const {
     buildGitAlgorithm
 } = require('../utils/algorithmUtils')
 
+const { loginWithRetry } = require('../utils/misc_utils');
+
 chai.use(chaiHttp);
 chai.use(assertArrays);
 
@@ -56,25 +58,13 @@ chai.use(assertArrays);
 // }
 
 describe('code api tests ', () => {
+    let dev_token;
+
     before(async function () {
         this.timeout(1000 * 60 * 15);
-        let testUserBody = {
-            username: config.keycloakDevUser,
-            password: config.keycloakDevPass
-        }
-        const response = await chai.request(config.apiServerUrl)
-            .post('/auth/login')
-            .send(testUserBody)
-
-        if (response.status === 200) {
-            console.log('dev login success');
-            dev_token = response.body.data.access_token;
-        }
-        else {
-            console.log('dev login failed - no keycloak/bad credentials');
-        }
+        dev_token = await loginWithRetry();
     });
-    let dev_token;
+
     let algList = [];
 
     const createAlg = async (obj, token = {}, isGit = false) => {
