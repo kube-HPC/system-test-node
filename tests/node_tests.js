@@ -392,6 +392,7 @@ let dev_token;
     };
 
     it("flowInput batch cartesian", async () => {
+      pipe.name = "flow-input-batch-cartesian";
       pipe.nodes[0].input = ["#@flowInput.one", "#@flowInput.two"];
       pipe.nodes[0].batchOperation = "cartesian";
       pipe.nodes[2].batchOperation = "cartesian";
@@ -410,6 +411,7 @@ let dev_token;
     }).timeout(1000 * 60 * 2);
 
     it("flowInput batch index", async () => {
+      pipe.name = "flow-input-batch-index";
       pipe.nodes[0].input = ["#@flowInput.one", "#@flowInput.two"];
       pipe.nodes[0].batchOperation = "cartesian";
       pipe.nodes[2].batchOperation = "indexed";
@@ -428,6 +430,7 @@ let dev_token;
     }).timeout(1000 * 60 * 2);
 
     it("flowInput batch +any ", async () => {
+      pipe.name = "flow-input-batch-any";
       pipe.nodes[0].input = ["#@flowInput.one", "#@flowInput.two"];
       pipe.nodes[0].batchOperation = "cartesian";
       pipe.nodes[2].input = ["*@one", "#@two"];
@@ -443,6 +446,7 @@ let dev_token;
     }).timeout(1000 * 60 * 2);
 
     it("a batch + fix indexed", async () => {
+      pipe.name = "a-batch-fix-indexed";
       pipe.nodes[0].input = ["#[0...9]"];
       pipe.nodes[1].input = ["#[10...15]"];
       pipe.nodes[2].input = ["99", "#@one", "#@two"];
@@ -460,6 +464,7 @@ let dev_token;
     }).timeout(1000 * 60 * 2);
 
     it("custom input", async () => {
+      pipe.name = "custom-input";
       pipe.nodes[0].input = ["#[0...9]"];
       pipe.nodes[1].input = ["#[10...19]"];
       pipe.nodes[2].input = [{ a: "@one", b: "@two" }];
@@ -473,6 +478,7 @@ let dev_token;
     }).timeout(1000 * 60 * 2);
 
     it("flowInput = null", async () => {
+      pipe.name = "flow-input-null";
       pipe.nodes[0].input = ["#@flowInput.one", "#@flowInput.two"];
       pipe.nodes[0].batchOperation = "cartesian";
       pipe.nodes[2].input = ["#@one", "#@two"];
@@ -485,6 +491,7 @@ let dev_token;
     }).timeout(1000 * 60 * 2);
 
     it("caching (Run Node) batch index", async () => {
+      pipe.name = "caching-batch-index";
       pipe.nodes[0].input = ["#@flowInput.one", "#@flowInput.two"];
       pipe.nodes[0].batchOperation = "cartesian";
       pipe.nodes[2].input = ["#@one", "#@two"];
@@ -504,6 +511,7 @@ let dev_token;
     }).timeout(1000 * 60 * 2);
 
     it("caching (Run Node) batch index flowInput", async () => {
+      pipe.name = "caching-batch-index-flow-input";
       pipe.nodes[0].input = ["#@flowInput.one", "#@flowInput.two"];
       pipe.nodes[0].batchOperation = "cartesian";
       pipe.nodes[2].input = ["#@one", "#@two"];
@@ -523,6 +531,7 @@ let dev_token;
     }).timeout(1000 * 60 * 2);
 
     it("caching (Run Node) flowInput batch cartesian", async () => {
+      pipe.name = "caching-f-i-batch-cartesian";
       pipe.nodes[0].input = ["#@flowInput.one", "#@flowInput.two"];
       pipe.nodes[0].batchOperation = "cartesian";
       pipe.nodes[2].batchOperation = "cartesian";
@@ -540,6 +549,7 @@ let dev_token;
     }).timeout(1000 * 60 * 2);
 
     it("caching (Run Node) batch + fix indexed", async () => {
+      pipe.name = "caching-batch-fix-indexed";
       pipe.nodes[0].input = ["#[0...9]"];
       pipe.nodes[1].input = ["#[10...15]"];
       pipe.nodes[2].input = ["99", "#@one", "#@two"];
@@ -556,6 +566,7 @@ let dev_token;
     }).timeout(1000 * 60 * 2);
 
     it("caching (Run Node) batch + any", async () => {
+      pipe.name = "caching-batch-any";
       pipe.nodes[0].input = ["#@flowInput.one", "#@flowInput.two"];
       pipe.nodes[0].batchOperation = "cartesian";
       pipe.nodes[2].input = ["*@one", "#@two"];
@@ -574,6 +585,7 @@ let dev_token;
     }).timeout(1000 * 60 * 2);
 
     it("caching (Run Node) on cached pipeline", async () => {
+      pipe.name = "caching-on-cached-pipeline";
       pipe.nodes[0].input = ["#@flowInput.one", "#@flowInput.two"];
       pipe.nodes[0].batchOperation = "cartesian";
       pipe.nodes[1].input = ["#@one"];
