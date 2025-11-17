@@ -22,7 +22,12 @@ describe('graphql tests', () => {
     before(async function () {
         this.timeout(1000 * 60 * 15);
         guest_token = await loginWithRetry(config.keycloakGuestUser, config.keycloakGuestPass);
-        nopermissions_token = await loginWithRetry('nopermissions', '1234');
+        if (guest_token) {
+            nopermissions_token = await loginWithRetry('nopermissions', '1234');
+        }
+        else {
+            keycloakIsDisabled = true;
+        }
     });
 
     beforeEach(function () {
