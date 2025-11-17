@@ -90,43 +90,55 @@ const checkInRangeWithRetries = async (computeFn, funcArguments = [], min, max, 
  * @param {string} password - The password for login (default dev from config).
  * @param {number} attempts - Number of attempts (default 3)
  * @param {number} delayMs - Delay between retries in ms (default 10000)
- * @returns {Promise<string>} - Resolves with access token
+ * @returns {Promise<string|undefined>}
  */
 async function loginWithRetry(username = config.keycloakDevUser, password = config.keycloakDevPass, attempts = 3, delayMs = 10000) {
-    let lastError;
-    if (username === undefined || password === undefined) {
+    if (!username || !password) {
         throw new Error('Username or password is undefined');
     }
 
-    for (let attempt = 0; attempt < attempts; attempt++) {
+    let lastError;
+
+    for (let attempt = 1; attempt <= attempts; attempt++) {
         try {
             const response = await chai.request(config.apiServerUrl)
                 .post('/auth/login')
-                .send({
-                    username: username,
-                    password: password
-                });
+                .send({ username, password });
 
-            if (response.status !== 200) {
-                throw new Error(`Login failed with status ${response.status}`);
+            const msg = response.body?.error?.message;
+
+            if (response.status === 200) {
+                console.log('Login success');
+                return response.body.data.access_token;
             }
 
-            console.log('Dev login success');
-            return response.body.data.access_token;
+            if (msg === 'Request failed with status code 401') {
+                throw new Error(`Wrong credentials for ${username}!`);
+            }
 
+            if (msg === 'Request failed with status code 404') {
+                console.log('Keycloak is disabled.');
+                return undefined;
+            }
+
+            lastError = new Error(msg || 'Unknown login error');
         } catch (err) {
             lastError = err;
-            console.warn(`Login attempt ${attempt + 1} failed: ${err.message}`);
-            if (attempt < attempts) {
-                console.log(`Retrying in ${delayMs / 1000}s...`);
-                await new Promise(res => setTimeout(res, delayMs));
+
+            if (err.message.includes('Wrong credentials')) {
+                throw err; // no retry
             }
+        }
+
+        if (attempt < attempts) {
+            console.warn(`Attempt ${attempt} failed: ${lastError.message}`);
+            console.log(`Retrying in ${delayMs / 1000}s...`);
+            await new Promise(res => setTimeout(res, delayMs));
         }
     }
 
-    return undefined;
+    throw lastError;
 }
-
 
 module.exports = {
     write_log,
