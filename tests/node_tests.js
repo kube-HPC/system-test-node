@@ -648,7 +648,7 @@ describe("Node Tests git 660", () => {
       await deletePipeline(d, dev_token);
       await storePipeline(d, dev_token,  pipeList);
       const jobId = await runStored(d, dev_token);
-      await delay(15000);
+      await delay(30000);
       const jobs = await filterjobsByName("green-alg");
       console.log(jobs);
 
@@ -656,7 +656,13 @@ describe("Node Tests git 660", () => {
         return deleteJob(e.metadata.name);
       });
       await Promise.all(del);
-      const pods = await filterPodsByName("green-alg");
+      let pods = [];
+      let times = 0;
+      while (pods.length === 0 && times < 10) {
+          pods = await filterPodsByName("green-alg") || [];
+          times++;
+          await delay(1000);
+      }
 
       const delpod = pods.map((e) => {
         return deletePod(e.metadata.name);
