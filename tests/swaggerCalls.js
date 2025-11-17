@@ -8,7 +8,8 @@ const { pipelineStatuses } = require('@hkube/consts');
 const fs = require('fs');
 
 const {
-    write_log
+    write_log,
+    loginWithRetry
 } = require('../utils/misc_utils');
 
 const delay = require('delay');
@@ -49,26 +50,13 @@ chai.use(chaiHttp);
 chai.use(assertArrays);
 
 describe('all swagger calls test ', () => {
+    let dev_token;
+
     before(async function () {
         this.timeout(1000 * 60 * 15);
-        let testUserBody = {
-            username: config.keycloakDevUser,
-            password: config.keycloakDevPass
-        }
-        const response = await chai.request(config.apiServerUrl)
-            .post('/auth/login')
-            .send(testUserBody)
-
-        if (response.status === 200) {
-            console.log('dev login success');
-            dev_token = response.body.data.access_token;
-        }
-        else {
-            console.log('dev login failed - no keycloak/bad credentials');
-        }
+        dev_token = await loginWithRetry();
     });
-    let dev_token;
-    let guest_token;
+
     let algList = [];
     let pipeList = [];
 
@@ -1041,23 +1029,11 @@ describe('all swagger calls test ', () => {
     });
 
     describe('No correct role', () => {
+        let guest_token;
+
         before(async function () {
             this.timeout(1000 * 60 * 15);
-            let testUserBody = {
-                username: config.keycloakGuestUser,
-                password: config.keycloakGuestPass
-            };
-            const response = await chai.request(config.apiServerUrl)
-                .post('/auth/login')
-                .send(testUserBody);
-
-            if (response.status === 200) {
-                console.log('guest login success');
-                guest_token = response.body.data.access_token;;
-            }
-            else {
-                console.log('guest login failed - no keycloak/bad credentials');
-            }
+            guest_token = await loginWithRetry(config.keycloakGuestUser, config.keycloakGuestPass);
         });
 
         it('should fail to DELETE /store/pipelines/{name} via REST', async () => {

@@ -3,8 +3,7 @@ const expect = chai.expect;
 const chaiHttp = require('chai-http');
 const path = require('path');
 const delay = require('delay');
-const config = require('../config/config');
-
+const { loginWithRetry } = require('../utils/misc_utils');
 
 const {
     testData1,
@@ -48,25 +47,13 @@ const {
 } = require('../utils/elasticsearch');
 
 describe('TID-161- High Availability for HKube infrastructure services', () => {
+    let dev_token;
+
     before(async function () {
         this.timeout(1000 * 60 * 15);
-        let testUserBody = {
-            username: config.keycloakDevUser,
-            password: config.keycloakDevPass
-        }
-        const response = await chai.request(config.apiServerUrl)
-            .post('/auth/login')
-            .send(testUserBody)
-
-        if (response.status === 200) {
-            console.log('dev login success');
-            dev_token = response.body.data.access_token;
-        }
-        else {
-            console.log('dev login failed - no keycloak/bad credentials');
-        }
+        dev_token = await loginWithRetry();
     });
-    let dev_token;
+    
     let pipeList = [];
 
     after(async function () {

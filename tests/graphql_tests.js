@@ -10,6 +10,8 @@ const {
     getAllAlgorithms
 } = require('../utils/socketGet');
 
+const { loginWithRetry } = require('../utils/misc_utils');
+
 chai.use(chaiHttp);
 
 describe('graphql tests', () => {
@@ -19,36 +21,8 @@ describe('graphql tests', () => {
 
     before(async function () {
         this.timeout(1000 * 60 * 15);
-        // guest user login
-
-        const userCredentials = [
-            { name: 'guest', username: config.keycloakGuestUser, password: config.keycloakGuestPass },
-            { name: 'nopermissions', username: 'nopermissions', password: '1234' }
-        ];
-
-        const tokens = await Promise.all(userCredentials.map(async (userBody, index) => {
-            names = ['guest', 'nopermissions'];
-            const response = await chai.request(config.apiServerUrl)
-                .post('/auth/login')
-                .send(userBody);
-
-            if (response.status === 200) {
-                console.log(`${names[index]} login success`);
-                return response.body.data.access_token;
-            }
-            else if (response.body.error.message === 'Request failed with status code 404') {
-                keycloakIsDisabled = true;
-                console.log('Keycloak is disabled.');
-            }
-            else if (response.body.error.message === 'Request failed with status code 401') {
-                throw Error(`Wrong credentials for ${names[index]}!`);
-            }
-            console.log(`${names[index]} login failed - no keycloak/bad credentials`);
-            return undefined;
-        }));
-
-        guest_token = tokens[0];
-        nopermissions_token = tokens[1];
+        guest_token = await loginWithRetry(config.keycloakGuestUser, config.keycloakGuestPass);
+        nopermissions_token = await loginWithRetry('nopermissions', '1234');
     });
 
     beforeEach(function () {

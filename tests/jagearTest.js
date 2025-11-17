@@ -26,26 +26,16 @@ const {
     testData2
 } = require(path.join(process.cwd(), 'config/index')).jagearTest;
 
+const { loginWithRetry } = require('../utils/misc_utils');
+
 describe('jagear', () => {
+    let dev_token;
+
     before(async function () {
         this.timeout(1000 * 60 * 15);
-        let testUserBody ={
-            username: config.keycloakDevUser,
-            password: config.keycloakDevPass
-        }
-        const response = await chai.request(config.apiServerUrl)
-        .post('/auth/login')
-        .send(testUserBody)
-        
-        if (response.status === 200) {
-            console.log('dev login success');
-            dev_token = response.body.data.access_token;
-        }
-        else {
-            console.log('dev login failed - no keycloak/bad credentials');
-        }
+        dev_token = await loginWithRetry();
     });
-    let dev_token;
+
     let alg = {
         name: "versatile",
         cpu: 1,
