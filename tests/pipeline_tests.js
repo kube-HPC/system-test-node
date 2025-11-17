@@ -143,19 +143,25 @@ describe("pipeline Tests 673", () => {
   const createAlg = async (algName, token = {}) => {
     await deleteAlgorithm(algName, token, true);
     await storeAlgorithm(algName, token);
-    algList.push(algName);
+    if (!algList.includes(algName)) {
+        algList.push(algName);
+    }
   }
 
   const applyAlg = async (alg, token = {}) => {
     await deleteAlgorithm(alg.name, token, true);
     await storeAlgorithmApply(alg, token);
-    algList.push(alg.name);
+    if (!algList.includes(alg.name)) {
+        algList.push(alg.name);
+    }
   }
 
   const createDebugAlg = async (algName, token = {}) => {
     await deleteAlgorithm(algName, token, true);
     await StoreDebugAlgorithm(algName, token);
-    algList.push(algName);
+    if (!algList.includes(algName)) {
+        algList.push(algName);
+    }
   }
 
   beforeEach(function () {

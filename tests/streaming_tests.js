@@ -91,7 +91,9 @@ describe("streaming pipeline test", () => {
             alg.cpu = cpu - 0.001;
         }
         await storeAlgorithms(alg, dev_token);
-        algList.push(alg.name);
+        if (algList.includes(alg.name) === false) {
+            algList.push(alg.name);
+        }
     }
 
     beforeEach(function () {
