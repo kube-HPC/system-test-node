@@ -790,7 +790,7 @@ describe('Algorithm Tests', () => {
             expect(algVersion.body.length).to.be.equal(1);
         }).timeout(1000 * 60 * 5);
 
-        it('check save current version algorithem after update and no delete versions after delete algorithm', async () => {
+        it('check save current version algorithm after update and no delete versions after delete algorithm', async () => {
             await applyAlg(algorithmV1, dev_token);
 
             const resAlgorithmV1 = await runAlgorithm(
@@ -1437,6 +1437,51 @@ describe('Algorithm Tests', () => {
             expect(response.statusCode).to.be.equal(StatusCodes.OK);
             expect(response.body.message.length).to.be.greaterThan(2);
             await deleteAlgorithmJobs(stayUpSkeleton.name, dev_token);
+        }).timeout(1000 * 60 * 5);
+    });
+
+    describe('applyCpuLimits feature tests', () => {
+        const algorithmImage = 'hkube/algorithm-example-python'; // output is first element of the array which given as input.
+
+        it('should apply limits when applyCpuLimits is true', async () => {
+            const algName = `applycpulimits-true-${pipelineRandomName(4).toLowerCase()}`;
+            const alg = algJson(algName, algorithmImage);
+            alg.applyCpuLimits = true;
+
+            await applyAlg(alg, dev_token);
+            await runAlgGetResult(alg.name, [6], dev_token);
+            const expectedPod = await filterPodsByName(alg.name);
+            const containerSpec = await getPodSpecByContainer(expectedPod[0].metadata.name, 'algorunner');
+
+            expect(containerSpec.resources.limits).to.be.an('object');
+            expect(containerSpec.resources.limits).to.have.property('cpu');
+        }).timeout(1000 * 60 * 5);
+
+        it('should apply limits when applyCpuLimits is not defined', async () => {
+            const algName = `applycpulimits-undefined-${pipelineRandomName(4).toLowerCase()}`;
+            const alg = algJson(algName, algorithmImage);
+
+            await applyAlg(alg, dev_token);
+            await runAlgGetResult(alg.name, [6], dev_token);
+            const expectedPod = await filterPodsByName(alg.name);
+            const containerSpec = await getPodSpecByContainer(expectedPod[0].metadata.name, 'algorunner');
+
+            expect(containerSpec.resources.limits).to.be.an('object');
+            expect(containerSpec.resources.limits).to.have.property('cpu');
+        }).timeout(1000 * 60 * 5);
+
+        it('should not apply limits when applyCpuLimits is false', async () => {
+            const algName = `applycpulimits-undefined-${pipelineRandomName(4).toLowerCase()}`;
+            const alg = algJson(algName, algorithmImage);
+            alg.applyCpuLimits = false;
+
+            await applyAlg(alg, dev_token);
+            await runAlgGetResult(alg.name, [6], dev_token);
+            const expectedPod = await filterPodsByName(alg.name);
+            const containerSpec = await getPodSpecByContainer(expectedPod[0].metadata.name, 'algorunner');
+
+            expect(containerSpec.resources.limits).to.be.an('object');
+            expect(containerSpec.resources.limits).to.not.have.property('cpu');
         }).timeout(1000 * 60 * 5);
     });
 });
