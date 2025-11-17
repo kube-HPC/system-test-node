@@ -80,11 +80,11 @@ chai.use(chaiHttp);
 const algJson = (algName, imageName, algMinHotWorkers = 0, algCPU = 0.001, algGPU = 0, algMEMORY = "32Mi") => {
     return {
         name: algName.toLowerCase(),
+        algorithmImage: imageName,
+        minHotWorkers: algMinHotWorkers,
         cpu: algCPU,
         gpu: algGPU,
         mem: algMEMORY,
-        minHotWorkers: algMinHotWorkers,
-        algorithmImage: imageName,
         type: "Image",
         options: {
             debug: false,
@@ -92,7 +92,7 @@ const algJson = (algName, imageName, algMinHotWorkers = 0, algCPU = 0.001, algGP
         },
         workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
     }
-}
+};
 
 const { waitForWorkers, getJobsByNameAndVersion, getJobById, getAllAlgorithms } = require('../utils/socketGet')
 describe('Algorithm Tests', () => {
@@ -252,6 +252,55 @@ describe('Algorithm Tests', () => {
             }
             expect(algo.unscheduledReason).to.be.a('string');
         }).timeout(1000 * 60 * 5);
+
+        const resources = { 
+            limits: { cpu: 8, memory: '512Mi' },
+            requests: { cpu: 4, memory: '256Mi' }
+        };
+        const sideCars = [{
+            container: { name: 'mycar', image: 'redis', resources }
+        }];
+        const baseDescription = "should build warning correctly for unscheduled algorithm ";
+        const cases = [
+            { description: "" },
+            { description: "with custom resources ", workerCustomResources: resources },
+            { description: "with sidecars ", sideCars }, 
+            { description: "with custom resources and sidecars ", workerCustomResources: resources, sideCars }
+        ];
+        const totalCpuToRequest = 12;
+        const maxAllowedCPU = 8
+        const workerDefaultCpu = 0.1;
+
+        cases.forEach(({ description, ...additionalProps }, index) => {
+            it(baseDescription + description, async () => {
+                const { workerCustomResources, sideCars } = additionalProps;
+                const workerCPU = workerCustomResources ? workerCustomResources.requests.cpu : workerDefaultCpu;
+                const sideCarsCPU = sideCars ? sideCars.reduce((sum, sc) => sum + (sc.container.resources ? sc.container.resources.requests.cpu : 0), 0) : 0;
+                const algCPU = Math.min(maxAllowedCPU, totalCpuToRequest - workerCPU - sideCarsCPU);
+                expect(algCPU).to.be.greaterThan(0, "Test case setup error: totalCpuToRequest is less than or equal to the sum of other components' CPU requests.");
+                const name = `unscheduled-resources-${pipelineRandomName(4).toLowerCase()}-${index}`;
+                const algorithm = algJson(name, algorithmImage, 0, algCPU, undefined, undefined);
+                algorithm.workerCustomResources = workerCustomResources;
+                algorithm.sideCars = sideCars;
+                const actualRequestedCPU = algCPU + workerCPU + sideCarsCPU;
+
+                await applyAlg(algorithm, dev_token);
+                const res = await runAlgorithm({ name, input: [] }, dev_token);
+                const { jobId } = res.body;
+                
+                await intervalDelay("Waiting for warning to create", 60 * 1000, 5000);
+                const { job } = await getJobById(dev_token, jobId);
+                const allAlgorithms = await getAllAlgorithms(dev_token);
+                const testAlgo = allAlgorithms.find(a => a.name === algorithm.name);
+                const unscheduledReason = `Maximum capacity exceeded cpu (3)`;
+                const errorMessage = `Maximum capacity exceeded cpu (3)\nYour total request of cpu = ${actualRequestedCPU} is over max capacity of 8.\nCheck algorithm, workerCustomResources and sideCars resource requests.`;
+
+                expect(testAlgo).to.not.be.undefined;
+                expect(testAlgo.unscheduledReason).to.equal(unscheduledReason);
+                expect(job.graph.nodes[0].status).to.equal('failedScheduling');
+                expect(job.graph.nodes[0].error).to.equal(errorMessage);
+            }).timeout(1000 * 60 * 5);
+        });
 
         describe('algorithm with volumes tests', () => {
             const volumeTypes = {
