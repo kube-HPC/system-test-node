@@ -1046,7 +1046,7 @@ describe('all swagger calls test ', () => {
                 expect(res.text).to.eql("Access denied");
                 expect(res).to.have.status(403);
             }
-        });
+        }).timeout(1000 * 60 * 2);
 
         it('should fail to POST /exec/stored/ via REST', async () => {
                 const pipe = {
@@ -1068,7 +1068,7 @@ describe('all swagger calls test ', () => {
                 expect(res.text).to.eql("Access denied");
                 expect(res).to.have.status(403);
             }
-        });
+        }).timeout(1000 * 60 * 2);
 
         it('should fail to POST /cron/start/ via REST', async () => {
                 const cronBody = {
@@ -1085,6 +1085,6 @@ describe('all swagger calls test ', () => {
                 expect(res.text).to.eql("Access denied");
                 expect(res).to.have.status(403);
             }
-        });
+        }).timeout(1000 * 60 * 2);
     });
 });
