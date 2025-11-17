@@ -13,6 +13,7 @@ const {
   runAlgorithm,
   deleteAlgorithm,
   StoreDebugAlgorithm,
+  storeAlgorithm,
   storeAlgorithmApply
 } = require("../utils/algorithmUtils");
 
@@ -127,6 +128,14 @@ describe("pipeline Tests 673", () => {
 
   const algList = [];
   const pipeList = [];
+
+  const createAlg = async (algName, token = {}) => {
+    await deleteAlgorithm(algName, token, true);
+    await storeAlgorithm(algName, token);
+    if (!algList.includes(algName)) {
+      algList.push(algName);
+    }
+  }
 
   const applyAlg = async (alg, token = {}) => {
     await deleteAlgorithm(alg.name, token, true);
