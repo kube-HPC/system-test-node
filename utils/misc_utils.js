@@ -117,7 +117,7 @@ async function loginWithRetry(username = config.keycloakDevUser, password = conf
         } catch (err) {
             lastError = err;
             console.warn(`Login attempt ${attempt + 1} failed: ${err.message}`);
-            if (attempt < retries) {
+            if (attempt < attempts) {
                 console.log(`Retrying in ${delayMs / 1000}s...`);
                 await new Promise(res => setTimeout(res, delayMs));
             }
