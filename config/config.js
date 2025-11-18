@@ -18,7 +18,9 @@ const config = {
     keycloakDevUser: process.env.KEYCLOAK_DEV_USER,
     keycloakDevPass: process.env.KEYCLOAK_DEV_PASS,
     keycloakGuestUser: process.env.KEYCLOAK_GUEST_USER,
-    keycloakGuestPass: process.env.KEYCLOAK_GUEST_PASS
+    keycloakGuestPass: process.env.KEYCLOAK_GUEST_PASS,
+    loginAttempts: process.env.LOGIN_ATTEMPTS || 6,
+    loginDelayMs: process.env.LOGIN_DELAY_MS || 15000
 }
 
 config.etcd = {
