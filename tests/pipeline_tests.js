@@ -7,7 +7,7 @@ var diff = require("deep-diff").diff;
 const { executeActions } = require('@hkube/consts');
 const config = require(path.join(process.cwd(), 'config/config'));
 
-const { loginWithRetry } = require("../utils/misc_utils");
+const { loginWithRetry, intervalDelay } = require("../utils/misc_utils");
 
 const {
   runAlgorithm,
@@ -712,9 +712,10 @@ describe("pipeline Tests 673", () => {
     it("Sub-pipeline does not have flowInput", async () => {
       // testData2 pipeline Simple2 with flowInput
       // testData4 = versatile-pipe
+      const startTime = Date.now();
       const simple2TestData = testData2;
       const versatileTestData = testData4;
-      const logBefore = await getWebSocketlogs(dev_token);
+      const logBefore = (await getWebSocketlogs(dev_token)).filter((obj) => obj.timestamp >= startTime);
       const before = logBefore
         .filter((obj) => typeof obj.message == "string")
         .filter((obj) =>
@@ -747,9 +748,9 @@ describe("pipeline Tests 673", () => {
       await deletePipeline(e, dev_token);
       await storePipeline(e, dev_token, pipeList);
       const res = await runStored(pipe, dev_token);
-      await delay(1000 * 20);
+      await intervalDelay("Waiting for sub-pipeline error log", 100000, 10000);
       await getDriverIdByJobId(dev_token, res.body.jobId);
-      const log = await getWebSocketlogs(dev_token);
+      const log = (await getWebSocketlogs(dev_token)).filter((obj) => obj.timestamp >= startTime);
       const after = log
         .filter((obj) => typeof obj.message == "string")
         .filter((obj) =>
