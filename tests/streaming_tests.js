@@ -114,7 +114,7 @@ describe("streaming pipeline test", () => {
     });
 
     describe("simple pipeline tests with constant ratios", () => {
-        it.only("should satisfy the request rate with the given rate, with enough nodes", async () => {
+        it("should satisfy the request rate with the given rate, with enough nodes", async () => {
             await createAlg(statefull);
             await createAlg(stateless);
 
