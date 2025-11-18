@@ -584,7 +584,7 @@ describe('Algorithm Tests', () => {
             expect(pods[0].metadata.annotations["annotations-by"]).to.be.eqls("test");
         }).timeout(1000 * 60 * 10);
 
-        it.only('update algorithm nodeSelector', async () => {
+        it('update algorithm nodeSelector', async () => {
             const nodes = await getNodes();
             expect(nodes.length).to.be.above(1, "Received 1 or less nodes.");
             //create and store an algorithm
