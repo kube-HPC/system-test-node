@@ -93,7 +93,7 @@ const checkInRangeWithRetries = async (computeFn, funcArguments = [], min, max, 
  * @param {number} delayMs - Delay between retries in ms (default 10000)
  * @returns {Promise<string|undefined>}
  */
-async function loginWithRetry(username = config.keycloakDevUser, password = config.keycloakDevPass, attempts = parseInt(process.env.LOGIN_RETRIES || 6, 10), delayMs = parseInt(process.env.LOGIN_RETRY_DELAY_MS || 5000, 10)) {
+async function loginWithRetry(username = config.keycloakDevUser, password = config.keycloakDevPass, attempts = 3, delayMs = 10000) {
     if (!username || !password) {
         throw new Error('Username or password is undefined');
     }
