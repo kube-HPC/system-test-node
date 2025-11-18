@@ -10,7 +10,7 @@ const config = {
     DsServerUrl: process.env.API_URL || `${baseUrl}/hkube/datasources-service/api/v1/datasource`,
     elasticsearchUrl: process.env.ELASTICSEARCH_URL || `${baseUrl}/system/elasticsearch/`,
     jagearApiUrl: process.env.API_URL || `${httpUrl}:30086`,
-    reject_selfSigned: false,
+    reject_selfSigned: true,
     baseUrl,
     webhookUrl,
     githubToken,
