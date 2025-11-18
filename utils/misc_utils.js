@@ -1,5 +1,6 @@
 const chai = require('chai');
 const delay = require('delay');
+const net = require('net');
 const logger = require('../utils/logger')
 const expect = chai.expect;
 const config = require('../config/config');
@@ -101,6 +102,27 @@ async function loginWithRetry(username = config.keycloakDevUser, password = conf
 
     for (let attempt = 1; attempt <= attempts; attempt++) {
         try {
+            // quick TCP check to fail fast on network issues (dns, port closed)
+            try {
+                const url = new URL(config.apiServerUrl);
+                const host = url.hostname;
+                const port = url.port || (url.protocol === 'https:' ? 443 : 80);
+                const tcpOk = await new Promise((resolve) => {
+                    const socket = new net.Socket();
+                    let done = false;
+                    socket.setTimeout(2000);
+                    socket.once('connect', () => { done = true; socket.destroy(); resolve(true); });
+                    socket.once('timeout', () => { if (!done) { done = true; socket.destroy(); resolve(false); } });
+                    socket.once('error', () => { if (!done) { done = true; socket.destroy(); resolve(false); } });
+                    socket.connect(port, host);
+                });
+                if (!tcpOk) {
+                    throw new Error(`TCP connect to ${host}:${port} failed`);
+                }
+            } catch (tcpErr) {
+                // treat tcp failure as a network error to trigger retry
+                throw tcpErr;
+            }
             const response = await chai.request(config.apiServerUrl)
                 .post('/auth/login')
                 .send({ username, password });
