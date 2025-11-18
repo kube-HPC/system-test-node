@@ -153,9 +153,9 @@ async function loginWithRetry(username = config.keycloakDevUser, password = conf
             }
 
             // Print more useful info for network errors (like ETIMEDOUT/ECONNREFUSED)
-            console.warn(`Attempt ${attempt} failed: ${err.message}`);
+            console.log(`Attempt ${attempt} failed: ${err.message}`);
             if (err.stack) {
-                console.debug(err.stack);
+                console.log(err.stack);
             }
 
             if (attempt < attempts) {
