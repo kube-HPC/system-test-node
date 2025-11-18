@@ -119,6 +119,7 @@ async function loginWithRetry(username = config.keycloakDevUser, password = conf
                 if (!tcpOk) {
                     throw new Error(`TCP connect to ${host}:${port} failed`);
                 }
+                console.log(`TCP connect to ${host}:${port} succeeded`);
             } catch (tcpErr) {
                 // treat tcp failure as a network error to trigger retry
                 throw tcpErr;
@@ -153,7 +154,7 @@ async function loginWithRetry(username = config.keycloakDevUser, password = conf
             }
 
             // Print more useful info for network errors (like ETIMEDOUT/ECONNREFUSED)
-            console.log(`Attempt ${attempt} failed: ${err.message}`);
+            console.log(`\nAttempt ${attempt} failed: ${err.message || err}\n`);
             if (err.stack) {
                 console.log(err.stack);
             }
