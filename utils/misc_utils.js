@@ -92,7 +92,7 @@ const checkInRangeWithRetries = async (computeFn, funcArguments = [], min, max, 
  * @param {number} delayMs - Delay between retries in ms (default 10000)
  * @returns {Promise<string|undefined>}
  */
-async function loginWithRetry(username = config.keycloakDevUser, password = config.keycloakDevPass, attempts = 3, delayMs = 10000) {
+async function loginWithRetry(username = config.keycloakDevUser, password = config.keycloakDevPass, attempts = parseInt(process.env.LOGIN_RETRIES || 6, 10), delayMs = parseInt(process.env.LOGIN_RETRY_DELAY_MS || 5000, 10)) {
     if (!username || !password) {
         throw new Error('Username or password is undefined');
     }
@@ -125,15 +125,21 @@ async function loginWithRetry(username = config.keycloakDevUser, password = conf
         } catch (err) {
             lastError = err;
 
-            if (err.message.includes('Wrong credentials')) {
+            // If it's a credential error, don't retry
+            if (err.message && err.message.includes('Wrong credentials')) {
                 throw err; // no retry
             }
-        }
 
-        if (attempt < attempts) {
-            console.warn(`Attempt ${attempt} failed: ${lastError.message}`);
-            console.log(`Retrying in ${delayMs / 1000}s...`);
-            await new Promise(res => setTimeout(res, delayMs));
+            // Print more useful info for network errors (like ETIMEDOUT/ECONNREFUSED)
+            console.warn(`Attempt ${attempt} failed: ${err.message}`);
+            if (err.stack) {
+                console.debug(err.stack);
+            }
+
+            if (attempt < attempts) {
+                console.log(`Retrying in ${delayMs / 1000}s... (attempt ${attempt + 1}/${attempts})`);
+                await new Promise(res => setTimeout(res, delayMs));
+            }
         }
     }
 
