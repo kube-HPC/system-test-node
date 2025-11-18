@@ -53,7 +53,7 @@ const storeAlgorithm = async (algName, token = {}) => {
     write_log(res.status + " " + algName);
     if (res.status === StatusCodes.NOT_FOUND) {
         const { alg } = require(path.join(process.cwd(), `additionalFiles/defaults/algorithms/${algName}`));
-        const res1 = storeAlgorithmApply(alg, token);
+        const res1 = await storeAlgorithmApply(alg, token);
         logResult(res1, "algorithmUtils storeAlgorithm");
         await delay(1000 * 3);
         return res1;
