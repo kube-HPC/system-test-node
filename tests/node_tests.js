@@ -600,7 +600,7 @@ describe("Node Tests git 660", () => {
   });
 
   describe("Fail scheduling", () => {
-    const algName = pipelineRandomName(8).toLowerCase();
+    const algName = pipelineRandomName(8);
     const alg8cpu = {
       name: `${algName}`,
       algorithmImage: "hkube/algorunner",

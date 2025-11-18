@@ -103,7 +103,7 @@ describe('Algorithm build test', () => {
 
         it(`python 3.7`, async () => {
             const entry = 'main37';
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
             const pythonVersion = "python:3.7.16";
 
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algList });
@@ -114,7 +114,7 @@ describe('Algorithm build test', () => {
         
         it(`python 3.7-slim`, async () => {
             const entry = 'main37slim';
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
             const pythonVersion = "python:3.7.16-slim";
 
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algList });
@@ -125,7 +125,7 @@ describe('Algorithm build test', () => {
 
         it(`python 3.8`, async () => {
             const entry = 'main37';
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
             const pythonVersion = "python:3.8.16";
 
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algList });
@@ -136,7 +136,7 @@ describe('Algorithm build test', () => {
 
         it(`python 3.9`, async () => {
             const entry = 'main37';
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
             const pythonVersion = "python:3.9.16";
 
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algList });
@@ -147,7 +147,7 @@ describe('Algorithm build test', () => {
 
         it(`python 3.10`, async () => {
             const entry = 'main37';
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
             const pythonVersion = "python:3.10-slim";
 
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algList });
@@ -158,7 +158,7 @@ describe('Algorithm build test', () => {
 
         it('stop rerun build', async () => {
             const entry = 'main37';
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
             const pythonVersion = "python:3.7";
 
             const buildId = await buildAlgorithm({ code: code1, algName: algName, entry: entry, baseVersion: pythonVersion, algorithmArray: algList });
@@ -179,7 +179,7 @@ describe('Algorithm build test', () => {
         xit(`python with requirements - tensore`, async () => {
             const code = path.join(process.cwd(), 'additionalFiles/tensor.tar.gz');
             const entry = 'main';
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
             const data = {
                 name: algName,
                 env: 'python',
@@ -204,7 +204,7 @@ describe('Algorithm build test', () => {
         it(`nodejs with requirements - lodash`, async () => {
             const code = path.join(process.cwd(), 'additionalFiles/sortAlg.tar.gz');
             const entry = 'algorithm.js';
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
 
             const data = {
                 name: algName,
@@ -244,7 +244,7 @@ describe('Algorithm build test', () => {
             // the algorithm use numpy and read the files that the script created.  
             const code = path.join(process.cwd(), 'additionalFiles/depsInstallCmd/depsInstallCmd.zip');
             const entry = "main";
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
 
             const data = {
                 name: algName,
@@ -273,7 +273,7 @@ describe('Algorithm build test', () => {
     describe('git hub and git lab algorithm builds (git 506)', () => {
         it("build github master algorithm", async () => {
             const entry = 'main';
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
             const language = 'python';
             const gitUrl = "https://github.com/tamir321/hkube.git";
             const branch = "master";
@@ -287,7 +287,7 @@ describe('Algorithm build test', () => {
 
         it.skip("build github master algorithm java", async () => { // Java not supported anymore.
             const entry = 'Algorithm';
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
             const language = 'java';
             const gitUrl = "https://github.com/tamir321/hkubeJava.git";
             const branch = "master";
@@ -301,7 +301,7 @@ describe('Algorithm build test', () => {
 
         it("build github branch algorithm", async () => {
             const entry = 'main';
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
 
             const gitUrl = "https://github.com/tamir321/hkube.git";
             const branch = "branch2";
@@ -315,7 +315,7 @@ describe('Algorithm build test', () => {
 
         it("build gitlab master algorithm", async () => {
             const entry = 'main';
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
             const gitUrl = "https://gitlab.com/tamir321/hkube.git";
             const branch = "master";
             const gitKind = "gitlab";
@@ -328,7 +328,7 @@ describe('Algorithm build test', () => {
         // p8
         it("build gitlat branch algorithm", async () => {
             const entry = 'main.py';
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
 
             const gitUrl = "https://gitlab.com/tamir321/hkube.git";
             const branch = "branch1";
@@ -363,7 +363,7 @@ describe('Algorithm build test', () => {
             }
 
             const entry = 'main';
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
 
             const gitUrl = "https://github.com/tamir321/hkube.git";
             const branch = "master";
@@ -401,7 +401,7 @@ describe('Algorithm build test', () => {
 
         it("test github commit by tag", async () => {
             const entry = 'main';
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
 
             const gitUrl = "https://github.com/tamir321/hkube.git";
             const branch = "master";
@@ -440,7 +440,7 @@ describe('Algorithm build test', () => {
             }
 
             const entry = 'main';
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
 
             const gitUrl = "https://gitlab.com/tamir321/hkube.git";
             const branch = "master";
@@ -474,7 +474,7 @@ describe('Algorithm build test', () => {
 
         it('gitlab repository authentication (Token)', async () => {
             const entry = 'main';
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
 
             const gitUrl = "https://gitlab.com/hkube-dev/private-system-test.git";
             const branch = "main";
@@ -493,7 +493,7 @@ describe('Algorithm build test', () => {
 
         it('github repository authentication', async () => {
             const entry = 'main';
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
 
             const gitUrl = "https://github.com/hkube-dev/private-system-test.git";
             const branch = "main";
@@ -512,7 +512,7 @@ describe('Algorithm build test', () => {
 
         describe('git hub/lab versions tests', () => {
             it("changing commit trigger new build", async () => {
-                const algName = pipelineRandomName(8).toLowerCase();
+                const algName = pipelineRandomName(8);
                 const entry = 'main';
                 const gitUrl = "https://gitlab.com/tamir321/hkube.git";
                 const branch = "master";
@@ -532,7 +532,7 @@ describe('Algorithm build test', () => {
             }).timeout(1000 * 60 * 20);
 
             it("changing branch trigger new build", async () => {
-                const algName = pipelineRandomName(8).toLowerCase();
+                const algName = pipelineRandomName(8);
                 const entry = 'main';
                 const gitUrl = "https://gitlab.com/tamir321/hkube.git";
                 const branch = "master";

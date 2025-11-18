@@ -34,7 +34,7 @@ describe('Datasource  Tests', () => {
     
     describe('internal DS', () => {
         it("create internal DS", async () => {
-            const DsName = pipelineRandomName(8).toLowerCase();
+            const DsName = pipelineRandomName(8);
             const res = await createInternalDS(DsName);
             console.log(res);
             await delay(10000);
@@ -45,7 +45,7 @@ describe('Datasource  Tests', () => {
         }).timeout(1000 * 60 * 3);
 
         it("upload files ", async () => {
-            const DsName = pipelineRandomName(8).toLowerCase();
+            const DsName = pipelineRandomName(8);
             await createInternalDS(DsName);
             await UploadFilesToDs(DsName);
             const ds = await getDatasourceByName(DsName);
@@ -54,7 +54,7 @@ describe('Datasource  Tests', () => {
         }).timeout(1000 * 60 * 5);
 
         it("upload files change folder", async () => {
-            const DsName = pipelineRandomName(8).toLowerCase();
+            const DsName = pipelineRandomName(8);
             await createInternalDS(DsName);
             await UploadFilesToDs(DsName);
             //  const ds =await getDatasourceByName(DsName)       
@@ -68,7 +68,7 @@ describe('Datasource  Tests', () => {
         it("snapshots ", async () => {
             const snapName = "first files";
             const snapName2 = "last files";
-            const DsName = pipelineRandomName(8).toLowerCase();
+            const DsName = pipelineRandomName(8);
             await createInternalDS(DsName);
             await UploadFilesToDs(DsName);
             const snap = await createSnapshot(DsName, snapName, "first");

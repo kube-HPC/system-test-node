@@ -232,7 +232,7 @@ describe('Hkubectl Tests', () => {
         }).timeout(1000 * 60 * 6);
 
         xit('hkube algorithm apply', async () => {
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
             algList.push(algName);
             const filePath = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
             const runBulid = `hkubectl algorithm apply ${algName} ` +
@@ -250,7 +250,7 @@ describe('Hkubectl Tests', () => {
         }).timeout(1000 * 60 * 6);
 
         xit('hkube algorithm apply from file and delete', async () => {
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
             algList.push(algName);
             const algFile = path.join(process.cwd(), './additionalFiles/alg.yaml');
             let fileContents = fs.readFileSync(algFile, 'utf8');
@@ -276,7 +276,7 @@ describe('Hkubectl Tests', () => {
         }).timeout(1000 * 60 * 10);
 
         it('hkube algorithm apply alg version', async () => {
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
             algList.push(algName);
             let trgzFile = 'version1.tar.gz';
             let runBulid = `hkubectl algorithm apply ${algName} ` +
@@ -303,7 +303,7 @@ describe('Hkubectl Tests', () => {
         }).timeout(1000 * 60 * 15);
 
         it('hkube algorithm apply alg version setCurrent', async () => {
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
             algList.push(algName);
             let trgzFile = 'version1.tar.gz';
             let runBulid = `hkubectl algorithm apply ${algName} ` +
@@ -333,7 +333,7 @@ describe('Hkubectl Tests', () => {
         }).timeout(1000 * 60 * 10);
 
         it('hkube algorithm apply nowait', async () => {
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
             algList.push(algName);
             const runBulid = `hkubectl algorithm apply ${algName} ` +
                 `--env python ` +
@@ -367,7 +367,7 @@ describe('Hkubectl Tests', () => {
         }).timeout(1000 * 60 * 6);
 
         it('pipeline store from file', async () => {
-            const pipelineName = pipelineRandomName(8).toLowerCase();
+            const pipelineName = pipelineRandomName(8);
             const pipelineFile = './pipelines/simpelraw.json';
             const pipelineTemp = './pipelines/temp.json';
             filePathList.push(pipelineTemp);
@@ -517,7 +517,7 @@ describe('Hkubectl Tests', () => {
 
         it('sync create watch changes python', async () => {
             const filePath = path.join(process.cwd(), 'additionalFiles/main.py');
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
             algList.push(algName);
             const folderPath = path.join(process.cwd(), algName);
             var fs = require('fs');
@@ -565,7 +565,7 @@ describe('Hkubectl Tests', () => {
 
         it('sync python alg with requirements', async () => {
             const folderPath = path.join(process.cwd(), 'additionalFiles/pythonAlg');
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
             algList.push(algName);
             console.log("alg-name-" + algName);
             var fs = require('fs');
@@ -600,7 +600,7 @@ describe('Hkubectl Tests', () => {
             //the folder containg hkubeignore that has one line to ignore *.txt
             const folderPath = path.join(process.cwd(), 'additionalFiles/pythonIgnoreFile');
 
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
             algList.push(algName);
             console.log("alg-name-" + algName);
             var fs = require('fs');
@@ -724,7 +724,7 @@ describe('Hkubectl Tests', () => {
         }).timeout(1000 * 60 * 10)
 
         it('sync an algorithm with a custom path using start,stop, and a devFolder', async () => {
-            const randomName = pipelineRandomName(8).toLowerCase();
+            const randomName = pipelineRandomName(8);
             const algName = "sync-dev-folder" + randomName;
             syncAlg.name = algName;
             await applyAlg(syncAlg, dev_token);
