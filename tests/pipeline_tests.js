@@ -467,7 +467,7 @@ describe("pipeline Tests 673", () => {
     }).timeout(1000 * 60 * 7);
 
     it.skip("type = Debug ", async () => {
-      const algName = pipelineRandomName(8).toLowerCase();
+      const algName = pipelineRandomName(8);
 
       await createDebugAlg(algName, dev_token);
       const alg = { name: algName, input: [1] };
@@ -757,7 +757,7 @@ describe("pipeline Tests 673", () => {
           obj.message.includes(
             "SubPipeline job error: unable to find flowInput.inp, alg subPipelineId"
           )
-        ).length;
+        ).length;    
       expect(after).to.be.greaterThan(before);
     }).timeout(1000 * 60 * 7);
 

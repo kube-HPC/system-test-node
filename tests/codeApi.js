@@ -116,7 +116,7 @@ describe('code api tests ', () => {
     });
 
     describe("python code API", () => {
-        const algName = `codeapi-python-${pipelineRandomName(4).toLowerCase()}`;
+        const algName = `codeapi-python-${pipelineRandomName(4)}`;
         const obj = {
             algName,
             code: path.join(process.cwd(), 'additionalFiles/pythonAlg/pythonApi.tar.gz'), //pythonApi.tar.gz
@@ -241,7 +241,7 @@ describe('code api tests ', () => {
     });
 
     xdescribe("Node JS code API", () => {
-        const algName = `codeapi-nodejs-${pipelineRandomName(4).toLowerCase()}`;
+        const algName = `codeapi-nodejs-${pipelineRandomName(4)}`;
         const obj = {
             algName,
             entry: 'hkubeApi',
@@ -301,7 +301,7 @@ describe('code api tests ', () => {
     });
 
     xdescribe("Java code API", () => {
-        const algName = pipelineRandomName(8).toLowerCase();
+        const algName = pipelineRandomName(8);
         const obj = {
             algName,
             entry: 'javaApi',

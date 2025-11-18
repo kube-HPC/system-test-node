@@ -1021,7 +1021,7 @@ describe('all swagger calls test ', () => {
     describe('Build algorithm', () => {
         it(`build python algorithm from tra.gz`, async () => {
             const testalg = 'pyeyemat';
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
             const code1 = path.join(process.cwd(), 'additionalFiles/eyeMat.tar.gz');
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: testalg, kc_token: dev_token, algorithmArray: algList });
             expect(buildStatusAlg.status).to.be.equal("completed");

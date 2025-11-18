@@ -224,8 +224,8 @@ describe('Algorithm Tests', () => {
         const minMem = "4Mi";
         const algorithmBaseName = 'algo-is-satisfied';
         const algorithmImage = 'hkube/algorithm-example-python'; // output is first element of the array which given as input.
-        const algorithmSatisfied = algJson(`${algorithmBaseName}-true-${pipelineRandomName(4).toLowerCase()}`, algorithmImage, 0, 0, 0, minMem);
-        const algorithmNotSatisfied = algJson(`${algorithmBaseName}-false-${pipelineRandomName(4).toLowerCase()}`, algorithmImage, 0, maxCPU, 0, minMem);
+        const algorithmSatisfied = algJson(`${algorithmBaseName}-true-${pipelineRandomName(4)}`, algorithmImage, 0, 0, 0, minMem);
+        const algorithmNotSatisfied = algJson(`${algorithmBaseName}-false-${pipelineRandomName(4)}`, algorithmImage, 0, maxCPU, 0, minMem);
 
         it('should run algorithm and verify it has no unscheduledReason', async () => {
             const algorithm = { name: algorithmSatisfied.name, input: [] };
@@ -278,7 +278,7 @@ describe('Algorithm Tests', () => {
                 const sideCarsCPU = sideCars ? sideCars.reduce((sum, sc) => sum + (sc.container.resources ? sc.container.resources.requests.cpu : 0), 0) : 0;
                 const algCPU = Math.min(maxAllowedCPU, totalCpuToRequest - workerCPU - sideCarsCPU);
                 expect(algCPU).to.be.greaterThan(0, "Test case setup error: totalCpuToRequest is less than or equal to the sum of other components' CPU requests.");
-                const name = `unscheduled-resources-${pipelineRandomName(4).toLowerCase()}-${index}`;
+                const name = `unscheduled-resources-${pipelineRandomName(4)}-${index}`;
                 const algorithm = algJson(name, algorithmImage, 0, algCPU, undefined, undefined);
                 algorithm.workerCustomResources = workerCustomResources;
                 algorithm.sideCars = sideCars;
@@ -326,7 +326,7 @@ describe('Algorithm Tests', () => {
 
             Object.entries(volumeTypes).forEach(([key, volume]) => {
                 it(`should fail creating an algorithm with a non-existing ${key} and create a warning`, async () => {
-                    const algName = `non-existing-${key}-${pipelineRandomName(4).toLowerCase()}`;
+                    const algName = `non-existing-${key}-${pipelineRandomName(4)}`;
                     const alg = algJson(algName, algorithmImage);
                     alg.volumes = [volume];
 
@@ -348,7 +348,7 @@ describe('Algorithm Tests', () => {
             });
 
             it('should fail creating an algorithm with more than one non-existing volumes and create a warning', async () => {
-                const algName = `non-existing-volumes-${pipelineRandomName(4).toLowerCase()}`;
+                const algName = `non-existing-volumes-${pipelineRandomName(4)}`;
                 const alg = algJson(algName, algorithmImage);
                 alg.volumes = Object.values(volumeTypes);
 
@@ -369,7 +369,7 @@ describe('Algorithm Tests', () => {
             }).timeout(1000 * 60 * 5);
 
             it('should successfully run an algorithm with a valid emptyDir volume and volume mount', async () => {
-                const algName = `mounts-volume-${pipelineRandomName(4).toLowerCase()}`;
+                const algName = `mounts-volume-${pipelineRandomName(4)}`;
                 const alg = algJson(algName, algorithmImage);
                 alg.volumes = [{
                     name: 'my-dir',
@@ -388,7 +388,7 @@ describe('Algorithm Tests', () => {
             }).timeout(1000 * 60 * 5);
 
             it('should successfully create a pod with a shared volume for algorunner and sidecar', async () => {
-                const algName = `mounts-shared-volume-${pipelineRandomName(4).toLowerCase()}`;
+                const algName = `mounts-shared-volume-${pipelineRandomName(4)}`;
                 const alg = algJson(algName, algorithmImage);
                 alg.volumes = [{
                     name: 'my-dir',
@@ -422,7 +422,7 @@ describe('Algorithm Tests', () => {
             }).timeout(1000 * 60 * 5);
 
             it('should fail creating a pod with an invalid volumeMounts', async () => {
-                const algName = `mounts-invalid-mount-${pipelineRandomName(4).toLowerCase()}`;
+                const algName = `mounts-invalid-mount-${pipelineRandomName(4)}`;
                 const alg = algJson(algName, algorithmImage);
                 alg.volumeMounts = [{
                     name: 'non-exist',
@@ -449,7 +449,7 @@ describe('Algorithm Tests', () => {
 
     describe('Test Algorithm Version (git 560 487 998)', () => {
         //https://app.zenhub.com/workspaces/hkube-5a1550823895aa68ea903c98/issues/kube-hpc/hkube/560
-        const algorithmName = `algorithm-version-test-${pipelineRandomName(4).toLowerCase()}`;
+        const algorithmName = `algorithm-version-test-${pipelineRandomName(4)}`;
         const algorithmImageV1 = "tamir321/algoversion:v1";
         const algorithmImageV2 = "tamir321/algoversion:v2";
 
@@ -524,7 +524,7 @@ describe('Algorithm Tests', () => {
         }).timeout(1000 * 60 * 10);
 
         it('algorithm lablels does not overwrite defaults', async () => {
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
             const algV1 = algJson(algName, algorithmImageV1);
             // const algV2 = algJson(algName,algorithmImageV2)
             // algV1.nodeSelector = {"kubernetes.io/hostname": nodes[2] }
@@ -545,7 +545,7 @@ describe('Algorithm Tests', () => {
 
         // p2
         it('algorithm labels', async () => {
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
             const algV1 = algJson(algName, algorithmImageV1);
             algV1.minHotWorkers = 1; // get a pod running
             algV1.labels = { "created-by": "test" };
@@ -565,7 +565,7 @@ describe('Algorithm Tests', () => {
         //p3
         it('algorithm annotations', async () => {
             // const nodes = await getNodes();
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
             const algV1 = algJson(algName, algorithmImageV1);
             //  const algV2 = algJson(algName,algorithmImageV2)
             //  algV1.nodeSelector = {"kubernetes.io/hostname": nodes[2] }
@@ -588,7 +588,7 @@ describe('Algorithm Tests', () => {
             const nodes = await getNodes();
             expect(nodes.length).to.be.above(1, "Received 1 or less nodes.");
             //create and store an algorithm
-            const algName = pipelineRandomName(8).toLowerCase();
+            const algName = pipelineRandomName(8);
             selectedNodeAlgName = algName;
             console.log(`Alg name is : ${algName}`);
             const algV1 = algJson(algName, algorithmImageV1, 1); // get the pod running with hot worker
@@ -638,7 +638,7 @@ describe('Algorithm Tests', () => {
         it(`change baseImage trigger new Build`, async () => {
             const code1 = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
             const entry = 'main27';
-            const algName = `python3.8-test-1-${pipelineRandomName(4).toLowerCase()}`;
+            const algName = `python3.8-test-1-${pipelineRandomName(4)}`;
             const pythonVersion = "python:3.8";
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, kc_token: dev_token, baseVersion: pythonVersion, algorithmArray: algList });
             expect(buildStatusAlg.status).to.be.equal("completed");
@@ -658,7 +658,7 @@ describe('Algorithm Tests', () => {
         it(`change env trigger new Build`, async () => {
             const code1 = path.join(process.cwd(), 'additionalFiles/python.versions.tar.gz');
             const entry = 'main27';
-            const algName = `python3.8-test-1-${pipelineRandomName(4).toLowerCase()}`;
+            const algName = `python3.8-test-1-${pipelineRandomName(4)}`;
             const pythonVersion = "python:3.8";
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: entry, kc_token: dev_token, baseVersion: pythonVersion, algorithmArray: algList });
             expect(buildStatusAlg.status).to.be.equal("completed");
@@ -1359,8 +1359,8 @@ describe('Algorithm Tests', () => {
     });
 
     describe('kubernetes algorithm tests', () => {
-        const stayupAlgName = `stayuptestalg-${pipelineRandomName(4).toLowerCase()}`;
-        const statelessAlgName = `yellow-alg-${pipelineRandomName(4).toLowerCase()}`;
+        const stayupAlgName = `stayuptestalg-${pipelineRandomName(4)}`;
+        const statelessAlgName = `yellow-alg-${pipelineRandomName(4)}`;
         statelessPipe.descriptor.nodes[0].algorithmName = stayupAlgName;
         let stayUpSkeleton = {
             name: stayupAlgName,
@@ -1374,7 +1374,7 @@ describe('Algorithm Tests', () => {
         }).timeout(1000 * 60 * 5);
 
         it('should find one pod to delete', async () => {
-            let suffix = pipelineRandomName(4).toLowerCase();
+            let suffix = pipelineRandomName(4);
             stayUpAlg.name += `-${suffix}`;
             stayUpSkeleton.name = stayUpAlg.name;
             await applyAlg(stayUpAlg, dev_token);
@@ -1412,7 +1412,7 @@ describe('Algorithm Tests', () => {
         }).timeout(1000 * 60 * 5);
 
         it('should find one job to delete', async () => {
-            let suffix = pipelineRandomName(4).toLowerCase();
+            let suffix = pipelineRandomName(4);
             stayUpAlg.name += `-${suffix}`;
             stayUpSkeleton.name = stayUpAlg.name;
             await applyAlg(stayUpAlg, dev_token);
@@ -1444,7 +1444,7 @@ describe('Algorithm Tests', () => {
         const algorithmImage = 'hkube/algorithm-example-python'; // output is first element of the array which given as input.
 
         it('should apply limits when applyCpuLimits is true', async () => {
-            const algName = `applycpulimits-true-${pipelineRandomName(4).toLowerCase()}`;
+            const algName = `applycpulimits-true-${pipelineRandomName(4)}`;
             const alg = algJson(algName, algorithmImage);
             alg.applyCpuLimits = true;
 
@@ -1458,7 +1458,7 @@ describe('Algorithm Tests', () => {
         }).timeout(1000 * 60 * 5);
 
         it('should apply limits when applyCpuLimits is not defined', async () => {
-            const algName = `applycpulimits-undefined-${pipelineRandomName(4).toLowerCase()}`;
+            const algName = `applycpulimits-undefined-${pipelineRandomName(4)}`;
             const alg = algJson(algName, algorithmImage);
 
             await applyAlg(alg, dev_token);
@@ -1471,7 +1471,7 @@ describe('Algorithm Tests', () => {
         }).timeout(1000 * 60 * 5);
 
         it('should not apply limits when applyCpuLimits is false', async () => {
-            const algName = `applycpulimits-undefined-${pipelineRandomName(4).toLowerCase()}`;
+            const algName = `applycpulimits-undefined-${pipelineRandomName(4)}`;
             const alg = algJson(algName, algorithmImage);
             alg.applyCpuLimits = false;
 
