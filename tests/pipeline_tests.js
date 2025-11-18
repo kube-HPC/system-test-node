@@ -569,16 +569,16 @@ describe("pipeline Tests 673", () => {
       expect(rr.length).to.be.equal(0);
     }).timeout(1000 * 60 * 7);
 
-    it("type = cron ", async () => {
+    it("type = cron", async () => {
       const testData = testData7;
       testData.descriptor.name = pipelineRandomName(8);
-      testData.descriptor.triggers.cron.enabled = true;
       const d = deconstructTestData(testData);
+      d.pipeline.triggers.cron.enabled = true;
       await deletePipeline(d, dev_token);
       await storePipeline(d, dev_token, pipeList);
-      await delay(1000 * 90);
+      await intervalDelay("Waiting a bit for cron", 1000 * 90, 10000);
 
-      const result = await getCronResult(d.name, 5, dev_token, "main");
+      const result = await getCronResult(d.name, 5, dev_token);
       const jobId = result.body[0].jobId;
       const pipelineData = await getExecPipeline(jobId, dev_token);
       const rr = validateDefault(testData.descriptor, pipelineData.body);

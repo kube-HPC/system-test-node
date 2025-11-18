@@ -168,7 +168,7 @@ const getParsedGraph = async (jobId, token = {}) => {
     return res;
 }
 
-const getCronResult = async (jobId, limit,token = {}, experimentName = "main") => {
+const getCronResult = async (jobId, limit, token = {}, experimentName = "main") => {
     const res = await chai.request(config.apiServerUrl)
         .get(`/cron/results/?name=${jobId}&experimentName=${experimentName}&limit=${limit}`)
         .set('Authorization', `Bearer ${token}`);
