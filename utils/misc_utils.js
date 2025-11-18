@@ -1,9 +1,27 @@
 const chai = require('chai');
-const delay = require('delay');
+const chaiHttp = require('chai-http');
+const https = require('https');
 const net = require('net');
-const logger = require('../utils/logger')
-const expect = chai.expect;
+const delay = require('delay');
+const logger = require('../utils/logger');
 const config = require('../config/config');
+
+const expect = chai.expect;
+chai.use(chaiHttp);
+
+// Create keep-alive agent for HTTPS
+const keepAliveAgent = new https.Agent({
+    keepAlive: true,
+    maxSockets: 10,
+    maxFreeSockets: 5,
+    timeout: 60000,
+    keepAliveMsecs: 30000,
+});
+
+// Create a reusable chai request instance
+const request = chai.request.agent(config.apiServerUrl);
+request.keepOpen();
+request._agent = keepAliveAgent;
 
 
 const write_log = (st, sv = 'info') => {
@@ -96,37 +114,33 @@ const checkInRangeWithRetries = async (computeFn, funcArguments = [], min, max, 
 async function loginWithRetry(username = config.keycloakDevUser, password = config.keycloakDevPass) {
     const attempts = config.loginAttempts;
     const delayMs = config.loginDelayMs;
-    if (!username || !password) {
-        throw new Error('Username or password is undefined');
-    }
+
+    if (!username || !password) throw new Error('Username or password is undefined');
 
     let lastError;
 
     for (let attempt = 1; attempt <= attempts; attempt++) {
         try {
-            // quick TCP check to fail fast on network issues (dns, port closed)
-            try {
-                const url = new URL(config.apiServerUrl);
-                const host = url.hostname;
-                const port = url.port || (url.protocol === 'https:' ? 443 : 80);
-                const tcpOk = await new Promise((resolve) => {
-                    const socket = new net.Socket();
-                    let done = false;
-                    socket.setTimeout(2000);
-                    socket.once('connect', () => { done = true; socket.destroy(); resolve(true); });
-                    socket.once('timeout', () => { if (!done) { done = true; socket.destroy(); resolve(false); } });
-                    socket.once('error', () => { if (!done) { done = true; socket.destroy(); resolve(false); } });
-                    socket.connect(port, host);
-                });
-                if (!tcpOk) {
-                    throw new Error(`TCP connect to ${host}:${port} failed`);
-                }
-                console.log(`TCP connect to ${host}:${port} succeeded`);
-            } catch (tcpErr) {
-                // treat tcp failure as a network error to trigger retry
-                throw tcpErr;
-            }
-            const response = await chai.request(config.apiServerUrl)
+            // TCP check (optional)
+            const url = new URL(config.apiServerUrl);
+            const host = url.hostname;
+            const port = url.port || (url.protocol === 'https:' ? 443 : 80);
+
+            const tcpOk = await new Promise(resolve => {
+                const socket = new net.Socket();
+                let done = false;
+                socket.setTimeout(2000);
+                socket.once('connect', () => { done = true; socket.destroy(); resolve(true); });
+                socket.once('timeout', () => { if (!done) { done = true; socket.destroy(); resolve(false); } });
+                socket.once('error', () => { if (!done) { done = true; socket.destroy(); resolve(false); } });
+                socket.connect(port, host);
+            });
+
+            if (!tcpOk) throw new Error(`TCP connect to ${host}:${port} failed`);
+            console.log(`TCP connect to ${host}:${port} succeeded`);
+
+            // Actual login call using persistent agent
+            const response = await request
                 .post('/auth/login')
                 .send({ username, password });
 
@@ -147,23 +161,16 @@ async function loginWithRetry(username = config.keycloakDevUser, password = conf
             }
 
             lastError = new Error(msg || 'Unknown login error');
+
         } catch (err) {
             lastError = err;
+            console.log(`\nAttempt ${attempt} failed: ${err.message}\n`);
 
-            // If it's a credential error, don't retry
-            if (err.message && err.message.includes('Wrong credentials')) {
-                throw err; // no retry
-            }
-
-            // Print more useful info for network errors (like ETIMEDOUT/ECONNREFUSED)
-            console.log(`\nAttempt ${attempt} failed: ${err.message || err}\n`);
-            if (err.stack) {
-                console.log(err.stack);
-            }
+            if (err.message.includes('Wrong credentials')) throw err;
 
             if (attempt < attempts) {
-                console.log(`Retrying in ${delayMs / 1000}s... (attempt ${attempt + 1}/${attempts})`);
-                await new Promise(res => setTimeout(res, delayMs));
+                console.log(`Retrying in ${delayMs / 1000}s...`);
+                await delay(delayMs);
             }
         }
     }
