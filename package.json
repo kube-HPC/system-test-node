@@ -43,7 +43,7 @@
     "graphql": "^16.6.0",
     "graphql-request": "^5.1.0",
     "graphql-tag": "^2.12.6",
-    "js-yaml": "^3.14.0",
+    "js-yaml": "^3.14.2",
     "kubernetes-client": "^8.3.7",
     "mocha": "^5.2.0",
     "nyc": "^14.1.1",
