@@ -103,4 +103,4 @@ minio:
   enable: true
 
 keycloak:
-  enable: false
+  enable: true
