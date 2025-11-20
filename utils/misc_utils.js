@@ -113,6 +113,13 @@ const loginWithRetry = async (username = config.keycloakDevUser, password = conf
                 let done = false;
                 const onDone = (ok, info) => {
                     if (done) return;
+                    // capture local address if available
+                    try {
+                        const local = socket.address();
+                        if (local && typeof local === 'object') info.local = { address: local.address, port: local.port };
+                    } catch (e) {
+                        // ignore address capture errors
+                    }
                     done = true;
                     try { socket.destroy(); } catch (e) {}
                     resolve({ ok, info });
@@ -131,13 +138,15 @@ const loginWithRetry = async (username = config.keycloakDevUser, password = conf
 
             if (!tcpOk.ok) {
                 const info = tcpOk.info || {};
-                console.log(`TCP connect to ${host}:${port} failed on attempt ${attempt}: ${info.event || 'unknown'}`);
+                const local = info.local ? `${info.local.address || '?'}:${info.local.port || '?'}` : 'unknown';
+                console.log(`TCP connect to ${host}:${port} failed on attempt ${attempt}: ${info.event || 'unknown'} (local=${local})`);
                 if (info.code) console.log(`TCP error code: ${info.code}`);
                 if (info.message) console.log(`TCP message: ${info.message}`);
                 if (info.stack) console.log(`TCP stack: ${info.stack}`);
                 throw new Error(`TCP connect to ${host}:${port} failed: ${info.event || 'unknown'} ${info.code || ''} ${info.message || ''}`);
             }
-            console.log(`TCP connect to ${host}:${port} succeeded (attempt ${attempt})`);
+            const local = tcpOk.info && tcpOk.info.local ? `${tcpOk.info.local.address || '?'}:${tcpOk.info.local.port || '?'}` : 'unknown';
+            console.log(`TCP connect to ${host}:${port} succeeded (attempt ${attempt}, local=${local})`);
 
             // Actual login call using persistent agent
             const response = await chai.request(config.apiServerUrl)
