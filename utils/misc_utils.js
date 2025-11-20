@@ -111,15 +111,33 @@ const loginWithRetry = async (username = config.keycloakDevUser, password = conf
             const tcpOk = await new Promise(resolve => {
                 const socket = new net.Socket();
                 let done = false;
+                const onDone = (ok, info) => {
+                    if (done) return;
+                    done = true;
+                    try { socket.destroy(); } catch (e) {}
+                    resolve({ ok, info });
+                };
+
                 socket.setTimeout(2000);
-                socket.once('connect', () => { done = true; socket.destroy(); resolve(true); });
-                socket.once('timeout', () => { if (!done) { done = true; socket.destroy(); resolve(false); } });
-                socket.once('error', () => { if (!done) { done = true; socket.destroy(); resolve(false); } });
-                socket.connect(port, host);
+                socket.once('connect', () => onDone(true, { event: 'connect' }));
+                socket.once('timeout', () => onDone(false, { event: 'timeout', message: `connect timed out after 2000ms` }));
+                socket.once('error', (err) => onDone(false, { event: 'error', code: err.code, message: err.message, stack: err.stack }));
+                try {
+                    socket.connect(port, host);
+                } catch (err) {
+                    onDone(false, { event: 'error', code: err.code, message: err.message, stack: err.stack });
+                }
             });
 
-            if (!tcpOk) throw new Error(`TCP connect to ${host}:${port} failed`);
-            console.log(`TCP connect to ${host}:${port} succeeded`);
+            if (!tcpOk.ok) {
+                const info = tcpOk.info || {};
+                console.log(`TCP connect to ${host}:${port} failed on attempt ${attempt}: ${info.event || 'unknown'}`);
+                if (info.code) console.log(`TCP error code: ${info.code}`);
+                if (info.message) console.log(`TCP message: ${info.message}`);
+                if (info.stack) console.log(`TCP stack: ${info.stack}`);
+                throw new Error(`TCP connect to ${host}:${port} failed: ${info.event || 'unknown'} ${info.code || ''} ${info.message || ''}`);
+            }
+            console.log(`TCP connect to ${host}:${port} succeeded (attempt ${attempt})`);
 
             // Actual login call using persistent agent
             const response = await chai.request(config.apiServerUrl)
