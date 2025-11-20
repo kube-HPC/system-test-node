@@ -1,27 +1,9 @@
 const chai = require('chai');
-const chaiHttp = require('chai-http');
-const https = require('https');
-const net = require('net');
 const delay = require('delay');
-const logger = require('../utils/logger');
-const config = require('../config/config');
-
+const net = require('net');
+const logger = require('../utils/logger')
 const expect = chai.expect;
-chai.use(chaiHttp);
-
-// Create keep-alive agent for HTTPS
-const keepAliveAgent = new https.Agent({
-    keepAlive: true,
-    maxSockets: 10,
-    maxFreeSockets: 5,
-    timeout: 60000,
-    keepAliveMsecs: 30000,
-});
-
-// Create a reusable chai request instance
-const request = chai.request.agent(config.apiServerUrl);
-request.keepOpen();
-request._agent = keepAliveAgent;
+const config = require('../config/config');
 
 
 const write_log = (st, sv = 'info') => {
@@ -121,7 +103,7 @@ const loginWithRetry = async (username = config.keycloakDevUser, password = conf
 
     for (let attempt = 1; attempt <= attempts; attempt++) {
         try {
-            // TCP check (optional)
+            // quick TCP check to fail fast on network issues (dns, port closed)
             const url = new URL(config.apiServerUrl);
             const host = url.hostname;
             const port = url.port || (url.protocol === 'https:' ? 443 : 80);
@@ -140,7 +122,7 @@ const loginWithRetry = async (username = config.keycloakDevUser, password = conf
             console.log(`TCP connect to ${host}:${port} succeeded`);
 
             // Actual login call using persistent agent
-            const response = await request
+            const response = await chai.request(config.apiServerUrl)
                 .post('/auth/login')
                 .send({ username, password });
 
