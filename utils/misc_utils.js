@@ -4,6 +4,8 @@ const net = require('net');
 const logger = require('../utils/logger')
 const expect = chai.expect;
 const config = require('../config/config');
+const chaiHttp = require('chai-http');
+chai.use(chaiHttp);
 
 
 const write_log = (st, sv = 'info') => {
