@@ -283,11 +283,14 @@ const deleteAlgorithmPods = async (name, token = {}, selector) => {
     return res;
 }
 
-const updateAlgorithmVersion = async (Algname, algVersion,token = {}, Force = true) => {
+const updateAlgorithmVersion = async (Algname, algVersion, token = {}, Force = true, Graceful) => {
     let value = {
         name: Algname,
         version: algVersion,
         force: Force
+    }
+    if (Graceful !== undefined) {
+        value.graceful = Graceful;
     }
     const res = await chai.request(config.apiServerUrl)
         .post(`/versions/algorithms/apply`)
