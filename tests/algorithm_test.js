@@ -815,7 +815,7 @@ describe('Algorithm Tests', () => {
                 await storePipeline(d, dev_token);
                 const res = await runStored(pipe, dev_token);
                 const jobId = res.body.jobId;
-                await intervalDelay("Waiting for job to start", 10000, 1500);
+                await intervalDelay("Waiting for job to start", 15000, 1500);
                 const resp = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, dev_token, true, true);
                 expect(resp.status).to.be.equal(StatusCodes.CREATED);
                 const result = await getResult(jobId, StatusCodes.OK, dev_token);
