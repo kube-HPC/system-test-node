@@ -50,7 +50,8 @@ const {
 const {
     getResult,
     getRawGraph,
-    getStatusall
+    getStatusall,
+    getStatus
 } = require('../utils/results')
 
 // // const KubernetesClient = require('@hkube/kubernetes-client').Client;
@@ -776,6 +777,87 @@ describe('Algorithm Tests', () => {
             const alg = await getAlgorithm(algorithmName, dev_token);
             expect(alg.body.algorithmImage).to.be.equal(algorithmImageV1);
         }).timeout(1000 * 60 * 5);
+
+        describe('Graceful version switch', () => {
+            const pipe = {
+                name: d.name,
+                flowInput: { inp: 60000 }
+            };
+
+            it('graceful:true with no running jobs succeeds', async () => {
+                const v1 = await applyAlg(algorithmV1, dev_token);
+                const v2 = await storeAlgorithmApply(algorithmV2, dev_token);
+                await updateAlgorithmVersion(algorithmName, v1.body.algorithm.version, dev_token, true);
+                const resp = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, dev_token, true, true);
+                expect(resp.status).to.be.equal(StatusCodes.CREATED);
+            }).timeout(1000 * 60 * 5);
+
+            it('force:true graceful:false with running job kills the job', async () => {
+                const v1 = await applyAlg(algorithmV1, dev_token);
+                const v2 = await storeAlgorithmApply(algorithmV2, dev_token);
+                await updateAlgorithmVersion(algorithmName, v1.body.algorithm.version, dev_token, true);
+                await deletePipeline(d, dev_token);
+                await storePipeline(d, dev_token);
+                const res = await runStored(pipe, dev_token);
+                const jobId = res.body.jobId;
+                await intervalDelay("Waiting for job to start", 15000, 1500);
+                const resp = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, dev_token, true, false);
+                expect(resp.status).to.be.equal(StatusCodes.CREATED);
+                const status = await getStatus(jobId, StatusCodes.OK, 'failed', dev_token, 1000 * 60 * 3);
+                expect(status.status).to.be.equal('failed');
+            }).timeout(1000 * 60 * 5);
+
+            it('force:true graceful:true with running job lets the job complete', async () => {
+                const v1 = await applyAlg(algorithmV1, dev_token);
+                const v2 = await storeAlgorithmApply(algorithmV2, dev_token);
+                await updateAlgorithmVersion(algorithmName, v1.body.algorithm.version, dev_token, true);
+                await deletePipeline(d, dev_token);
+                await storePipeline(d, dev_token);
+                const res = await runStored(pipe, dev_token);
+                const jobId = res.body.jobId;
+                await intervalDelay("Waiting for job to start", 25000, 1500);
+                const resp = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, dev_token, true, true);
+                expect(resp.status).to.be.equal(StatusCodes.CREATED);
+                const result = await getResult(jobId, StatusCodes.OK, dev_token);
+                expect(result.status).to.be.equal('completed');
+            }).timeout(1000 * 60 * 5);
+
+            it('graceful:true with multiple running jobs lets all jobs complete', async () => {
+                const v1 = await applyAlg(algorithmV1, dev_token);
+                const v2 = await storeAlgorithmApply(algorithmV2, dev_token);
+                await updateAlgorithmVersion(algorithmName, v1.body.algorithm.version, dev_token, true);
+                await deletePipeline(d, dev_token);
+                await storePipeline(d, dev_token);
+                const res1 = await runStored(pipe, dev_token);
+                const jobId1 = res1.body.jobId;
+                const res2 = await runStored(pipe, dev_token);
+                const jobId2 = res2.body.jobId;
+                await intervalDelay("Waiting", 10000);
+                const resp = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, dev_token, true, true);
+                expect(resp.status).to.be.equal(StatusCodes.CREATED);
+                await stopPipeline(jobId1, dev_token);
+                await stopPipeline(jobId2, dev_token);
+            }).timeout(1000 * 60 * 5);
+
+            it('non-graceful re-apply after graceful switch keeps the job running', async () => {
+                const v1 = await applyAlg(algorithmV1, dev_token);
+                const v2 = await storeAlgorithmApply(algorithmV2, dev_token);
+                await updateAlgorithmVersion(algorithmName, v1.body.algorithm.version, dev_token, true);
+                await deletePipeline(d, dev_token);
+                await storePipeline(d, dev_token);
+                const res = await runStored(pipe, dev_token);
+                const jobId = res.body.jobId;
+                await intervalDelay("Waiting for job to start", 10000, 1500);
+                // graceful switch — protects the job
+                const gracefulResp = await updateAlgorithmVersion(algorithmName, v2.body.algorithm.version, dev_token, true, true);
+                expect(gracefulResp.status).to.be.equal(StatusCodes.CREATED);
+                // switch back to v1 without graceful — should keeps the running job
+                await updateAlgorithmVersion(algorithmName, v1.body.algorithm.version, dev_token, true, false);
+                 await intervalDelay("Waiting", 4000);
+                const runningStatus = await getPipelineStatus(jobId, dev_token);
+                expect(runningStatus.body.status).to.be.equal('active')
+            }).timeout(1000 * 60 * 5);
+        });
 
         it('Delete algorithm current version ', async () => {
             let v1 = await applyAlg(algorithmV1, dev_token);
