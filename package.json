@@ -15,7 +15,7 @@
     "cliTests": "mocha ./tests/cliTests.js --exit",
     "codeApiTests": "mocha ./tests/codeApi.js --exit",
     "dataSourceTest": "mocha ./tests/datasource_tests.js --exit",
-    "HighAvailability": "mocha ./tests/High_Availability.js"
+    "HighAvailability": "mocha ./tests/High_Availability.js ./tests/apiServerMultiPod.js --exit"
   },
   "author": "",
   "license": "ISC",
