@@ -5,15 +5,17 @@ chai.use(chaiHttp);
 const path = require('path');
 const config = require(path.join(process.cwd(), 'config/config'));
 
-const getProgress = async (jobId) => {
+const getProgress = async (jobId, token = {}) => {
     const res = await chai.request(config.webhookUrl)
-        .get(`/progress/${jobId}`);   
+        .get(`/progress/${jobId}`)
+        .set('Authorization', `Bearer ${token}`);
     return res;
 }
 
-const getResults = async (jobId) => {
+const getResults = async (jobId, token = {}) => {
     const res = await chai.request(config.webhookUrl)
-        .get(`/results/${jobId}`);  
+        .get(`/results/${jobId}`)
+        .set('Authorization', `Bearer ${token}`);
     return res;
 }
 

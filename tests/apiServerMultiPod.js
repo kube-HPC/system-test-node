@@ -46,6 +46,11 @@ const {
     getResults
 } = require('../utils/webhook');
 
+const {
+    storeAlgorithmApply,
+    deleteAlgorithm
+} = require('../utils/algorithmUtils');
+
 // Election timing (api-server config.base.js): lockTtl 2500ms, renewInterval 1000ms,
 // backupInterval 5000ms, jitter 250ms. A new leader appears within a few seconds of the old
 // one disappearing; we poll well beyond that to stay robust on a busy cluster.
@@ -54,6 +59,22 @@ const POD_RECOVERY_TIMEOUT = 2 * 60 * 1000;
 // Time to wait after the first webhook delivery to make sure NO duplicate (one per non-leader
 // pod) arrives late. Must comfortably exceed the webhook retry/dispatch window.
 const DUPLICATE_WEBHOOK_GRACE = 15 * 1000;
+
+// This suite provisions its own algorithm (a private copy of the built-in eval-alg) instead of
+// depending on the shared 'eval-alg' being present in the cluster - if it were missing every
+// pipeline here would fail. It is stored in `before` and removed in `after`. The spec mirrors
+// the api-server default eval-alg (core/api-server/lib/examples/algorithms.json): the bare
+// algorunner image, which evaluates the JS passed per-node via extraData.code.
+const EVAL_ALGORITHM_NAME = 'eval-alg-multiapi';
+const evalAlgorithm = {
+    name: EVAL_ALGORITHM_NAME,
+    algorithmImage: 'hkube/algorunner',
+    cpu: 0.5,
+    mem: '512Mi',
+    minHotWorkers: 0,
+    type: 'Image',
+    options: { pending: false }
+};
 
 // Build a single-task eval-alg pipeline (same shape as pipelines/evalwait.js): the batch
 // operator '#@flowInput.inputs' expands [[sleepMs, value]] into one task whose code sleeps
@@ -64,7 +85,7 @@ const buildEvalPipeline = ({ name, sleepMs, withWebhook }) => {
         nodes: [
             {
                 nodeName: 'evalsleep',
-                algorithmName: 'eval-alg',
+                algorithmName: EVAL_ALGORITHM_NAME,
                 input: ['#@flowInput.inputs'],
                 extraData: {
                     code: [
@@ -96,6 +117,12 @@ describe('TID-162- Multiple api-server pods (DaemonSet) validation', () => {
     before(async function () {
         this.timeout(5 * 60 * 1000);
         token = await loginWithRetry();
+        // Provision our private eval algorithm. Delete first so a stale copy can't shadow the
+        // spec we expect, mirroring how the other suites create their algorithms.
+        await deleteAlgorithm(EVAL_ALGORITHM_NAME, token, true);
+        const algRes = await storeAlgorithmApply(evalAlgorithm, token);
+        expect([200, 201], `failed to store ${EVAL_ALGORITHM_NAME}: ${algRes.status} ${JSON.stringify(algRes.body)}`).to.include(algRes.status);
+        await delay(3000);
         const pods = await getApiServerPods();
         podCount = pods.length;
         try {
@@ -133,6 +160,12 @@ describe('TID-162- Multiple api-server pods (DaemonSet) validation', () => {
                 write_log(`failed to delete pipeline ${name}: ${error.message}`, 'warn');
             }
         }
+        try {
+            await deleteAlgorithm(EVAL_ALGORITHM_NAME, token, true);
+        }
+        catch (error) {
+            write_log(`failed to delete algorithm ${EVAL_ALGORITHM_NAME}: ${error.message}`, 'warn');
+        }
     });
 
     // Poll the external webhook server until at least `min` result deliveries are recorded for
@@ -141,7 +174,7 @@ describe('TID-162- Multiple api-server pods (DaemonSet) validation', () => {
         const start = Date.now();
         let data = [];
         do {
-            const res = await getResults(jobId);
+            const res = await getResults(jobId, token);
             data = (res.body && res.body.data) || [];
             if (data.length >= min) {
                 return data;
@@ -152,7 +185,7 @@ describe('TID-162- Multiple api-server pods (DaemonSet) validation', () => {
     };
 
     const countWebhookResults = async (jobId) => {
-        const res = await getResults(jobId);
+        const res = await getResults(jobId, token);
         return (res.body && res.body.data) ? res.body.data.length : 0;
     };
 
@@ -242,7 +275,7 @@ describe('TID-162- Multiple api-server pods (DaemonSet) validation', () => {
                 nodes: [
                     {
                         nodeName: 'evalsleep',
-                        algorithmName: 'eval-alg',
+                        algorithmName: EVAL_ALGORITHM_NAME,
                         input: ['#@flowInput.inputs'],
                         extraData: { code: ['(input,require)=> { return input[0][1]; }'] }
                     }
