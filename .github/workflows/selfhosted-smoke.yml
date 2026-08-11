@@ -1,0 +1,66 @@
+name: Self-hosted smoke
+
+# Temporary scaffolding to validate the self-hosted runners before migrating CI-MAIN.
+# Targets the e2e environment only, matching the `*e2e*` case in hkube's deploy.yml:
+#   CONTEXT=e2e.hkube.org, URL=$E2E_URL
+# Delete this file once both jobs pass.
+
+on:
+  workflow_dispatch:
+
+env:
+  KUBE_CONTEXT: e2e.hkube.org
+  BASE_URL: https://${{ secrets.E2E_URL }}
+
+jobs:
+  SmokeNoK8s:
+    runs-on: [self-hosted, hkube-system-test]
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: runner info
+        run: |
+          echo "runner=$RUNNER_NAME user=$(whoami) host=$(hostname)"
+          echo "workspace=$GITHUB_WORKSPACE temp=$RUNNER_TEMP"
+          echo "context=$KUBE_CONTEXT base_url=$BASE_URL"
+          node -v; npm -v; kubectl version --client | head -1; helm version --short
+      - run: npm ci --prefer-offline
+      - name: swagger tests
+        run: npm test
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
+          KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
+          KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
+          KEYCLOAK_GUEST_PASS: ${{ secrets.KEYCLOAK_GUEST_PASS }}
+          KEYCLOAK_GUEST_USER: ${{ secrets.KEYCLOAK_GUEST_USER }}
+
+  SmokeK8s:
+    runs-on: [self-hosted, hkube-system-test]
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: runner info
+        run: echo "runner=$RUNNER_NAME user=$(whoami) context=$KUBE_CONTEXT"
+      - name: select kubeconfig context
+        run: |
+          # copy the shared kubeconfig to a per-job file so parallel jobs on the same
+          # runner never fight over current-context / config.lock
+          KUBECFG="$RUNNER_TEMP/kubeconfig-$GITHUB_RUN_ID-$GITHUB_JOB"
+          install -m 600 /dev/null "$KUBECFG"
+          cat /etc/hkube/kube/config > "$KUBECFG"
+          kubectl --kubeconfig="$KUBECFG" config use-context "$KUBE_CONTEXT"
+          echo "KUBECONFIG=$KUBECFG" >> $GITHUB_ENV
+          echo "K8S_CONFIG_PATH=$KUBECFG" >> $GITHUB_ENV
+      - name: verify kubectl
+        run: kubectl cluster-info
+      - run: npm ci --prefer-offline
+      - name: node tests
+        run: npm run nodetest
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
+          KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
+          KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
+          K8S_VERSION: 1.13
+      - name: cleanup kubeconfig
+        if: always()
+        run: rm -f "$KUBECONFIG"
