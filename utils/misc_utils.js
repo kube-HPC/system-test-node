@@ -102,6 +102,7 @@ const loginWithRetry = async (username = config.keycloakDevUser, password = conf
     if (!username || !password) throw new Error('Username or password is undefined');
 
     let lastError;
+    let lastHttpStatus = null;
 
     for (let attempt = 1; attempt <= attempts; attempt++) {
         try {
@@ -156,22 +157,18 @@ const loginWithRetry = async (username = config.keycloakDevUser, password = conf
                 .send({ username, password });
 
             const msg = response.body?.error?.message;
+            lastHttpStatus = response.status;
 
             if (response.status === 200) {
                 console.log('Login success');
                 return response.body.data.access_token;
             }
 
-            if (msg === 'Request failed with status code 401') {
+            if (response.status === 401 || msg === 'Request failed with status code 401') {
                 throw new Error(`Wrong credentials for ${username}!`);
             }
 
-            if (msg === 'Request failed with status code 404') {
-                console.log('Keycloak is disabled.');
-                return undefined;
-            }
-
-            lastError = new Error(msg || 'Unknown login error');
+            lastError = new Error(msg || `Unknown login error (status ${response.status})`);
 
         } catch (err) {
             lastError = err;
@@ -184,6 +181,12 @@ const loginWithRetry = async (username = config.keycloakDevUser, password = conf
                 await delay(delayMs);
             }
         }
+    }
+
+
+    if (lastHttpStatus !== null) {
+        console.log(`Keycloak is disabled or unavailable (last status ${lastHttpStatus}). Continuing without a token.`);
+        return undefined;
     }
 
     throw lastError;
