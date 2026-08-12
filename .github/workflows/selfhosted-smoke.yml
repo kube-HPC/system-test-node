@@ -10,7 +10,6 @@ on:
 
 env:
   KUBE_CONTEXT: e2e.hkube.org
-  BASE_URL: https://${{ secrets.E2E_URL }}
 
 jobs:
   SmokeNoK8s:
@@ -22,8 +21,20 @@ jobs:
         run: |
           echo "runner=$RUNNER_NAME user=$(whoami) host=$(hostname)"
           echo "workspace=$GITHUB_WORKSPACE temp=$RUNNER_TEMP"
-          echo "context=$KUBE_CONTEXT base_url=$BASE_URL"
+          echo "context=$KUBE_CONTEXT"
           node -v; npm -v; kubectl version --client | head -1; helm version --short
+      - name: resolve base url
+        run: |
+          # E2E_URL may or may not carry a scheme; normalise to exactly one
+          URL="$E2E_URL"
+          case "$URL" in
+            https://*|http://*) ;;
+            *) URL="https://$URL" ;;
+          esac
+          echo "BASE_URL=$URL" >> $GITHUB_ENV
+          echo "resolved host: $(echo "$URL" | sed -E 's#^https?://##' | cut -d/ -f1)"
+        env:
+          E2E_URL: ${{ secrets.E2E_URL }}
       - run: npm ci --prefer-offline
       - name: swagger tests
         run: npm test
@@ -33,6 +44,8 @@ jobs:
           KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
           KEYCLOAK_GUEST_PASS: ${{ secrets.KEYCLOAK_GUEST_PASS }}
           KEYCLOAK_GUEST_USER: ${{ secrets.KEYCLOAK_GUEST_USER }}
+          LOGIN_ATTEMPTS: 2
+          LOGIN_DELAY_MS: 5000
 
   SmokeK8s:
     runs-on: [self-hosted, hkube-system-test]
@@ -41,6 +54,17 @@ jobs:
       - uses: actions/checkout@v4
       - name: runner info
         run: echo "runner=$RUNNER_NAME user=$(whoami) context=$KUBE_CONTEXT"
+      - name: resolve base url
+        run: |
+          URL="$E2E_URL"
+          case "$URL" in
+            https://*|http://*) ;;
+            *) URL="https://$URL" ;;
+          esac
+          echo "BASE_URL=$URL" >> $GITHUB_ENV
+          echo "resolved host: $(echo "$URL" | sed -E 's#^https?://##' | cut -d/ -f1)"
+        env:
+          E2E_URL: ${{ secrets.E2E_URL }}
       - name: select kubeconfig context
         run: |
           # copy the shared kubeconfig to a per-job file so parallel jobs on the same
@@ -61,6 +85,8 @@ jobs:
           KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
           KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
           K8S_VERSION: 1.13
+          LOGIN_ATTEMPTS: 2
+          LOGIN_DELAY_MS: 5000
       - name: cleanup kubeconfig
         if: always()
         run: rm -f "$KUBECONFIG"
