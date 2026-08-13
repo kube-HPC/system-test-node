@@ -46,6 +46,7 @@ jobs:
           KEYCLOAK_GUEST_USER: ${{ secrets.KEYCLOAK_GUEST_USER }}
           LOGIN_ATTEMPTS: 2
           LOGIN_DELAY_MS: 5000
+          NODE_TLS_REJECT_UNAUTHORIZED: "0"
 
   SmokeK8s:
     runs-on: [self-hosted, hkube-system-test]
@@ -87,6 +88,7 @@ jobs:
           K8S_VERSION: 1.13
           LOGIN_ATTEMPTS: 2
           LOGIN_DELAY_MS: 5000
+          NODE_TLS_REJECT_UNAUTHORIZED: "0"   # in-VPC path hits the ingress default cert
       - name: cleanup kubeconfig
         if: always()
         run: rm -f "$KUBECONFIG"
