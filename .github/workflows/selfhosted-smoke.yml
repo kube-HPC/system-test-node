@@ -2,7 +2,7 @@ name: Self-hosted smoke
 
 # Temporary scaffolding to validate the self-hosted runners before migrating CI-MAIN.
 # Targets the e2e environment only, matching the `*e2e*` case in hkube's deploy.yml:
-#   CONTEXT=e2e.hkube.org, URL=$E2E_NLB_URL (NLB DNS, bypasses the public hkube.org name)
+#   CONTEXT=e2e.hkube.org, URL=$E2E_URL
 # Delete this file once both jobs pass.
 
 on:
@@ -25,8 +25,8 @@ jobs:
           node -v; npm -v; kubectl version --client | head -1; helm version --short
       - name: resolve base url
         run: |
-          # E2E_NLB_URL may or may not carry a scheme; normalise to exactly one
-          URL="$E2E_NLB_URL"
+          # E2E_URL may or may not carry a scheme; normalise to exactly one
+          URL="$E2E_URL"
           case "$URL" in
             https://*|http://*) ;;
             *) URL="https://$URL" ;;
@@ -34,7 +34,7 @@ jobs:
           echo "BASE_URL=$URL" >> $GITHUB_ENV
           echo "resolved host: $(echo "$URL" | sed -E 's#^https?://##' | cut -d/ -f1)"
         env:
-          E2E_NLB_URL: ${{ secrets.E2E_NLB_URL }}
+          E2E_URL: ${{ secrets.E2E_URL }}
       - run: npm ci --prefer-offline
       - name: swagger tests
         run: npm test
@@ -56,7 +56,7 @@ jobs:
         run: echo "runner=$RUNNER_NAME user=$(whoami) context=$KUBE_CONTEXT"
       - name: resolve base url
         run: |
-          URL="$E2E_NLB_URL"
+          URL="$E2E_URL"
           case "$URL" in
             https://*|http://*) ;;
             *) URL="https://$URL" ;;
@@ -64,7 +64,7 @@ jobs:
           echo "BASE_URL=$URL" >> $GITHUB_ENV
           echo "resolved host: $(echo "$URL" | sed -E 's#^https?://##' | cut -d/ -f1)"
         env:
-          E2E_NLB_URL: ${{ secrets.E2E_NLB_URL }}
+          E2E_URL: ${{ secrets.E2E_URL }}
       - name: select kubeconfig context
         run: |
           # copy the shared kubeconfig to a per-job file so parallel jobs on the same
