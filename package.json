@@ -40,7 +40,7 @@
     "events": "^3.3.0",
     "form-data": "^4.0.0",
     "fs-extra": "^8.1.0",
-    "graphql": "^16.6.0",
+    "graphql": "^16.8.1",
     "graphql-request": "^5.1.0",
     "graphql-tag": "^2.12.6",
     "js-yaml": "^3.14.0",
