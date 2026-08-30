@@ -1,7 +1,7 @@
 global:
   production: true
-  clusterName: test-spot
-  hkube_url: https://cicd-test.hkube.org/hkube
+  clusterName: e2e
+  hkube_url: "${E2E_URL}/hkube"
   registry: ""
   storage:
     binary: true
@@ -9,8 +9,8 @@ global:
       pvc: 
          name: 'hkube-storage'
          capacity: '50Gi'
-         nfs_server: '172.20.45.142'
-         nfs_root: '/nfs/storageclass/test'
+         nfs_server: '10.30.239.124'
+         nfs_root: '/nfs/storageclass/e2e'
       base_directory: '/hkubedata'
       dev_pvc:
         name: hkube-dev-sources
@@ -24,8 +24,8 @@ global:
   registry_password: ${IMAGE_PULL_PASSWORD}
 
 env:
-  kibana_url: "https://cicd-test.hkube.org/system/kibana/"
-  grafana_url: "https://cicd-test.hkube.org/grafana"
+  kibana_url: "${E2E_URL}/system/kibana/"
+  grafana_url: "${E2E_URL}/grafana"
   default_storage: 'fs'
 
 build_secret:
@@ -45,7 +45,7 @@ task_executor:
 
 monitor_server:
   env:
-    elasticsearch_service_url: 'http://elasticsearch-ingest.logging.svc.test:9200'
+    elasticsearch_service_url: 'http://elasticsearch-ingest.logging:9200'
     show_streaming_metrics: true
 
 storage_cleaner:
