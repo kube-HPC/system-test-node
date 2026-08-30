@@ -12,23 +12,36 @@ on:
 jobs:
   # This workflow contains a single job called "build"
   Deployment:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    # Runs on the self-hosted pool, which already has kubectl/helm and the shared kubeconfig
+    runs-on: [self-hosted, hkube-system-test]
+    env:
+      # single kubeconfig on the runner holds all cluster contexts; it is shared by every
+      # job on the runner, so never delete/move it and never switch its current-context.
+      # the context is passed inline to kubectl/helm instead.
+      KUBECONFIG: /etc/hkube/kube/config
+      KUBE_CONTEXT: e2e.hkube.org
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-      - name: create kubeconfig
+      - uses: actions/checkout@v4
+      - name: get environment
         run: |
-          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
-          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
+          echo "selected context: $KUBE_CONTEXT"
+          # values template builds urls as ${E2E_URL}/hkube, so keep the scheme
+          URL="$E2E_URL"
+          case "$URL" in
+            https://*|http://*) ;;
+            *) URL="https://$URL" ;;
+          esac
+          echo "::add-mask::$URL"
+          echo E2E_URL=$URL >> $GITHUB_ENV
         env:
-          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
+          E2E_URL: ${{ secrets.E2E_URL }}
       - name: verify kubectl
-        run: kubectl cluster-info
+        run: kubectl --context "$KUBE_CONTEXT" cluster-info
       - name: deploy
-        run: ./travis/deploy.sh ${{ secrets.HKUBE_DOMAIN_RAW }}
+        run: ./travis/deploy.sh ${{ secrets.HKUBE_DOMAIN_RAW }} "$KUBE_CONTEXT"
         env:
           DOCKER_BUILD_PUSH_PASSWORD: ${{ secrets.DOCKER_BUILD_PUSH_PASSWORD }}
           DOCKER_BUILD_PUSH_USERNAME: ${{ secrets.DOCKER_BUILD_PUSH_USERNAME }}
