@@ -80,7 +80,6 @@ jobs:
   PipelineTests:
     runs-on: [self-hosted, hkube-system-test]
     timeout-minutes: 45
-    needs: [SwaggerTests, GraphQLTests]
     steps:
       - uses: actions/checkout@v4
       - name: resolve base url
@@ -106,7 +105,6 @@ jobs:
   JagearTests:
     runs-on: [self-hosted, hkube-system-test]
     timeout-minutes: 45
-    needs: [SwaggerTests, GraphQLTests]
     steps:
       - uses: actions/checkout@v4
       - name: resolve base url
@@ -132,7 +130,6 @@ jobs:
   CodeApiTests:
     runs-on: [self-hosted, hkube-system-test]
     timeout-minutes: 45
-    needs: [SwaggerTests, GraphQLTests]
     steps:
       - uses: actions/checkout@v4
       - name: resolve base url
@@ -158,7 +155,6 @@ jobs:
   NodeTests:
     runs-on: [self-hosted, hkube-system-test]
     timeout-minutes: 45
-    needs: [SwaggerTests, GraphQLTests]
     steps:
       - uses: actions/checkout@v4
       - name: runner info
