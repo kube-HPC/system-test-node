@@ -5,6 +5,7 @@ const path = require('path');
 const config = require(path.join(process.cwd(), 'config/config'));
 const logger = require('../utils/logger');
 const { getWorkers } = require('../utils/socketGet');
+const { refreshTokenIfNeeded } = require('../utils/misc_utils');
 
 // chai.use(chaiHttp);
 const getJobResult = async (jobId, token = {}) => {
@@ -25,6 +26,7 @@ const getResult = async (jobId, expectedStatus, token = {}, timeout = 60 * 1000 
     let actualStatus = '';
     do {
         process.stdout.write(`\rWaiting for jobId: ${jobId} to get status: ${expectedStatus}, time passed: ${Date.now() - start}/${timeout} ms...`);
+        token = await refreshTokenIfNeeded(token);
         const res = await getJobResult(jobId, token);
         actualStatus = res.status;
         if (actualStatus === expectedStatus) {
@@ -48,6 +50,7 @@ const getStatus = async (jobId, expectedCode, expectedStatus, token = {}, timeou
     let actualStatus = '';
     do {
         process.stdout.write(`\rWaiting for jobId: ${jobId} to get status: ${expectedStatus}, time passed: ${Date.now() - start}/${timeout} ms...`);
+        token = await refreshTokenIfNeeded(token);
         const res = await chai.request(config.apiServerUrl)
             .get(`/exec/status/${jobId}`)
             .set('Authorization', `Bearer ${token}`);
@@ -93,6 +96,7 @@ const getStatusall = async (id, url, expectedCode, expectedStatus, token = {}, t
     let actualStatus = '';
     do {
         process.stdout.write(`\rWaiting for buildId: ${id} to get status: ${expectedStatus}, time passed: ${Date.now() - start}/${timeout} ms...`);
+        token = await refreshTokenIfNeeded(token);
         const res = await chai.request(config.apiServerUrl)
             .get(`${url}/${id}`)
             .set('Authorization', `Bearer ${token}`);

@@ -95,6 +95,37 @@ const checkInRangeWithRetries = async (computeFn, funcArguments = [], min, max, 
  * @param {number} delayMs - Delay between retries in ms (default 10000)
  * @returns {Promise<string|undefined>}
  */
+// Keycloak access tokens are short lived (300s by default). Remember which credentials
+// produced each token so long suites can silently re-login instead of getting 401s.
+const tokenCredentials = new Map();
+
+const _tokenSecondsLeft = (token) => {
+    try {
+        const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+        return payload.exp - Math.floor(Date.now() / 1000);
+    } catch (e) {
+        return Infinity;
+    }
+};
+
+/**
+ * Returns the given token, or a freshly issued one if it is about to expire.
+ * Unknown tokens (not obtained via loginWithRetry) are returned untouched.
+ *
+ * @param {string} token
+ * @param {number} [marginSec=60] - refresh when less than this many seconds are left.
+ * @returns {Promise<string|undefined>}
+ */
+const refreshTokenIfNeeded = async (token, marginSec = 60) => {
+    if (typeof token !== 'string' || !token) return token;
+    const credentials = tokenCredentials.get(token);
+    if (!credentials) return token;
+    if (_tokenSecondsLeft(token) > marginSec) return token;
+    tokenCredentials.delete(token);
+    console.log(`\nAccess token for ${credentials.username} is about to expire, re-login...`);
+    return loginWithRetry(credentials.username, credentials.password);
+};
+
 const loginWithRetry = async (username = config.keycloakDevUser, password = config.keycloakDevPass) => {
     const attempts = config.loginAttempts;
     const delayMs = config.loginDelayMs;
@@ -161,7 +192,9 @@ const loginWithRetry = async (username = config.keycloakDevUser, password = conf
 
             if (response.status === 200) {
                 console.log('Login success');
-                return response.body.data.access_token;
+                const accessToken = response.body.data.access_token;
+                tokenCredentials.set(accessToken, { username, password });
+                return accessToken;
             }
 
             if (response.status === 401 || msg === 'Request failed with status code 401') {
@@ -197,5 +230,6 @@ module.exports = {
     intervalDelay,
     checkEqualWithRetries,
     checkInRangeWithRetries,
-    loginWithRetry
+    loginWithRetry,
+    refreshTokenIfNeeded
 }

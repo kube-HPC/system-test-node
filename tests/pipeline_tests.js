@@ -7,7 +7,7 @@ var diff = require("deep-diff").diff;
 const { executeActions } = require('@hkube/consts');
 const config = require(path.join(process.cwd(), 'config/config'));
 
-const { loginWithRetry, intervalDelay } = require("../utils/misc_utils");
+const { loginWithRetry, intervalDelay, refreshTokenIfNeeded } = require("../utils/misc_utils");
 
 const {
   runAlgorithm,
@@ -153,7 +153,9 @@ describe("pipeline Tests 673", () => {
     }
   }
 
-  beforeEach(function () {
+  beforeEach(async function () {
+    this.timeout(1000 * 60 * 2);
+    dev_token = await refreshTokenIfNeeded(dev_token);
     console.log('\n-----------------------------------------------\n');
   });
 

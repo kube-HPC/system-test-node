@@ -41,7 +41,7 @@ const {
     getBuildList
 } = require('../utils/algorithmUtils');
 
-const { loginWithRetry } = require('../utils/misc_utils');
+const { loginWithRetry, refreshTokenIfNeeded } = require('../utils/misc_utils');
 
 chai.use(chaiHttp);
 chai.use(assertArrays);
@@ -137,7 +137,9 @@ describe('Hkubectl Tests', () => {
         return res;
     }
 
-    beforeEach(function () {
+    beforeEach(async function () {
+        this.timeout(1000 * 60 * 2);
+        dev_token = await refreshTokenIfNeeded(dev_token);
         console.log('\n-----------------------------------------------\n');
     });
 

@@ -9,7 +9,8 @@ const fs = require('fs');
 
 const {
     write_log,
-    loginWithRetry
+    loginWithRetry,
+    refreshTokenIfNeeded
 } = require('../utils/misc_utils');
 
 const delay = require('delay');
@@ -69,12 +70,15 @@ describe('all swagger calls test ', () => {
         return res;
     }
 
-    beforeEach(function () {
+    beforeEach(async function () {
+        this.timeout(1000 * 60 * 2);
+        dev_token = await refreshTokenIfNeeded(dev_token);
         console.log('\n-----------------------------------------------\n');
     });
 
     after(async function () {
         this.timeout(2 * 60 * 1000);
+        dev_token = await refreshTokenIfNeeded(dev_token);
         console.log("algList = " + algList);
         j = 0;
         z = 3;

@@ -3,7 +3,7 @@ const expect = chai.expect;
 const chaiHttp = require('chai-http');
 const path = require('path');
 const delay = require('delay');
-const { loginWithRetry } = require('../utils/misc_utils');
+const { loginWithRetry, refreshTokenIfNeeded } = require('../utils/misc_utils');
 
 const {
     testData1,
@@ -82,7 +82,9 @@ describe('TID-161- High Availability for HKube infrastructure services', () => {
         console.log("----------------------- end -----------------------");
     });
 
-    beforeEach(function () {
+    beforeEach(async function () {
+        this.timeout(1000 * 60 * 2);
+        dev_token = await refreshTokenIfNeeded(dev_token);
         console.log('\n-----------------------------------------------\n');
     });
 

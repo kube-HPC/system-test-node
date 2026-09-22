@@ -31,7 +31,8 @@ const {
     intervalDelay,
     checkEqualWithRetries,
     checkInRangeWithRetries,
-    loginWithRetry
+    loginWithRetry,
+    refreshTokenIfNeeded
 } = require('../utils/misc_utils');
 
 const { alg: statefull } = require("../additionalFiles/defaults/algorithms/timeStartstream");
@@ -83,7 +84,9 @@ describe("streaming pipeline test", () => {
         }
     }
 
-    beforeEach(function () {
+    beforeEach(async function () {
+        this.timeout(1000 * 60 * 2);
+        dev_token = await refreshTokenIfNeeded(dev_token);
         console.log('\n-----------------------------------------------\n');
     });
 

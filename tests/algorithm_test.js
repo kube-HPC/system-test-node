@@ -73,7 +73,8 @@ const {
 
 const {
     intervalDelay,
-    loginWithRetry
+    loginWithRetry,
+    refreshTokenIfNeeded
 } = require('../utils/misc_utils');
 
 chai.use(chaiHttp);
@@ -141,7 +142,9 @@ describe('Algorithm Tests', () => {
     }
     // End of apply algorithms section
 
-    beforeEach(function () {
+    beforeEach(async function () {
+        this.timeout(1000 * 60 * 2);
+        dev_token = await refreshTokenIfNeeded(dev_token);
         console.log('\n-----------------------------------------------\n');
     });
 
