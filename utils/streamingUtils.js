@@ -24,8 +24,10 @@ const waitForStatus = async (token, jobId, nodeName, expectedStatus, timeout = 6
     const start = Date.now();
     do {
         process.stdout.write(`\rWaiting for ${nodeName} status to be ${expectedStatus}, Time passed: ${Date.now() - start}/${timeout} ms...`)
-        let { body: graph } = await getRawGraph(jobId, token);
-        const filtered = graph.nodes.filter(node => node.nodeName === nodeName);
+        const { status, body: graph } = await getRawGraph(jobId, token);
+        // graph is persisted by the pipeline-driver shortly after the job starts; 404 until then is expected
+        const nodes = (status === 200 && Array.isArray(graph?.nodes)) ? graph.nodes : [];
+        const filtered = nodes.filter(node => node.nodeName === nodeName);
         if (filtered.length > 0) {
             const node = filtered[0];
             if (node.batch) {
