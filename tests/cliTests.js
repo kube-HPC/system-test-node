@@ -48,7 +48,7 @@ chai.use(assertArrays);
 const yaml = require('js-yaml');
 
 
-const runHkubectlConfig = () => {
+const runHkubectlConfig = (requireLogin = true) => {
     return new Promise((resolve, reject) => {
         console.log("Using URL: " + config.baseUrl + " and " + config.keycloakDevUser + " user for hkubectl configuration...");
         const configProcess = spawn('hkubectl', ['config']);
@@ -84,6 +84,10 @@ const runHkubectlConfig = () => {
 
         configProcess.on('close', (code) => {
             if (/Login failed/i.test(outputBuffer)) {
+                if (!requireLogin) {
+                    console.log('hkubectl login failed, but Keycloak is unavailable - continuing with endpoint only');
+                    return resolve();
+                }
                 reject(new Error('hkubectl login failed'));
             } else if (code === 0) {
                 console.log('hkubectl configured successfully');
@@ -125,6 +129,8 @@ describe('Hkubectl Tests', () => {
     before(async function () {
         this.timeout(1000 * 60 * 15);
         dev_token = await loginWithRetry();
+        // hkubectl reads endpoint/creds from ~/.hkube/.hkuberc; without this every command hits localhost
+        await runHkubectlConfig(Boolean(dev_token));
     });
     // Use this method to apply algorithms, as it ensures that the algorithms are inserted into the algList.
     // This, in turn, guarantees that no unnecessary data is left behind by properly removing those algorithms.
