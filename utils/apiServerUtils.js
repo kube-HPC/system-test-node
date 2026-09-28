@@ -1,6 +1,7 @@
 const path = require('path');
 const net = require('net');
 const { URL } = require('url');
+const { spawnSync } = require('child_process');
 const delay = require('delay');
 const config = require(path.join(process.cwd(), 'config/config'));
 const { client, filterPodsByName } = require('./kubeCtl');
@@ -11,6 +12,9 @@ const API_SERVER_POD_PREFIX = process.env.API_SERVER_POD_PREFIX || 'api-server';
 // REST port the api-server listens on inside the pod (helm: api_server.env.port).
 const API_SERVER_PORT = process.env.API_SERVER_PORT || 3000;
 const DEFAULT_NAMESPACE = process.env.NAMESPACE || 'default';
+const POD_PROXY_PROBE_TIMEOUT = 10 * 1000;
+// set once the kube-apiserver pod-proxy is seen timing out; stays true for the rest of the run
+let podProxyBroken = false;
 
 /**
  * Return the list of Running api-server pods (full pod objects).
@@ -37,16 +41,46 @@ const getApiServerPodNames = async (namespace = DEFAULT_NAMESPACE) => {
 /**
  * Query a single api-server pod for its leader-election status.
  *
- * The `/internal/v1/leader` route is blocked from the public ingress, so we reach it through
- * the Kubernetes pod-proxy. The proxied request hits the pod at path `/internal/v1/leader`
- * (without the `/hkube/api-server` ingress prefix), which is not blocked.
+ * Reaches the pod directly (not via the ingress/Service, which load-balances across pods and
+ * would hide which pod answered). Primary path is the Kubernetes pod-proxy; if kube-apiserver
+ * cannot dial pod IPs (control-plane -> pod overlay down) we fall back to `kubectl exec`, which
+ * rides the kubelet path instead.
  *
  * @returns {Promise<{current: string, etcdLeader: string, redisLeader: string, instances: Array<{instanceId: string, isLeader: boolean}>}>}
  */
 const getPodLeaderInfo = async (podName, namespace = DEFAULT_NAMESPACE) => {
-    const pathname = `/api/v1/namespaces/${namespace}/pods/${podName}:${API_SERVER_PORT}/proxy/internal/v1/leader`;
-    const res = await client.backend.http({ method: 'GET', pathname, json: true });
-    return res.body;
+    if (!podProxyBroken) {
+        try {
+            const pathname = `/api/v1/namespaces/${namespace}/pods/${podName}:${API_SERVER_PORT}/proxy/internal/v1/leader`;
+            // kube-apiserver's own dial timeout is ~30s; cap the probe so the first call stays well inside test timeouts
+            const res = await Promise.race([
+                client.backend.http({ method: 'GET', pathname, json: true }),
+                delay(POD_PROXY_PROBE_TIMEOUT).then(() => { throw new Error('pod-proxy probe timed out'); }),
+            ]);
+            return res.body;
+        }
+        catch (error) {
+            if (!/timed out|i\/o timeout|ETIMEDOUT|ECONNREFUSED|no route to host/i.test(error.message)) {
+                throw error;
+            }
+            podProxyBroken = true;
+            write_log(`pod-proxy unreachable (${error.message}); falling back to kubectl exec`, 'warn');
+        }
+    }
+    return getPodLeaderInfoViaExec(podName, namespace);
+};
+
+const getPodLeaderInfoViaExec = (podName, namespace) => {
+    const args = ['exec', '-n', namespace, podName, '--', 'wget', '-qO-', `http://localhost:${API_SERVER_PORT}/internal/v1/leader`];
+    const env = process.env.K8S_CONFIG_PATH ? { ...process.env, KUBECONFIG: process.env.K8S_CONFIG_PATH } : process.env;
+    const res = spawnSync('kubectl', args, { encoding: 'utf-8', env, timeout: 20000 });
+    if (res.error) {
+        throw res.error;
+    }
+    if (res.status !== 0) {
+        throw new Error(`kubectl exec failed (${res.status}): ${(res.stderr || '').trim()}`);
+    }
+    return JSON.parse(res.stdout);
 };
 
 /**
