@@ -984,6 +984,14 @@ describe('all swagger calls test ', () => {
             description: "string description"
         }
 
+        // runs even when an assertion fails mid-test, so a stale experiment never leaks into the next run
+        const deleteTestExperiment = () => chai.request(config.apiServerUrl)
+            .delete(`/experiment/${experiment.name}`)
+            .set("Authorization", `Bearer ${dev_token}`);
+
+        beforeEach(deleteTestExperiment);
+        afterEach(deleteTestExperiment);
+
         it('test  GET /experiment/{name}', async () => {
             const name = "main";
             const res = await chai.request(config.apiServerUrl)
