@@ -204,9 +204,11 @@ describe("streaming pipeline test", () => {
             await createAlg(statefull, 0.5);
             await createAlg(stateless);
 
+            // e2e namespace quota (DEFAULT_QUOTA_MEM=20Gi, 512Mi per worker) caps stateless pods at ~29;
+            // rate 1200 overshoots to 31 and gets stuck at the cap, so use a rate whose overshoot fits (~26)
             streamSimple.flowInput = createFlowInput_Simple({
                 programs: [
-                    { rate: 1200, time: 50 }
+                    { rate: 1000, time: 50 }
                 ]
             });
 
@@ -217,16 +219,16 @@ describe("streaming pipeline test", () => {
             await waitForStatus(dev_token, jobId, simple_statelessNodeName, 'active', STATELESS_ACTIVE_TIMEOUT, ACTIVE_POLL_INTERVAL);
 
             await intervalDelay('Waiting phase 1', 30 * 1000);
-            await checkInRangeWithRetries(getRequiredPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 27, Infinity, 'Required pods'); // ideal amount is 26, but queue is filled
+            await checkInRangeWithRetries(getRequiredPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 23, Infinity, 'Required pods'); // ideal amount is ~22, but queue is filled
 
             await intervalDelay('Waiting phase 2', 30 * 1000);
-            // overshoot while emptying the queue: must exceed the steady-state upper bound (27) asserted in phase 3
-            await checkInRangeWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 28, Infinity, 'Current pods', 15 * 1000, 10);
+            // overshoot while emptying the queue: must exceed the steady-state upper bound (23) asserted in phase 3
+            await checkInRangeWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 24, Infinity, 'Current pods', 15 * 1000, 10);
             await checkInRangeWithRetries(getThroughput, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 90, Infinity, 'Throughput');
 
             await intervalDelay('Waiting phase 3', 240 * 1000);
-            // Suppose to have 26 pods, but might go to 24~27
-            await checkInRangeWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 24, 27, 'Current pods', 15 * 1000, 15);
+            // Suppose to have ~22 pods, but might go to 20~23
+            await checkInRangeWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 20, 23, 'Current pods', 15 * 1000, 15);
             await checkInRangeWithRetries(getThroughput, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 98, 102, 'Throughput', 15 * 1000, 5);
             await stopPipeline(jobId, dev_token);
         }).timeout(700 * 1000);
