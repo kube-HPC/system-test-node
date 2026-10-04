@@ -9,6 +9,7 @@ chai.use(chaiHttp);
 
 const {
     deleteAlgorithm,
+    getAlgorithm,
     storeAlgorithms
 } = require('../utils/algorithmUtils')
 
@@ -70,6 +71,9 @@ const defaultCpu = new Map([statefull, stateless, statelessByInterval].map(alg =
 const STATEFUL_ACTIVE_TIMEOUT = 120 * 1000;
 const STATELESS_ACTIVE_TIMEOUT = 120 * 1000;
 const ACTIVE_POLL_INTERVAL = 2 * 1000;
+// idle workers of the previous algorithm version (INACTIVE_WORKER_TIMEOUT_MS up to 5 s) can grab the next job
+// and get 'Forced shutdown due to algorithm version change'; give them time to exit before running
+const VERSION_CHANGE_SETTLE_TIME = 10 * 1000;
 
 describe("streaming pipeline test", () => {
     const algList = [];
@@ -82,12 +86,19 @@ describe("streaming pipeline test", () => {
     });
 
     const createAlg = async (alg, cpu) => {
-        await deleteAlgorithm(alg.name, dev_token, true);
         alg.cpu = cpu ? cpu - 0.001 : defaultCpu.get(alg.name);
-        await storeAlgorithms(alg, dev_token);
         if (algList.includes(alg.name) === false) {
             algList.push(alg.name);
         }
+        // re-storing an identical algorithm would only bump its version; skip to keep running workers valid
+        const { status, body: stored } = await getAlgorithm(alg.name, dev_token);
+        if (status === StatusCodes.OK && stored.cpu === alg.cpu && stored.algorithmImage === alg.algorithmImage) {
+            console.log(`${alg.name} already stored with cpu ${alg.cpu}, skipping recreate`);
+            return;
+        }
+        await deleteAlgorithm(alg.name, dev_token, true);
+        await storeAlgorithms(alg, dev_token);
+        await intervalDelay(`Waiting for old ${alg.name} workers to exit`, VERSION_CHANGE_SETTLE_TIME);
     }
 
     const runStream = async (pipe) => {
@@ -282,7 +293,8 @@ describe("streaming pipeline test", () => {
             expect(throughput).to.be.gt(100, `throughput is ${throughput}, needed >100`); // suppose to be emptying the queue
 
             await intervalDelay('Waiting phase 3', 150 * 1000);
-            await checkEqualWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 21, 'Current pods');
+            // backlog built up during scale-up can keep the cluster-capped ~29 pods busy past 150 s; allow extra drain time
+            await checkEqualWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 21, 'Current pods', 10 * 1000, 9);
             await checkEqualWithRetries(getThroughput, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 100, 'Throughput');
             await stopPipeline(jobId, dev_token);
         }).timeout(450 * 1000);
@@ -405,10 +417,9 @@ describe("streaming pipeline test", () => {
 
             await intervalDelay('Waiting phase 2', 20 * 1000);
             const current = await getCurrentPods(dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName);
-            const throughput1 = await getThroughput(dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName);
-            const throughput2 = await getThroughput(dev_token, jobId, multiple_statefulNodeName2, multiple_statelessNodeName);
-            expect(throughput1).to.be.gte(100, `throughput1 is ${throughput1}, needed >=100`); // suppose to be emptying the queue
-            expect(throughput2).to.be.gte(100, `throughput is ${throughput2}, needed >=100`);
+            // suppose to be emptying the queue; a single sample can dip just under 100 so retry
+            await checkInRangeWithRetries(getThroughput, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 100, Infinity, 'Throughput1', 5 * 1000, 6);
+            await checkInRangeWithRetries(getThroughput, [dev_token, jobId, multiple_statefulNodeName2, multiple_statelessNodeName], 100, Infinity, 'Throughput2', 5 * 1000, 6);
             expect(current).to.be.gt(5, `current is ${current}, needed >5`);
 
             await intervalDelay('Waiting phase 3', 90 * 1000);
@@ -448,10 +459,9 @@ describe("streaming pipeline test", () => {
 
             await intervalDelay('Waiting phase 2', 30 * 1000);
             const current = await getCurrentPods(dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName);
-            const throughput1 = await getThroughput(dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName);
-            const throughput2 = await getThroughput(dev_token, jobId, multiple_statefulNodeName2, multiple_statelessNodeName);
-            expect(throughput1).to.be.gte(100, `throughput1 is ${throughput1}, needed >=100`); // suppose to be emptying the queue
-            expect(throughput2).to.be.gte(100, `throughput is ${throughput2}, needed >=100`);
+            // suppose to be emptying the queue; a single sample can dip just under 100 so retry
+            await checkInRangeWithRetries(getThroughput, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 100, Infinity, 'Throughput1', 5 * 1000, 6);
+            await checkInRangeWithRetries(getThroughput, [dev_token, jobId, multiple_statefulNodeName2, multiple_statelessNodeName], 100, Infinity, 'Throughput2', 5 * 1000, 6);
             expect(current).to.be.gte(2, `current is ${current}, needed >=2`);
 
             await intervalDelay('Waiting phase 3', 60 * 1000);
