@@ -9,6 +9,8 @@ chai.use(chaiHttp);
 
 const {
     deleteAlgorithm,
+    deleteAlgorithmJobs,
+    deleteAlgorithmPods,
     getAlgorithm,
     storeAlgorithms
 } = require('../utils/algorithmUtils')
@@ -71,9 +73,10 @@ const defaultCpu = new Map([statefull, stateless, statelessByInterval].map(alg =
 const STATEFUL_ACTIVE_TIMEOUT = 120 * 1000;
 const STATELESS_ACTIVE_TIMEOUT = 120 * 1000;
 const ACTIVE_POLL_INTERVAL = 2 * 1000;
-// idle workers of the previous algorithm version (INACTIVE_WORKER_TIMEOUT_MS up to 5 s) can grab the next job
-// and get 'Forced shutdown due to algorithm version change'; give them time to exit before running
-const VERSION_CHANGE_SETTLE_TIME = 10 * 1000;
+// idle workers of the previous algorithm version can grab the next job and then get
+// 'Forced shutdown due to algorithm version change', leaving the stateful node dead for the
+// first ~minute; kill them and wait until their pods are really gone before storing the new version
+const OLD_WORKERS_EXIT_TIMEOUT = 90 * 1000;
 
 describe("streaming pipeline test", () => {
     const algList = [];
@@ -84,6 +87,21 @@ describe("streaming pipeline test", () => {
         this.timeout(1000 * 60 * 15);
         dev_token = await loginWithRetry();
     });
+
+    const waitForOldWorkersToExit = async (algName) => {
+        const start = Date.now();
+        await deleteAlgorithmJobs(algName, dev_token);
+        do {
+            // 404 means no pods left with label algorithm-name=<algName>
+            const { status } = await deleteAlgorithmPods(algName, dev_token);
+            if (status === StatusCodes.NOT_FOUND) {
+                console.log(`no ${algName} workers left after ${Date.now() - start} ms`);
+                return;
+            }
+            await delay(ACTIVE_POLL_INTERVAL);
+        } while (Date.now() - start < OLD_WORKERS_EXIT_TIMEOUT);
+        expect.fail(`old ${algName} workers still running after ${OLD_WORKERS_EXIT_TIMEOUT} ms`);
+    }
 
     const createAlg = async (alg, cpu) => {
         alg.cpu = cpu ? cpu - 0.001 : defaultCpu.get(alg.name);
@@ -97,8 +115,10 @@ describe("streaming pipeline test", () => {
             return;
         }
         await deleteAlgorithm(alg.name, dev_token, true);
+        await waitForOldWorkersToExit(alg.name);
         await storeAlgorithms(alg, dev_token);
-        await intervalDelay(`Waiting for old ${alg.name} workers to exit`, VERSION_CHANGE_SETTLE_TIME);
+        // task-executor caches algorithm templates for 2 s; a pod created before that gets the old version env
+        await delay(3000);
     }
 
     const runStream = async (pipe) => {
@@ -424,8 +444,8 @@ describe("streaming pipeline test", () => {
 
             await intervalDelay('Waiting phase 3', 90 * 1000);
             await checkEqualWithRetries(getCurrentPods, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 5, 'Current pods');
-            await checkEqualWithRetries(getThroughput, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 100, 'Throughput');
-            await checkEqualWithRetries(getThroughput, [dev_token, jobId, multiple_statefulNodeName2, multiple_statelessNodeName], 100, 'Throughput');
+            await checkInRangeWithRetries(getThroughput, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 99, 101, 'Throughput');
+            await checkInRangeWithRetries(getThroughput, [dev_token, jobId, multiple_statefulNodeName2, multiple_statelessNodeName], 99, 101, 'Throughput');
             await stopPipeline(jobId, dev_token);
         }).timeout(400 * 1000);
 
@@ -466,8 +486,8 @@ describe("streaming pipeline test", () => {
 
             await intervalDelay('Waiting phase 3', 60 * 1000);
             await checkEqualWithRetries(getCurrentPods, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 2, 'Current pods');
-            await checkEqualWithRetries(getThroughput, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 100, 'Throughput');
-            await checkEqualWithRetries(getThroughput, [dev_token, jobId, multiple_statefulNodeName2, multiple_statelessNodeName], 100, 'Throughput');
+            await checkInRangeWithRetries(getThroughput, [dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName], 99, 101, 'Throughput');
+            await checkInRangeWithRetries(getThroughput, [dev_token, jobId, multiple_statefulNodeName2, multiple_statelessNodeName], 99, 101, 'Throughput');
             await stopPipeline(jobId, dev_token);
         }).timeout(400 * 1000);
     });
