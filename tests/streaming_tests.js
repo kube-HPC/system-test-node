@@ -64,9 +64,17 @@ const differentFlows_statefulNodeName2 = streamDifferentFlows.nodes.filter(node 
 const differentFlows_statelessNodeName = streamDifferentFlows.nodes.filter(node => node.stateType === 'stateless')[0].nodeName;
 
 
+// alg objects are shared module state; remember original cpu so tests without an explicit cpu don't inherit the previous test's value
+const defaultCpu = new Map([statefull, stateless, statelessByInterval].map(alg => [alg.name, alg.cpu]));
+
+const STATEFUL_ACTIVE_TIMEOUT = 120 * 1000;
+const STATELESS_ACTIVE_TIMEOUT = 120 * 1000;
+const ACTIVE_POLL_INTERVAL = 2 * 1000;
+
 describe("streaming pipeline test", () => {
     const algList = [];
     let dev_token;
+    let currentJobId;
 
     before(async function () {
         this.timeout(1000 * 60 * 15);
@@ -75,19 +83,33 @@ describe("streaming pipeline test", () => {
 
     const createAlg = async (alg, cpu) => {
         await deleteAlgorithm(alg.name, dev_token, true);
-        if (cpu) {
-            alg.cpu = cpu - 0.001;
-        }
+        alg.cpu = cpu ? cpu - 0.001 : defaultCpu.get(alg.name);
         await storeAlgorithms(alg, dev_token);
         if (algList.includes(alg.name) === false) {
             algList.push(alg.name);
         }
     }
 
+    const runStream = async (pipe) => {
+        const res = await runRaw(pipe, dev_token);
+        currentJobId = res.body.jobId;
+        return currentJobId;
+    }
+
     beforeEach(async function () {
         this.timeout(1000 * 60 * 2);
         dev_token = await refreshTokenIfNeeded(dev_token);
+        currentJobId = undefined;
         console.log('\n-----------------------------------------------\n');
+    });
+
+    afterEach(async function () {
+        this.timeout(1000 * 60);
+        // passing tests stop their own pipeline; on failure stop it here so it doesn't keep running during the next tests
+        if (this.currentTest.state === 'failed' && currentJobId) {
+            console.log(`\nTest failed, stopping pipeline ${currentJobId}`);
+            await stopPipeline(currentJobId, dev_token).catch(console.error);
+        }
     });
 
     after(async function () {
@@ -127,12 +149,11 @@ describe("streaming pipeline test", () => {
                 ]
             });
 
-            const res = await runRaw(streamSimple, dev_token);
-            const { jobId } = res.body;
+            const jobId = await runStream(streamSimple);
 
             // Wait all nodes to be active
-            await waitForStatus(dev_token, jobId, simple_statefulNodeName, 'active', 60 * 1000, 2 * 1000);
-            await waitForStatus(dev_token, jobId, simple_statelessNodeName, 'active', 120 * 1000, 2 * 1000);
+            await waitForStatus(dev_token, jobId, simple_statefulNodeName, 'active', STATEFUL_ACTIVE_TIMEOUT, ACTIVE_POLL_INTERVAL);
+            await waitForStatus(dev_token, jobId, simple_statelessNodeName, 'active', STATELESS_ACTIVE_TIMEOUT, ACTIVE_POLL_INTERVAL);
 
             await intervalDelay('Waiting phase 1', 30 * 1000);
             await checkInRangeWithRetries(getRequiredPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 4, Infinity, 'Required pods', 10000, 5);
@@ -158,12 +179,11 @@ describe("streaming pipeline test", () => {
                 ]
             });
 
-            const res = await runRaw(streamSimple, dev_token);
-            const { jobId } = res.body;
+            const jobId = await runStream(streamSimple);
 
             // Wait all nodes to be active
-            await waitForStatus(dev_token, jobId, simple_statefulNodeName, 'active', 60 * 1000, 2 * 1000);
-            await waitForStatus(dev_token, jobId, simple_statelessNodeName, 'active', 120 * 1000, 2 * 1000);
+            await waitForStatus(dev_token, jobId, simple_statefulNodeName, 'active', STATEFUL_ACTIVE_TIMEOUT, ACTIVE_POLL_INTERVAL);
+            await waitForStatus(dev_token, jobId, simple_statelessNodeName, 'active', STATELESS_ACTIVE_TIMEOUT, ACTIVE_POLL_INTERVAL);
 
             await intervalDelay('Waiting phase 1', 30 * 1000);
             await checkInRangeWithRetries(getRequiredPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 27, Infinity, 'Required pods'); // ideal amount is 26, but queue is filled
@@ -190,12 +210,11 @@ describe("streaming pipeline test", () => {
                 ]
             });
 
-            const res = await runRaw(streamSimple, dev_token);
-            const { jobId } = res.body;
+            const jobId = await runStream(streamSimple);
 
             // Wait all nodes to be active
-            await waitForStatus(dev_token, jobId, simple_statefulNodeName, 'active', 60 * 1000, 2 * 1000);
-            await waitForStatus(dev_token, jobId, simple_statelessNodeName, 'active', 120 * 1000, 2 * 1000);
+            await waitForStatus(dev_token, jobId, simple_statefulNodeName, 'active', STATEFUL_ACTIVE_TIMEOUT, ACTIVE_POLL_INTERVAL);
+            await waitForStatus(dev_token, jobId, simple_statelessNodeName, 'active', STATELESS_ACTIVE_TIMEOUT, ACTIVE_POLL_INTERVAL);
 
             await intervalDelay('Waiting phase 1', 40 * 1000);
             const current = await getCurrentPods(dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName);
@@ -220,12 +239,11 @@ describe("streaming pipeline test", () => {
                 ]
             });
 
-            const res = await runRaw(streamSimple, dev_token);
-            const { jobId } = res.body;
+            const jobId = await runStream(streamSimple);
 
             // Wait all nodes to be active
-            await waitForStatus(dev_token, jobId, simple_statefulNodeName, 'active', 60 * 1000, 2 * 1000);
-            await waitForStatus(dev_token, jobId, simple_statelessNodeName, 'active', 120 * 1000, 2 * 1000);
+            await waitForStatus(dev_token, jobId, simple_statefulNodeName, 'active', STATEFUL_ACTIVE_TIMEOUT, ACTIVE_POLL_INTERVAL);
+            await waitForStatus(dev_token, jobId, simple_statelessNodeName, 'active', STATELESS_ACTIVE_TIMEOUT, ACTIVE_POLL_INTERVAL);
 
             await intervalDelay('Waiting phase 1', 40 * 1000);
             await checkInRangeWithRetries(getThroughput, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 100, Infinity, 'Throughput'); // suppose to be emptying the queue
@@ -247,12 +265,11 @@ describe("streaming pipeline test", () => {
                 ]
             });
 
-            const res = await runRaw(streamSimple, dev_token);
-            const { jobId } = res.body;
+            const jobId = await runStream(streamSimple);
 
             // Wait all nodes to be active
-            await waitForStatus(dev_token, jobId, simple_statefulNodeName, 'active', 60 * 1000, 2 * 1000);
-            await waitForStatus(dev_token, jobId, simple_statelessNodeName, 'active', 120 * 1000, 2 * 1000);
+            await waitForStatus(dev_token, jobId, simple_statefulNodeName, 'active', STATEFUL_ACTIVE_TIMEOUT, ACTIVE_POLL_INTERVAL);
+            await waitForStatus(dev_token, jobId, simple_statelessNodeName, 'active', STATELESS_ACTIVE_TIMEOUT, ACTIVE_POLL_INTERVAL);
 
             await intervalDelay('Waiting phase 1', 30 * 1000);
             await checkInRangeWithRetries(getRequiredPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 22, Infinity, 'Required');  // ideal amount is 21, but queue is filled
@@ -282,12 +299,11 @@ describe("streaming pipeline test", () => {
                 ]
             });
 
-            const res = await runRaw(streamSimple, dev_token);
-            const { jobId } = res.body;
+            const jobId = await runStream(streamSimple);
 
             // Wait all nodes to be active
-            await waitForStatus(dev_token, jobId, simple_statefulNodeName, 'active', 60 * 1000, 2 * 1000);
-            const statelessWaitingTime = await waitForStatus(dev_token, jobId, simple_statelessNodeName, 'active', 120 * 1000, 2 * 1000);
+            await waitForStatus(dev_token, jobId, simple_statefulNodeName, 'active', STATEFUL_ACTIVE_TIMEOUT, ACTIVE_POLL_INTERVAL);
+            const statelessWaitingTime = await waitForStatus(dev_token, jobId, simple_statelessNodeName, 'active', STATELESS_ACTIVE_TIMEOUT, ACTIVE_POLL_INTERVAL);
 
             await intervalDelay('Waiting phase 1', 145 * 1000 - statelessWaitingTime);
             let current = await getCurrentPods(dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName);
@@ -310,12 +326,11 @@ describe("streaming pipeline test", () => {
                 ]
             });
 
-            const res = await runRaw(streamSimple, dev_token);
-            const { jobId } = res.body;
+            const jobId = await runStream(streamSimple);
 
             // Wait all nodes to be active
-            await waitForStatus(dev_token, jobId, simple_statefulNodeName, 'active', 60 * 1000, 2 * 1000);
-            const statelessWaitingTime = await waitForStatus(dev_token, jobId, simple_statelessNodeName, 'active', 120 * 1000, 2 * 1000);
+            await waitForStatus(dev_token, jobId, simple_statefulNodeName, 'active', STATEFUL_ACTIVE_TIMEOUT, ACTIVE_POLL_INTERVAL);
+            const statelessWaitingTime = await waitForStatus(dev_token, jobId, simple_statelessNodeName, 'active', STATELESS_ACTIVE_TIMEOUT, ACTIVE_POLL_INTERVAL);
 
             await intervalDelay('Waiting phase 1', 140 * 1000 - statelessWaitingTime);
             let current = await getCurrentPods(dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName);
@@ -343,12 +358,11 @@ describe("streaming pipeline test", () => {
                 ]
             });
 
-            const res = await runRaw(streamInterval, dev_token);
-            const { jobId } = res.body;
+            const jobId = await runStream(streamInterval);
 
             // Wait all nodes to be active
-            await waitForStatus(dev_token, jobId, interval_statefulNodeName, 'active', 60 * 1000, 2 * 1000);
-            await waitForStatus(dev_token, jobId, interval_statelessNodeName, 'active', 120 * 1000, 2 * 1000);
+            await waitForStatus(dev_token, jobId, interval_statefulNodeName, 'active', STATEFUL_ACTIVE_TIMEOUT, ACTIVE_POLL_INTERVAL);
+            await waitForStatus(dev_token, jobId, interval_statelessNodeName, 'active', STATELESS_ACTIVE_TIMEOUT, ACTIVE_POLL_INTERVAL);
             await intervalDelay('Waiting streaming to run for data to update', 30 * 1000);
 
             // Should get to required = 1 at some point.
@@ -368,8 +382,8 @@ describe("streaming pipeline test", () => {
 
     describe("multiple streaming nodes pipeline tests", () => {
         it("should satisfy the request rate of 2 statefuls", async () => {
-            await createAlg(statefull, dev_token);
-            await createAlg(stateless, dev_token);
+            await createAlg(statefull);
+            await createAlg(stateless);
 
             streamMultiple.flowInput = createFlowInput_Simple({
                 programs: [
@@ -377,13 +391,12 @@ describe("streaming pipeline test", () => {
                 ]
             });
 
-            const res = await runRaw(streamMultiple, dev_token);
-            const { jobId } = res.body;
+            const jobId = await runStream(streamMultiple);
 
             // Wait all nodes to be active
-            await waitForStatus(dev_token, jobId, multiple_statefulNodeName1, 'active', 60 * 1000, 2 * 1000);
-            await waitForStatus(dev_token, jobId, multiple_statefulNodeName2, 'active', 60 * 1000, 2 * 1000);
-            await waitForStatus(dev_token, jobId, multiple_statelessNodeName, 'active', 120 * 1000, 2 * 1000);
+            await waitForStatus(dev_token, jobId, multiple_statefulNodeName1, 'active', STATEFUL_ACTIVE_TIMEOUT, ACTIVE_POLL_INTERVAL);
+            await waitForStatus(dev_token, jobId, multiple_statefulNodeName2, 'active', STATEFUL_ACTIVE_TIMEOUT, ACTIVE_POLL_INTERVAL);
+            await waitForStatus(dev_token, jobId, multiple_statelessNodeName, 'active', STATELESS_ACTIVE_TIMEOUT, ACTIVE_POLL_INTERVAL);
 
             await intervalDelay('Waiting phase 1', 30 * 1000);
             const required = await getRequiredPods(dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName);
@@ -421,13 +434,12 @@ describe("streaming pipeline test", () => {
             };
             streamDifferentFlows.flowInput = combineFlows([flow1Config, flow2Config]);
 
-            const res = await runRaw(streamDifferentFlows, dev_token);
-            const { jobId } = res.body;
+            const jobId = await runStream(streamDifferentFlows);
 
             // Wait all nodes to be active
-            await waitForStatus(dev_token, jobId, differentFlows_statefulNodeName1, 'active', 60 * 1000, 2 * 1000);
-            await waitForStatus(dev_token, jobId, differentFlows_statefulNodeName2, 'active', 60 * 1000, 2 * 1000);
-            await waitForStatus(dev_token, jobId, differentFlows_statelessNodeName, 'active', 120 * 1000, 2 * 1000);
+            await waitForStatus(dev_token, jobId, differentFlows_statefulNodeName1, 'active', STATEFUL_ACTIVE_TIMEOUT, ACTIVE_POLL_INTERVAL);
+            await waitForStatus(dev_token, jobId, differentFlows_statefulNodeName2, 'active', STATEFUL_ACTIVE_TIMEOUT, ACTIVE_POLL_INTERVAL);
+            await waitForStatus(dev_token, jobId, differentFlows_statelessNodeName, 'active', STATELESS_ACTIVE_TIMEOUT, ACTIVE_POLL_INTERVAL);
 
             await intervalDelay('Waiting phase 1', 30 * 1000);
             const required = await getRequiredPods(dev_token, jobId, multiple_statefulNodeName1, multiple_statelessNodeName);

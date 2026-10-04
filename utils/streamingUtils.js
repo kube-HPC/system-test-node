@@ -22,6 +22,7 @@ const {
  */
 const waitForStatus = async (token, jobId, nodeName, expectedStatus, timeout = 60 * 1000 * 10, interval = 5 * 1000) => {
     const start = Date.now();
+    let lastSeen = 'no graph response';
     do {
         process.stdout.write(`\rWaiting for ${nodeName} status to be ${expectedStatus}, Time passed: ${Date.now() - start}/${timeout} ms...`)
         const { status, body: graph } = await getRawGraph(jobId, token);
@@ -36,15 +37,22 @@ const waitForStatus = async (token, jobId, nodeName, expectedStatus, timeout = 6
                     console.log(`\n${nodeName} is ${expectedStatus}`);
                     return Date.now() - start;
                 }
+                lastSeen = `batch statuses [${[...new Set(node.batch.map(task => task.status))].join(', ')}]`;
             }
             else if (node.status === expectedStatus) {
                 console.log(`\n${nodeName} is ${expectedStatus}`);
                 return Date.now() - start;
             }
+            else {
+                lastSeen = `status ${node.status}`;
+            }
+        }
+        else {
+            lastSeen = status === 200 ? 'node not in graph' : `graph response ${status}`;
         }
         await delay(interval);
     } while (Date.now() - start < timeout);
-    expect.fail(`\ntimeout exceeded trying to get ${expectedStatus} status in result for node ${nodeName}`);
+    expect.fail(`\ntimeout exceeded trying to get ${expectedStatus} status in result for node ${nodeName} (jobId ${jobId}, last seen: ${lastSeen})`);
 }
 
 /**
