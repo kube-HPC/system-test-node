@@ -1,0 +1,50 @@
+name: high-availability-test-only
+
+# Manual trigger for the HighAvailability suite alone, on the self-hosted e2e runner.
+# Mirrors the HighAvailability job in selfhosted-smoke.yml without its upstream dependencies.
+
+on:
+  workflow_dispatch:
+
+env:
+  KUBE_CONTEXT: e2e.hkube.org
+  # in-VPC path hits the ingress default cert
+  NODE_TLS_REJECT_UNAUTHORIZED: "0"
+
+jobs:
+  HighAvailability:
+    runs-on: [self-hosted, hkube-system-test]
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - name: resolve base url
+        run: |
+          URL="$E2E_URL"
+          case "$URL" in
+            https://*|http://*) ;;
+            *) URL="https://$URL" ;;
+          esac
+          echo "BASE_URL=$URL" >> $GITHUB_ENV
+        env:
+          E2E_URL: ${{ secrets.E2E_URL }}
+      - name: select kubeconfig context
+        run: |
+          KUBECFG="$RUNNER_TEMP/kubeconfig-$GITHUB_RUN_ID-$GITHUB_JOB"
+          install -m 600 /dev/null "$KUBECFG"
+          cat /etc/hkube/kube/config > "$KUBECFG"
+          kubectl --kubeconfig="$KUBECFG" config use-context "$KUBE_CONTEXT"
+          echo "KUBECONFIG=$KUBECFG" >> $GITHUB_ENV
+          echo "K8S_CONFIG_PATH=$KUBECFG" >> $GITHUB_ENV
+      - run: npm ci --prefer-offline
+      - name: test
+        run: npm run HighAvailability
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
+          KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
+          KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
+          K8S_VERSION: 1.13
+          LOGIN_ATTEMPTS: 2
+          LOGIN_DELAY_MS: 5000
+      - name: cleanup kubeconfig
+        if: always()
+        run: rm -f "$KUBECONFIG"
