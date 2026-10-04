@@ -189,7 +189,8 @@ describe("streaming pipeline test", () => {
             await checkInRangeWithRetries(getRequiredPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 27, Infinity, 'Required pods'); // ideal amount is 26, but queue is filled
 
             await intervalDelay('Waiting phase 2', 30 * 1000);
-            await checkInRangeWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 31, Infinity, 'Current pods', 15 * 1000, 10); // emptying queue
+            // overshoot while emptying the queue: must exceed the steady-state upper bound (27) asserted in phase 3
+            await checkInRangeWithRetries(getCurrentPods, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 28, Infinity, 'Current pods', 15 * 1000, 10);
             await checkInRangeWithRetries(getThroughput, [dev_token, jobId, simple_statefulNodeName, simple_statelessNodeName], 90, Infinity, 'Throughput');
 
             await intervalDelay('Waiting phase 3', 240 * 1000);

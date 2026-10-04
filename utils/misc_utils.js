@@ -43,7 +43,7 @@ const _checkConditionWithRetries = async (conditionFn, computeFn, computeFuncArg
             process.stdout.write('\x1b[2K\r');
             return { attempt, value: computedValue };
         }
-        process.stdout.write(`\rFailed check ${attempt}/${retries}`);
+        process.stdout.write(`\rFailed check ${attempt}/${retries} (value: ${computedValue})`);
         if (attempt < retries) await delay(retryDelay);
     }
     return computedValue;
