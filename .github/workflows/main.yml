@@ -1,336 +1,429 @@
-# This is a basic workflow to help you get started with Actions
-
 name: CI-MAIN
 
-# Controls when the action will run.
 on:
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
   schedule:
     - cron: "30 22 * * 0-4"
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+
+env:
+  KUBE_CONTEXT: e2e.hkube.org
+  # In-VPC path hits the ingress default cert.
+  NODE_TLS_REJECT_UNAUTHORIZED: "0"
+
 jobs:
-  # This workflow contains a single job called "build"
   Deployment:
-    # Runs on the self-hosted pool, which already has kubectl/helm and the shared kubeconfig
     runs-on: [self-hosted, hkube-system-test]
     env:
-      # single kubeconfig on the runner holds all cluster contexts; it is shared by every
-      # job on the runner, so never delete/move it and never switch its current-context.
-      # the context is passed inline to kubectl/helm instead.
+      # Shared kubeconfig: pass context inline; never change current-context.
       KUBECONFIG: /etc/hkube/kube/config
-      KUBE_CONTEXT: e2e.hkube.org
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
       - name: get environment
         run: |
           echo "selected context: $KUBE_CONTEXT"
-          # values template builds urls as ${E2E_URL}/hkube, so keep the scheme
+          # Values template builds URLs as ${E2E_URL}/hkube.
           URL="$E2E_URL"
           case "$URL" in
             https://*|http://*) ;;
             *) URL="https://$URL" ;;
           esac
           echo "::add-mask::$URL"
-          echo E2E_URL=$URL >> $GITHUB_ENV
+          echo "E2E_URL=$URL" >> "$GITHUB_ENV"
         env:
           E2E_URL: ${{ secrets.E2E_URL }}
       - name: verify kubectl
         run: kubectl --context "$KUBE_CONTEXT" cluster-info
       - name: deploy
-        run: ./travis/deploy.sh ${{ secrets.HKUBE_DOMAIN_RAW }} "$KUBE_CONTEXT"
+        run: ./travis/deploy.sh "${{ secrets.HKUBE_DOMAIN_RAW }}" "$KUBE_CONTEXT"
         env:
           DOCKER_BUILD_PUSH_PASSWORD: ${{ secrets.DOCKER_BUILD_PUSH_PASSWORD }}
           DOCKER_BUILD_PUSH_USERNAME: ${{ secrets.DOCKER_BUILD_PUSH_USERNAME }}
           IMAGE_PULL_USERNAME: ${{ secrets.IMAGE_PULL_USERNAME }}
           IMAGE_PULL_PASSWORD: ${{ secrets.IMAGE_PULL_PASSWORD }}
+
   SwaggerTests:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, hkube-system-test]
+    timeout-minutes: 30
     needs: Deployment
     steps:
-      - uses: actions/checkout@v2
-      - run: npm ci
-      - name: create kubeconfig
+      - uses: actions/checkout@v4
+      - name: runner info
         run: |
-          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
-          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
+          echo "runner=$RUNNER_NAME user=$(whoami) host=$(hostname)"
+          echo "workspace=$GITHUB_WORKSPACE temp=$RUNNER_TEMP"
+          echo "context=$KUBE_CONTEXT"
+          node -v; npm -v; kubectl version --client | head -1; helm version --short
+      - name: resolve base url
+        run: |
+          # E2E_URL may or may not carry a scheme; normalise to exactly one.
+          URL="$E2E_URL"
+          case "$URL" in
+            https://*|http://*) ;;
+            *) URL="https://$URL" ;;
+          esac
+          echo "BASE_URL=$URL" >> "$GITHUB_ENV"
+          echo "resolved host: $(echo "$URL" | sed -E 's#^https?://##' | cut -d/ -f1)"
         env:
-          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
+          E2E_URL: ${{ secrets.E2E_URL }}
+      - run: npm ci --prefer-offline
       - name: test
         run: npm test
         env:
-          BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
           KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
           KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
           KEYCLOAK_GUEST_PASS: ${{ secrets.KEYCLOAK_GUEST_PASS }}
           KEYCLOAK_GUEST_USER: ${{ secrets.KEYCLOAK_GUEST_USER }}
+          LOGIN_ATTEMPTS: 2
+          LOGIN_DELAY_MS: 5000
+
   GraphQLTests:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, hkube-system-test]
+    timeout-minutes: 30
     needs: Deployment
     steps:
-      - uses: actions/checkout@v2
-      - run: npm ci
-      - name: create kubeconfig
+      - uses: actions/checkout@v4
+      - name: resolve base url
         run: |
-          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
-          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
+          URL="$E2E_URL"
+          case "$URL" in
+            https://*|http://*) ;;
+            *) URL="https://$URL" ;;
+          esac
+          echo "BASE_URL=$URL" >> "$GITHUB_ENV"
         env:
-          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
+          E2E_URL: ${{ secrets.E2E_URL }}
+      - run: npm ci --prefer-offline
       - name: test
         run: npm run graphql
         env:
-          BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
           KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
           KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
           KEYCLOAK_GUEST_PASS: ${{ secrets.KEYCLOAK_GUEST_PASS }}
           KEYCLOAK_GUEST_USER: ${{ secrets.KEYCLOAK_GUEST_USER }}
+          LOGIN_ATTEMPTS: 2
+          LOGIN_DELAY_MS: 5000
+
   PipelineTests:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, hkube-system-test]
+    timeout-minutes: 45
     needs: [SwaggerTests, GraphQLTests]
     steps:
-      - uses: actions/checkout@v2
-      - run: npm ci
-      - name: create kubeconfig
+      - uses: actions/checkout@v4
+      - name: resolve base url
         run: |
-          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
-          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
+          URL="$E2E_URL"
+          case "$URL" in
+            https://*|http://*) ;;
+            *) URL="https://$URL" ;;
+          esac
+          echo "BASE_URL=$URL" >> "$GITHUB_ENV"
         env:
-          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
+          E2E_URL: ${{ secrets.E2E_URL }}
+      - run: npm ci --prefer-offline
       - name: test
         run: npm run pipelinetest
         env:
-          BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
           KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
           KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
-  NodeTests:
-    runs-on: ubuntu-latest
-    needs: [SwaggerTests, GraphQLTests]
-    steps:
-      - uses: actions/checkout@v2
-      - run: npm ci
-      - name: create kubeconfig
-        run: |
-          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
-          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
-        env:
-          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
-      - name: test
-        run: npm run nodetest
-        env:
-          BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
-          WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
-          KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
-          KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
-          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
-          K8S_VERSION: 1.13
-          K8S_CONFIG_PATH: /tmp/config
+          LOGIN_ATTEMPTS: 2
+          LOGIN_DELAY_MS: 5000
+
   JagearTests:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, hkube-system-test]
+    timeout-minutes: 45
     needs: [SwaggerTests, GraphQLTests]
     steps:
-      - uses: actions/checkout@v2
-      - run: npm ci
-      - name: create kubeconfig
+      - uses: actions/checkout@v4
+      - name: resolve base url
         run: |
-          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
-          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
+          URL="$E2E_URL"
+          case "$URL" in
+            https://*|http://*) ;;
+            *) URL="https://$URL" ;;
+          esac
+          echo "BASE_URL=$URL" >> "$GITHUB_ENV"
         env:
-          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
+          E2E_URL: ${{ secrets.E2E_URL }}
+      - run: npm ci --prefer-offline
       - name: test
         run: npm run jageartest
         env:
-          BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
           KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
           KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
+          LOGIN_ATTEMPTS: 2
+          LOGIN_DELAY_MS: 5000
+
   CodeApiTests:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, hkube-system-test]
+    timeout-minutes: 45
     needs: [SwaggerTests, GraphQLTests]
     steps:
-      - uses: actions/checkout@v2
-      - run: npm ci
-      - name: create kubeconfig
+      - uses: actions/checkout@v4
+      - name: resolve base url
         run: |
-          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
-          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
+          URL="$E2E_URL"
+          case "$URL" in
+            https://*|http://*) ;;
+            *) URL="https://$URL" ;;
+          esac
+          echo "BASE_URL=$URL" >> "$GITHUB_ENV"
         env:
-          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
+          E2E_URL: ${{ secrets.E2E_URL }}
+      - run: npm ci --prefer-offline
       - name: test
         run: npm run codeApiTests
         env:
-          BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
           KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
           KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
+          LOGIN_ATTEMPTS: 2
+          LOGIN_DELAY_MS: 5000
 
-  # algorithmBuild:
-  #   runs-on: ubuntu-latest
-  #   needs: [jagearTest,nodeTest,pipelineTest,codeApiTest]
-  #   if: ${{ always() }}
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - run: npm ci
-  #     - name: create kubeconfig
-  #       run: |
-  #         echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
-  #         echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
-  #       env:
-  #         KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
-  #     - name: test
-  #       run:  |
-  #         echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
-  #         echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
-  #         npm run algorithmBuild
-  #       env:
-  #         BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
-  #         WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
-  #         KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
-  #         K8S_VERSION: 1.13
-  #         K8S_CONFIG_PATH: /tmp/config
-  #         GitHub_Token:  ${{ secrets.GIT_TOKEN }}
-  #         Gitlab_Token: ${{ secrets.GITLAB_TOKEN }}
-  HkubeCliTests:
-    runs-on: ubuntu-latest
-    needs: [JagearTests, NodeTests, PipelineTests, CodeApiTests]
-    if: ${{ always() }}
+  NodeTests:
+    runs-on: [self-hosted, hkube-system-test]
+    timeout-minutes: 45
+    needs: [SwaggerTests, GraphQLTests]
     steps:
-      - uses: actions/checkout@v2
-      - run: npm ci
-      - name: create kubeconfig
+      - uses: actions/checkout@v4
+      - name: runner info
+        run: echo "runner=$RUNNER_NAME user=$(whoami) context=$KUBE_CONTEXT"
+      - name: resolve base url
         run: |
-          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
-          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
+          URL="$E2E_URL"
+          case "$URL" in
+            https://*|http://*) ;;
+            *) URL="https://$URL" ;;
+          esac
+          echo "BASE_URL=$URL" >> "$GITHUB_ENV"
+          echo "resolved host: $(echo "$URL" | sed -E 's#^https?://##' | cut -d/ -f1)"
         env:
-          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
+          E2E_URL: ${{ secrets.E2E_URL }}
+      - name: select kubeconfig context
+        run: |
+          # Copy shared kubeconfig to a per-job file to avoid current-context races.
+          KUBECFG="$RUNNER_TEMP/kubeconfig-$GITHUB_RUN_ID-$GITHUB_JOB"
+          install -m 600 /dev/null "$KUBECFG"
+          cat /etc/hkube/kube/config > "$KUBECFG"
+          kubectl --kubeconfig="$KUBECFG" config use-context "$KUBE_CONTEXT"
+          echo "KUBECONFIG=$KUBECFG" >> "$GITHUB_ENV"
+          echo "K8S_CONFIG_PATH=$KUBECFG" >> "$GITHUB_ENV"
+      - name: verify kubectl
+        run: kubectl cluster-info
+      - run: npm ci --prefer-offline
+      - name: test
+        run: npm run nodetest
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
+          KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
+          KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
+          K8S_VERSION: 1.13
+          LOGIN_ATTEMPTS: 2
+          LOGIN_DELAY_MS: 5000
+      - name: cleanup kubeconfig
+        if: always()
+        run: rm -f "$KUBECONFIG"
+
+  HkubeCliTests:
+    runs-on: [self-hosted, hkube-system-test]
+    timeout-minutes: 60
+    needs: [Deployment, JagearTests, NodeTests, PipelineTests, CodeApiTests]
+    if: ${{ always() && needs.Deployment.result == 'success' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: resolve base url
+        run: |
+          URL="$E2E_URL"
+          case "$URL" in
+            https://*|http://*) ;;
+            *) URL="https://$URL" ;;
+          esac
+          echo "BASE_URL=$URL" >> "$GITHUB_ENV"
+        env:
+          E2E_URL: ${{ secrets.E2E_URL }}
+      - name: select kubeconfig context
+        run: |
+          KUBECFG="$RUNNER_TEMP/kubeconfig-$GITHUB_RUN_ID-$GITHUB_JOB"
+          install -m 600 /dev/null "$KUBECFG"
+          cat /etc/hkube/kube/config > "$KUBECFG"
+          kubectl --kubeconfig="$KUBECFG" config use-context "$KUBE_CONTEXT"
+          echo "KUBECONFIG=$KUBECFG" >> "$GITHUB_ENV"
+          echo "K8S_CONFIG_PATH=$KUBECFG" >> "$GITHUB_ENV"
+      - run: npm ci --prefer-offline
       - name: create hkubectl
         run: |
           ./travis/cli.sh
-          echo $PWD >> $GITHUB_PATH
-        env:
-          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
-          HKUBE_URL: ${{ secrets.HKUBE }}
-          KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
-          KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
+          echo "$PWD" >> "$GITHUB_PATH"
       - name: test
-        run: |
-          npm run cliTests
+        run: npm run cliTests
         env:
-          BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
-          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
           KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
           KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
           K8S_VERSION: 1.13
-          K8S_CONFIG_PATH: /tmp/config
+          LOGIN_ATTEMPTS: 2
+          LOGIN_DELAY_MS: 5000
+      - name: cleanup kubeconfig
+        if: always()
+        run: rm -f "$KUBECONFIG"
+
   DatsourceTests:
-    runs-on: ubuntu-latest
-    needs: [JagearTests, NodeTests, PipelineTests, CodeApiTests]
-    if: ${{ always() }}
+    runs-on: [self-hosted, hkube-system-test]
+    timeout-minutes: 60
+    needs: [Deployment, JagearTests, NodeTests, PipelineTests, CodeApiTests]
+    if: ${{ always() && needs.Deployment.result == 'success' }}
     steps:
-      - uses: actions/checkout@v2
-      - run: npm ci
-      - name: create kubeconfig
+      - uses: actions/checkout@v4
+      - name: resolve base url
         run: |
-          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
-          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
+          URL="$E2E_URL"
+          case "$URL" in
+            https://*|http://*) ;;
+            *) URL="https://$URL" ;;
+          esac
+          echo "BASE_URL=$URL" >> "$GITHUB_ENV"
         env:
-          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
+          E2E_URL: ${{ secrets.E2E_URL }}
+      - name: select kubeconfig context
+        run: |
+          KUBECFG="$RUNNER_TEMP/kubeconfig-$GITHUB_RUN_ID-$GITHUB_JOB"
+          install -m 600 /dev/null "$KUBECFG"
+          cat /etc/hkube/kube/config > "$KUBECFG"
+          kubectl --kubeconfig="$KUBECFG" config use-context "$KUBE_CONTEXT"
+          echo "KUBECONFIG=$KUBECFG" >> "$GITHUB_ENV"
+          echo "K8S_CONFIG_PATH=$KUBECFG" >> "$GITHUB_ENV"
+      - run: npm ci --prefer-offline
       - name: test
-        run: |
-          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
-          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
-          npm run dataSourceTest
+        run: npm run dataSourceTest
         env:
-          BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
-          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
-          K8S_VERSION: 1.13
-          K8S_CONFIG_PATH: /tmp/config
+          KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
+          KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
           GitHub_Token: ${{ secrets.GIT_TOKEN }}
           Gitlab_Token: ${{ secrets.GITLAB_TOKEN }}
-          KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
-          KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
+          K8S_VERSION: 1.13
+          LOGIN_ATTEMPTS: 2
+          LOGIN_DELAY_MS: 5000
+      - name: cleanup kubeconfig
+        if: always()
+        run: rm -f "$KUBECONFIG"
+
   AlgorithmTests:
-    runs-on: ubuntu-latest
-    needs: [HkubeCliTests]
-    if: ${{ always() }}
+    runs-on: [self-hosted, hkube-system-test]
+    timeout-minutes: 60
+    needs: [Deployment, HkubeCliTests]
+    if: ${{ always() && needs.Deployment.result == 'success' }}
     steps:
-      - uses: actions/checkout@v2
-      - run: npm ci
-      - name: create kubeconfig
+      - uses: actions/checkout@v4
+      - name: resolve base url
         run: |
-          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
-          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
+          URL="$E2E_URL"
+          case "$URL" in
+            https://*|http://*) ;;
+            *) URL="https://$URL" ;;
+          esac
+          echo "BASE_URL=$URL" >> "$GITHUB_ENV"
         env:
-          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
+          E2E_URL: ${{ secrets.E2E_URL }}
+      - name: select kubeconfig context
+        run: |
+          KUBECFG="$RUNNER_TEMP/kubeconfig-$GITHUB_RUN_ID-$GITHUB_JOB"
+          install -m 600 /dev/null "$KUBECFG"
+          cat /etc/hkube/kube/config > "$KUBECFG"
+          kubectl --kubeconfig="$KUBECFG" config use-context "$KUBE_CONTEXT"
+          echo "KUBECONFIG=$KUBECFG" >> "$GITHUB_ENV"
+          echo "K8S_CONFIG_PATH=$KUBECFG" >> "$GITHUB_ENV"
+      - run: npm ci --prefer-offline
       - name: test
-        run: |
-          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
-          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
-          npm run algorithmtest
+        run: npm run algorithmtest
         env:
-          BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
-          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
           KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
           KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
           K8S_VERSION: 1.13
-          K8S_CONFIG_PATH: /tmp/config
+          LOGIN_ATTEMPTS: 2
+          LOGIN_DELAY_MS: 5000
+      - name: cleanup kubeconfig
+        if: always()
+        run: rm -f "$KUBECONFIG"
+
   StreamingTests:
-    runs-on: ubuntu-latest
-    needs: [AlgorithmTests]
-    if: ${{ always() }}
+    runs-on: [self-hosted, hkube-system-test]
+    timeout-minutes: 60
+    needs: [Deployment, AlgorithmTests]
+    if: ${{ always() && needs.Deployment.result == 'success' }}
     steps:
-      - uses: actions/checkout@v2
-      - run: npm ci
-      - name: create kubeconfig
+      - uses: actions/checkout@v4
+      - name: resolve base url
         run: |
-          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
-          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
+          URL="$E2E_URL"
+          case "$URL" in
+            https://*|http://*) ;;
+            *) URL="https://$URL" ;;
+          esac
+          echo "BASE_URL=$URL" >> "$GITHUB_ENV"
         env:
-          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
+          E2E_URL: ${{ secrets.E2E_URL }}
+      - name: select kubeconfig context
+        run: |
+          KUBECFG="$RUNNER_TEMP/kubeconfig-$GITHUB_RUN_ID-$GITHUB_JOB"
+          install -m 600 /dev/null "$KUBECFG"
+          cat /etc/hkube/kube/config > "$KUBECFG"
+          kubectl --kubeconfig="$KUBECFG" config use-context "$KUBE_CONTEXT"
+          echo "KUBECONFIG=$KUBECFG" >> "$GITHUB_ENV"
+          echo "K8S_CONFIG_PATH=$KUBECFG" >> "$GITHUB_ENV"
+      - run: npm ci --prefer-offline
       - name: test
-        run: |
-          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
-          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
-          npm run streaming
+        run: npm run streaming
         env:
-          BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
-          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
           KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
           KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
           K8S_VERSION: 1.13
-          K8S_CONFIG_PATH: /tmp/config
+          LOGIN_ATTEMPTS: 2
+          LOGIN_DELAY_MS: 5000
+      - name: cleanup kubeconfig
+        if: always()
+        run: rm -f "$KUBECONFIG"
+
   HighAvailability:
-    runs-on: ubuntu-latest
-    needs: [AlgorithmTests, StreamingTests]
-    if: ${{ always() }}
+    runs-on: [self-hosted, hkube-system-test]
+    timeout-minutes: 60
+    needs: [Deployment, AlgorithmTests, StreamingTests]
+    if: ${{ always() && needs.Deployment.result == 'success' }}
     steps:
-      - uses: actions/checkout@v2
-      - run: npm ci
-      - name: create kubeconfig
+      - uses: actions/checkout@v4
+      - name: resolve base url
         run: |
-          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
-          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
+          URL="$E2E_URL"
+          case "$URL" in
+            https://*|http://*) ;;
+            *) URL="https://$URL" ;;
+          esac
+          echo "BASE_URL=$URL" >> "$GITHUB_ENV"
         env:
-          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
+          E2E_URL: ${{ secrets.E2E_URL }}
+      - name: select kubeconfig context
+        run: |
+          KUBECFG="$RUNNER_TEMP/kubeconfig-$GITHUB_RUN_ID-$GITHUB_JOB"
+          install -m 600 /dev/null "$KUBECFG"
+          cat /etc/hkube/kube/config > "$KUBECFG"
+          kubectl --kubeconfig="$KUBECFG" config use-context "$KUBE_CONTEXT"
+          echo "KUBECONFIG=$KUBECFG" >> "$GITHUB_ENV"
+          echo "K8S_CONFIG_PATH=$KUBECFG" >> "$GITHUB_ENV"
+      - run: npm ci --prefer-offline
       - name: test
-        run: |
-          echo "$KUBE_CONFIG_DATA" | base64 --decode > /tmp/config
-          echo KUBECONFIG=/tmp/config >> $GITHUB_ENV
-          npm run HighAvailability
+        run: npm run HighAvailability
         env:
-          BASE_URL: https://${{ secrets.TEST_KUBERNETES_MASTER_IP }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_MASTER_URL }}
-          KUBE_CONFIG_DATA: ${{ secrets.TEST_KUBECONFIG }}
           KEYCLOAK_DEV_PASS: ${{ secrets.KEYCLOAK_DEV_PASS }}
           KEYCLOAK_DEV_USER: ${{ secrets.KEYCLOAK_DEV_USER }}
           K8S_VERSION: 1.13
-          K8S_CONFIG_PATH: /tmp/config
+          LOGIN_ATTEMPTS: 2
+          LOGIN_DELAY_MS: 5000
+      - name: cleanup kubeconfig
+        if: always()
+        run: rm -f "$KUBECONFIG"
