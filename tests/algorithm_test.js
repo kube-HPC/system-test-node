@@ -1448,6 +1448,8 @@ describe('Algorithm Tests', () => {
         const stayupAlgName = `stayuptestalg-${pipelineRandomName(4)}`;
         const statelessAlgName = `yellow-alg-${pipelineRandomName(4)}`;
         statelessPipe.descriptor.nodes[0].algorithmName = stayupAlgName;
+        // node A of statelessPipe is stateful; stateType must come from the algorithm
+        const statefulStayUpAlg = () => ({ ...stayUpAlg, name: stayupAlgName, stateType: 'stateful' });
         let stayUpSkeleton = {
             name: stayupAlgName,
             input: []
@@ -1478,7 +1480,7 @@ describe('Algorithm Tests', () => {
         it('should find multiple pods to delete', async () => {
             const statelessPipeline = deconstructTestData(statelessPipe);
             await deletePipeline(statelessPipeline.name, dev_token);
-            await applyAlg(stayUpAlg, dev_token);
+            await applyAlg(statefulStayUpAlg(), dev_token);
             await storePipeline(statelessPipeline, dev_token);
             await runStored(statelessPipeline, dev_token);
             await intervalDelay("Waiting", 30000);
@@ -1515,7 +1517,7 @@ describe('Algorithm Tests', () => {
         it('should find multiple jobs to delete', async () => {
             const statelessPipeline = deconstructTestData(statelessPipe);
             await deletePipeline(statelessPipeline.name, dev_token);
-            await applyAlg(stayUpAlg, dev_token);
+            await applyAlg(statefulStayUpAlg(), dev_token);
             storeResult = await storePipeline(statelessPipeline, dev_token);
             await runStored(statelessPipeline, dev_token);
             await intervalDelay("Waiting", 30000);

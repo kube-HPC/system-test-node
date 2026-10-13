@@ -1463,4 +1463,43 @@ describe("pipeline Tests 673", () => {
       expect(listOfPipelineResponse[1].error.code).to.be.equal(404, 'Expected status code to be NOT FOUND');
     }).timeout(1000 * 60 * 5);
   });
+
+  describe('stream node stateType', () => {
+    const algorithmImage = 'hkube/algorithm-example-python';
+    const statefulAlgName = `stateful-alg-${pipelineRandomName(4)}`;
+    const statelessAlgName = `stateless-alg-${pipelineRandomName(4)}`;
+
+    const streamPipe = (name, stateTypeA, stateTypeB) => ({
+      name,
+      kind: 'stream',
+      nodes: [
+        { nodeName: 'A', algorithmName: statefulAlgName, input: [], stateType: stateTypeA },
+        { nodeName: 'B', algorithmName: statelessAlgName, input: [], stateType: stateTypeB }
+      ],
+      streaming: {
+        flows: { analyze: 'A >> B' },
+        defaultFlow: 'analyze'
+      }
+    });
+
+    before(async function () {
+      this.timeout(1000 * 60 * 2);
+      await applyAlg({ ...algJson(statefulAlgName, algorithmImage), stateType: 'stateful' }, dev_token);
+      await applyAlg(algJson(statelessAlgName, algorithmImage), dev_token);
+    });
+
+    it('should fail to store a pipeline when node stateType conflicts with algorithm stateType', async () => {
+      const name = pipelineRandomName(8);
+      const res = await storePipeline(streamPipe(name, 'stateless'), dev_token, pipeList);
+      expect(res.statusCode).to.be.equal(400, 'Expected status code to be BAD_REQUEST');
+      expect(res.body.error.message).to.include(`node A stateType "stateless" conflicts with algorithm ${statefulAlgName} stateType "stateful"`);
+    }).timeout(1000 * 60 * 2);
+
+    it('should fail to run raw when node stateType conflicts with algorithm without stateType', async () => {
+      const name = pipelineRandomName(8);
+      const res = await runRaw(streamPipe(name, 'stateful', 'stateful'), dev_token);
+      expect(res.statusCode).to.be.equal(400, 'Expected status code to be BAD_REQUEST');
+      expect(res.body.error.message).to.include(`node B stateType "stateful" conflicts with algorithm ${statelessAlgName} stateType "stateless"`);
+    }).timeout(1000 * 60 * 2);
+  });
 });

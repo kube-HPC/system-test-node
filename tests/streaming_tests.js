@@ -110,7 +110,7 @@ describe("streaming pipeline test", () => {
         }
         // re-storing an identical algorithm would only bump its version; skip to keep running workers valid
         const { status, body: stored } = await getAlgorithm(alg.name, dev_token);
-        if (status === StatusCodes.OK && stored.cpu === alg.cpu && stored.algorithmImage === alg.algorithmImage) {
+        if (status === StatusCodes.OK && stored.cpu === alg.cpu && stored.algorithmImage === alg.algorithmImage && stored.stateType === alg.stateType) {
             console.log(`${alg.name} already stored with cpu ${alg.cpu}, skipping recreate`);
             return;
         }

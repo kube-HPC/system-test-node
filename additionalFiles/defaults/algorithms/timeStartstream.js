@@ -4,6 +4,7 @@ const alg = {
     "pending": false
   },
   "name": "start-streaming-tst",
+  "stateType": "stateful",
   "entryPoint": "startpoint.py",
   "type": "Image",
   "cpu": 0.1,
