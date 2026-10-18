@@ -2,6 +2,11 @@ name: CI-MAIN
 
 on:
   workflow_dispatch:
+    inputs:
+      skip_deploy:
+        description: "Skip deployment; run tests against current e2e deployment"
+        type: boolean
+        default: false
   schedule:
     - cron: "30 22 * * 0-4"
 
@@ -13,6 +18,7 @@ env:
 jobs:
   Deployment:
     runs-on: [self-hosted, hkube-system-test]
+    if: ${{ !inputs.skip_deploy }}
     env:
       # Shared kubeconfig: pass context inline; never change current-context.
       KUBECONFIG: /etc/hkube/kube/config
@@ -45,6 +51,7 @@ jobs:
     runs-on: [self-hosted, hkube-system-test]
     timeout-minutes: 30
     needs: Deployment
+    if: ${{ !failure() && !cancelled() }}
     steps:
       - uses: actions/checkout@v4
       - name: runner info
@@ -81,6 +88,7 @@ jobs:
     runs-on: [self-hosted, hkube-system-test]
     timeout-minutes: 30
     needs: Deployment
+    if: ${{ !failure() && !cancelled() }}
     steps:
       - uses: actions/checkout@v4
       - name: resolve base url
@@ -109,6 +117,7 @@ jobs:
     runs-on: [self-hosted, hkube-system-test]
     timeout-minutes: 45
     needs: [SwaggerTests, GraphQLTests]
+    if: ${{ !failure() && !cancelled() }}
     steps:
       - uses: actions/checkout@v4
       - name: resolve base url
@@ -135,6 +144,7 @@ jobs:
     runs-on: [self-hosted, hkube-system-test]
     timeout-minutes: 45
     needs: [SwaggerTests, GraphQLTests]
+    if: ${{ !failure() && !cancelled() }}
     steps:
       - uses: actions/checkout@v4
       - name: resolve base url
@@ -161,6 +171,7 @@ jobs:
     runs-on: [self-hosted, hkube-system-test]
     timeout-minutes: 45
     needs: [SwaggerTests, GraphQLTests]
+    if: ${{ !failure() && !cancelled() }}
     steps:
       - uses: actions/checkout@v4
       - name: resolve base url
@@ -187,6 +198,7 @@ jobs:
     runs-on: [self-hosted, hkube-system-test]
     timeout-minutes: 45
     needs: [SwaggerTests, GraphQLTests]
+    if: ${{ !failure() && !cancelled() }}
     steps:
       - uses: actions/checkout@v4
       - name: runner info
@@ -231,7 +243,7 @@ jobs:
     runs-on: [self-hosted, hkube-system-test]
     timeout-minutes: 60
     needs: [Deployment, JagearTests, NodeTests, PipelineTests, CodeApiTests]
-    if: ${{ always() && needs.Deployment.result == 'success' }}
+    if: ${{ always() && (needs.Deployment.result == 'success' || needs.Deployment.result == 'skipped') }}
     steps:
       - uses: actions/checkout@v4
       - name: resolve base url
@@ -274,7 +286,7 @@ jobs:
     runs-on: [self-hosted, hkube-system-test]
     timeout-minutes: 60
     needs: [Deployment, JagearTests, NodeTests, PipelineTests, CodeApiTests]
-    if: ${{ always() && needs.Deployment.result == 'success' }}
+    if: ${{ always() && (needs.Deployment.result == 'success' || needs.Deployment.result == 'skipped') }}
     steps:
       - uses: actions/checkout@v4
       - name: resolve base url
@@ -315,7 +327,7 @@ jobs:
     runs-on: [self-hosted, hkube-system-test]
     timeout-minutes: 60
     needs: [Deployment, HkubeCliTests]
-    if: ${{ always() && needs.Deployment.result == 'success' }}
+    if: ${{ always() && (needs.Deployment.result == 'success' || needs.Deployment.result == 'skipped') }}
     steps:
       - uses: actions/checkout@v4
       - name: resolve base url
@@ -354,7 +366,7 @@ jobs:
     runs-on: [self-hosted, hkube-system-test]
     timeout-minutes: 60
     needs: [Deployment, AlgorithmTests]
-    if: ${{ always() && needs.Deployment.result == 'success' }}
+    if: ${{ always() && (needs.Deployment.result == 'success' || needs.Deployment.result == 'skipped') }}
     steps:
       - uses: actions/checkout@v4
       - name: resolve base url
@@ -393,7 +405,7 @@ jobs:
     runs-on: [self-hosted, hkube-system-test]
     timeout-minutes: 60
     needs: [Deployment, AlgorithmTests, StreamingTests]
-    if: ${{ always() && needs.Deployment.result == 'success' }}
+    if: ${{ always() && (needs.Deployment.result == 'success' || needs.Deployment.result == 'skipped') }}
     steps:
       - uses: actions/checkout@v4
       - name: resolve base url
