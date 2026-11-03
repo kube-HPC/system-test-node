@@ -83,6 +83,10 @@ The nightly suite runs `30 22 * * 0-4` UTC — no overlap with cleanup.
 - Check the **whole path** with `sudo namei -l` when debugging permissions — a `700` parent
   defeats correct permissions on a child.
 - `/etc/cron.hourly` filenames must contain **no dot**, or `run-parts` skips them.
+- **Never write fixed paths in `/tmp`** (e.g. `/tmp/pub.yml`). `/tmp` is shared by both runner
+  users: whichever runner creates the file first owns it, and the other gets
+  `Permission denied` — intermittently, depending on which runner picks the job. Use
+  `mktemp "$RUNNER_TEMP/…"` (per-runner, per-job) instead.
 - `ens5` MTU is `9001` while the gateway advertises `8500`. Harmless today (large downloads
   succeed); if ever set to 1500 it needs a netplan file to survive reboot.
 - The `/etc/fstab` swap entry has **not survived a reboot yet** — run
