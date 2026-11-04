@@ -218,7 +218,8 @@ const loginWithRetry = async (username = config.keycloakDevUser, password = conf
 
 
     if (lastHttpStatus !== null) {
-        console.log(`Keycloak is disabled or unavailable (last status ${lastHttpStatus}). Continuing without a token.`);
+        const detail = lastError?.message ? `: ${lastError.message}` : '';
+        console.log(`Keycloak is disabled or unavailable (last status ${lastHttpStatus}${detail}). Continuing without a token.`);
         return undefined;
     }
 

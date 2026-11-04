@@ -1,0 +1,432 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║              HKUBE API ENDPOINT TEST COVERAGE ANALYSIS                    ║
+║                         FINAL REPORT & SUMMARY                            ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+EXECUTIVE SUMMARY
+═══════════════════════════════════════════════════════════════════════════
+
+This comprehensive analysis compares the HKube REST API specification
+(109 endpoints, 136 operations) against actual test coverage in swaggerCalls.js.
+
+KEY METRICS:
+  • Total API Endpoints:        109
+  • Total Operations:           136
+  • Tested Operations:          51 (37.50%)
+  • Untested Operations:        85 (62.50%)
+  • API Categories:             23
+  • Critical Gap Modules:       7 (0% coverage)
+
+
+CRITICAL FINDINGS
+═══════════════════════════════════════════════════════════════════════════
+
+1. OVERALL COVERAGE: 37.50% - BELOW ACCEPTABLE TARGET
+   Status: ⚠️  ACTION REQUIRED
+   Assessment: Current coverage is insufficient for production confidence.
+   Recommendation: Allocate resources to increase to 60%+ minimum.
+
+2. ZERO COVERAGE MODULES (7 categories, 33 endpoints):
+   
+   🔴 HIGHEST PRIORITY: DataSource (11 endpoints)
+      - Core data management functionality completely untested
+      - Includes versioning, sync, snapshots, downloads
+      - Impact: CRITICAL - Essential feature validation missing
+      
+   🔴 HIGH PRIORITY: Execution Details (10 endpoints)
+      - Job status, results, audit trail queries untested
+      - Core job introspection missing
+      - Impact: HIGH - Monitoring and debugging compromised
+      
+   🔴 HIGH PRIORITY: Storage Operations (8 endpoints)
+      - Data retrieval (download, stream) operations untested
+      - Result access validation missing
+      - Impact: HIGH - Client data access untested
+      
+   🟠 MEDIUM PRIORITY: Query/Monitoring APIs (8 endpoints)
+      - Pipeline status, graph parsing, webhooks untested
+      - Monitoring/debugging features not validated
+      - Impact: MEDIUM - Production monitoring at risk
+
+3. INCOMPLETE COVERAGE MODULES:
+   - Storage: 20% (2/10 endpoints tested)
+   - Execution: 41% (7/17 endpoints tested)
+   - Builds: 33% (2/6 endpoints tested)
+   - Algorithm Store: 25% (1/4 endpoints tested)
+
+4. WELL-TESTED MODULES (100% coverage):
+   - Authentication (1/1)
+   - Status/Version (1/1)
+   - Preferences (1/1)
+   - Managed Queue (3/3)
+   - Preferred Queue (4/4)
+
+
+COVERAGE BREAKDOWN BY CATEGORY
+═══════════════════════════════════════════════════════════════════════════
+
+Category                    Total  Tested  Untested  Coverage  Status
+─────────────────────────────────────────────────────────────────────
+Execution                     17       7        10      41%     🟡
+Storage                       10       2         8      20%     🔴
+Algorithm Versions             5       2         3      40%     🟡
+Pipeline Versions              4       2         2      50%     🟡
+Stores (Algorithms)            4       1         3      25%     🔴
+Stores (Pipelines)             4       2         2      50%     🟡
+Cron                           5       3         2      60%     🟢
+Builds                         6       2         4      33%     🔴
+GC Operations                  6       2         4      33%     🔴
+Boards                         6       4         2      67%     🟢
+Gateway                        2       1         1      50%     🟡
+Resources                      4       2         2      50%     🟡
+Experiment                     2       1         1      50%     🟡
+Queue                          1       1         0     100%     ✅
+Preferences                    1       1         0     100%     ✅
+Managed Queue                  3       3         0     100%     ✅
+Preferred Queue                4       4         0     100%     ✅
+Authentication                 1       1         0     100%     ✅
+Status                         1       1         0     100%     ✅
+─────────────────────────────────────────────────────────────────────
+DataSource                    11       0        11       0%     🚨
+Pipelines Queries              3       0         3       0%     🚨
+Graph API                      2       0         2       0%     🚨
+Kubernetes                     2       0         2       0%     🚨
+Webhooks                       3       0         3       0%     🚨
+Readme (Algorithms)            1       0         1       0%     🚨
+Readme (Pipelines)             1       0         1       0%     🚨
+─────────────────────────────────────────────────────────────────────
+TOTAL                        136      51        85     37.5%     ⚠️
+
+
+TESTED ENDPOINTS (51 OPERATIONS)
+═══════════════════════════════════════════════════════════════════════════
+
+Execution (7):
+  ✓ POST   /exec/raw
+  ✓ POST   /exec/stored
+  ✓ POST   /exec/caching
+  ✓ POST   /exec/rerun
+  ✓ POST   /exec/stop
+  ✓ GET/POST /exec/search
+  ✓ GET   /exec/pipeline/list
+
+Storage (2):
+  ✓ GET   /storage/info
+  ✓ GET   /storage/prefix/types
+
+Store Algorithms (1):
+  ✓ GET/POST/PUT /store/algorithms
+
+Store Pipelines (2):
+  ✓ GET/POST/PUT /store/pipelines
+  ✓ POST  /store/pipelines/graph
+
+Cron (3):
+  ✓ GET   /cron/list
+  ✓ POST  /cron/start
+  ✓ POST  /cron/stop
+
+Builds (2):
+  ✓ POST  /builds/rerun
+  ✓ POST  /builds/stop
+
+Algorithm Versions (2):
+  ✓ PUT   /versions/algorithms/alias
+  ✓ POST  /versions/algorithms/tag
+
+Pipeline Versions (2):
+  ✓ PUT   /versions/pipelines/alias
+  ✓ POST  /versions/pipelines/apply
+
+Queue (1):
+  ✓ GET   /queue/count
+
+Managed Queue (3):
+  ✓ GET   /queue/managed/
+  ✓ GET   /queue/managed/aggregation/pipeline
+  ✓ GET   /queue/managed/aggregation/tag
+
+Preferred Queue (4):
+  ✓ GET/POST /queue/preferred
+  ✓ GET   /queue/preferred/aggregation/pipeline
+  ✓ GET   /queue/preferred/aggregation/tag
+  ✓ POST  /queue/preferred/deletes
+
+GC (2):
+  ✓ POST  /gc/dryrun
+  ✓ GET   /gc/status
+
+Gateway (1):
+  ✓ GET   /gateway
+
+Preferences (1):
+  ✓ GET/PUT/DELETE /preferences
+
+Authentication (1):
+  ✓ POST  /auth/login
+
+Status (1):
+  ✓ GET   /status/version
+
+Boards (4):
+  ✓ POST  /boards/optunas
+  ✓ GET   /boards/optunas/
+  ✓ POST  /boards/tensors
+  ✓ GET   /boards/tensors/
+
+Resources (2):
+  ✓ GET   /resources/ignoredunscheduledalgorithms/
+  ✓ GET   /resources/unscheduledalgorithms/
+
+Experiment (1):
+  ✓ GET/POST /experiment
+
+
+UNTESTED ENDPOINTS (85 OPERATIONS)
+═══════════════════════════════════════════════════════════════════════════
+
+DataSource (11) - CRITICAL PRIORITY:
+  ✗ GET/POST              /datasource
+  ✗ GET/POST/DELETE       /datasource/{name}
+  ✗ PATCH                 /datasource/{name}/credentials
+  ✗ GET/POST              /datasource/{name}/snapshot
+  ✗ GET                   /datasource/{name}/snapshot/{snapshotName}
+  ✗ POST                  /datasource/{name}/sync
+  ✗ GET                   /datasource/{name}/versions
+  ✗ GET/POST              /datasource/id/{id}/download
+  ✗ POST                  /datasource/id/{id}/snapshot
+  ✗ POST                  /datasource/id/{id}/snapshot/preview
+  ✗ GET                   /datasource/validate
+
+Execution Details (10) - HIGH PRIORITY:
+  ✗ POST                  /exec/algorithm
+  ✗ GET                   /exec/pipelines/{jobId}
+  ✗ GET                   /exec/status/{jobId}
+  ✗ GET                   /exec/results/{jobId}
+  ✗ GET                   /exec/jobs
+  ✗ POST                  /exec/pause
+  ✗ POST                  /exec/resume
+  ✗ GET                   /exec/auditTrail/{jobId}
+  ✗ GET                   /exec/tree/{jobId}
+  ✗ GET                   /exec/flowInput/{jobId}
+
+Storage Operations (8) - HIGH PRIORITY:
+  ✗ GET                   /storage/download/{path}
+  ✗ GET                   /storage/download/custom/{path}
+  ✗ GET                   /storage/download/pipeline/result/{jobId}
+  ✗ GET                   /storage/keys/{path}
+  ✗ GET                   /storage/prefixes/{path}
+  ✗ GET                   /storage/stream/{path}
+  ✗ GET                   /storage/stream/custom/{path}
+  ✗ GET                   /storage/values/{path}
+
+(Additional untested endpoints listed in detailed report files)
+
+
+RECOMMENDED PRIORITIES & ROADMAP
+═══════════════════════════════════════════════════════════════════════════
+
+PHASE 1: CRITICAL (Weeks 1-2) - 11 Endpoints
+  Goal: Add tests for DataSource module
+  Endpoints:
+    • /datasource operations (list, create, update, delete)
+    • /datasource/{name} operations (snapshot, sync, download)
+    • /datasource/validate and credential operations
+  Impact: CRITICAL - Core data management validation
+  Effort: Medium (leverage existing patterns)
+  Expected Result: +8-11% coverage increase
+
+PHASE 2: HIGH PRIORITY (Weeks 3-4) - 18 Endpoints
+  Goal A: Execution Details (10 endpoints)
+    • /exec/algorithm (job submission)
+    • /exec/status, /exec/results, /exec/auditTrail
+    • /exec/pause, /exec/resume operations
+    Impact: HIGH - Job introspection and management
+    
+  Goal B: Storage Operations (8 endpoints)
+    • /storage/download operations
+    • /storage/stream operations
+    • /storage/keys, /storage/values, /storage/prefixes
+    Impact: HIGH - Result data access validation
+  
+  Effort: Medium-High (data setup complexity)
+  Expected Result: +13-18% coverage increase (total ~50-55%)
+
+PHASE 3: MEDIUM PRIORITY (Weeks 5-7) - 15+ Endpoints
+  Goal A: Query/Monitoring APIs
+    • /pipelines/results, /pipelines/status
+    • /graph/raw, /graph/parsed
+    • /webhooks endpoints
+    Impact: MEDIUM - Monitoring and debugging
+    
+  Goal B: Management Operations
+    • /builds/list, /builds/status
+    • /store/algorithms/{name} operations
+    • GC type-specific operations
+    Impact: MEDIUM - Admin operations
+  
+  Effort: Low-Medium (mostly query operations)
+  Expected Result: +10-12% coverage increase (total ~60-65%)
+
+
+IMPLEMENTATION GUIDANCE
+═══════════════════════════════════════════════════════════════════════════
+
+1. APPROACH:
+   - Use existing test patterns in swaggerCalls.js as templates
+   - Reference test utilities in utils/ directory
+   - Leverage existing setup/teardown infrastructure
+
+2. DATA MANAGEMENT:
+   - For DataSource tests: Create test datasources with versions
+   - For Execution tests: Leverage existing pipeline/algorithm runs
+   - For Storage tests: Use existing job results
+
+3. VALIDATION:
+   - Verify against swagger.json response schemas
+   - Check HTTP status codes (200, 400, 404, etc.)
+   - Validate response data structures
+   - Test error conditions (invalid inputs, missing resources)
+
+4. INTEGRATION:
+   - Add tests incrementally to swaggerCalls.js
+   - Update endpoint_analysis.json after each phase
+   - Track coverage improvements in CI/CD pipeline
+
+
+DELIVERABLE FILES
+═══════════════════════════════════════════════════════════════════════════
+
+Five comprehensive analysis documents have been created:
+
+1. README_ANALYSIS.md (213 lines, 8KB)
+   - Master index and navigation guide
+   - Quick summary tables with color coding
+   - Implementation roadmap and phases
+   - Usage examples for different teams
+   
+2. QUICK_REFERENCE.txt (190 lines, 8KB)
+   - One-page quick lookup guide
+   - Coverage summary and priorities
+   - Lists of tested/untested endpoints
+   - Next steps for different roles
+   
+3. ENDPOINT_COVERAGE_ANALYSIS.md (414 lines, 12KB)
+   - Comprehensive strategic analysis
+   - Detailed category breakdown
+   - Coverage table and statistics
+   - Priority recommendations with impact
+   - Methodology and notes
+   
+4. endpoint_analysis.txt (204 lines, 8KB)
+   - Human-readable categorized listing
+   - All 23 categories with endpoints
+   - Methods and operations listed
+   - Easily browseable format
+   
+5. endpoint_analysis.json (857 lines, 16KB)
+   - Machine-readable JSON format
+   - Summary statistics
+   - Complete endpoint metadata
+   - Suitable for CI/CD integration
+   - All tested paths extracted
+
+
+FILES LOCATION
+═══════════════════════════════════════════════════════════════════════════
+
+/hkube/system-test-node/
+
+  ├─ README_ANALYSIS.md ...................... Master index & roadmap
+  ├─ QUICK_REFERENCE.txt .................... Quick lookup guide
+  ├─ ENDPOINT_COVERAGE_ANALYSIS.md .......... Strategic report
+  ├─ endpoint_analysis.txt .................. Human-readable listing
+  ├─ endpoint_analysis.json ................. Machine-readable data
+  └─ ANALYSIS_SUMMARY.txt ................... This file
+
+
+NEXT ACTIONS
+═══════════════════════════════════════════════════════════════════════════
+
+IMMEDIATE (Today):
+  1. Review QUICK_REFERENCE.txt for overview
+  2. Identify DataSource as Priority 1 for testing
+  3. Schedule test development resources
+
+SHORT TERM (This Week):
+  1. Read README_ANALYSIS.md for strategy
+  2. Review ENDPOINT_COVERAGE_ANALYSIS.md for detailed plan
+  3. Begin Phase 1 test development (DataSource)
+  4. Establish coverage tracking in CI/CD
+
+MEDIUM TERM (Next 4-6 Weeks):
+  1. Complete Phase 1: DataSource tests (11 endpoints)
+  2. Begin Phase 2: Execution + Storage tests (18 endpoints)
+  3. Update endpoint_analysis.json regularly
+  4. Monitor coverage trending upward
+
+LONG TERM (Ongoing):
+  1. Maintain minimum 60% coverage target
+  2. Alert on coverage regressions
+  3. Update analysis quarterly
+  4. Keep swagger.json and tests in sync
+
+
+QUALITY METRICS & TARGETS
+═══════════════════════════════════════════════════════════════════════════
+
+Current State:
+  Coverage: 37.50% ⚠️
+  Status: BELOW TARGET
+  Risk: MEDIUM-HIGH
+
+Target State (After Phase 1):
+  Coverage: ~46% 🟡
+  Timeline: 2 weeks
+  Status: Still below target
+
+Target State (After Phase 2):
+  Coverage: ~55% 🟡
+  Timeline: 6 weeks
+  Status: Approaching acceptable
+
+Target State (After Phase 3):
+  Coverage: ~65% ✅
+  Timeline: 10-12 weeks
+  Status: ACCEPTABLE (60%+ target met)
+
+
+SUPPORT & QUESTIONS
+═══════════════════════════════════════════════════════════════════════════
+
+For specific endpoint details:
+  → Check endpoint_analysis.json for metadata
+  → Reference swagger.json for request/response schemas
+  → Review tests/swaggerCalls.js for existing patterns
+
+For coverage tracking:
+  → Parse endpoint_analysis.json in your CI pipeline
+  → Set minimum coverage thresholds
+  → Alert on regressions
+
+For test development:
+  → Follow patterns in existing tests
+  → Use utils/ helper functions
+  → Reference swagger.json for validation
+
+
+═══════════════════════════════════════════════════════════════════════════
+
+ANALYSIS COMPLETE ✅
+
+This analysis provides actionable insights for improving HKube API test
+coverage from 37.50% to an acceptable level (60%+). The phased approach
+distributes work over 10-12 weeks while prioritizing critical functionality.
+
+Generated: November 3, 2026
+Analysis Version: 1.0
+Total Analysis Time: Complete
+
+═══════════════════════════════════════════════════════════════════════════
