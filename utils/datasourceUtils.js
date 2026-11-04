@@ -78,6 +78,18 @@ const getDatasourceByName =  async (name) => {
     return res;
 }
 
+const getDatasourceVersions = async (name) => {
+    const res = await axios.get(`${config.DsServerUrl}/${name}/versions`);
+    return res;
+}
+
+const validateDatasource = async (name) => {
+    const res = await axios.get(`${config.DsServerUrl}/validate`, {
+        params: { datasource_name: name }
+    });
+    return res;
+}
+
 const createSnapshot =  async (DsName,SnapName,query) => {
     const snap = {"snapshot": {
         "name":SnapName,
@@ -93,6 +105,14 @@ const createSnapshotOnId =  async (commitId,SnapName,query) => {
         "query": query
     }}  
     const res = await axios.post(`${config.DsServerUrl}/id/${commitId}/snapshot`,snap);
+    return res;
+}
+
+const previewSnapshotOnId = async (id, query) => {
+    const res = await axios.post(`${config.DsServerUrl}/id/${id}/snapshot/preview`, {
+        id,
+        query
+    });
     return res;
 }
 
@@ -112,8 +132,11 @@ module.exports = {
     getDatasource,
     deleteDataSource,
     getDatasourceByName,
+    getDatasourceVersions,
+    validateDatasource,
     createSnapshot,
     createSnapshotOnId,
+    previewSnapshotOnId,
     getSnapshot,
     getDsSnapshots,
     changeFolder

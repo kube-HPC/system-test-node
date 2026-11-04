@@ -9,9 +9,12 @@ const {
     getDatasource,
     deleteDataSource,
     getDatasourceByName,
+    getDatasourceVersions,
+    validateDatasource,
     createSnapshot,
     getSnapshot,
-    getDsSnapshots
+    getDsSnapshots,
+    previewSnapshotOnId
 } = require('../utils/datasourceUtils');
 
 const {
@@ -70,22 +73,47 @@ describe('Datasource  Tests', () => {
             const snapName2 = "last files";
             const DsName = pipelineRandomName(8);
             await createInternalDS(DsName);
-            await UploadFilesToDs(DsName);
-            const snap = await createSnapshot(DsName, snapName, "first");
-            const snap2 = await createSnapshot(DsName, snapName2, "last 4");
-            expect(snap.data.filteredFilesList.length).to.be.equal(3);
-            expect(snap.data.droppedFiles.length).to.be.equal(4);
-            expect(snap2.data.filteredFilesList.length).to.be.equal(4);
-            expect(snap2.data.droppedFiles.length).to.be.equal(3);
+            try {
+                await UploadFilesToDs(DsName);
+                const snap = await createSnapshot(DsName, snapName, "first");
+                const snap2 = await createSnapshot(DsName, snapName2, "last 4");
+                expect(snap.data.filteredFilesList.length).to.be.equal(3);
+                expect(snap.data.droppedFiles.length).to.be.equal(4);
+                expect(snap2.data.filteredFilesList.length).to.be.equal(4);
+                expect(snap2.data.droppedFiles.length).to.be.equal(3);
 
-            const getSnap = await getSnapshot(DsName, snapName);
-            expect(getSnap.data.filteredFilesList.length).to.be.equal(3);
-            expect(getSnap.data.droppedFiles.length).to.be.equal(4);
+                const getSnap = await getSnapshot(DsName, snapName);
+                expect(getSnap.data.filteredFilesList.length).to.be.equal(3);
+                expect(getSnap.data.droppedFiles.length).to.be.equal(4);
 
-            const all = await getDsSnapshots(DsName);
-            expect(all.data.length).to.be.equal(2);
+                const all = await getDsSnapshots(DsName);
+                expect(all.data.length).to.be.equal(2);
+            } finally {
+                await deleteDataSource(DsName);
+            }
+        }).timeout(1000 * 60 * 5);
 
-            await deleteDataSource(DsName);;
+        it("read-only datasource endpoints", async () => {
+            const DsName = pipelineRandomName(8);
+            await createInternalDS(DsName);
+            try {
+                await UploadFilesToDs(DsName);
+
+                const versions = await getDatasourceVersions(DsName);
+                expect(versions.status).to.be.equal(200);
+                expect(versions.data).to.be.an('array');
+
+                const validated = await validateDatasource(DsName);
+                expect(validated.status).to.be.equal(200);
+                expect(validated.data).to.be.an('object');
+                expect(validated.data).to.have.property('exists');
+
+                const datasource = await getDatasourceByName(DsName);
+                const preview = await previewSnapshotOnId(datasource.data.id, 'first');
+                expect(preview.status).to.be.equal(200);
+            } finally {
+                await deleteDataSource(DsName);
+            }
         }).timeout(1000 * 60 * 5);
     });
 

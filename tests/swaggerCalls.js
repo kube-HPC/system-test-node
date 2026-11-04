@@ -9,8 +9,7 @@ const fs = require('fs');
 
 const {
     write_log,
-    loginWithRetry,
-    refreshTokenIfNeeded
+    loginWithRetry
 } = require('../utils/misc_utils');
 
 const delay = require('delay');
@@ -70,15 +69,12 @@ describe('all swagger calls test ', () => {
         return res;
     }
 
-    beforeEach(async function () {
-        this.timeout(1000 * 60 * 2);
-        dev_token = await refreshTokenIfNeeded(dev_token);
+    beforeEach(function () {
         console.log('\n-----------------------------------------------\n');
     });
 
     after(async function () {
         this.timeout(2 * 60 * 1000);
-        dev_token = await refreshTokenIfNeeded(dev_token);
         console.log("algList = " + algList);
         j = 0;
         z = 3;
@@ -576,41 +572,96 @@ describe('all swagger calls test ', () => {
             expect(res2.body).to.have.lengthOf(5);
         }).timeout(1000 * 60 * 3);
 
-        it.skip('test the GET /pipelines/status/raw/{name} rest call', async () => {
-            const name = 'rawPipe';
-
-            const res = await chai.request(config.apiServerUrl)
-                .get(`/pipelines/status/raw/${name}`)
-                .set("Authorization", `Bearer ${dev_token}`);
-
-            expect(res).to.have.status(200);
-            const res2 = await chai.request(config.apiServerUrl)
-                .get(`/pipelines/status/raw/${name}?limit=5`)
-                .set("Authorization", `Bearer ${dev_token}`);
-
-            expect(res2).to.have.status(200);
-            expect(res2.body).to.have.lengthOf(5);
-        }).timeout(1000 * 60 * 3);
-
-        it.skip('test the GET /pipelines/status/stored/{name} rest call', async () => {
-            const name = 'simple';
-
-            const res = await chai.request(config.apiServerUrl)
-                .get(`/pipelines/status/stored/${name}`)
-                .set("Authorization", `Bearer ${dev_token}`);
-
-            expect(res).to.have.status(200);
-            const res2 = await chai.request(config.apiServerUrl)
-                .get(`/pipelines/status/stored/${name}?limit=5`)
-                .set("Authorization", `Bearer ${dev_token}`);
-
-            expect(res2).to.have.status(200);
-            expect(res2.body).to.have.lengthOf(5);
-        }).timeout(1000 * 60 * 3);
     });
 
     describe('Store Algorithms', () => {
-        it('TBD');
+        const algName = 'swagger-store-algorithm';
+        const algJson = () => ({
+            name: algName,
+            cpu: 1,
+            gpu: 0,
+            mem: '256Mi',
+            minHotWorkers: 0,
+            algorithmImage: 'hkube/algorithm-example-node',
+            type: 'Image',
+            options: { debug: false, pending: false },
+            workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
+        });
+
+        before(async () => {
+            await deleteAlgorithm(algName, dev_token, true);
+        });
+
+        after(async () => {
+            await deleteAlgorithm(algName, dev_token, true);
+        });
+
+        it('test the POST /store/algorithms', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .post('/store/algorithms')
+                .set("Authorization", `Bearer ${dev_token}`)
+                .send(algJson());
+
+            expect(res).to.have.status(201);
+            expect(res.body.name).to.be.equal(algName);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the GET /store/algorithms/{name}', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get(`/store/algorithms/${algName}`)
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+            expect(res.body.name).to.be.equal(algName);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the GET /store/algorithms', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get('/store/algorithms')
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+            expect(res.body).to.be.an('array');
+        }).timeout(1000 * 60 * 2);
+
+        it('test the GET /store/algorithmsFilter', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get(`/store/algorithmsFilter?name=${algName}`)
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the PUT /store/algorithms', async () => {
+            const updated = { ...algJson(), mem: '512Mi' };
+            const res = await chai.request(config.apiServerUrl)
+                .put('/store/algorithms')
+                .set("Authorization", `Bearer ${dev_token}`)
+                .send(updated);
+
+            expect(res).to.have.status(200);
+            expect(res.body.mem).to.be.equal('512Mi');
+        }).timeout(1000 * 60 * 2);
+
+        it('test the POST /store/algorithms/apply', async () => {
+            const res = await storeAlgorithmApply(algJson(), dev_token);
+
+            expect(res).to.have.status(200);
+            expect(res.body.algorithm.name).to.be.equal(algName);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the DELETE /store/algorithms/{name}', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .delete(`/store/algorithms/${algName}?force=true`)
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+            const getRes = await chai.request(config.apiServerUrl)
+                .get(`/store/algorithms/${algName}`)
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(getRes).to.have.status(404);
+        }).timeout(1000 * 60 * 2);
     });
 
     describe('Algorithms version', () => {
@@ -897,12 +948,12 @@ describe('all swagger calls test ', () => {
         before('check if the pipeline addmultForTest is stored', async () => {
             const name = 'addmultForTest'
             const res = await chai.request(config.apiServerUrl)
-                .get(`/store/pipeline/${name}`)
+                .get(`/store/pipelines/${name}`)
                 .set("Authorization", `Bearer ${dev_token}`);
 
             if (res.status != 404) {
                 await chai.request(config.apiServerUrl)
-                    .delete('/store/pipelines/${name')
+                    .delete(`/store/pipelines/${name}`)
                     .set("Authorization", `Bearer ${dev_token}`);
             }
         });
@@ -976,6 +1027,59 @@ describe('all swagger calls test ', () => {
             expect(res).to.have.status(200);
             expect(res.body).to.have.lengthOf.above(1);
         });
+
+        it('test the GET /store/pipelines/graph/{name}', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get('/store/pipelines/graph/simple')
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+            expect(res.body).to.have.property('nodes');
+        }).timeout(1000 * 60 * 2);
+
+        it('test the POST /store/pipelines/graph', async () => {
+            const pipeline = await chai.request(config.apiServerUrl)
+                .get('/store/pipelines/simple')
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            const res = await chai.request(config.apiServerUrl)
+                .post('/store/pipelines/graph')
+                .set("Authorization", `Bearer ${dev_token}`)
+                .send({ pipeline: pipeline.body });
+
+            expect(res).to.have.status(200);
+            expect(res.body).to.have.property('nodes');
+        }).timeout(1000 * 60 * 2);
+
+        it('test the PUT /store/pipelines', async () => {
+            const name = 'swaggerPutPipe';
+            await deletePipeline(name, dev_token);
+            const pipe = {
+                name,
+                nodes: [{
+                    nodeName: 'green',
+                    algorithmName: 'green-alg',
+                    input: [1, 2, 3]
+                }]
+            };
+
+            const created = await chai.request(config.apiServerUrl)
+                .post('/store/pipelines')
+                .set("Authorization", `Bearer ${dev_token}`)
+                .send(pipe);
+            expect(created).to.have.status(201);
+
+            const updated = { ...pipe, description: 'updated via PUT /store/pipelines' };
+            const res = await chai.request(config.apiServerUrl)
+                .put('/store/pipelines')
+                .set("Authorization", `Bearer ${dev_token}`)
+                .send(updated);
+
+            expect(res).to.have.status(200);
+            expect(res.body.description).to.be.equal('updated via PUT /store/pipelines');
+
+            await deletePipeline(name, dev_token);
+        }).timeout(1000 * 60 * 2);
     });
 
     describe('Experiment', () => {
@@ -983,14 +1087,6 @@ describe('all swagger calls test ', () => {
             name: "new-experiment",
             description: "string description"
         }
-
-        // runs even when an assertion fails mid-test, so a stale experiment never leaks into the next run
-        const deleteTestExperiment = () => chai.request(config.apiServerUrl)
-            .delete(`/experiment/${experiment.name}`)
-            .set("Authorization", `Bearer ${dev_token}`);
-
-        beforeEach(deleteTestExperiment);
-        afterEach(deleteTestExperiment);
 
         it('test  GET /experiment/{name}', async () => {
             const name = "main";
@@ -1038,7 +1134,694 @@ describe('all swagger calls test ', () => {
             const buildStatusAlg = await buildAlgorithmAndWait({ code: code1, algName: algName, entry: testalg, kc_token: dev_token, algorithmArray: algList });
             expect(buildStatusAlg.status).to.be.equal("completed");
         }).timeout(1000 * 60 * 20);
+
+        it('test the GET /builds/list/{name} rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get(`/builds/list/pyeyemat`)
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the POST /builds/stop rest call with failure due to unknown buildId', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .post('/builds/stop')
+                .set("Authorization", `Bearer ${dev_token}`)
+                .send({ buildId: 'non-existing-build-id' });
+
+            expect(res).to.have.status(404);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the POST /builds/rerun rest call with failure due to unknown buildId', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .post('/builds/rerun')
+                .set("Authorization", `Bearer ${dev_token}`)
+                .send({ buildId: 'non-existing-build-id' });
+
+            expect(res).to.have.status(404);
+        }).timeout(1000 * 60 * 2);
+
+        // /builds/webhook/github and /builds/webhook/gitlab require a signed payload from an
+        // actual GitHub/GitLab webhook and are intentionally not covered here.
     });
+
+    describe('Auth', () => {
+        it('test the POST /auth/login rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .post('/auth/login')
+                .send({ username: config.keycloakDevUser, password: config.keycloakDevPass });
+
+            if (dev_token) {
+                expect(res).to.have.status(200);
+                expect(res.body.data).to.have.property('access_token');
+            }
+        }).timeout(1000 * 60 * 2);
+    });
+
+    describe('Pipelines triggers', () => {
+        it('test the GET /pipelines/triggers/tree rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get('/pipelines/triggers/tree?name=simple')
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+    });
+
+    describe('Exec extra endpoints', () => {
+        it('test the POST /exec/search rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .post('/exec/search')
+                .set("Authorization", `Bearer ${dev_token}`)
+                .send({ query: { pipelineName: 'simple' }, sort: 'desc', limit: 5 });
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the GET /exec/search rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get('/exec/search?pipelineName=simple&sort=desc&limit=5')
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the GET /exec/jobs rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get('/exec/jobs?status=active&raw=true')
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the GET /exec/auditTrail/{jobId} rest call', async () => {
+            const jobId = await runRaw(dev_token, 5000);
+            const res = await chai.request(config.apiServerUrl)
+                .get(`/exec/auditTrail/${jobId}`)
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+            await getResult(jobId, 200, dev_token);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the GET /exec/flowInput/{jobId} rest call', async () => {
+            const pipe = {
+                name: "simple",
+                flowInput: {
+                    files: {
+                        link: "link1"
+                    }
+                },
+                priority: 4
+            }
+            const run = await chai.request(config.apiServerUrl)
+                .post('/exec/stored')
+                .set("Authorization", `Bearer ${dev_token}`)
+                .send(pipe);
+            const jobId = run.body.jobId;
+
+            const res = await chai.request(config.apiServerUrl)
+                .get(`/exec/flowInput/${jobId}`)
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+            await getResult(jobId, 200, dev_token);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the POST /exec/rerun rest call', async () => {
+            const jobId = await runRaw(dev_token, 3000);
+            await getResult(jobId, 200, dev_token);
+
+            const res = await chai.request(config.apiServerUrl)
+                .post('/exec/rerun')
+                .set("Authorization", `Bearer ${dev_token}`)
+                .send({ jobId });
+
+            expect(res).to.have.status(200);
+            const newJobId = res.body.jobId;
+            await getResult(newJobId, 200, dev_token);
+        }).timeout(1000 * 60 * 3);
+    });
+
+    describe('Cron', () => {
+        const cronPipelineName = 'simple';
+
+        after(async function () {
+            this.timeout(1000 * 30);
+            await chai.request(config.apiServerUrl)
+                .post('/cron/stop')
+                .set("Authorization", `Bearer ${dev_token}`)
+                .send({ name: cronPipelineName });
+        });
+
+        it('test the POST /cron/start rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .post('/cron/start')
+                .set("Authorization", `Bearer ${dev_token}`)
+                .send({ name: cronPipelineName, pattern: "0 0 * * *" });
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the GET /cron/status rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get(`/cron/status?name=${cronPipelineName}`)
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the GET /cron/list rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get('/cron/list')
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the GET /cron/results rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get(`/cron/results?name=${cronPipelineName}`)
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the POST /cron/stop rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .post('/cron/stop')
+                .set("Authorization", `Bearer ${dev_token}`)
+                .send({ name: cronPipelineName });
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+    });
+
+    describe('Algorithm version tag and alias', () => {
+        const algorithmName = 'swagger-tag-alias-algorithm';
+        const alg = {
+            name: algorithmName,
+            cpu: 1,
+            gpu: 0,
+            mem: "256Mi",
+            minHotWorkers: 0,
+            algorithmImage: "tamir321/algoversion:v1",
+            type: "Image",
+            options: { debug: false, pending: false },
+            workerEnv: { INACTIVE_WORKER_TIMEOUT_MS: 2000 }
+        };
+
+        before(async () => {
+            await applyAlg(alg, dev_token);
+        });
+
+        it('test the POST /versions/algorithms/tag rest call', async () => {
+            const algVersion = await getAlgorithmVersion(algorithmName, dev_token);
+            const version = algVersion.body[0].version;
+
+            const res = await chai.request(config.apiServerUrl)
+                .post('/versions/algorithms/tag')
+                .set("Authorization", `Bearer ${dev_token}`)
+                .send({ name: algorithmName, version, pinned: true, tags: ['swagger-test'] });
+
+            expect(res).to.have.status(201);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the PUT /versions/algorithms/alias rest call', async () => {
+            const algVersion = await getAlgorithmVersion(algorithmName, dev_token);
+            const version = algVersion.body[0].version;
+
+            const res = await chai.request(config.apiServerUrl)
+                .put('/versions/algorithms/alias')
+                .set("Authorization", `Bearer ${dev_token}`)
+                .send({ version, alias: 'swagger-alias' });
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+    });
+
+    describe('Pipeline versions', () => {
+        const pipelineName = 'swaggerVersionsPipe';
+        const pipe = {
+            name: pipelineName,
+            nodes: [{
+                nodeName: 'green',
+                algorithmName: 'green-alg',
+                input: [1, 2, 3]
+            }]
+        };
+
+        before(async () => {
+            await deletePipeline(pipelineName, dev_token);
+            await chai.request(config.apiServerUrl)
+                .post('/store/pipelines')
+                .set("Authorization", `Bearer ${dev_token}`)
+                .send(pipe);
+            // update the pipeline to generate a second version
+            await chai.request(config.apiServerUrl)
+                .put('/store/pipelines')
+                .set("Authorization", `Bearer ${dev_token}`)
+                .send({ ...pipe, description: 'v2' });
+        });
+
+        after(async () => {
+            await deletePipeline(pipelineName, dev_token);
+        });
+
+        it('test the GET /versions/pipelines/{name} rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get(`/versions/pipelines/${pipelineName}`)
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+            expect(res.body.length).to.be.at.least(2);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the GET /versions/pipelines/{name}/{version} rest call', async () => {
+            const versions = await chai.request(config.apiServerUrl)
+                .get(`/versions/pipelines/${pipelineName}`)
+                .set("Authorization", `Bearer ${dev_token}`);
+            const version = versions.body[0].version;
+
+            const res = await chai.request(config.apiServerUrl)
+                .get(`/versions/pipelines/${pipelineName}/${version}`)
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the POST /versions/pipelines/apply rest call', async () => {
+            const versions = await chai.request(config.apiServerUrl)
+                .get(`/versions/pipelines/${pipelineName}`)
+                .set("Authorization", `Bearer ${dev_token}`);
+            const version = versions.body[versions.body.length - 1].version;
+
+            const res = await chai.request(config.apiServerUrl)
+                .post('/versions/pipelines/apply')
+                .set("Authorization", `Bearer ${dev_token}`)
+                .send({ name: pipelineName, version });
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the PUT /versions/pipelines/alias rest call', async () => {
+            const versions = await chai.request(config.apiServerUrl)
+                .get(`/versions/pipelines/${pipelineName}`)
+                .set("Authorization", `Bearer ${dev_token}`);
+            const version = versions.body[0].version;
+
+            const res = await chai.request(config.apiServerUrl)
+                .put('/versions/pipelines/alias')
+                .set("Authorization", `Bearer ${dev_token}`)
+                .send({ version, alias: 'swagger-pipe-alias' });
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the DELETE /versions/pipelines/{name}/{version} rest call', async () => {
+            const versions = await chai.request(config.apiServerUrl)
+                .get(`/versions/pipelines/${pipelineName}`)
+                .set("Authorization", `Bearer ${dev_token}`);
+            const versionToDelete = versions.body[versions.body.length - 1].version;
+
+            const res = await chai.request(config.apiServerUrl)
+                .delete(`/versions/pipelines/${pipelineName}/${versionToDelete}`)
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+    });
+
+    describe('Queue', () => {
+        it('test the GET /queue/count rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get('/queue/count')
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the GET /queue/managed/ rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get('/queue/managed/')
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the GET /queue/managed/aggregation/pipeline rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get('/queue/managed/aggregation/pipeline')
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the GET /queue/managed/aggregation/tag rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get('/queue/managed/aggregation/tag')
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the GET /queue/preferred rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get('/queue/preferred?pageSize=10')
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the GET /queue/preferred/aggregation/pipeline rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get('/queue/preferred/aggregation/pipeline')
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the GET /queue/preferred/aggregation/tag rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get('/queue/preferred/aggregation/tag')
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the POST /queue/preferred rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .post('/queue/preferred')
+                .set("Authorization", `Bearer ${dev_token}`)
+                .send({ jobs: [], position: 'last' });
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the POST /queue/preferred/deletes rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .post('/queue/preferred/deletes')
+                .set("Authorization", `Bearer ${dev_token}`)
+                .send({ jobs: [] });
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+    });
+
+    describe('GC', () => {
+        it('test the GET /gc/status rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get('/gc/status')
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the GET /gc/status/{type} rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get('/gc/status/pipelineDrivers')
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the POST /gc/dryrun rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .post('/gc/dryrun')
+                .set("Authorization", `Bearer ${dev_token}`)
+                .send({ maxAge: 60 });
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the POST /gc/dryrun/{type} rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .post('/gc/dryrun/pipelineDrivers')
+                .set("Authorization", `Bearer ${dev_token}`)
+                .send({ maxAge: 60 });
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        // /gc/clean and /gc/clean/{type} actually delete resources on the cluster and are
+        // intentionally not exercised here to avoid destructive side effects on a shared/live
+        // environment; /gc/dryrun covers the same code path without deleting anything.
+    });
+
+    describe('Gateway', () => {
+        it('test the GET /gateway rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get('/gateway')
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the GET /gateway/{name} rest call with unknown gateway', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get('/gateway/non-existing-gateway')
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(404);
+        }).timeout(1000 * 60 * 2);
+    });
+
+    describe('Resources', () => {
+        it('test the GET /resources/unscheduledalgorithms/ rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get('/resources/unscheduledalgorithms/')
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the GET /resources/unscheduledalgorithms/{name} rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get('/resources/unscheduledalgorithms/green-alg')
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the GET /resources/ignoredunscheduledalgorithms/ rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get('/resources/ignoredunscheduledalgorithms/')
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the GET /resources/ignoredunscheduledalgorithms/{name} rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get('/resources/ignoredunscheduledalgorithms/green-alg')
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+    });
+
+    describe('Kubernetes', () => {
+        it('test the DELETE /kubernetes/algorithms/pods/{algName} rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .delete('/kubernetes/algorithms/pods/green-alg')
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the DELETE /kubernetes/algorithms/jobs/{algName} rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .delete('/kubernetes/algorithms/jobs/green-alg')
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+    });
+
+    describe('Storage extra endpoints', () => {
+        let storagePath;
+
+        before(async () => {
+            const types = await chai.request(config.apiServerUrl)
+                .get('/storage/prefix/types')
+                .set("Authorization", `Bearer ${dev_token}`);
+            const keys = await chai.request(config.apiServerUrl)
+                .get(`/storage/keys/${types.body[6]}`)
+                .set("Authorization", `Bearer ${dev_token}`);
+            storagePath = keys.body.keys[0].path;
+        });
+
+        it('test the GET /storage/stream/custom/{path} rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get(`/storage/stream/custom/${storagePath}`)
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 3);
+
+        it('test the GET /storage/download/custom/{path} rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get(`/storage/download/custom/${storagePath}`)
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 3);
+
+        it('test the GET /storage/download/pipeline/result/{jobId} rest call', async () => {
+            const jobId = await runRaw(dev_token, 3000);
+            await getResult(jobId, 200, dev_token);
+
+            const res = await chai.request(config.apiServerUrl)
+                .get(`/storage/download/pipeline/result/${jobId}`)
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 3);
+    });
+
+    describe('Status', () => {
+        it('test the GET /status/version rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get('/status/version')
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+    });
+
+    describe('Preferences', () => {
+        after(async () => {
+            await chai.request(config.apiServerUrl)
+                .delete('/preferences')
+                .set("Authorization", `Bearer ${dev_token}`);
+        });
+
+        it('test the PUT /preferences rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .put('/preferences')
+                .set("Authorization", `Bearer ${dev_token}`)
+                .send({ theme: 'dark' });
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the GET /preferences rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .get('/preferences')
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+
+        it('test the DELETE /preferences rest call', async () => {
+            const res = await chai.request(config.apiServerUrl)
+                .delete('/preferences')
+                .set("Authorization", `Bearer ${dev_token}`);
+
+            expect(res).to.have.status(200);
+        }).timeout(1000 * 60 * 2);
+    });
+
+    describe('Boards', () => {
+        let boardJobId;
+
+        before(async () => {
+            boardJobId = await runRaw(dev_token, 3000);
+            await getResult(boardJobId, 200, dev_token);
+        });
+
+        describe('Tensorboard', () => {
+            let tensorboardId;
+
+            after(async () => {
+                await chai.request(config.apiServerUrl)
+                    .delete(`/boards/tensors/${tensorboardId}`)
+                    .set("Authorization", `Bearer ${dev_token}`);
+            });
+
+            it('test the POST /boards/tensors rest call', async () => {
+                const res = await chai.request(config.apiServerUrl)
+                    .post('/boards/tensors')
+                    .set("Authorization", `Bearer ${dev_token}`)
+                    .send({ jobId: boardJobId });
+
+                expect(res.status).to.be.oneOf([200, 201]);
+                expect(res.body).to.have.property('id');
+                tensorboardId = res.body.id;
+            }).timeout(1000 * 60 * 2);
+
+            it('test the GET /boards/tensors/ rest call', async () => {
+                const res = await chai.request(config.apiServerUrl)
+                    .get('/boards/tensors/')
+                    .set("Authorization", `Bearer ${dev_token}`);
+
+                expect(res).to.have.status(200);
+            }).timeout(1000 * 60 * 2);
+
+            it('test the GET /boards/tensors/{id} rest call', async () => {
+                const res = await chai.request(config.apiServerUrl)
+                    .get(`/boards/tensors/${tensorboardId}`)
+                    .set("Authorization", `Bearer ${dev_token}`);
+
+                expect(res).to.have.status(200);
+            }).timeout(1000 * 60 * 2);
+
+            it('test the DELETE /boards/tensors/{id} rest call', async () => {
+                const res = await chai.request(config.apiServerUrl)
+                    .delete(`/boards/tensors/${tensorboardId}`)
+                    .set("Authorization", `Bearer ${dev_token}`);
+
+                expect(res).to.have.status(200);
+            }).timeout(1000 * 60 * 2);
+        });
+
+        describe('Optunaboard', () => {
+            let optunaboardId;
+
+            after(async () => {
+                await chai.request(config.apiServerUrl)
+                    .delete(`/boards/optunas/${optunaboardId}`)
+                    .set("Authorization", `Bearer ${dev_token}`);
+            });
+
+            it('test the POST /boards/optunas rest call', async () => {
+                const res = await chai.request(config.apiServerUrl)
+                    .post('/boards/optunas')
+                    .set("Authorization", `Bearer ${dev_token}`)
+                    .send({ jobId: boardJobId });
+
+                expect(res.status).to.be.oneOf([200, 201]);
+                expect(res.body).to.have.property('id');
+                optunaboardId = res.body.id;
+            }).timeout(1000 * 60 * 2);
+
+            it('test the GET /boards/optunas/ rest call', async () => {
+                const res = await chai.request(config.apiServerUrl)
+                    .get('/boards/optunas/')
+                    .set("Authorization", `Bearer ${dev_token}`);
+
+                expect(res).to.have.status(200);
+            }).timeout(1000 * 60 * 2);
+
+            it('test the GET /boards/optunas/{id} rest call', async () => {
+                const res = await chai.request(config.apiServerUrl)
+                    .get(`/boards/optunas/${optunaboardId}`)
+                    .set("Authorization", `Bearer ${dev_token}`);
+
+                expect(res).to.have.status(200);
+            }).timeout(1000 * 60 * 2);
+
+            it('test the DELETE /boards/optunas/{id} rest call', async () => {
+                const res = await chai.request(config.apiServerUrl)
+                    .delete(`/boards/optunas/${optunaboardId}`)
+                    .set("Authorization", `Bearer ${dev_token}`);
+
+                expect(res).to.have.status(200);
+            }).timeout(1000 * 60 * 2);
+        });
+    });
+
+    // /datasource/* endpoints are covered by the dedicated tests/datasource_tests.js suite.
 
     describe('No correct role', () => {
         let guest_token;
